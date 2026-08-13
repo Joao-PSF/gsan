@@ -24,3 +24,9 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 - Cada alteração relevante gera/atualiza um registro em `alteracoes/` com motivo, impacto, dependências, testes, risco e rollback.
 - Decisões estruturais viram ADR em `decisoes/` antes da implementação.
 - Documentos por módulo serão criados em `modulos/` conforme cada módulo entrar em análise (nunca programar antes de documentar o comportamento atual).
+
+## Pastas planejadas (backlog da Fase 0)
+
+- `dominio/` — glossário de domínio (`glossario.md`, próxima atividade) e mapa de domínio (`mapa-de-dominio.md`).
+- `compatibilidade/` — análise de compatibilidade das estruturas centrais (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→SISAN (ADR-0005).
+- `modulos/` — receberá também o catálogo de funcionalidades futuras descobertas no `gsan_comercial` (`funcionalidades-futuras.md`).

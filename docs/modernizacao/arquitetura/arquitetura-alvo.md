@@ -2,6 +2,8 @@
 
 Versões confirmadas como estáveis/suportadas em 2026-08 — reconfirmar no início de cada fase.
 
+> Revisão 2026-08-13 (2ª execução): SISAN é **modernização evolutiva do GSAN** (ADR-0005), com banco próprio em UTF-8 e modelo de dados evoluído (ADR-0006). A coexistência com um GSAN em produção deixou de ser premissa de desenvolvimento — ver [revisão de premissas](../alteracoes/2026-08-13-revisao-premissas-fase0.md).
+
 ## Stack
 
 | Camada | Tecnologia |
@@ -11,19 +13,19 @@ Versões confirmadas como estáveis/suportadas em 2026-08 — reconfirmar no in�
 | Web | Spring MVC; REST onde houver consumidor real; server-side rendering para telas internas (decisão da Fase 9) |
 | Persistência | Spring Data JPA/Hibernate para CRUD; `JdbcTemplate`/SQL nativo para consultas complexas, relatórios e batch (não converter SQL funcional para ORM por estética) |
 | Transações | Spring Transaction (`@Transactional`), substituindo CMT do EJB |
-| Segurança | Spring Security (RBAC reproduzindo o modelo `seguranca.*` atual, depois fortalecido) |
-| Banco | PostgreSQL 18.x (18.6+); mesmo schema do legado durante a coexistência |
-| Migrations | Flyway (ADR-0002), baseline a partir do DDL real de produção |
+| Segurança | Spring Security (RBAC evoluído do modelo conceitual `seguranca.*` do GSAN — perfis, grupos, funcionalidades, permissões especiais, abrangência) |
+| Banco | PostgreSQL 18.x (18.6+), UTF-8 (ADR-0004); modelo de dados próprio do SISAN, evoluído dos conceitos GSAN (ADRs 0005/0006) |
+| Migrations | Flyway (ADR-0002); schema do SISAN versionado desde `V1` — sem baseline copiada do legado |
 | Build | Maven (convenção dominante no ecossistema Spring; multi-módulo) |
 | Batch | Spring Batch + agendamento (Spring Scheduling; Quartz moderno apenas se necessidade real) |
 | Relatórios | JasperReports atual para os `.jrxml` reaproveitáveis; reescrita seletiva apenas quando o layout exigir |
 | Observabilidade | Spring Boot Actuator + Micrometer (logs estruturados, métricas, health checks) |
-| Execução | Containers (Docker) + docker-compose para dev; CI/CD com SAST/SCA/SBOM |
+| Execução | Containers (Docker) + docker-compose para dev; primeiro ambiente: VPS de testes/homologação/demonstração (não é produção crítica); CI/CD com SAST/SCA/SBOM |
 
 ## Organização modular (monólito modular)
 
 ```text
-gsan (novo código — repositório SISAN, ADR-0003)
+sisan (repositório SISAN — ADR-0003, aceita)
  ├── cadastro
  ├── faturamento
  ├── arrecadacao
@@ -39,14 +41,14 @@ gsan (novo código — repositório SISAN, ADR-0003)
 
 Cada módulo com separação `domain / application / infrastructure / web` **quando trouxer benefício real**; módulos simples (cadastros auxiliares) podem usar estrutura mais direta. Sem microserviços, mensageria ou Kubernetes sem necessidade técnica demonstrada.
 
-## Estratégia de coexistência
+## Modelo de dados evolutivo e compatibilidade GSAN → SISAN (ADRs 0005/0006)
 
-1. Legado e novo sistema compartilham o mesmo banco (fonte de verdade) durante toda a transição.
-2. O novo sistema **não** redesenha tabelas ao migrar um módulo; mapeia o schema existente (nomes de colunas `xxxx_id`, `int2/int4`, timestamps `_tmultimaalteracao`).
-3. Roteamento por funcionalidade: proxy reverso direciona telas migradas para o novo sistema; o restante segue no legado. Sessões separadas; SSO simples entre os dois (mesma base `seguranca.usuario`).
-4. Cuidados de coexistência: sequences compartilhadas (usar as sequences do banco, nunca geradores próprios), sem cache de segundo nível sobre tabelas escritas pelos dois lados, mesmas regras de bloqueio/isolamento.
-5. Desativação do legado por funcionalidade somente após equivalência comprovada (Fase 12).
+1. O SISAN é **evolução do GSAN**, não sistema do zero: conceitos, módulos, regras de negócio, fluxos, nomenclaturas relevantes e relacionamentos conceituais são preservados sempre que adequados. Regra geral: *preservar quando adequado, modernizar quando necessário, redesenhar somente com justificativa*.
+2. Banco próprio do SISAN (PostgreSQL 18.x, UTF-8), com schema versionado por Flyway desde `V1`. Estruturas importantes do GSAN são classificadas como `PRESERVAR`, `MODERNIZAR`, `REESTRUTURAR` ou `NÃO TRANSPORTAR` — sem redesenho por estética e sem manter estrutura ruim apenas para ficar idêntico ao legado.
+3. **Facilidade de migração é requisito arquitetural**: toda divergência estrutural relevante em relação ao GSAN registra seu mapeamento/transformação GSAN→SISAN no documento de compatibilidade, para viabilizar o futuro migrador (`identificação de versão/schema → análise de compatibilidade → mapeamento → transformações → validação → migração`).
+4. O SISAN não assume que toda companhia possui o mesmo schema GSAN: instalações reais divergem por versão, migrations, customizações e DDL manual (comprovado no `gsan_comercial`).
+5. Coexistência com um GSAN operante **não é premissa deste projeto** (não há produção aqui). Padrões de coexistência/corte gradual ficam registrados como cenário suportado do playbook de migração de companhias usuárias, quando essa migração existir.
 
 ## O que não faremos
 
-- Reescrita completa em uma única etapa; microserviços por padrão; troca de SQL funcional por ORM; alteração de banco e aplicação simultaneamente sem isolamento; exposição de entidades JPA como contrato de API.
+- Reescrita indiscriminada ou "recriar a roda" — ignorar o conhecimento consolidado no GSAN; microserviços por padrão; troca de SQL funcional por ORM por estética; redesenho de estruturas sem justificativa (ou preservação de estruturas ruins por apego ao legado); exposição de entidades JPA como contrato de API; cópia automática de tabelas/colunas/schemas do `gsan_comercial` para o SISAN.

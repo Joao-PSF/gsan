@@ -1,10 +1,11 @@
 # Integrações Identificadas
 
-Levantamento inicial (Fase 0) a partir do código e do banco. Cada integração deverá ter ficha própria (protocolo, formato, frequência, criticidade, contatos) antes de ser migrada.
+Levantamento inicial (Fase 0) a partir do código e do banco. Cada integração deverá ter ficha própria (protocolo, formato, frequência, criticidade, contatos) antes de ser implementada no SISAN. Este levantamento também alimenta o **catálogo de funcionalidades futuras** (backlog da Fase 0): várias linhas abaixo são funcionalidades posteriores descobertas no `gsan_comercial`, não presentes no GSAN público.
 
 | Integração | Evidências | Observações |
 | ---------- | ---------- | ----------- |
 | Bancos/arrecadadores (arquivos de débito automático, retorno de pagamento, registro de boletos) | Schema `arrecadacao` (aviso bancário, movimento), migrations de boleto BB/ficha de compensação (2024), MDBs de arrecadação por companhia | Crítica — dinheiro entra por aqui; formatos CNAB/FEBRABAN |
+| PIX (recebimento com QR Code na conta) | Tabelas `arrecadacao_pix` e `conta_qrcode_pix` no dump; classe `GeradorQrCodePIX` (arrecadação); ausente das migrations | Funcionalidade posterior descoberta no `gsan_comercial` — candidata prioritária do catálogo de funcionalidades futuras |
 | Cobrança terceirizada / por resultado | `descriptors/cobrancaPorResultado`, `empr_cobr_conta_pagto`, arquivos TXT de OS de cobrança (`mobile.arq_txt_os_cobranca*`) | Envio/retorno de carteiras a empresas |
 | Negativação SPC/Serasa | Pacote `gcom.spcserasa`, `backup_cobranca_negatd_movimento_reg` | Movimentos de inclusão/exclusão |
 | Fiscal: NF/NFC-e + SPED | Schema `fiscal` (nota_fiscal_*, certificado_fiscal, bucket), `integracao.sped_documento`, `sp1_gerar_integracao_sped`, tabelas `ti_*` (contábil) | Customização relevante vs. GSAN público; obrigações regulatórias |
@@ -22,4 +23,4 @@ Levantamento inicial (Fase 0) a partir do código e do banco. Cada integração 
 
 ## Regra
 
-Nenhuma integração será desligada ou substituída sem: ficha completa, consumidores confirmados, teste de equivalência do arquivo/mensagem gerada e janela combinada com a contraparte.
+No SISAN, cada integração só é implementada após ficha completa e compreensão da regra (rito da descoberta funcional: objetivo → regra → relação com conceitos GSAN → evolução de estruturas → decisão). Em migrações futuras de companhias, nenhuma integração operante será desligada ou substituída sem: ficha completa, consumidores confirmados, teste de equivalência do arquivo/mensagem gerada e janela combinada com a contraparte.

@@ -1,45 +1,43 @@
-# Migração PostgreSQL — Estratégia
+# PostgreSQL — SISAN e Importação de Bases GSAN
 
-Projeto próprio dentro da modernização (Fase 8), com preparação iniciando na Fase 0/1. Alvo: PostgreSQL 18.x (18.6+ em 2026-08; PG 14 sai de suporte em 2026-11).
+> Revisão 2026-08-13 (2ª execução): a versão anterior deste documento planejava o corte de um banco de produção — premissa corrigida: **não há produção neste projeto**. O conteúdo técnico válido foi reorganizado em três partes: (1) o PostgreSQL do SISAN; (2) restauração de bases GSAN para análise/referência; (3) estratégia futura de migração GSAN→SISAN, que é requisito arquitetural, não atividade atual.
 
-## Pré-requisitos (Fase 0/1)
+## 1. PostgreSQL do SISAN (desenvolvimento e VPS)
 
-1. Confirmar no banco real: `SELECT version()`, encoding/collation efetivos (`\l+`), locale do SO, tamanho da base, tablespaces, roles e GRANTs (ausentes no DDL exportado), configurações não padrão (`postgresql.conf`), jobs externos (cron/pgAgent), replicação existente, uso de large objects.
-2. Inventariar consumidores diretos do banco além do GSAN (BI "roger", `gsan_olap`, dblink de/para outras bases — o `admindb.db_versao_sincronismo` sugere sincronismo entre bases).
-3. Congelar inventário de funções C antigas a substituir por extensões: `dblink`, `pg_trgm`, `plpgsql_call_handler`.
+- Versão: PostgreSQL 18.x (18.6+ em 2026-08; reconfirmar a cada fase).
+- Encoding **UTF-8** com collation explícita e documentada na criação do cluster/banco (ADR-0004) — sem depender do locale implícito do SO.
+- Schema versionado por **Flyway desde `V1`** (ADR-0002): o modelo nasce das decisões de compatibilidade (`PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006), não de baseline copiada do `gsan_comercial`.
+- Contas segregadas por finalidade desde o início (aplicação online, batch, consulta/BI, administração) com menor privilégio — reaproveitando o conceito já presente no GSAN (`gsan_online/batch/olap/dba`), **nunca** as credenciais (senha = login, comprometidas).
+- Extensões: apenas as necessárias e via `CREATE EXTENSION` (ex.: `pg_trgm` se a busca aproximada for preservada); `dblink` não entra no SISAN — integrações entre bases serão explícitas na aplicação.
+- Dev: docker-compose; testes de persistência com Testcontainers sobre o schema real do SISAN. VPS: instância PostgreSQL própria para testes/homologação/demonstração (sem requisitos de produção crítica nesta etapa).
 
-## Incompatibilidades já conhecidas com PG 18
+## 2. Restauração de bases GSAN para análise e referência (Fases 0–2)
+
+Necessária para estudar comportamento, montar o ambiente de referência do legado e futuramente rodar a caracterização. Um dump/DDL de instalação GSAN antiga (como o `gsan_comercial`) não restaura limpo em PostgreSQL moderno; correções scriptadas e idempotentes:
 
 | Item | Tratamento |
 | ---- | ---------- |
-| Funções C de contrib pré-extensão (`dblink`, `pg_trgm`) | Não restaurar; recriar com `CREATE EXTENSION dblink; CREATE EXTENSION pg_trgm;` e revalidar objetos dependentes (114 referências a dblink; índices trgm) |
-| `public.plpgsql_call_handler` | Descartar (PL/pgSQL é nativo) |
-| `oid`/large objects (7 usos) | Validar `pg_largeobject` no dump/restore (`--large-objects`) |
-| Encoding LATIN1 | Manter LATIN1 na primeira migração (ADR-0004) para reduzir variáveis; conversão UTF-8 avaliada em etapa posterior |
-| Collation (glibc/ICU mudam entre SOs) | Restore reconstrói índices, sem risco de corrupção; ordenações de relatórios podem mudar — validar nas consultas críticas |
-| Sintaxe antiga em 46 views/62 funções SQL+PL/pgSQL | Testar recriação uma a uma em homolog; corrigir o que falhar |
+| Funções C de contrib pré-extensão (`dblink`, `pg_trgm` — estilo PG 8.x) | Não restaurar as definições antigas; `CREATE EXTENSION dblink; CREATE EXTENSION pg_trgm;` e revalidar dependentes (114 referências a dblink; índices trgm) |
+| `public.plpgsql_call_handler` declarado manualmente | Descartar (PL/pgSQL é nativo) |
+| `oid`/large objects (7 usos) | Restaurar com `--large-objects` e validar `pg_largeobject` |
+| Encoding LATIN1 da origem | Restaurável sem conversão em PG moderno (banco de referência pode permanecer LATIN1); conversão para UTF-8 só no contexto de migração real (parte 3) |
+| Views/funções com sintaxe antiga (46 views, 60 funções SQL/PLpgSQL) | Testar recriação uma a uma; corrigir o que falhar e registrar |
+| Ordenação (collation glibc/ICU difere da origem) | Índices são reconstruídos no restore; diferenças de `ORDER BY` em relatórios são esperadas e devem ser documentadas |
 
-## Estratégia recomendada: dump/restore com janela controlada
+## 3. Migração GSAN → SISAN (requisito arquitetural — **não implementar agora**)
 
-- `pg_upgrade` é inviável: salto de muitas versões, exige binários antigos e falharia nas contribs pré-extensão.
-- Replicação lógica nativa exige origem ≥ 10 (a confirmar; sinais apontam origem 8.x/9.x) — se a origem confirmar ≥ 9.4, avaliar `pglogical`/híbrido para reduzir downtime.
-- Padrão: `pg_dump -Fc` (schema + dados) da produção → restore em homolog PG 18 → correções scriptadas e idempotentes → ensaio completo cronometrado (define a janela real) → repetição do procedimento em produção com freeze de escrita.
+Pipeline futuro, por companhia:
 
-## Bateria de validação (obrigatória antes do corte)
+```text
+Instalação GSAN → identificação da versão/schema → análise de compatibilidade
+→ mapeamento GSAN→SISAN → transformações necessárias → validação → migração → SISAN
+```
 
-1. **Schema**: diff de objetos (tabelas, colunas, tipos, constraints, índices, sequences, views, matviews, funções, triggers, permissões) origem × destino.
-2. **Dados**: contagem de registros por tabela (100%); checksums por amostragem em tabelas grandes; posição das sequences ≥ `max(id)`.
-3. **Financeiro (tolerância zero)**: somatórios por competência de contas, pagamentos, devoluções, créditos, débitos, parcelamentos e saldos; contagens de hidrômetros, leituras e OS.
-4. **Funcional**: execução em homolog de faturamento de um grupo, arrecadação (retorno bancário), cobrança, parcelamento, relatórios críticos e batch — comparando resultados com a produção da mesma competência.
-5. **Performance**: `EXPLAIN ANALYZE` das consultas críticas catalogadas; tempos de batch; ajuste de `postgresql.conf` para hardware novo; `ANALYZE` completo pós-restore.
+Princípios definidos desde já para não inviabilizar o migrador:
 
-## Rollback
-
-Servidor de origem permanece intocado e desligado para escrita durante a janela; rollback = religar a origem. Nenhuma escrita nova no destino antes do "go" final. Registrar o ponto de corte (última transação) para auditoria.
-
-## Versionamento do banco (Fase 0 em diante)
-
-- Ferramenta: **Flyway** (ADR-0002). Baseline `V1__baseline.sql` gerada do DDL real de produção após reconciliação do drift com `gsan-migracoes`.
-- Histórico MyBatis Migrations arquivado como referência (somente leitura).
-- Regra: nenhuma alteração estrutural sem migration; alterações emergenciais em produção devem gerar migration retroativa em até 1 dia útil.
-- Contas de banco: manter/reativar a segregação já prevista (`gsan_online`, `gsan_batch`, `gsan_olap`, `gsan_dba`) com menor privilégio real por schema, após rotação de senhas (ver segurança).
+1. **Sem hipótese de schema único**: cada instalação pode ter versão, migrations, customizações, objetos extras e DDL manual próprios (comprovado no `gsan_comercial`). O migrador começa inspecionando o schema efetivo, não assumindo-o.
+2. **Mapeamento registrado**: toda divergência estrutural do SISAN em relação ao GSAN é registrada com sua transformação correspondente no documento de compatibilidade — o migrador nasce desse registro, não de engenharia reversa futura.
+3. **Encoding**: origem tipicamente LATIN1 → conversão para UTF-8 detectada e validada caso a caso (ADR-0004): tamanhos de campo, caracteres inválidos, ordenações.
+4. **Validação com tolerância zero no financeiro** (herdada do plano original): diff de schema mapeado; contagem de 100% das tabelas transportadas; somatórios financeiros por competência (contas, pagamentos, devoluções, créditos, débitos, parcelamentos, saldos, hidrômetros, OS); amostragens com checksum; re-execução de rotinas de referência comparando resultados; performance das consultas críticas.
+5. **Rollback e janela**: quando uma migração real existir, a origem permanece intocada até o aceite final; janela, freeze e ponto de corte registrados. (Detalhamento pertence ao projeto de migração da companhia, não a esta fase.)
+6. **Objetos não transportados**: categorias `NÃO TRANSPORTAR` (backups/temporários/manutenção) são ignoradas pelo migrador, mas listadas no relatório de migração para decisão explícita da companhia.

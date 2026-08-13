@@ -1,6 +1,13 @@
 # Banco `gsan_comercial` — Estrutura Atual
 
-Inventário a partir do DDL exportado (fornecido em 2026-08-13, ~4,1 MB, sem GRANTs/privilégios — completar com inventário no banco real).
+Inventário a partir do DDL exportado (fornecido em 2026-08-13, ~4,1 MB, sem GRANTs/privilégios).
+
+## Papel deste inventário
+
+O `gsan_comercial` é **fonte complementar** de análise — uma instalação GSAN que evoluiu e foi customizada ao longo dos anos. Ele **não** é o banco alvo do SISAN, nem representa automaticamente uma versão oficial ou ideal do GSAN, e **não será replicado integralmente** (nada de copiar tabelas, colunas, schemas, sequences, views ou funções automaticamente). Usos legítimos:
+
+- **Compatibilidade**: entender como instalações GSAN reais divergem do projeto público (versões, customizações, DDL manual) — insumo do requisito de migração (ADR-0005);
+- **Descoberta funcional**: identificar funcionalidades posteriores candidatas ao roadmap do SISAN (PIX, fiscal/NF, SPED, mobile, recadastramento, tarifa social, SPC/Serasa, APIs, BI). Cada candidata segue o rito: compreender objetivo → compreender regra → relacionar aos conceitos GSAN → verificar se estruturas GSAN evoluem → só então decidir estruturas no SISAN.
 
 ## Números gerais
 
@@ -54,16 +61,16 @@ Consequência: um restore direto em PostgreSQL 18 falha nesses objetos; eles dev
 
 1. **Núcleo oficial GSAN**: schemas de domínio (cadastro, faturamento, arrecadacao, cobranca, micromedicao, atendimentopublico, seguranca, batch, quartz e maior parte do `public`).
 2. **Customizações permanentes**: `fiscal` (NF/tributação), `integracao` (SPED, `ti_*`), `mobile`, `atualizacaocadastral` (NIS/Bolsa Água), `admindb`, funções `sp*_gerar_res_*` (resumos de faturamento/arrecadação), `sp1_gerar_cred_pagto_viva_agua`, matviews de BI, views `vw_debito*`/geo, tabela `seguranca.token`.
-3. **Históricos/temporários/backup**: ~212 tabelas em `public` com padrões `bkp_*`, `backup_*`, `*_rm<numero>`, `*_20xx`, `atu_fat_sit_especial_*`, `clientes_backup*` etc. — criadas manualmente em manutenções (nomes referenciam RMs e competências até 2026). **Nada será removido**; classificar com o DBA e excluir da modelagem do sistema novo.
+3. **Históricos/temporários/backup**: ~212 tabelas em `public` com padrões `bkp_*`, `backup_*`, `*_rm<numero>`, `*_20xx`, `atu_fat_sit_especial_*`, `clientes_backup*` etc. — criadas manualmente em manutenções (nomes referenciam RMs e competências até 2026). Classificação preliminar por padrão de nomenclatura; candidatas naturais a `NÃO TRANSPORTAR` na análise de compatibilidade. Como o `gsan_comercial` não é o banco alvo, nada precisa ser "removido" — apenas ignorado na modelagem do SISAN e tratado pelo futuro migrador (que deve tolerar objetos extras em instalações reais).
 
-## Drift identificado (crítico)
+## Drift identificado (evidência de variabilidade entre instalações)
 
 - `gsan-migracoes` (MyBatis Migrations): 301 scripts `comercial`, último de 2024-06; 5 `gerencial`.
-- O DDL real contém objetos criados após isso (nomes com competências 2025/2026), logo **existe DDL aplicado em produção sem migration correspondente**.
-- O schema `admindb` possui controle próprio de "versão de base" (`vw_db_versao_base`, `db_versao_sincronismo`) — reconciliar com o histórico do MyBatis.
-- Ação: diff DDL produção × migrations, registrar drift e congelar nova **baseline** (Flyway) antes de qualquer mudança estrutural.
+- O DDL contém objetos posteriores (competências 2025/2026; PIX — `arrecadacao_pix`, `conta_qrcode_pix` — ausente das migrations), provando que instalações GSAN acumulam **DDL manual sem migration correspondente**.
+- O schema `admindb` mantém controle próprio de "versão de base" (`vw_db_versao_base`, `db_versao_sincronismo`) paralelo ao MyBatis — mais um mecanismo divergente de versionamento.
+- Consequência para o projeto (não há produção a reconciliar): o futuro migrador GSAN→SISAN **não pode assumir schema idêntico entre companhias**; precisa identificar versão/schema efetivo e analisar compatibilidade caso a caso (ADR-0005). O SISAN nasce com versionamento único e disciplinado (Flyway desde `V1`, ADR-0002).
 
-## Pontos de modelagem relevantes para o novo código
+## Pontos de modelagem relevantes para compatibilidade e para o SISAN
 
 - PKs `int4` com sequences dedicadas (`seq_*`); colunas com prefixo de tabela (`usur_`, `imov_`...); auditoria via `*_tmultimaalteracao` + tabelas `seguranca.tabela_linha_alteracao`/`tab_linha_col_alteracao`.
 - 70 colunas `bytea` (arquivos/documentos dentro do banco) e 7 usos de `oid` (large objects — validar `lo_*` na migração).

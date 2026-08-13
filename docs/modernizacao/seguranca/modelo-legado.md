@@ -1,6 +1,6 @@
 # Modelo de Segurança Legado
 
-Levantamento do comportamento atual — base para reprodução fiel no sistema novo (Fase 5) antes de qualquer fortalecimento.
+Levantamento do comportamento atual — base para reproduzir o **modelo conceitual** de segurança no SISAN (Fase 5) antes de qualquer fortalecimento. As estruturas físicas podem evoluir (ADR-0006); o modelo de autorização, não, sem mapeamento completo.
 
 ## Autenticação
 
@@ -15,7 +15,7 @@ Levantamento do comportamento atual — base para reprodução fiel no sistema n
 - Estrutura: `usuario` → `usuario_grupo` → `grupo` → `grupo_func_operacao` → `funcionalidade`/`operacao`; exceções via `permissao_especial`, `grupo_permissao_especial`, `usuario_permissao_espec`; restrições por grupo (`usuario_grupo_restricao`) e abrangência (`usuario_abrangencia`, localidade/gerência regional no próprio usuário).
 - Granularidade por funcionalidade e operação (URL/ação), com categorias (`funcionalidade_categoria`) e dependências (`funcionalidade_depend`).
 - Auditoria de uso: `operacao_efetuada`, `usuario_acao`, alteração de linhas (`tabela_linha_alteracao`, `tab_linha_col_alteracao`) — trilha de auditoria de dados feita pela aplicação.
-- **Regra da modernização**: o Spring Security deverá consumir essas mesmas tabelas (perfis, grupos, funcionalidades, permissões especiais e abrangência) — não substituir o modelo sem mapeamento completo.
+- **Regra da modernização**: o Spring Security do SISAN deverá reproduzir esse modelo conceitual (perfis, grupos, funcionalidades, operações, permissões especiais e abrangência) — as tabelas podem ser modernizadas (ADR-0006), mas o modelo de autorização não será substituído sem mapeamento completo, e a migração de perfis/permissões de instalações GSAN deve ser possível.
 
 ## Superfícies expostas
 
@@ -26,4 +26,4 @@ Levantamento do comportamento atual — base para reprodução fiel no sistema n
 ## Credenciais e segredos conhecidos
 
 - Roles de banco criadas com **senha igual ao login** em script versionado público (`gsan-migracoes/comercial/scripts/20160118183208_create_roles.sql`: `gsan_admin`, `gsan_batch`, `gsan_dba`, `gsan_olap`, `gsan_online`) — considerar comprometidas.
-- Credenciais reais do datasource ficam nos `*-ds.xml` do JBoss nos servidores — inventariar e rotacionar.
+- Credenciais reais do datasource ficam nos `*-ds.xml` do JBoss dos servidores de cada instalação — em instalações operantes, inventariar e rotacionar (item do checklist de migração futura; este projeto não opera infraestrutura GSAN). Nenhuma dessas credenciais deve ser reutilizada em qualquer ambiente SISAN.

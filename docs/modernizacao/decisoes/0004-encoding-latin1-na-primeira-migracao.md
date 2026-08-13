@@ -1,19 +1,22 @@
-# ADR-0004 — Manter LATIN1 na primeira migração de banco
+# ADR-0004 — UTF-8 no SISAN; encoding de origem tratado pela migração
 
-- Status: Proposta · Data: 2026-08-13
+- Status: **Aceita** · Data: 2026-08-13
+- Histórico: substitui a proposta anterior desta ADR ("manter LATIN1 na primeira migração"), formulada sob a premissa — corrigida em 2026-08-13 — de que existiria uma migração concreta de banco de produção neste projeto. Não existe produção aqui; o SISAN nasce com banco próprio.
 
 ## Contexto
-`gsan_comercial` usa LATIN1; o legado compila e opera em ISO-8859-1 (JSPs, arquivos bancários posicionais, relatórios). A migração para PostgreSQL 18 já muda versão, collation provider e hardware. Converter para UTF-8 na mesma janela adicionaria mais uma variável a um passo de risco financeiro.
+O GSAN opera historicamente em LATIN1/ISO-8859-1 (banco, código, JSPs). O SISAN é um sistema novo em evolução compatível (ADR-0005), sem restrição herdada de encoding; UTF-8 é o padrão do ecossistema atual (Java, Spring, PostgreSQL, web). O ponto de contato com LATIN1 passa a ser exclusivamente a futura migração de instalações GSAN.
 
 ## Decisão
-A primeira migração (Fase 8) mantém o banco em **LATIN1**. O sistema novo trabalha internamente em UTF-8 (JDBC converte via `client_encoding`) e valida desde o piloto que nenhum dado fora do LATIN1 seja aceito em campos persistidos. Conversão do banco para UTF-8 vira projeto posterior, quando o legado estiver desativado ou próximo disso.
+1. O SISAN usa **UTF-8** de ponta a ponta: banco PostgreSQL (encoding UTF-8, collation explícita e documentada na criação), código-fonte, templates, APIs e logs.
+2. Exceção deliberada: arquivos de intercâmbio com layout posicional definido por terceiros (bancários/arrecadadores, fiscais) são gerados/lidos no encoding que o layout exigir, tratado na borda da integração.
+3. A futura ferramenta de migração GSAN→SISAN **detecta o encoding da instalação de origem** (tipicamente LATIN1) e converte para UTF-8 com validação caso a caso: caracteres inválidos, tamanhos de campo (bytes × caracteres), ordenações e comparações.
 
 ## Consequências
-- (+) Janela de migração menor e comparações antes/depois byte a byte; arquivos bancários/fiscais posicionais permanecem idênticos.
-- (−) Caracteres fora do LATIN1 (ex.: emojis em campos de texto) continuam impossíveis; a conversão futura exigirá projeto próprio com revalidação de ordenações.
+- (+) Suporte pleno a caracteres; alinhamento com todo o ecossistema alvo; sem dívida de encoding no sistema novo.
+- (−) A migração de bases LATIN1 tem uma etapa adicional de conversão validada; ordenações podem diferir das do GSAN de origem (collation diferente) — diferenças documentadas na validação da migração.
 
 ## Alternativas consideradas
-Converter para UTF-8 na mesma janela (rejeitada por acúmulo de risco: ordenação, tamanho de campos, arquivos posicionais e comparação de resultados deixariam de ser diretos).
+Manter LATIN1 no SISAN para "igualar" o legado (rejeitada: propagaria uma limitação histórica a um sistema novo sem produção a preservar; a compatibilidade necessária é semântica, não de encoding).
 
 ## Rollback
-Nenhum — a decisão preserva o estado atual; a conversão futura terá ADR própria.
+Antes da primeira migration `V1`, trocar encoding não tem custo. Depois, conversão de banco — evitar; a decisão é estrutural.

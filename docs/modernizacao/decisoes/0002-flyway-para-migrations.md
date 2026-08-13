@@ -3,10 +3,10 @@
 - Status: Proposta · Data: 2026-08-13
 
 ## Contexto
-O banco é versionado hoje por MyBatis Migrations (`gsan-migracoes`, 301 scripts, parado em 2024-06) e há drift: objetos criados em produção até 2026 sem migration. É preciso uma baseline nova e disciplina única de versionamento durante a coexistência legado+novo.
+O GSAN versiona banco com MyBatis Migrations (`gsan-migracoes`, 301 scripts, parado em 2024-06) e o `gsan_comercial` prova que instalações reais acumulam DDL manual sem migration (objetos até 2026, ex.: PIX). O SISAN precisa de disciplina única de versionamento desde o primeiro dia. *(Revisado em 2026-08-13: sem produção neste projeto, não existe "baseline do DDL real" a congelar.)*
 
 ## Decisão
-Adotar **Flyway** (SQL puro, integração nativa com Spring Boot, modelo simples de versionamento linear + `baseline`). Baseline `V1__baseline.sql` gerada do DDL real de produção após reconciliação do drift. Histórico MyBatis arquivado como referência. Toda alteração estrutural futura — inclusive as feitas para o legado — passa pelo repositório de migrations Flyway.
+Adotar **Flyway** (SQL puro, integração nativa com Spring Boot, versionamento linear simples). O schema do SISAN nasce versionado desde `V1`, construído pelas decisões de compatibilidade (ADR-0006) — **sem baseline copiada do `gsan_comercial`**. O histórico MyBatis permanece em `gsan-migracoes` como referência de evolução do legado. Toda alteração estrutural do SISAN passa por migration.
 
 ## Consequências
 - (+) Migrations em SQL puro (equipe DBA participa sem aprender XML/DSL); validação de checksum detecta edição manual; integra ao pipeline e ao boot da aplicação.
@@ -16,4 +16,4 @@ Adotar **Flyway** (SQL puro, integração nativa com Spring Boot, modelo simples
 Liquibase (mais recursos — changelogs XML/YAML, rollback declarativo — porém mais complexo; o time já trabalha em SQL puro no MyBatis Migrations, e a simplicidade pesa mais aqui); manter MyBatis Migrations (rejeitada: projeto pouco mantido, sem integração Spring Boot, e já falhou em capturar o drift).
 
 ## Rollback
-Flyway só entra em vigor a partir da baseline; reverter = voltar a aplicar SQL manualmente (situação atual). Nenhuma migração destrutiva sem script de desfazer testado em homolog.
+Flyway entra em vigor com a `V1` do SISAN; reverter a decisão antes disso não tem custo. Nenhuma migração destrutiva sem script de desfazer testado em ambiente de homologação.

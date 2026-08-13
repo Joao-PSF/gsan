@@ -10,20 +10,22 @@ REGRA: RESULTADO A = RESULTADO B
 
 Diferenças só são aceitas quando deliberadas, documentadas e aprovadas. Valores financeiros: comparação exata ao centavo (tolerância apenas com justificativa explícita e aprovada).
 
+> Revisão 2026-08-13: **não há produção neste projeto**. "GSAN antigo" = instância de referência do legado levantada a partir do repositório (Fase 1) com massa de dados controlada. Como os schemas GSAN e SISAN podem divergir (ADR-0006), a comparação de resultados é **semântica, via mapeamento GSAN→SISAN**, não byte a byte de tabelas.
+
 ## Camadas de teste
 
 1. **Caracterização do legado (golden master)** — capturar o comportamento atual sem alterá-lo:
    - Batch/cálculos: executar rotinas em homolog sobre massa congelada e gravar as saídas (tabelas resultantes, resumos, arquivos gerados) como "golden files" versionados.
    - Telas críticas: testes HTTP contra o legado (login → fluxo → resultado no banco), priorizando cadastro, faturamento, arrecadação, cobrança, parcelamento, micromedição, OS, autenticação e autorização.
    - Consultas/relatórios críticos: catalogar SQL, executar sobre massa congelada e versionar resultados.
-2. **Equivalência legado × novo (por módulo migrado)** — harness que aplica a mesma entrada nos dois sistemas (ou executa a mesma rotina sobre cópias idênticas do banco) e compara: estado final das tabelas afetadas, valores financeiros, arquivos/relatórios gerados e códigos de retorno.
-3. **Testes do sistema novo** — JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL 18 com schema real via baseline Flyway); testes de repositório contra o schema verdadeiro, não H2.
+2. **Equivalência legado × novo (por módulo)** — harness que aplica a mesma entrada nos dois sistemas e compara semanticamente, via mapeamento GSAN→SISAN: estado final dos dados mapeados, valores financeiros, arquivos/relatórios gerados e códigos de retorno.
+3. **Testes do sistema novo** — JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL 18 com o schema do SISAN aplicado pelas migrations Flyway); testes de repositório contra o schema verdadeiro, não H2.
 4. **Migração de banco (Fase 8)** — contagens por tabela, checksums por amostragem, somatórios financeiros por competência, sequences, e re-execução de batch de referência (ver `banco/migracao-postgresql.md`).
 5. **Segurança** — testes de autorização por funcionalidade (matriz perfil × funcionalidade extraída de `seguranca.*`), garantindo que o novo sistema nega/permite exatamente como o legado.
 
 ## Massa de dados
 
-- Derivada de produção, **anonimizada** (nomes, CPF/CNPJ, NIS, endereços, e-mails, telefones, documentos em `bytea`), preservando distribuições e casos extremos.
+- Origem: **sintética representativa**, construída para o projeto (situação padrão — não há produção aqui), ou derivada de uma base GSAN de referência que venha a ser obtida. Qualquer dado real recebido será **anonimizado** (nomes, CPF/CNPJ, NIS, endereços, e-mails, telefones, documentos em `bytea`), preservando distribuições e casos extremos.
 - Deve conter obrigatoriamente: contas normais/retificadas/canceladas/parceladas/vencidas, pagamentos, devoluções, créditos, débitos, parcelamentos (ativos e desfeitos), hidrômetros e leituras (incluindo consumo por média), cortes/religações, OS abertas/encerradas, usuários com perfis variados e permissões especiais.
 - Congelada e versionada (dump identificado por hash) para que golden files sejam reproduzíveis.
 

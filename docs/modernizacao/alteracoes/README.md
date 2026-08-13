@@ -19,4 +19,5 @@ Toda alteração relevante (código, banco, infraestrutura, segurança) gera um 
 
 | Data | Alteração | Risco |
 | ---- | --------- | ----- |
-| — | Nenhuma alteração de código/banco realizada até o momento (Fase 0 = diagnóstico e documentação) | — |
+| 2026-08-13 | [Revisão de premissas da Fase 0](2026-08-13-revisao-premissas-fase0.md) — sem produção neste projeto; SISAN como evolução compatível do GSAN; ADRs 0003–0006 decididas | Baixo |
+| — | Nenhuma alteração de código/banco realizada até o momento (Fase 0 = análise e documentação) | — |

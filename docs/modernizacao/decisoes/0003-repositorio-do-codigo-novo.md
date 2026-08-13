@@ -1,6 +1,6 @@
 # ADR-0003 — Código novo no repositório SISAN
 
-- Status: Proposta · Data: 2026-08-13
+- Status: **Aceita** (confirmada pelo responsável do projeto) · Data: 2026-08-13
 
 ## Contexto
 Três repositórios existem: `gsan` (legado, ~2,39M LOC), `gsan-migracoes` (migrations) e `SISAN` (vazio, "Sistema Integrado de Gestão de Saneamento e Abastecimento"). O legado usa encoding ISO-8859-1, Ant e layout incompatível com um projeto Maven/Spring moderno.
@@ -13,7 +13,7 @@ O código do sistema modernizado nasce no repositório **SISAN** (Maven multi-m�
 - (−) Documentação em um repo e código novo em outro — mitigado por links e por replicar o sumário no README do SISAN quando o projeto nascer.
 
 ## Alternativas consideradas
-Pasta `modern/` dentro do repo `gsan` (rejeitada: acopla pipelines e permissões, repo gigante); novo repositório dedicado além do SISAN (desnecessário: SISAN está vazio e nomeado para este fim — confirmar a intenção com o time antes de aceitar esta ADR).
+Pasta `modern/` dentro do repo `gsan` (rejeitada: acopla pipelines e permissões, repo gigante); novo repositório dedicado além do SISAN (desnecessário: SISAN está vazio e nomeado para este fim).
 
 ## Rollback
 Enquanto não houver código em produção, mover o projeto de repositório é barato; após produção, o repositório é definitivo.
