@@ -22,4 +22,5 @@ Toda alteração relevante (código, banco, infraestrutura, segurança) gera um 
 | 2026-08-13 | [Revisão de premissas da Fase 0](2026-08-13-revisao-premissas-fase0.md) — sem produção neste projeto; SISAN como evolução compatível do GSAN; ADRs 0003–0006 decididas | Baixo |
 | 2026-08-14 | [Glossário de domínio](2026-08-14-glossario-de-dominio.md) — 25 conceitos com evidências em `dominio/glossario.md`; item 1 do backlog concluído | Baixo |
 | 2026-08-14 | [Mapa funcional do Cadastro](2026-08-14-mapa-funcional-cadastro.md) — `modulos/cadastro.md` criado; dúvidas 1, 2 e 6 do glossário resolvidas; próxima atividade: micromedição | Baixo |
+| 2026-08-14 | [Mapa funcional da Micromedição](2026-08-14-mapa-funcional-micromedicao.md) — `modulos/micromedicao.md` criado; precedência de rotas resolvida; 12 cenários de caracterização; próxima atividade: faturamento | Baixo |
 | — | Nenhuma alteração de código/banco realizada até o momento (Fase 0 = análise e documentação) | — |

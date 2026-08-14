@@ -212,7 +212,7 @@ Classificação preliminar (ADR-0006; sem decisão de modelo físico):
 
 1. **Semântica do valor 4** da situação de água nesta instalação — requer dados reais (linha da tabela paramétrica).
 2. **`imovel_economia` é populada em todas as instalações?** Uso comprovado apenas informativo; confirmar com dados (contagens × `imsb_qteconomia`).
-3. **Precedência exata das três rotas** dentro do processo de leitura/faturamento móvel — para o mapa da Micromedição.
+3. ~~Precedência exata das três rotas~~ **Resolvida (2026-08-14, mapa da Micromedição)**: nos processos de leitura/análise, a rota alternativa do imóvel, quando definida, **sobrepõe** a rota da quadra (consultas com dois ramos em `RepositorioMicromedicaoHBM.pesquisarImovelExcecoesLeituras`); rota de entrega segue exclusiva da distribuição. Ver [micromedicao.md §3.10](micromedicao.md).
 4. **Completude de `imovel_situacao`** (todas as combinações last×lest têm classificação?) — verificar com dados.
 5. **Regra de cálculo do valor de esgoto** (uso do percentual fotografado) — pertence ao mapa do Faturamento.
 

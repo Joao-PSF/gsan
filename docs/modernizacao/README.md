@@ -9,6 +9,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [plano-de-trabalho.md](plano-de-trabalho.md) | Plano de trabalho da modernização: estado atual, arquitetura alvo, riscos, fases, ordem dos módulos, estratégias |
 | [dominio/glossario.md](dominio/glossario.md) | Glossário de domínio: 25 conceitos estruturantes com definição, relações, evidências (código/banco) e pontos de aprofundamento |
 | [modulos/cadastro.md](modulos/cadastro.md) | Mapa funcional do módulo Cadastro: imóvel/matrícula, economia, cliente×imóvel, ligações, categorias, território, estados, dependências e compatibilidade |
+| [modulos/micromedicao.md](modulos/micromedicao.md) | Mapa funcional da Micromedição: hidrômetro/instalação, ciclo de leitura, anormalidades paramétricas, consumo (real/média/mínimo), fronteira com faturamento, cenários de caracterização |
 | [arquitetura/arquitetura-legada.md](arquitetura/arquitetura-legada.md) | Mapa técnico do GSAN legado: runtime, build, frameworks, camadas, batch, relatórios |
 | [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e estratégia de coexistência |
 | [banco/estrutura-atual.md](banco/estrutura-atual.md) | Inventário do banco `gsan_comercial`: schemas, objetos, classificação, drift |
