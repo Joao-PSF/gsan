@@ -31,7 +31,7 @@ A decisão final é do Faturamento, em cima de dados paramétricos do Cadastro:
 
 ## 5. Consumo utilizado (resolve dúvida da Micromedição)
 
-**O Faturamento não regrava consumo — ele consome o consumo determinado pela Micromedição.** Evidências: `faturarGrupoFaturamento` obtém `ConsumoHistorico` de água e esgoto via `getControladorMicromedicao().obterConsumoHistoricoMedicaoIndividualizada(imovel, ligacaoTipo, anoMesFaturamento)` (linhas 1441–1453); não há `inserirConsumoHistorico`/`atualizarConsumoHistorico` em `ControladorFaturamentoFINAL` (grep vazio). O valor monetizado é o **`cshi_nnconsumofaturadomes`** com sua **origem** (`ConsumoTipo`: real/média/mínimo/fixado) e anormalidade. Alterações posteriores de consumo (retificação/revisão) passam de novo pela Micromedição (ajuste com versões preservadas em `consumo_hist_anterior`).
+**A Micromedição determina e mantém o consumo; o Faturamento o utiliza como insumo.** Evidências: `faturarGrupoFaturamento` obtém `ConsumoHistorico` de água e esgoto via `getControladorMicromedicao().obterConsumoHistoricoMedicaoIndividualizada(imovel, ligacaoTipo, anoMesFaturamento)` (linhas 1441–1453); **no fluxo principal analisado do Faturamento não foi identificado reprocessamento ou gravação de `ConsumoHistorico`** (sem `inserirConsumoHistorico`/`atualizarConsumoHistorico` em `ControladorFaturamentoFINAL`). O valor monetizado é o **`cshi_nnconsumofaturadomes`** com sua **origem** (`ConsumoTipo`: real/média/mínimo/fixado) e anormalidade. Alterações posteriores de consumo (retificação/revisão) passam de novo pela Micromedição (ajuste com versões preservadas em `consumo_hist_anterior`).
 
 ## 6. Consumo mínimo (precedência — núcleo resolvido)
 
@@ -63,7 +63,7 @@ ConsumoTarifa (tabela tarifária; atribuída ao imóvel — imov.cstf_id; defaul
         └── ConsumoTarifaFaixa (faixas: consumo início/fim + valor por m³)
 ```
 
-- **Vigência**: a válida para a referência é a de **maior data de vigência ≤ data de referência** (`pesquisarMaiorDataVigenciaConsumoTarifaImovel`, `obterConsumoTarifaVigencia:5894`). Alteração tarifária cria nova vigência; **referências anteriores não são afetadas** porque a Conta fotografa a tarifa usada (`cnta.cstf_id` + valores em `conta_categoria`).
+- **Vigência**: a válida para a referência é a de **maior data de vigência ≤ data de referência** (`pesquisarMaiorDataVigenciaConsumoTarifaImovel`, `obterConsumoTarifaVigencia:5894`). Alteração tarifária cria nova vigência; as contas já emitidas **preservam o contexto do cálculo** (`cnta.cstf_id` + valores, mínimos e faixas materializados em `conta_categoria`), de modo que uma mudança de tarifa não altera por si só o que já foi emitido — reprocessar exige um fluxo explícito (retificação/revisão).
 - Estruturas tarifárias diferentes coexistem (várias `ConsumoTarifa` — por localidade/perfil; extensões sociais como tarifa social/Bolsa Água usam tarifas/créditos próprios — customização).
 
 ## 9. Cálculo de água (confirmado, em etapas)
@@ -105,7 +105,8 @@ Elementos confirmados: tarifa mínima (valor fixo por economia/categoria), faixa
 ## 13. ContaGeral e histórico (resolve dúvida do glossário)
 
 - **`ContaGeral` é entidade física** (`faturamento.conta_geral`): **fonte da identidade** (`cnta_id` de `seq_conta_geral`) + `indicadorHistorico` + one-to-one com `Conta` (corrente), `ContaHistorico` (arquivada) e `ContaImpressao` — todas compartilham o mesmo id (Conta usa generator `assigned`).
-- **Problema de negócio que resolve**: referências externas (pagamento, cobrança, parcelamento, relatórios) precisam de um **id estável que sobreviva ao arquivamento e à retificação** — `Pagamento.cnta_id → ContaGeral` funciona igual antes e depois de a conta ir a histórico.
+- **Problema de negócio que resolve**: referências externas (pagamento, cobrança, parcelamento, relatórios) precisam de um **id estável ao longo da vida daquela conta** — `Pagamento.cnta_id → ContaGeral` funciona igual antes e depois de a conta ir a histórico.
+- **Precisão importante (revisão 2026-08-14)**: `ContaGeral` preserva a identidade **de uma determinada Conta durante sua passagem entre a representação corrente e a histórica** (mesmo `cnta_id`). **A retificação é outro mecanismo**: cria uma **nova Conta com nova identidade**, ligada à anterior pela relação de origem (`cnta_idorigem`). Ou seja, não há um único id atravessando a cadeia de retificações — há **linhagem explícita** entre documentos. O conceito a preservar no SISAN não é "ContaGeral" como tabela, e sim o trio: **identidade estável do documento + versionamento corrente/histórico + linhagem entre retificações**.
 - **Quando vai a histórico**: no **encerramento mensal** — batches `batchGerarHistoricoConta` e `batchGerarHistoricoParaEncerrarFaturamentoMes` (e o par de arrecadação) movem `conta` → `conta_historico` (com satélites: `conta_categoria_historico`, impostos etc.) e marcam `indicadorHistorico`. O mesmo padrão vale para guia, débito e crédito (`*_geral`).
 - O histórico **participa de consultas e regras** (helpers de relatório específicos, 2ª via, reconstrução do faturamento original) — não é só armazenamento morto.
 
@@ -186,7 +187,7 @@ retificação/ajuste de consumo volta para a Micromedição (versões preservada
 
 ## 24. Relação com Cobrança (fronteira)
 
-Conta vencida e não paga em situação normal é o insumo da cobrança; cobrança referencia a identidade **ContaGeral** (sobrevive a arquivamento); situação da conta comanda elegibilidade (cancelada/retificada/incluída saem do estoque de débito); parcelamento muda a situação das contas para INCLUIDA(2) e gera novos itens de faturamento (débitos/créditos). Detalhes no mapa da Cobrança.
+Conta vencida e não paga em situação normal é o insumo da cobrança; cobrança referencia a identidade **ContaGeral** (estável na passagem corrente↔histórico); situação da conta comanda elegibilidade (cancelada/retificada/incluída saem do estoque de débito); parcelamento muda a situação das contas para INCLUIDA(2) e gera novos itens de faturamento (débitos/créditos). Detalhes no mapa da Cobrança.
 
 ## 25. Relação com Arrecadação (fronteira)
 
@@ -208,8 +209,8 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 2. **Fotografia completa na emissão** (tarifa, categorias/economias/mínimos, situações, percentuais, clientes) — a conta é reproduzível para sempre, independente do estado atual do cadastro.
 3. **Mesmo cálculo no individual e no lote** (`gerarConta` único) — propriedade que viabiliza caracterização e migração por comparação.
 4. **Faturabilidade é decisão do Faturamento sobre flags paramétricos** do Cadastro/Micromedição.
-5. **Consumo é insumo, nunca é regravado pelo Faturamento** — a fronteira com a Micromedição é limpa.
-6. **Tarifa é versionada por vigência** e selecionada por referência; mudanças tarifárias nunca reprocessam o passado.
+5. **Consumo é insumo do Faturamento** — no fluxo principal analisado ele não é regravado aqui; a determinação e a manutenção pertencem à Micromedição.
+6. **Tarifa é versionada por vigência** e selecionada por referência; a Conta preserva os principais parâmetros usados no cálculo, mantendo o contexto histórico das contas já emitidas mesmo após alterações tarifárias (reprocessamentos deliberados — retificação, revisão — seguem seus próprios fluxos).
 7. **Mínimos são função de tarifa × economias por categoria** (com overrides paramétricos).
 8. **Cancelar/retificar nunca apaga** — transições de estado com motivo + arquivamento no encerramento mensal.
 9. **Encerramento mensal** é um marco duro: move documentos a histórico e fecha a competência (referência contábil).
@@ -220,8 +221,8 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |
 | Conta por imóvel+referência com fotografia completa | PRESERVAR CONCEITO | Coração financeiro; auditoria e migração |
-| Identidade estável (semântica da ContaGeral) + versões corrente/histórica | PRESERVAR CONCEITO | Pagamentos/cobrança dependem; **a semântica é obrigatória mesmo que a implementação futura mude** |
-| Cadeia de retificação (nova conta + origem + motivo) | PRESERVAR CONCEITO | Trilha financeira |
+| Identidade estável do documento (semântica da ContaGeral) + versionamento corrente/histórico | PRESERVAR CONCEITO | Pagamentos/cobrança dependem; **a semântica é obrigatória mesmo que a implementação futura mude** |
+| **Linhagem entre retificações** (nova conta com nova identidade + vínculo de origem + motivo) | PRESERVAR CONCEITO | É o que dá continuidade financeira **entre** documentos — mecanismo distinto da identidade estável de cada um |
 | Cancelamento como estado com motivo | PRESERVAR CONCEITO | Nada se apaga |
 | Estrutura tarifária vigência→categoria→faixas/mínimos | PRESERVAR CONCEITO | Modelo paramétrico provado |
 | Consumo com origem como insumo (fronteira com Micromedição) | PRESERVAR CONCEITO | Separação de responsabilidades correta |

@@ -18,7 +18,7 @@ Diferença essencial: **débito existente** (qualquer documento não quitado) �
 
 ## 4. Documentos cobrados
 
-A cobrança referencia **identidades estáveis `*Geral`** (nunca a versão física da conta): ContaGeral, DébitoACobrarGeral, GuiaPagamentoGeral, CréditoARealizarGeral e prestações de contrato de parcelamento — como comprovam os itens do documento de cobrança (§5) e do parcelamento (§11). Por isso retificação e arquivamento não quebram o vínculo da dívida.
+A cobrança referencia **identidades estáveis `*Geral`** (nunca a versão física da conta): ContaGeral, DébitoACobrarGeral, GuiaPagamentoGeral, CréditoARealizarGeral e prestações de contrato de parcelamento — como comprovam os itens do documento de cobrança (§5) e do parcelamento (§11). **Precisão (revisão 2026-08-14)**: essa identidade é estável **na passagem do documento entre corrente e histórico** — por isso o arquivamento não quebra o vínculo. Na **retificação**, o que sustenta a continuidade é outro mecanismo: a nova conta tem **nova identidade** ligada à anterior por `origem`, e a situação de cada documento (RETIFICADA / CANCELADA_POR_RETIFICACAO) determina qual deles permanece no estoque exigível.
 
 ## 5. Documento de Cobrança
 
@@ -168,7 +168,7 @@ Mesmo padrão dos demais módulos: subclasses `ControladorCobrancaCAEMA/CAERN/CA
 
 ## 29. Regras estruturantes
 
-1. **A cobrança referencia identidades estáveis** (`*Geral`) — nunca versões físicas; retificação/arquivamento não quebram a dívida.
+1. **A cobrança referencia identidades estáveis** (`*Geral`) — nunca versões físicas; o arquivamento do documento não quebra o vínculo, e na retificação a continuidade vem da **linhagem** (nova identidade + origem) somada à situação de cada documento.
 2. **Ação materializa-se em documento com itens rastreáveis** (dívida a dívida, com valor e situação) — auditoria completa de cada ação.
 3. **Sequência de ações é dado** (ação predecessora + critérios + situações-alvo + serviço de OS) — o workflow de cobrança é parametrizado.
 4. **Parcelamento preserva a composição original** (itens por identidade/histórico) e a memória financeira integral — desfazer é possível e exato; descontos estornam por tipos próprios.
@@ -183,7 +183,7 @@ Mesmo padrão dos demais módulos: subclasses `ControladorCobrancaCAEMA/CAERN/CA
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |
-| Identidade da dívida pelas entidades `*Geral` | PRESERVAR CONCEITO | É o que mantém a dívida "a mesma" através de retificação, cobrança, parcelamento e pagamento (§33 do prompt): a resposta é a identidade estável + fotografias — semântica obrigatória |
+| Identidade da dívida pelas entidades `*Geral` **+ linhagem entre versões retificadas** | PRESERVAR CONCEITO | O que mantém a dívida rastreável ao longo de cobrança, parcelamento e pagamento é a combinação de **identidade estável de cada documento** (inclusive após arquivamento), **linhagem** entre documentos retificados e as **fotografias** — semântica obrigatória |
 | Documento de cobrança com itens rastreáveis | PRESERVAR CONCEITO | Auditoria da ação dívida a dívida; alvo de pagamento |
 | Sequência de ações parametrizada (predecessora/critério/situações/OS) | PRESERVAR CONCEITO | Workflow como dado — força do GSAN |
 | Parcelamento com composição por item + memória financeira | PRESERVAR CONCEITO | Auditoria, desfazimento exato, migração |
