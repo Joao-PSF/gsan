@@ -262,7 +262,7 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 1. Ordem fina de precedência entre overrides de consumo mínimo (ligação × situação × área × tarifa) — caracterizar.
 2. Granularidade exata da aplicação de faixas (por economia individual × agregada por categoria) e suas variantes por companhia — caracterizar numericamente.
 3. Fluxo interno completo do `ControladorRetificarConta` (localizado; corpo não lido integralmente) — leitura dirigida quando a caracterização de retificação for montada.
-4. Regras de retenção/revisão de contas (`ContaMotivoRevisao`) e contas "retidas" (vistas no `gsan_comercial`) — mapear com Cobrança/operacional.
+4. ~~Retenção/revisão de contas~~ **Parcialmente resolvida (2026-08-14, mapa da Cobrança)**: conta **em revisão** = `cmrv_id` preenchido; as consultas de débito da cobrança carregam o motivo junto e a tratam à parte (excluída de ações até resolução). **"Retidas"** segue como termo operacional desta instalação (tabelas de backup), sem funcionalidade nomeada no código — aberta. Ver [cobranca.md §20](cobranca.md).
 5. Débito automático (fluxo com arrecadação) — mapa da Arrecadação.
 6. Diferenças reais entre as 7 subclasses de companhia do faturamento — inventário próprio.
 

@@ -335,6 +335,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   Código:      pacote gcom.cobranca (CobrancaAcao*, CobrancaDocumento, CobrancaGrupo/Criterio); gcom.spcserasa
   Mapeamento:  Imovel.hbm.xml (cbst_id, cbsp_id); Pagamento.hbm.xml (cbdo_id); Rota.hbm.xml (cbgr_id, cbct_id)
   ```
+- **Observações de modernização** (precisão de 2026-08-14): o Documento de Cobrança é o instrumento de uma ação sobre um imóvel, com **itens que referenciam as identidades estáveis `*Geral`** (conta, débito, guia, crédito, prestação de contrato), valor e situação por dívida; as ações têm **predecessora, critério paramétrico, situações-alvo e o tipo de serviço da OS que geram** — o workflow é dado, não código. Ver [modulos/cobranca.md](../modulos/cobranca.md).
 
 ## 20. Arrecadação
 

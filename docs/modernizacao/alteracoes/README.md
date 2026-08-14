@@ -24,4 +24,5 @@ Toda alteração relevante (código, banco, infraestrutura, segurança) gera um 
 | 2026-08-14 | [Mapa funcional do Cadastro](2026-08-14-mapa-funcional-cadastro.md) — `modulos/cadastro.md` criado; dúvidas 1, 2 e 6 do glossário resolvidas; próxima atividade: micromedição | Baixo |
 | 2026-08-14 | [Mapa funcional da Micromedição](2026-08-14-mapa-funcional-micromedicao.md) — `modulos/micromedicao.md` criado; precedência de rotas resolvida; 12 cenários de caracterização; próxima atividade: faturamento | Baixo |
 | 2026-08-14 | [Mapa funcional do Faturamento](2026-08-14-mapa-funcional-faturamento.md) — `modulos/faturamento.md` criado; ContaGeral/retificação/cancelamento/tarifa/esgoto/consumo resolvidos; 13 golden masters; próxima atividade: cobrança | Baixo |
+| 2026-08-14 | [Mapa funcional da Cobrança](2026-08-14-mapa-funcional-cobranca.md) — `modulos/cobranca.md` criado; identidade da dívida, ações e parcelamento compreendidos; 14 cenários; próxima atividade: arrecadação | Baixo |
 | — | Nenhuma alteração de código/banco realizada até o momento (Fase 0 = análise e documentação) | — |
