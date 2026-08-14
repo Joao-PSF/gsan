@@ -27,7 +27,7 @@ A cobrança referencia **identidades estáveis `*Geral`** (nunca a versão físi
 - Cabeçalho: imóvel, ação (`cbac_id`), situação da ação (`cast_id`), comando (`cacm_id`) ou cronograma (`caac_id`) que o gerou, tipo/forma de emissão, empresa (quando terceirizada), localização (localidade/quadra), motivo de não entrega.
 - **Itens** (`cobranca_documento_item`): um por dívida atingida — `cnta_id` (ContaGeral), `dbac_id`, `gpag_id`, `crar_id`, `cppr_id` (prestação de contrato), com **valor cobrado do item, acréscimos, situação do débito (`CobrancaDebitoSituacao`) e data** — rastreabilidade dívida a dívida.
 - Possui versão histórica (`CobrancaDocumentoHistorico`/`ItemHistorico`) e impressão própria.
-- **Pagamento pode referenciar o documento** (`Pagamento.cbdo_id`) — ex.: pagamento do total exigido no aviso de corte.
+- **Um pagamento pode ser associado ao documento** (`Pagamento.cbdo_id`; `DocumentoTipo.DOCUMENTO_COBRANCA(3)` é tipo pagável reconhecido na arrecadação). ⚠️ Precisão (2026-08-14): o mecanismo de baixa/rateio dos **itens internos** nesse caso **não foi comprovado** — ver [arrecadacao.md §12](arrecadacao.md) e a dúvida correspondente.
 
 ## 6. Elegibilidade (critérios paramétricos)
 
@@ -141,7 +141,7 @@ ESTOQUE = Contas (identidade ContaGeral) vencidas em situação exigível (NORMA
 
 ## 25. Relação com Arrecadação (prepara o próximo mapa)
 
-Pagamento aponta as mesmas identidades (`cnta_id`→ContaGeral, `gpag_id`, `dbac_id`, `cbdo_id` — o documento de cobrança **recebe pagamento diretamente**). A baixa reduz o estoque por consulta (não há "baixa de ação" separada — a ação se resolve quando a dívida sai do estoque ou a OS encerra); pagamento da entrada mantém o parcelamento (não pago ⇒ desfazimento automático); pagamento de dívida negativada dispara exclusão; pagamento parcial existe como conceito tipificado (`PAGAMENTO_PARCIAL_CONTA(409)`). Detalhes de retorno bancário/classificação ficam para a Arrecadação.
+Pagamento aponta as mesmas identidades (`cnta_id`→ContaGeral, `gpag_id`, `dbac_id`, `cbdo_id`). **Confirmado em 2026-08-14** ([arrecadacao.md](arrecadacao.md)): a redução do estoque é **por consulta** — não há campo de quitação alterado no documento, e as consultas de dívida só consideram pagamentos em determinadas situações; conta já incluída em parcelamento que recebe pagamento direto gera situação 12 (documento inexistente/conta parcelada); pagamentos do mês são propagados às carteiras terceirizadas (`atualizarPagamentosContasCobranca`) e ao acompanhamento de parcelamento usado na reabilitação em bureaus. Correção: `PAGAMENTO_PARCIAL_CONTA(409)` é **tipo de débito para emissão de guia** de pagamento parcial, não uma situação de pagamento parcial automática.
 
 ## 26. Relação com Atendimento/OS
 

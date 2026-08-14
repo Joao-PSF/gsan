@@ -1,6 +1,6 @@
 # Módulos — Ordem de Migração e Status
 
-**Mapas funcionais concluídos (Fase 0)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md). Próximo: arrecadação.
+**Mapas funcionais concluídos (Fase 0)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md) · [arrecadacao](arrecadacao.md). Próximo: atendimento.
 
 Ordem recomendada (refinamento previsto no item 6 do backlog da Fase 0, com base nos mapas funcionais; mudanças de ordem devem registrar o motivo aqui). Critério: começar por risco moderado e dependências simples; faturamento e arrecadação por último entre os críticos (risco financeiro); batch crítico ao final.
 

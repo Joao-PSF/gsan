@@ -190,7 +190,7 @@ Conta vencida e não paga em situação normal é o insumo da cobrança; cobran�
 
 ## 25. Relação com Arrecadação (fronteira)
 
-`Pagamento.cnta_id → ContaGeral` — o pagamento aponta a **identidade estável**, não a versão; por isso permanece válido após retificação/arquivamento. Pagamento de conta retificada/cancelada gera tratamento (diferença→crédito/devolução; inclusive retificação automática por diferença pequena). Detalhes no mapa da Arrecadação.
+`Pagamento.cnta_id → ContaGeral` — o pagamento aponta a **identidade estável**, não a versão. **Confirmado em 2026-08-14** ([arrecadacao.md §4](arrecadacao.md)): a classificação busca a conta **na versão corrente e no histórico** e apropria quando a situação é NORMAL/INCLUIDA/**RETIFICADA**; conta cancelada, prescrita, parcelada ou em erro de processamento **não invalida o pagamento** — ele é preservado com situação específica (13/11/12/14) para tratamento posterior (devolução ou crédito). Detalhes no mapa da Arrecadação.
 
 ## 26. Relação com Fiscal (evolução — `gsan_comercial`)
 
@@ -263,7 +263,7 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 2. Granularidade exata da aplicação de faixas (por economia individual × agregada por categoria) e suas variantes por companhia — caracterizar numericamente.
 3. Fluxo interno completo do `ControladorRetificarConta` (localizado; corpo não lido integralmente) — leitura dirigida quando a caracterização de retificação for montada.
 4. ~~Retenção/revisão de contas~~ **Parcialmente resolvida (2026-08-14, mapa da Cobrança)**: conta **em revisão** = `cmrv_id` preenchido; as consultas de débito da cobrança carregam o motivo junto e a tratam à parte (excluída de ações até resolução). **"Retidas"** segue como termo operacional desta instalação (tabelas de backup), sem funcionalidade nomeada no código — aberta. Ver [cobranca.md §20](cobranca.md).
-5. Débito automático (fluxo com arrecadação) — mapa da Arrecadação.
+5. ~~Débito automático~~ **Resolvida (2026-08-14, mapa da Arrecadação)**: três níveis distintos — opção do cliente (`DebitoAutomatico`), envio de uma conta ao banco (`DebitoAutomaticoMovimento` apontando **ContaGeral**, com datas de envio/retorno, NSA e código de retorno) e o pagamento efetivo, que chega pelo movimento do arrecadador como qualquer outro. Ver [arrecadacao.md §10](arrecadacao.md).
 6. Diferenças reais entre as 7 subclasses de companhia do faturamento — inventário próprio.
 
 ## 33. Evidências principais

@@ -372,7 +372,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   ```text
   Mapeamento:  Pagamento.hbm.xml → arrecadacao.pagamento (pgmt_vlpagamento, pgmt_dtpagamento, pgmt_amreferenciaarrecadacao, pgst_idatual/anterior + FKs acima)
   ```
-- **Observações de modernização**: cinco alvos possíveis de baixa sugerem formalizar no SISAN a abstração "documento cobrável"; "Fatura" (`faturamento.fatura` — agrupamento de contas, ex.: cliente responsável) precisa de aprofundamento próprio.
+- **Observações de modernização** (precisões de 2026-08-14): o pagamento tem **identidade própria** (`seq_pagamento`) e **não** segue o padrão `*Geral` — ao ser arquivado em `PagamentoHistorico` recebe **novo id**, assimetria em relação aos documentos de dívida. O resultado da tentativa de apropriação é registrado numa **situação** (classificado, duplicidade, documento inexistente, valor em excesso/a baixar/não confere, conta cancelada/parcelada/prescrita...), com situação anterior preservada: nenhum pagamento é descartado. Cinco alvos possíveis de apropriação sugerem formalizar no SISAN a abstração "documento cobrável"; "Fatura" (`faturamento.fatura`) segue exigindo aprofundamento. Ver [modulos/arrecadacao.md](../modulos/arrecadacao.md).
 
 ## 22. Registro de Atendimento (RA)
 
