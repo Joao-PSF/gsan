@@ -214,7 +214,7 @@ Classificação preliminar (ADR-0006; sem decisão de modelo físico):
 2. **`imovel_economia` é populada em todas as instalações?** Uso comprovado apenas informativo; confirmar com dados (contagens × `imsb_qteconomia`).
 3. ~~Precedência exata das três rotas~~ **Resolvida (2026-08-14, mapa da Micromedição)**: nos processos de leitura/análise, a rota alternativa do imóvel, quando definida, **sobrepõe** a rota da quadra (consultas com dois ramos em `RepositorioMicromedicaoHBM.pesquisarImovelExcecoesLeituras`); rota de entrega segue exclusiva da distribuição. Ver [micromedicao.md §3.10](micromedicao.md).
 4. **Completude de `imovel_situacao`** (todas as combinações last×lest têm classificação?) — verificar com dados.
-5. **Regra de cálculo do valor de esgoto** (uso do percentual fotografado) — pertence ao mapa do Faturamento.
+5. ~~Regra de cálculo do valor de esgoto~~ **Resolvida (2026-08-14, mapa do Faturamento)**: percentuais definidos na Ligação de Esgoto (`lesg_pcesgoto`, `lesg_pccoleta`, alternativo acima de limite de consumo), aplicados sobre o volume derivado da água (+poço) e **fotografados na conta** (`cnta_pcesgoto`/`cnta_pccoleta`). Ver [faturamento.md §10](faturamento.md).
 
 ## 11. Evidências principais
 

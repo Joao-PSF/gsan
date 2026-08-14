@@ -202,8 +202,8 @@ Registrar no catálogo (item 5 do backlog), sem projetar agora: **telemetria/lei
 ## 15. Dúvidas que permanecem
 
 1. **Composição exata do consumo no mês de troca de hidrômetro** (soma dos trechos × regra alternativa) — exige leitura dirigida do fluxo ou caracterização com massa de teste.
-2. **Orquestração precisa da escrita de consumo** entre `ControladorMicromedicao` e `ControladorFaturamentoFINAL` no FATURAR_GRUPO — mapa do Faturamento.
-3. **Precedência entre as fontes de consumo mínimo** (ligação × situação × categoria × área/parâmetro) — mapa do Faturamento.
+2. ~~Orquestração da escrita de consumo~~ **Resolvida (2026-08-14, mapa do Faturamento)**: o Faturamento **não regrava** consumo — obtém via `obterConsumoHistoricoMedicaoIndividualizada` e não possui inserir/atualizar de `ConsumoHistorico`; a determinação/escrita é da Micromedição, ajustes voltam por ela. Ver [faturamento.md §5](faturamento.md).
+3. ~~Precedência das fontes de consumo mínimo~~ **Núcleo resolvido (2026-08-14)**: quem calcula é a Micromedição (`obterConsumoMinimoLigacao` = Σ por categoria do mínimo da tarifa vigente × economias), a serviço do Faturamento; permanece aberta apenas a **ordem fina** entre os overrides (ligação × situação × área) — ver [faturamento.md §6/§32](faturamento.md).
 4. **Diferenças reais entre as variantes por companhia** dos controladores (CAEMA/CAERN/.../COSANPA) — inventário próprio antes da modelagem SISAN.
 5. Regra fina de média com histórico insuficiente/imóvel novo (meses mínimos, fallback imóvel × hidrômetro).
 
