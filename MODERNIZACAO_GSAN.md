@@ -4,7 +4,7 @@
 
 ## STATUS GERAL
 
-Fase 0 em andamento. 1ª execução (2026-08-13): diagnóstico técnico do legado, inventário do `gsan_comercial` e plano de trabalho. 2ª execução (2026-08-13): premissas revisadas — **não há GSAN em produção neste projeto**; SISAN é **modernização evolutiva do GSAN** com banco próprio (UTF-8) e **migração de instalações GSAN como requisito arquitetural futuro**; repositório SISAN confirmado para o código novo; execução inicial em VPS. Registro completo em [alteracoes/2026-08-13-revisao-premissas-fase0.md](docs/modernizacao/alteracoes/2026-08-13-revisao-premissas-fase0.md). 3ª execução (2026-08-14): **glossário de domínio concluído** — 25 conceitos com evidências em [dominio/glossario.md](docs/modernizacao/dominio/glossario.md). Nenhuma implementação iniciada.
+Fase 0 em andamento. 1ª execução (2026-08-13): diagnóstico técnico do legado, inventário do `gsan_comercial` e plano de trabalho. 2ª execução (2026-08-13): premissas revisadas — **não há GSAN em produção neste projeto**; SISAN é **modernização evolutiva do GSAN** com banco próprio (UTF-8) e **migração de instalações GSAN como requisito arquitetural futuro**; repositório SISAN confirmado para o código novo; execução inicial em VPS. Registro completo em [alteracoes/2026-08-13-revisao-premissas-fase0.md](docs/modernizacao/alteracoes/2026-08-13-revisao-premissas-fase0.md). 3ª execução (2026-08-14): **glossário de domínio concluído** — 25 conceitos com evidências em [dominio/glossario.md](docs/modernizacao/dominio/glossario.md). 4ª execução (2026-08-14): **mapa funcional do Cadastro concluído** — [modulos/cadastro.md](docs/modernizacao/modulos/cadastro.md); dúvidas 1, 2 e 6 do glossário resolvidas. Nenhuma implementação iniciada.
 
 ## FASE ATUAL
 
@@ -18,6 +18,7 @@ Fase 0 — Descoberta, compatibilidade e arquitetura. Objetivo: compreender o do
 - Revisão de impacto das novas premissas e correção da documentação afetada (2ª execução).
 - ADRs 0003, 0004 (reescrita), 0005 e 0006 decididas como Aceitas.
 - Glossário de domínio — 25 conceitos com definição, relações, evidências e 9 pontos de aprofundamento (3ª execução): [dominio/glossario.md](docs/modernizacao/dominio/glossario.md).
+- Mapa funcional do módulo Cadastro (4ª execução): [modulos/cadastro.md](docs/modernizacao/modulos/cadastro.md) — imóvel/matrícula com DV, economia governada por `imovel_subcategoria`, situações paramétricas de ligação, cliente×imóvel com papel/vigência, três rotas com usos distintos, classificação preliminar de compatibilidade e 5 hipóteses arquiteturais.
 
 ## EM EXECUÇÃO
 
@@ -26,7 +27,7 @@ Fase 0 — Descoberta, compatibilidade e arquitetura. Objetivo: compreender o do
 ## PRÓXIMAS ATIVIDADES (backlog restante da Fase 0, em ordem)
 
 1. **Glossário de domínio** — ✅ concluído em 2026-08-14: [`dominio/glossario.md`](docs/modernizacao/dominio/glossario.md) (25 conceitos, mapa de relações, 9 pontos de aprofundamento).
-2. **Mapa funcional por módulo** (➡ próxima atividade: **cadastro**) — um documento por módulo em `docs/modernizacao/modulos/` (responsabilidade, funcionalidades, entidades centrais, regras importantes, dependências). Ordem: cadastro → micromedição → faturamento → cobrança → arrecadação → atendimento → segurança → batch → relatórios → integrações. Profundidade progressiva (conceitos estruturantes primeiro). O mapa do cadastro deve responder os pontos 1, 2, 6 e 8 do glossário (economia, ligações 1:1, rotas do imóvel, nomenclaturas de companhia).
+2. **Mapa funcional por módulo** (➡ próxima atividade: **micromedição**) — um documento por módulo em `docs/modernizacao/modulos/`. Ordem: ~~cadastro~~ ✅ ([modulos/cadastro.md](docs/modernizacao/modulos/cadastro.md), 2026-08-14) → micromedição → faturamento → cobrança → arrecadação → atendimento → segurança → batch → relatórios → integrações. O mapa da micromedição deve fechar: precedência das rotas no processo de leitura, ciclo leitura→consumo (tipos/média/críticas com os parâmetros da Categoria) e o vínculo com o cronograma do grupo de faturamento.
 3. **Mapa de domínio** — entidades conceituais e relacionamentos (não confundir com classes/tabelas/DTOs/telas), em `docs/modernizacao/dominio/mapa-de-dominio.md`, após glossário + primeiros módulos.
 4. **Análise de compatibilidade das estruturas centrais** — classificação PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR (imóvel, cliente, estrutura territorial, ligações, medição, conta e composição, débitos/créditos, pagamentos, RA/OS, RBAC), com impacto de migração por decisão.
 5. **Catálogo de funcionalidades futuras** — consolidar descobertas do `gsan_comercial` (PIX — `arrecadacao_pix`/`conta_qrcode_pix`/`GeradorQrCodePIX` —, fiscal/NF, SPED, mobile/campo, recadastramento, tarifa social, SPC/Serasa, APIs, BI, boleto registrado): funcionalidade, problema resolvido, módulo, dependências, prioridade preliminar. Sem modelagem de banco.

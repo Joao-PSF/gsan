@@ -74,7 +74,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   Mapeamento:   ImovelSubcategoria.hbm.xml → cadastro.imovel_subcategoria; ImovelEconomia.hbm.xml → cadastro.imovel_economia
   Banco:        faturamento.conta_categoria; customização: imov_qtd_economias_social
   ```
-- **Observações de modernização**: **representação tripla** (total no imóvel, agregada por subcategoria, individualizada) sem entidade explícita — ponto prioritário de aprofundamento antes de modelar no SISAN.
+- **Observações de modernização**: **representação tripla** (total no imóvel, agregada por subcategoria, individualizada) sem entidade explícita. Resolvido em 2026-08-14: a agregada por subcategoria governa os processos; a individualizada é informativa — detalhes em [modulos/cadastro.md §3.4](../modulos/cadastro.md).
 
 ## 4. Categoria e Subcategoria *(acrescentado)*
 
@@ -468,12 +468,12 @@ OS/RA → podem gerar Débito, Crédito, Guia, Parcelamento
 
 ## Pontos que exigem aprofundamento
 
-1. **Economia sem entidade explícita e com representação tripla** — total no imóvel (`imov_qteconomia`), agregação por subcategoria (`imovel_subcategoria`) e individualização (`imovel_economia`), além do campo social customizado (`imov_qtd_economias_social`). Qual representação comanda o cálculo tarifário? (Analisar em faturamento/mapa do cadastro.)
-2. **Ligações com identidade do imóvel e situação fora delas** — `lagu_id`/`lesg_id` = `imov_id`; situação armazenada no imóvel e "fotografada" em Conta e Parcelamento. Entender a regra fotografia × estado corrente antes de modelar.
+1. ~~Economia: qual representação comanda o cálculo tarifário?~~ **Resolvida (2026-08-14)**: a agregação por subcategoria (`imovel_subcategoria`) governa — `ControladorImovel.obterQuantidadeEconomias*` consulta `ImovelSubcategoria`; `imovel_economia` é informativa (só relatórios); `conta_categoria` fotografa na emissão. Ver [modulos/cadastro.md §3.4](../modulos/cadastro.md). Permanece aberta apenas a obrigatoriedade de `imovel_economia` por instalação (requer dados).
+2. ~~Ligações: regra fotografia × estado corrente~~ **Resolvida (2026-08-14)**: identidade compartilhada é intencional, por construção (`ligacaoAgua.setId(imovel.getId())`); o estado corrente vive no imóvel e a Conta congela situação + `cnta_pcesgoto`/`cnta_pccoleta` na emissão para auditoria/recálculo (Parcelamento idem, no ato da negociação). A situação é **paramétrica** (`ligacao_agua_situacao`: flags de faturamento, consumo mínimo etc.). Ver [modulos/cadastro.md §3.6](../modulos/cadastro.md).
 3. **Constante ambígua em situação de ligação de água** — `LIGADO_A_REVELIA = 4` e `LIGADO_EM_ANALISE = 4` no mesmo arquivo; verificar qual semântica vale por companhia/configuração.
 4. **Mecanismo `*_geral`/`*_historico`** (conta, guia, débito a cobrar, crédito) — id "geral" estável entre versões do documento; é a espinha de retificações e do vínculo de pagamento; precisa de caracterização dedicada (impacto direto na migração).
 5. **"Fatura" (`faturamento.fatura`)** como quinto alvo de pagamento — aparenta ser agrupamento de contas (ex.: cliente responsável); semântica exata a confirmar.
-6. **Multiplicidade de rotas no imóvel** — rota via quadra, rota de entrega e rota alternativa: confirmar qual comanda leitura, entrega e cobrança em cada processo.
+6. ~~Multiplicidade de rotas no imóvel~~ **Resolvida no essencial (2026-08-14)**: rota via quadra = processos territoriais/de campo (ordens de corte/fiscalização, atualização cadastral); rota de entrega = entrega de contas/2ª via; rota alternativa = leitura/faturamento com dispositivo móvel (exceções de leitura, impressão simultânea). Ver [modulos/cadastro.md §3.8](../modulos/cadastro.md). Precedência fina no processo de leitura fica para o mapa da Micromedição.
 7. **RA sem imóvel** (por endereço/local de ocorrência) — dimensionar o quanto do fluxo de atendimento independe de matrícula (afeta o modelo do SISAN).
-8. **Nomenclaturas de companhia no núcleo** — ex.: `Imovel.numeroCelpe` (`imov_nncontratoenergia` — nome de distribuidora de energia de PE), campos sociais (`imov_classe_social`) e consumo mínimo Bolsa Água: separar núcleo GSAN × customização na análise de compatibilidade.
+8. **Nomenclaturas de companhia no núcleo** — parcialmente mapeada no cadastro (2026-08-14): `numeroCelpe`, DV específico CAERN (`Util.obterDigitoVerificadorModuloCAERN`), campos sociais (`imov_classe_social`, `imov_qtd_economias_social`), programas especiais e recadastramento. Consolidar a separação núcleo × extensão na análise de compatibilidade ([modulos/cadastro.md §8](../modulos/cadastro.md)).
 9. **Regra do valor de esgoto** (percentual sobre consumo de água conforme situação/tipo) — localizar e caracterizar no módulo faturamento.
