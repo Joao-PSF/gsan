@@ -65,11 +65,47 @@ UnidadeProcessamento (tipo de partição)         UnidadeIniciada
 
 🟢 `UnidadeProcessamento` é o **tipo de partição** (definição, com descrição e indicador de uso); `UnidadeIniciada` é a **partição concreta executada**, identificada por **`codigoRealUnidadeProcessamento`** (o identificador real do objeto particionado).
 
-🟢 **Quem decide as unidades é a tarefa do processo**: `TarefaBatch` declara dois métodos abstratos — `pesquisarTodasUnidadeProcessamentoBatch()` e **`pesquisarTodasUnidadeProcessamentoReinicioBatch()`** — implementados por cada tarefa concreta. 🔵 Ou seja: a **estratégia de particionamento é por processo**, e existe uma consulta específica para o caso de **reinício** (unidades que ainda precisam rodar).
+🟢 `TarefaBatch` declara dois **pontos de extensão** — `pesquisarTodasUnidadeProcessamentoBatch()` e `pesquisarTodasUnidadeProcessamentoReinicioBatch()`. ⚠️ **Precisão (revisão 2026-08-14)**: eles **não constituem um fluxo universal de descoberta de unidades**. Há pelo menos **dois padrões** de obtenção das unidades:
 
-🟢 Exemplos comprovados de unidade: **rota** (faturamento — `colecaoRotasParaExecucao`) e **localidade** (encerramento da arrecadação — `colecaoIdsLocalidades`), ambas recebidas pelo parâmetro genérico `ConstantesSistema.COLECAO_UNIDADES_PROCESSAMENTO_BATCH`.
+| Padrão | Como funciona | Exemplo comprovado |
+| ------ | ------------- | ------------------ |
+| **A — a tarefa resolve suas unidades** | a tarefa implementa os métodos de extensão e consulta/calcula as unidades | processos que implementam os métodos com consulta real (não inventariados) |
+| **B — unidades preparadas antes e entregues como parâmetro** | o **`ControladorBatchSEJB`** monta a coleção e a injeta em `COLECAO_UNIDADES_PROCESSAMENTO_BATCH`; a tarefa **retorna `null`** nos dois métodos de extensão | 🟢 **FATURAR_GRUPO** (`TarefaBatchFaturarGrupoFaturamento` retorna `null` em ambos) |
+
+🔵 Separar o **modelo conceitual** (o processamento é divisível em unidades identificáveis, com estado e retomada) da **implementação** (a origem das unidades varia por processo). Não há evidência de um terceiro padrão; não construir taxonomia além disso.
+
+🟢 **Como o FATURAR_GRUPO obtém suas unidades** (evidência em `ControladorBatchSEJB`): partindo do `FaturamentoAtividadeCronograma` (cronograma da atividade do grupo), o controlador consulta via `repositorioBatch` a coleção `colecaoFaturamentoAtivCronRota` — as **rotas do cronograma** —, valida antes se há rotas não transmitidas (`repositorioMicromedicao.pesquisaRotasNaoTransmitidas(anoMesReferencia, idGrupo)`, gerando alerta) e injeta a coleção como parâmetro da tarefa:
+
+```text
+ControladorBatchSEJB (case Funcionalidade.FATURAR_GRUPO_FATURAMENTO):
+   new TarefaBatchFaturarGrupoFaturamento(processoIniciado.getUsuario(), funcionalidadeIniciada.getId())
+   .addParametro("faturamentoGrupo", <grupo do cronograma>)
+   .addParametro("atividade", <id da atividade>)
+   .addParametro(COLECAO_UNIDADES_PROCESSAMENTO_BATCH, colecaoFaturamentoAtivCronRota)   ← as ROTAS
+   → funcionalidadeIniciada.setTarefaBatch(IoUtil.transformarObjetoParaBytes(tarefa))
+   → atualizar(funcionalidadeIniciada)
+```
+
+🟢 **A tarefa inteira (com seus parâmetros) é serializada em bytes** e gravada em `FuncionalidadeIniciada.tarefaBatch` (`fuin_parametros`) — 🔵 é assim que o contexto de execução é persistido e recuperado. ⚠️ Isso implica **dependência de serialização Java de classes do legado** (ponto relevante para migração).
+
+❔ **Reinício do FATURAR_GRUPO**: como os dois métodos de extensão retornam `null` nessa tarefa, **não foi comprovado** como as unidades restantes são determinadas no reprocessamento — provavelmente pela reconstrução do parâmetro pelo `ControladorBatchSEJB` ou pela desserialização da tarefa já gravada, mas isso **não foi verificado**. Dúvida registrada (§26).
 
 🟢 **Proteção contra reexecução da mesma unidade**: `ControladorBatchSEJB.iniciarUnidadeProcessamentoBatch(idFuncionalidadeIniciada, idUnidadeProcessamento, codigoRealUnidadeProcessamento)` cria a `UnidadeIniciada` em `EM_PROCESSAMENTO`, **mas antes verifica se já existe unidade com o mesmo `codigoRealUnidadeProcessamento` em situação `CONCLUIDA`** — nesse caso chama `encerrarUnidadeIniciadaJaExecutada` e o fluxo trata a exceção `"Unidade já executada"` como **conclusão normal** (não como erro) em `encerrarUnidadeProcessamentoBatch`. 🔵 Este é o mecanismo de **retomada segura**: reprocessar um processo não refaz as unidades já concluídas.
+
+### Quem controla o ciclo da unidade (precisão de 2026-08-14)
+
+🟢 **O dono do ciclo é o controlador de negócio, não o MDB.** No FATURAR_GRUPO, quem abre e fecha a unidade é o próprio `ControladorFaturamentoFINAL.faturarGrupoFaturamento(...)`:
+
+```text
+faturarGrupoFaturamento(colecaoFaturamentoAtividadeCronogramaRota, faturamentoGrupo, atividade, idFuncionalidadeIniciada)
+  ├─ idUnidadeIniciada = getControladorBatch().iniciarUnidadeProcessamentoBatch(
+  │        idFuncionalidadeIniciada, UnidadeProcessamento.ROTA, <id da rota da coleção>)
+  ├─ try { … regra de negócio do faturamento … }
+  ├─ sucesso  → getControladorBatch().encerrarUnidadeProcessamentoBatch(null, idUnidadeIniciada, false)
+  └─ exceção  → getControladorBatch().encerrarUnidadeProcessamentoBatch(e,    idUnidadeIniciada, true)
+```
+
+🟢 O **MDB apenas invoca** o controlador de negócio (`BatchFaturarGrupoFaturamentoMDB.onMessage` → `faturarGrupoFaturamento(...)`). 🟢 O mesmo padrão (controlador de negócio chamando `getControladorBatch().iniciar/encerrarUnidadeProcessamentoBatch`) aparece em micromedição, arrecadação, cadastro, atendimento (RA/OS) e atualização cadastral. 🔵 Consequência: o framework **oferece** o controle de unidade como serviço, e **cada processo o utiliza explicitamente** — não é interceptação automática.
 
 ## 6. Formas de disparo
 
@@ -84,7 +120,9 @@ UnidadeProcessamento (tipo de partição)         UnidadeIniciada
 | **Disparo por módulo de negócio** | `ControladorSpcSerasaSEJB` cria `ProcessoIniciado`; `GerarResumoDevedoresDuvidososAction` idem | Fluxos de negócio podem iniciar processos |
 | **Encadeamento** | `ProcessoIniciado.processoIniciadoPrecedente` | Execução encadeada a outra |
 
-🟢 **Relatórios usam o mesmo framework** de forma assíncrona: `iniciarRelatoriosAgendados`, `iniciarProcessoRelatorio(TarefaRelatorio)`, `iniciarProcessoRelatorioControleAutorizacao`, `FuncionalidadeIniciadaRelatorio`, entidades `Relatorio`/`RelatorioGerado`, telas de status e de autorização. 🔵 Fronteira registrada: **o framework batch também é infraestrutura de geração pesada assíncrona** — o mapa de Relatórios é atividade seguinte (não executada aqui).
+🟢 **Relatórios usam o mesmo framework** de forma assíncrona: `iniciarRelatoriosAgendados`, `iniciarProcessoRelatorio(TarefaRelatorio)`, `iniciarProcessoRelatorioControleAutorizacao`, `iniciar/encerrarFuncionalidadeIniciadaRelatorio`, entidades `Relatorio`/`RelatorioGerado`, telas de status e de autorização.
+
+🔵 **Precisão (2026-08-14, [mapa de Relatórios](relatorios.md))**: relatório é um **tipo especial de processamento** dentro deste framework, com três particularidades próprias — (a) o envio ao batch é **decidido automaticamente** por contagem de registros × limite configurado (não por escolha do operador); (b) sua **autorização** é governada por parâmetro global (`SistemaParametro.INDICADOR_AUTORIZACAO_RELATORIO`), escolhendo entre os dois métodos de início; (c) **produz artefato persistido** (`RelatorioGerado`, ligado à `FuncionalidadeIniciada`), coisa que os processos de negócio comuns não fazem. ❔ Se relatórios batch usam `UnidadeProcessamento`/`UnidadeIniciada` ou executam como etapa única **não foi verificado**.
 
 ## 7. Ciclo de vida e estados
 
@@ -146,9 +184,15 @@ encerrarFuncionalidadesIniciadas / encerrarProcessosIniciados  → consolida ní
 
 ## 11. Transações e commits
 
-🔵 **A execução não é uma transação única** — a evidência estrutural é forte: cada unidade é uma mensagem processada por um MDB, com transação do container por mensagem; o estado (`UnidadeIniciada`) é gravado no **início** e atualizado no **fim** de cada unidade, o que exige commits intermediários para ser observável. 🟢 O tratamento de exceção por unidade (`encerrarUnidadeProcessamentoBatch(excecao, ...)`) grava situação de erro e log — comportamento incompatível com rollback total.
+🟢 **Evidência transacional explícita** (revisão 2026-08-14): no deployment do processo representativo, o **MDB é declarado `NotSupported`** — `descriptors/batchFaturarGrupoFaturamento/META-INF/ejb-jar.xml`: `<transaction-type>Container</transaction-type>` com `<trans-attribute>NotSupported</trans-attribute>` para todos os métodos do `BatchFaturarGrupoFaturamentoMDB`. 🟢 Os EJBs de sessão do faturamento são `Required` (`descriptors/faturamento/META-INF/ejb-jar.xml`).
 
-🔵 Consequência funcional: **falhas deixam trabalho parcialmente aplicado** — e é exatamente por isso que existe a retomada por unidade (unidades `CONCLUIDA` não são refeitas). ❔ Granularidade de commit **dentro** de uma unidade (por lote de N registros) não foi verificada e varia por processo — deve ser tratada caso a caso na caracterização.
+🔵 O que isso comprova: como o MDB **não executa em transação**, cada chamada que ele faz a um EJB de sessão **inicia e conclui sua própria transação**. Portanto, o **marcar início da unidade**, o **trabalho de negócio** e o **encerrar/registrar erro da unidade** ocorrem em **transações distintas** — é por isso que o estado da unidade permanece gravado mesmo quando o trabalho falha, e é o que sustenta a retomada.
+
+⚠️ **O que NÃO está comprovado**: a atomicidade **interna** do trabalho de negócio de uma unidade. `faturarGrupoFaturamento` é uma única chamada `Required`, o que *sugere* atomicidade dentro dela, mas chamadas aninhadas a outros EJBs, `RequiresNew` em pontos específicos ou commits/flushes explícitos poderiam quebrá-la — **não verificado**. Formulação correta:
+
+> O framework persiste estado por unidade em transação própria e fornece mecanismos de retomada/reprocessamento. A **atomicidade das alterações de negócio dentro de uma unidade** e a possibilidade de **commits parciais intra-unidade** **não foram comprovadas** e devem ser caracterizadas **por processo**.
+
+🔵 Distinção a manter: **estado persistido da execução ≠ commit parcial das regras de negócio**. ❔ Granularidade de commit dentro da unidade (ex.: lote de N registros) permanece dúvida por processo.
 
 ## 12. Falha, recuperação e reprocessamento
 
@@ -209,11 +253,16 @@ encerrarFuncionalidadesIniciadas / encerrarProcessosIniciados  → consolida ní
               • getParametro(COLECAO_UNIDADES_PROCESSAMENTO_BATCH) → ROTAS a processar
 4. Unidades: a UNIDADE DE PROCESSAMENTO é a ROTA (confirma micromedicao/faturamento:
             "unidade = rota do cronograma")
-5. Distribuição: enviarMensagemControladorBatch → JMS → BatchFaturarGrupoFaturamentoMDB
+   ⚠️ as ROTAS não são descobertas pela tarefa (que retorna null nos métodos de extensão):
+      são preparadas pelo ControladorBatchSEJB a partir do cronograma e injetadas como parâmetro (§5)
+5. Distribuição: enviarMensagemControladorBatch → JMS → BatchFaturarGrupoFaturamentoMDB (trans-attribute NotSupported)
 6. Execução: MDB.onMessage → ControladorFaturamento.faturarGrupoFaturamento(...)
-            com iniciarUnidadeProcessamentoBatch/encerrarUnidadeProcessamentoBatch em volta
+            e é o PRÓPRIO controlador de negócio que chama
+            iniciarUnidadeProcessamentoBatch(…, UnidadeProcessamento.ROTA, idRota) e,
+            no try/catch, encerrarUnidadeProcessamentoBatch(null|excecao, id, false|true)
 7. Controle: unidade concluída ou concluída com erro; unidades já concluídas não repetem;
-            reinício via reiniciarFuncionalidadesIniciadas + pesquisarTodasUnidadeProcessamentoReinicioBatch
+            reinício via reiniciarFuncionalidadesIniciadas
+            (❔ como as unidades restantes são resolvidas neste processo não foi comprovado)
 ```
 
 🔵 Conclusão do caso: o faturamento **não tem orquestração própria** — usa o framework padrão, com a rota como partição. Isso confirma a fronteira: *o Batch orquestra, o Faturamento calcula*.
@@ -247,7 +296,7 @@ Quartz (quando) ──► │ ProcessoIniciado → FuncionalidadeIniciada → Un
 1. 🟢 **Definição e execução são separadas em três níveis** (processo/etapa/unidade), cada um com estado, tempos e erro persistidos.
 2. 🟢 **A ordem das etapas é dado** (`sequencialExecucao`), não código.
 3. 🟢 **As etapas do batch são as funcionalidades do modelo de segurança** — catálogo único.
-4. 🟢 **A partição é definida por processo** (métodos de unidades normal e de reinício) e identificada por `codigoRealUnidadeProcessamento`.
+4. 🟢 **O processamento é divisível em unidades identificáveis** (`codigoRealUnidadeProcessamento`) — conceito estável; a **origem das unidades varia por implementação** (a tarefa as resolve, ou o `ControladorBatchSEJB` as prepara e injeta como parâmetro, como no FATURAR_GRUPO).
 5. 🟢 **Unidade já concluída não é reexecutada** — retomada segura em reprocessamento.
 6. 🟢 **Falha é por unidade**, com exceção persistida; o processo termina como "concluído com erro" sem perder o que foi feito.
 7. 🟢 **Reprocessamento é operação de primeira classe**, por etapa, dentro da mesma execução.
@@ -262,6 +311,7 @@ Quartz (quando) ──► │ ProcessoIniciado → FuncionalidadeIniciada → Un
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |
 | Separação definição × execução em três níveis | PRESERVAR CONCEITO | É o que dá observabilidade e retomada; migrável independentemente de tecnologia |
+| Tarefa serializada em bytes na `FuncionalidadeIniciada` (`IoUtil.transformarObjetoParaBytes`) | **REESTRUTURAR** | A necessidade (persistir o contexto de execução) é real; a **serialização Java de classes do legado** é frágil e amarra a migração |
 | Unidade de processamento com identificador real da partição | PRESERVAR CONCEITO | Base da retomada e do reprocessamento seletivo |
 | Retomada: unidade concluída não se repete | PRESERVAR CONCEITO | Propriedade funcional essencial em processamento financeiro |
 | Estado, tempos, parâmetros e erro persistidos | PRESERVAR CONCEITO | Auditoria e acompanhamento operacional |
@@ -302,7 +352,7 @@ Quartz (quando) ──► │ ProcessoIniciado → FuncionalidadeIniciada → Un
 8. Processo termina como `CONCLUIDO_COM_ERRO`.
 9. **Reprocessamento**: `reiniciarFuncionalidadesIniciadas` + unidades de reinício.
 10. **Reexecução de unidade já concluída** (esperado: tratada como já executada, sem refazer).
-11. Falha após commits parciais (verificar o que permanece aplicado).
+11. Falha no meio de uma unidade — verificar **o que permanece aplicado** do trabalho de negócio (atomicidade intra-unidade não comprovada, §11).
 12. Duas execuções do mesmo processo com os mesmos parâmetros (verificar se há proteção).
 13. Execução paralela de unidades pelo pool de MDBs.
 14. Processo com referência AAAAMM e por grupo (faturamento).
@@ -318,7 +368,8 @@ Quartz (quando) ──► │ ProcessoIniciado → FuncionalidadeIniciada → Un
 1. ❔ **Abrangência no batch** — não localizada nas telas nem no controlador; pergunta herdada da Segurança **permanece aberta** (§15).
 2. ❔ Proteção contra **duas execuções do mesmo processo** com os mesmos parâmetros.
 3. ❔ Semântica exata de `Processo.limite` e `prioridade`.
-4. ❔ Granularidade de **commit dentro da unidade** (por lote de N registros?) — varia por processo.
+4. ❔ **Atomicidade do trabalho de negócio dentro de uma unidade** e granularidade de commit intra-unidade — não comprovadas; caracterizar por processo (§11).
+4b. ❔ **Reinício do FATURAR_GRUPO**: como as unidades restantes são determinadas, já que a tarefa retorna `null` nos métodos de extensão (§5).
 5. ❔ Se o **reinício** cria nova `FuncionalidadeIniciada` ou reaproveita a existente.
 6. ❔ Existência de **retry automático** e limite de tentativas.
 7. ❔ **Dependência condicional** entre etapas e bloqueio da seguinte em caso de falha.

@@ -98,6 +98,8 @@ FiltroSegurancaAcesso
 
 ⚠️ 🔵 A exceção por **substring `pesquisar`/`relatorio`** é a de maior alcance: qualquer Action cujo nome contenha esses termos sai do bloco de autorização funcional do filtro. Isso não significa ausência de qualquer controle (a Action pode ter verificações próprias), mas é característica estrutural relevante do legado.
 
+🔵 **Aprofundamento (2026-08-14, [mapa de Relatórios §16–17](relatorios.md))**: no caso dos relatórios, a autorização tende a ocorrer **antes**, na tela chamadora (Action de funcionalidade não excepcionada) que monta os filtros e submete a solicitação; e o filtro só avalia requisições com **usuário em sessão**. ⚠️ Porém, a Action de **download** do relatório batch (`ExibirRelatorioBatchAction`) localiza o artefato **apenas pelo `idFuncionalidadeIniciada` recebido no request**, e **nenhuma comparação com o usuário logado foi localizada** no trecho analisado — combinado com a exceção de URL, isso torna a verificação de acesso ao artefato uma **dúvida prioritária** (não é declaração de vulnerabilidade; exige rastreio dirigido).
+
 ⚠️ 🟢 **Ressalva importante sobre `executarBatch`**: a exceção **não** significa que o framework Batch opere sem autorização. `gcom.batch.ExecutarBatch` é uma **Action Struts específica** (`extends GcomAction`, ~2 KB, mapeada em `struts-config.xml` como `/executarBatch`) que apenas invoca `ControladorOrdemServico.atualizarOrdemServicoAcompanhamentoServico(...)` — é uma **rotina pontual ligada ao Atendimento/OS**, não o disparo do framework de processamento em lote. A autorização dos fluxos batch é analisada em [batch.md §17](batch.md).
 
 🟢 Como a decisão é calculada (`verificarAcessoPermitidoFuncionalidade`:2664 e `verificarAcessoPermitidoOperacao`:3137):
