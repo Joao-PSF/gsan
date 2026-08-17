@@ -1,0 +1,13 @@
+# [2026-08-14] Ajustes de precisão no mapa do Atendimento
+
+- **Motivo**: revisão do [mapa do Atendimento](../modulos/atendimento.md) apontou três formulações mais fortes do que a evidência sustenta. **Ajuste de nível de certeza apenas** — sem reanálise, sem novo documento.
+
+| # | Antes | Depois | Onde |
+| - | ----- | ------ | ---- |
+| 1 | "`rgat_id` na OS é opcional"; "**OS sem RA confirmada** por cobrança/fiscalização coletiva/ordem seletiva" | Distinção explícita entre **regra de negócio** (existem origens de OS independentes de demanda individual — comprovado) e **questão de persistência** (se essas OS gravam `rgat_id IS NULL`, associam RA técnico ou reutilizam RA — **dúvida aberta**). Registrada a divergência **DDL `rgat_id NULL` × mapping `not-null="true"`**, análoga ao caso do imóvel do RA; anotado que `ControladorCobranca` faz `setRegistroAtendimento(null)` em *outras* entidades sistêmicas | `atendimento.md` §12, §26 (regra 1), §30 (nova dúvida 1b) |
+| 2 | "a variação por companhia é **absorvida por parâmetros**" | "**Não foram identificadas** subclasses por companhia nos controladores centrais; a parametrização (`SolicitacaoTipoEspecificacao`, `ServicoTipo`) é **fonte importante** de variabilidade — **não comprovado** que toda diferença seja exclusivamente paramétrica (podem existir condicionais, Actions/telas próprias, constantes, integrações, schema, funcionalidades adicionais)". Mantida a separação REGRA BASE / PARAMETRIZAÇÃO / CUSTOMIZAÇÃO / EVOLUÇÃO POSTERIOR para a análise futura | `atendimento.md` §25, §26 (regra 12) |
+| 3 | "Cenários de caracterização (**candidatos comprovados**)" | "**Cenários de caracterização identificados (sustentados por evidência)**", com nota explícita: cenário sustentado ≠ resultado esperado comprovado (vários existem justamente para descobrir o comportamento, ex.: se a espera altera `dataPrevistaAtual`) | `atendimento.md` §29 |
+
+- **Propagações corrigidas**: `MODERNIZACAO_GSAN.md` (linha do Atendimento — "vínculo opcional nos dois sentidos", "OS sem RA confirmada", "variação absorvida por parâmetros", "22 cenários de caracterização") e `dominio/glossario.md` (termo RA).
+- **Não alterado**: nenhuma das conclusões bem sustentadas do Atendimento (RA×OS como conceitos distintos, especificação como núcleo paramétrico, estados, encerrar ≠ executar, marcos geração/emissão/encerramento, tramitação, prazo original × atual, linhagem de reativação/duplicidade, efeitos em Cadastro/Micromedição, efeitos financeiros nos módulos donos, RA sem imóvel em aberto, limitações de espera e reiteração).
+- **Testes**: n/a · **Risco**: baixo · **Rollback**: `git revert` do commit.

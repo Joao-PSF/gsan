@@ -392,7 +392,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   ```text
   Mapeamento:  RegistroAtendimento.hbm.xml → atendimentopublico.registro_atendimento (step_id, meso_id, unid_idatual, amen_id, rgat_idreativacao, rgat_idduplicidade, imov_id, campos de endereço/perímetro)
   ```
-- **Observações de modernização** (2026-08-14): o RA é o **protocolo da demanda** (compromisso de atendimento com prazo), distinto da OS (unidade de execução) — o vínculo entre eles é **opcional nos dois sentidos**. Estados: PENDENTE / ENCERRADO / BLOQUEADO; reativação e duplicidade **encadeiam protocolos distintos**, não sobrescrevem o RA. O comportamento é fortemente parametrizado por `SolicitacaoTipoEspecificacao`. Sobre `imov_id`: o banco permite nulo e há demandas de rede/área sem matrícula, mas o mapping atual exige imóvel — ver [modulos/atendimento.md §6](../modulos/atendimento.md).
+- **Observações de modernização** (2026-08-14): o RA é o **protocolo da demanda** (compromisso de atendimento com prazo), distinto da OS (unidade de execução) — RA sem OS existe, e há origens de OS independentes de demanda individual, embora a persistência de OS sem RA permaneça a confirmar. Estados: PENDENTE / ENCERRADO / BLOQUEADO; reativação e duplicidade **encadeiam protocolos distintos**, não sobrescrevem o RA. O comportamento é fortemente parametrizado por `SolicitacaoTipoEspecificacao`. Sobre `imov_id`: o banco permite nulo e há demandas de rede/área sem matrícula, mas o mapping atual exige imóvel — ver [modulos/atendimento.md §6](../modulos/atendimento.md).
 
 ## 23. Ordem de Serviço (OS)
 

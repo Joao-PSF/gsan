@@ -100,11 +100,12 @@ Este ponto tinha uma aparente contradição. **Resolução:**
 
 ## 12. RA → OS (cardinalidade real)
 
-🟢 **`rgat_id` na OS é opcional** e 🟢 a especificação tem `step_icgeracaoordemservico` — logo:
+🟢 A especificação tem `step_icgeracaoordemservico`, e no DDL da instalação de referência **`ordem_servico.rgat_id` é `NULL`-able** (com FK `fk1_ordem_servico` para `registro_atendimento`), enquanto o **mapping declara `registroAtendimento` com `not-null="true"`** — a mesma divergência mapping × banco observada no caso do imóvel do RA (§6).
 
 - 🔵 **RA sem OS**: existe (demandas informativas, encerradas com parecer, ou com encerramento automático).
 - 🔵 **RA com uma ou várias OS**: suportado (a OS referencia o RA; nada limita a uma).
-- 🟢 **OS sem RA**: confirmado por três caminhos independentes — **Cobrança** (OS de corte/supressão/fiscalização geradas por ação, com `cbdo_id`), **fiscalização coletiva** (`fzcl_id`) e **comando de ordem seletiva** (`coss_id`).
+- 🟢 **Origens funcionais de OS independentes de uma demanda individual convencional**: **Cobrança** (OS de corte/supressão/fiscalização geradas por ação, com `cbdo_id`), **fiscalização coletiva** (`fzcl_id`) e **comando de ordem seletiva** (`coss_id`). 🟢 O código também mostra que RA nulo é explicitamente aceito em **outras** entidades originadas por processos sistêmicos (`ControladorCobranca` faz `setRegistroAtendimento(null)` em débito a cobrar, crédito a realizar e parcelamento).
+- ❔ **Persistência de OS efetivamente sem RA permanece a confirmar**: as origens acima comprovam a **regra de negócio** (OS pode nascer de processo interno/sistêmico), mas não comprovam, isoladamente, que essas OS sejam gravadas com `rgat_id IS NULL` — elas poderiam associar um RA técnico, reutilizar um RA existente ou usar outro caminho de persistência. Até que DDL + fluxo de inserção **ou** dados reais confirmem `rgat_id` nulo, a **cardinalidade física permanece dúvida aberta** (§30). Distinção a manter: *regra de negócio* (OS originada por processo sistêmico) ≠ *questão de persistência* (essa OS tem ou não RA associado).
 - 🟢 **OS que referencia outra OS**: `orse_idreferencia` + `servicoTipoReferencia` + `OsReferidaRetornoTipo`; combinado com `orse_icdiagnostico` (serviço diagnosticado), 🔵 o padrão é **diagnóstico/vistoria → serviço definitivo** e **OS de retorno/complementar** — encadeamento de trabalho, **não versionamento**.
 
 ## 13. Serviço e prioridade
@@ -178,11 +179,13 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 
 ## 25. Variações por companhia
 
-🟢 **Descoberta relevante**: diferentemente de Micromedição, Faturamento, Cobrança e Arrecadação, **não existem subclasses de controlador por companhia** em `registroatendimento`/`ordemservico` — apenas o conjunto padrão (`ControladorRegistroAtendimentoSEJB`, `ControladorOrdemServicoSEJB` + Home/Local/Remote). 🔵 Interpretação: o Atendimento absorve variação **por parametrização** (especificações, serviços, motivos, unidades) em vez de por herança de código — o que o torna, entre os módulos analisados, o **melhor exemplo interno de "regra como dado"** e um bom ponto de partida para o padrão de extensão do SISAN. 🟡 Variações de companhia podem existir em Actions/telas específicas; não fiz inventário exaustivo.
+🟢 **Descoberta relevante**: diferentemente de Micromedição, Faturamento, Cobrança e Arrecadação, **não foram identificadas subclasses de controlador por companhia** em `registroatendimento`/`ordemservico` — apenas o conjunto padrão (`ControladorRegistroAtendimentoSEJB`, `ControladorOrdemServicoSEJB` + Home/Local/Remote).
+
+🔵 A **parametrização é uma fonte importante de variabilidade** neste módulo, em especial `SolicitacaoTipoEspecificacao` e `ServicoTipo` (além de motivos, unidades e prioridades). ⚠️ **Não foi comprovado, porém, que toda diferença entre companhias esteja representada exclusivamente por parâmetros**: a ausência de subclasses não prova isso, e podem existir condicionais dentro dos controladores, Actions/telas específicas, constantes, integrações próprias, diferenças de schema e funcionalidades adicionais da instalação. A classificação em **REGRA BASE / PARAMETRIZAÇÃO / CUSTOMIZAÇÃO / EVOLUÇÃO POSTERIOR** deve ser mantida separada na análise futura de diferenças por companhia (inventário não realizado nesta fase).
 
 ## 26. Regras estruturantes (comprovadas)
 
-1. 🟢 **RA e OS são conceitos distintos com identidades próprias**: o RA é o protocolo da demanda; a OS é a unidade de execução — e o vínculo entre eles é **opcional nos dois sentidos**.
+1. 🟢 **RA e OS são conceitos distintos com identidades próprias**: o RA é o protocolo da demanda; a OS é a unidade de execução. 🟢 RA sem OS existe; 🟢 existem origens de OS independentes de demanda individual (cobrança, fiscalização coletiva, ordem seletiva) — ❔ mas a persistência de OS **sem RA associado** permanece a confirmar (§12).
 2. 🟢 **A especificação da solicitação parametriza o comportamento do atendimento** (prazo, obrigatoriedades, geração de OS, efeitos financeiros, encerramento automático, canal).
 3. 🟢 **As regras de serviço vivem em dois níveis** (especificação da solicitação + tipo de serviço), incluindo os tipos de débito/crédito a lançar.
 4. 🟢 **Tramitação é histórico auditável** (origem, destino, responsável, quem registrou, parecer), com `unid_idatual` como estado corrente.
@@ -193,7 +196,7 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 9. 🟢 **Reativação e duplicidade encadeiam protocolos distintos** (não sobrescrevem o RA original) — mesmo princípio de linhagem visto na retificação de contas.
 10. 🟢 **A demanda pode não ter matrícula** como objeto (ocorrência de rede/área), e o RA carrega local da ocorrência próprio (endereço, perímetro, bairro-área, coordenadas).
 11. 🟢 **O Atendimento é a porta de entrada de lançamentos financeiros** (débito de serviço, crédito, devolução, retificação de conta, alteração de vencimento), sempre delegando ao módulo dono.
-12. 🟢 **A variação por companhia é absorvida por parâmetros**, não por subclasses de controlador.
+12. 🟢 **Não foram identificadas subclasses por companhia** nos controladores centrais de RA/OS, e 🔵 a parametrização (especialmente especificação e tipo de serviço) é fonte importante de variabilidade — ⚠️ sem que se tenha comprovado que **toda** diferença entre companhias seja apenas paramétrica (§25).
 
 ## 27. Compatibilidade GSAN → SISAN
 
@@ -227,7 +230,10 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 5. **Histórico rico de espera e reiteração** (múltiplas ocorrências com motivo, autor e data), motivado pelas limitações do modelo atual.
 6. **Adapter de campo/mobile** para despacho e retorno de OS, motivado pela existência de execução externa (`mobile.exe_os_*`, boletins, fotos).
 
-## 29. Cenários de caracterização (candidatos comprovados)
+## 29. Cenários de caracterização identificados (sustentados por evidência)
+
+> Cada cenário abaixo está **sustentado por evidência de que o fluxo existe**. Isso é diferente de afirmar que o **resultado esperado** já está comprovado — vários existem justamente para descobrir o comportamento (ex.: se a espera altera `dataPrevistaAtual`). O resultado de cada um será estabelecido na caracterização (Fase 2).
+
 
 1. RA encerrado sem OS (parecer + motivo).
 2. RA com encerramento automático parametrizado pela especificação.
@@ -255,6 +261,7 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 ## 30. Dúvidas abertas
 
 1. ❔ **Persistência de RA sem imóvel**: o banco permite `NULL`, o mapping não. Existem registros nulos? Por qual caminho? (§6 — resolve o modelo de matrícula opcional).
+1b. ❔ **Persistência de OS sem RA**: mesma divergência (DDL `rgat_id NULL` × mapping `not-null`). As OS originadas por cobrança/fiscalização coletiva/ordem seletiva gravam RA nulo, associam RA técnico ou reutilizam RA existente? (§12 — define a cardinalidade física RA↔OS no SISAN).
 2. ❔ Papel de **`RegistroAtendimentoUnidade`** frente a `Tramite`.
 3. ❔ Se a **espera suspende formalmente o prazo** (recálculo de `dataPrevistaAtual`).
 4. ❔ Se a **reiteração** altera prazo/prioridade/unidade automaticamente.
@@ -266,9 +273,18 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 10. ❔ Prazos e integração da **agência reguladora**.
 11. ❔ Regras de autorização (quem abre, tramita, encerra, reativa, altera valor, autoriza devolução) — mapear no **módulo de Segurança** (fronteira registrada, §31).
 
-## 31. Fronteira com Segurança (para o próximo mapa)
+## 31. Fronteira com Segurança — **resolvida em 2026-08-14**
 
-Pontos que o mapa de Segurança deverá cobrir a partir desta análise: permissão para abrir/atualizar RA; **tramitar** (e para quais unidades); **encerrar** RA e OS (e encerrar sem execução); **reativar**; **bloquear**; **alterar valor do serviço** e aplicar motivo de não cobrança; **liberar** OS que aguarda liberação; autorizar **devolução/crédito**; disparar **retificação** e **alteração de vencimento**. 🟢 Há sinais de que a **unidade organizacional do usuário** participa do roteamento (RA/OS têm unidade atual; `Tramite` tem usuário responsável e usuário que registrou), e o Cadastro já mostrou **abrangência por localidade/gerência** no usuário — a interação entre abrangência, unidade e permissão por funcionalidade é o ponto central a esclarecer lá.
+Ver [seguranca.md §16](seguranca.md) para o quadro completo. Resumo do que ficou comprovado:
+
+- **Acesso às ações do RA/OS** (abrir, atualizar, tramitar, encerrar, reativar, gerar OS) é controlado **centralmente** pelo `FiltroSegurancaAcesso` (filtro de servlet para `*.do`), que resolve **funcionalidade e operação pela URL** e verifica concessão em `GrupoFuncionalidadeOperacao` pelos grupos do usuário (união) — portanto **acesso direto por URL é barrado**, não depende do menu.
+- **Exceções são permissões especiais nomeadas**, verificadas dentro da Action — comprovadas para: `ATUALIZAR_INSTALACAO_DO_HIDROMETRO`, `ATUALIZAR_LIGACAO_DE_ESGOTO_SEM_RA`, `REPLICAR_VALOR_COBRANCA_SERVICO`, `ENCERRAR_COMANDO_COBRANCA_EMPRESA`.
+- **Alterar valor de serviço** combina permissão especial + regra paramétrica (`indicadorPermiteAlterarValor`).
+- **Abrangência** (gerência regional / unidade de negócio / elo-polo / localidade) atua como segundo eixo, mas **depende de verificações explícitas** em Actions/controladores além do filtro.
+- ❔ **Unidade organizacional não apareceu como controle de autorização**: tramitar/encerrar RA de outra unidade não teve bloqueio central identificado — a unidade é dado de roteamento/estado. Permanece dúvida.
+- ❔ Sem permissão especial nomeada identificada para: aplicar motivo de não cobrança, liberar OS em "aguardando liberação", alterar prioridade — provável regra na Action.
+
+Pontos que o mapa de Segurança cobriu/deve seguir aprofundando: permissão para abrir/atualizar RA; **tramitar** (e para quais unidades); **encerrar** RA e OS (e encerrar sem execução); **reativar**; **bloquear**; **alterar valor do serviço** e aplicar motivo de não cobrança; **liberar** OS que aguarda liberação; autorizar **devolução/crédito**; disparar **retificação** e **alteração de vencimento**. 🟢 Há sinais de que a **unidade organizacional do usuário** participa do roteamento (RA/OS têm unidade atual; `Tramite` tem usuário responsável e usuário que registrou), e o Cadastro já mostrou **abrangência por localidade/gerência** no usuário — a interação entre abrangência, unidade e permissão por funcionalidade é o ponto central a esclarecer lá.
 
 ## 32. Evidências principais
 
