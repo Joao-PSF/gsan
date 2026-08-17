@@ -277,7 +277,7 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 
 Ver [seguranca.md §16](seguranca.md) para o quadro completo. Resumo do que ficou comprovado:
 
-- **Acesso às ações do RA/OS** (abrir, atualizar, tramitar, encerrar, reativar, gerar OS) é controlado **centralmente** pelo `FiltroSegurancaAcesso` (filtro de servlet para `*.do`), que resolve **funcionalidade e operação pela URL** e verifica concessão em `GrupoFuncionalidadeOperacao` pelos grupos do usuário (união) — portanto **acesso direto por URL é barrado**, não depende do menu.
+- **Acesso às ações do RA/OS** (abrir, atualizar, tramitar, encerrar, reativar, gerar OS) passa pelo **gate transversal** `FiltroSegurancaAcesso` (`*.do`), que classifica a URL como funcionalidade **ou** operação e verifica concessão em `GrupoFuncionalidadeOperacao` pelos grupos do usuário (união) — para rotas protegidas, o controle não depende do menu. ⚠️ O gate tem **lista de exceções** (inclusive URLs contendo `pesquisar`/`relatorio`) e a abrangência é verificada **condicionalmente** — ver [seguranca.md §7](seguranca.md).
 - **Exceções são permissões especiais nomeadas**, verificadas dentro da Action — comprovadas para: `ATUALIZAR_INSTALACAO_DO_HIDROMETRO`, `ATUALIZAR_LIGACAO_DE_ESGOTO_SEM_RA`, `REPLICAR_VALOR_COBRANCA_SERVICO`, `ENCERRAR_COMANDO_COBRANCA_EMPRESA`.
 - **Alterar valor de serviço** combina permissão especial + regra paramétrica (`indicadorPermiteAlterarValor`).
 - **Abrangência** (gerência regional / unidade de negócio / elo-polo / localidade) atua como segundo eixo, mas **depende de verificações explícitas** em Actions/controladores além do filtro.

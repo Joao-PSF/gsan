@@ -56,17 +56,49 @@ Fragilidades criptográficas: já documentadas em `riscos-identificados.md`; aqu
 
 ## 7. Modelo de autorização — onde é efetivamente aplicada
 
-🟢 **Descoberta central**: a autorização é **centralizada num Servlet Filter**, `gcom.gui.util.FiltroSegurancaAcesso`, mapeado no `web.xml` para **`*.do`** (todas as Actions Struts). O filtro, por requisição:
+🟢 **Descoberta central**: existe um **gate transversal** para rotas web — `gcom.gui.util.FiltroSegurancaAcesso`, mapeado no `web.xml` para **`*.do`**. ⚠️ **Precisão (revisão 2026-08-14)**: o fluxo **não é** uma sequência universal "funcionalidade → operação → abrangência". O código real é:
 
 ```text
-1. recupera usuarioLogado da sessão (URLs isentas via properties)
-2. fachada.verificarAcessoPermitidoFuncionalidade(usuarioLogado, url, gruposUsuario, idFuncionalidade)   [:219]
-3. fachada.verificarAcessoPermitidoOperacao(usuarioLogado, url, gruposUsuario)                            [:241]
-4. fachada.verificarAcessoAbrangencia(abrangencia)                                                        [:255]
-5. se tudo passar → filterChain.doFilter (segue para a Action)
+REQUISIÇÃO *.do
+   ↓
+FiltroSegurancaAcesso
+   ├─ usuarioLogado ausente? → tratamento próprio (há lista de URLs sem usuário na sessão, via properties)
+   ├─ a URL está na LISTA DE EXCEÇÕES do próprio filtro (contains/toLowerCase)? 
+   │     → SIM: segue SEM este bloco de autorização funcional
+   └─ NÃO:
+        tipoURL = fachada.verificarTipoURL(enderecoURL)
+          ├─ "funcionalidade" → verificarAcessoPermitidoFuncionalidade
+          │                      nega → /jsp/util/acesso_negado_funcionalidade.jsp
+          │                      permite → segue (SEM verificação de abrangência neste ramo)
+          ├─ "operacao"       → verificarAcessoPermitidoOperacao
+          │                      nega → /jsp/util/acesso_negado_operacao.jsp
+          │                      permite → SE houver contexto de abrangência na requisição:
+          │                                  verificarAcessoAbrangencia
+          │                                    nega → /jsp/util/acesso_negado_abrangencia.jsp
+          │                                  (sem contexto de abrangência → segue)
+          └─ tipoURL == null  → acesso negado (funcionalidade)
 ```
 
-🟢 **Resposta à pergunta crítica (menu × URL direta)**: como o filtro intercepta **toda** requisição `*.do` e resolve a funcionalidade/operação **pela URL**, digitar diretamente o endereço de uma funcionalidade ausente do menu **é barrado** — a autorização efetiva **não depende da visibilidade do menu**. 🔵 O menu (árvore de funcionalidades por categoria/módulo) é a face de navegação do mesmo modelo, não o controle.
+🔵 Três consequências funcionais que a formulação anterior escondia: (a) **funcionalidade e operação são caminhos alternativos** (a URL é classificada como um ou outro), não etapas encadeadas; (b) a **abrangência é verificada condicionalmente** — apenas no ramo "operação" e apenas quando há contexto de abrangência na requisição; (c) **URL não catalogada é negada** (`tipoURL == null` → acesso negado), o que é um padrão *fail-closed* para o que passa pelo bloco.
+
+🟢 **URL direta (calibrado)**: para **rotas protegidas e não excepcionadas**, digitar o endereço direto **continua passando pelo filtro** — a autorização não depende do menu. Porém, **rotas explicitamente excepcionadas** pelo próprio filtro **não passam por esse bloco**, e **superfícies fora de `*.do`** (servlets, APIs — §22) seguem mecanismos próprios. 🔵 Ou seja: o filtro é o **principal gate transversal identificado para rotas web protegidas**, mas **não constitui, sozinho, uma política universal de autorização de todas as superfícies do GSAN** — controles internos nas Actions/controladores (permissões especiais, abrangência, regras de negócio) completam o quadro.
+
+### Exceções do filtro — por categoria (não inventário)
+
+🟢 A lista de exclusões é feita por `contains()` sobre a URL (algumas em `toLowerCase`), agrupável em:
+
+| Categoria | Exemplos observados |
+| --------- | ------------------- |
+| Autenticação/sessão | Login, Logoff, telaPrincipal, alteração de senha (normal e simplificada), carregar parâmetros |
+| Consultas/relatórios | qualquer URL contendo **`pesquisar`** ou **`relatorio`** (case-insensitive), popups de consulta (dados de pagamento, situação especial de faturamento/cobrança, histórico de alteração) |
+| Integrações/dispositivos | dispositivo móvel (inclusive impressão simultânea, acompanhamento de serviço, recadastramento), telemetria, GIS (requisição e coordenadas) |
+| Portal/público | `portal`, segunda-via-conta, extrato-débitos, certidões (imóvel/cliente), lojas/canais de atendimento, parcelamento-débitos, cadastro/validação de login do cliente, "água para" |
+| Rotina específica | **`executarBatch`** (ver ressalva abaixo) |
+| Outras | treinamentos, informar melhorias |
+
+⚠️ 🔵 A exceção por **substring `pesquisar`/`relatorio`** é a de maior alcance: qualquer Action cujo nome contenha esses termos sai do bloco de autorização funcional do filtro. Isso não significa ausência de qualquer controle (a Action pode ter verificações próprias), mas é característica estrutural relevante do legado.
+
+⚠️ 🟢 **Ressalva importante sobre `executarBatch`**: a exceção **não** significa que o framework Batch opere sem autorização. `gcom.batch.ExecutarBatch` é uma **Action Struts específica** (`extends GcomAction`, ~2 KB, mapeada em `struts-config.xml` como `/executarBatch`) que apenas invoca `ControladorOrdemServico.atualizarOrdemServicoAcompanhamentoServico(...)` — é uma **rotina pontual ligada ao Atendimento/OS**, não o disparo do framework de processamento em lote. A autorização dos fluxos batch é analisada em [batch.md §17](batch.md).
 
 🟢 Como a decisão é calculada (`verificarAcessoPermitidoFuncionalidade`:2664 e `verificarAcessoPermitidoOperacao`:3137):
 - resolve `Funcionalidade` por **`CAMINHO_URL`** (ou por id) — e `Operacao` também por **`CAMINHO_URL`**, obtendo dela a funcionalidade dona;
@@ -179,7 +211,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 
 ## 18. Menu × autorização efetiva
 
-🟢 Já respondido em §7: a autorização é aplicada no filtro para todas as URLs `*.do`; o menu é derivado da árvore de funcionalidades (`pesquisarArvoreFuncionalidades`, `:1793`/`:2000`). 🔵 Não há dependência do menu para segurança — porém há **exceções explícitas**: as URLs listadas em `urls_sem_usuario_na_sessao.properties` (páginas que não exigem usuário em sessão) e as **APIs/servlets que não passam pelo mapeamento `*.do`** (§22).
+🟢 Já respondido em §7: o filtro atua sobre `*.do` **exceto** as rotas de sua lista de exceções; o menu é derivado da árvore de funcionalidades (`pesquisarArvoreFuncionalidades`, `:1793`/`:2000`). 🔵 Portanto a segurança **não depende do menu**, mas também **não se resume ao filtro**: há três camadas a considerar — (a) o gate do filtro para rotas protegidas; (b) controles internos nas Actions/controladores (permissões especiais, abrangência, regras de negócio); (c) superfícies fora desse caminho — URLs excepcionadas pelo filtro, páginas de `urls_sem_usuario_na_sessao.properties` e **APIs/servlets fora do mapeamento `*.do`** (§22).
 
 ## 19. Auditoria de operação
 
@@ -197,7 +229,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 
 🟢 `Usuario.USUARIO_BATCH` é usado como identidade nas execuções não interativas (ex.: `RelatorioPadraoBatch(Usuario.USUARIO_BATCH)`, geração de OS seletiva/fiscalização em relatórios batch). 🔵 Interpretação: existe uma **identidade de sistema** que carimba operações automáticas — de modo que a auditoria não fique sem autor. 🟢 O modelo tem também `usuario_banco` (contas de banco por usuário) e o servlet `AcessarNovoBatchServlet` gera token MD5 efêmero para acesso ao módulo batch.
 
-❔ Não comprovado: qual abrangência o usuário batch possui e se os fluxos batch passam por qualquer verificação de autorização (o filtro cobre `*.do`, e batch roda fora desse caminho). 🔵 Indício forte de que **processos batch operam fora do RBAC de tela** — a confirmar no mapa de Batch, para onde este ponto é encaminhado.
+**Atualização (2026-08-14, mapa do Batch — [batch.md §14/§15](batch.md))**: 🟢 o **solicitante é registrado** (`ProcessoIniciado.usuario`, gravado com o usuário logado no disparo manual) e a tarefa agendada **carrega um usuário** (JobDataMap) — portanto não é correto dizer que o batch roda sem identidade. 🟢 Há **dois níveis de autorização no disparo**: a tela de batch é uma Action `*.do` sujeita ao gate, e existe **autorização do próprio processo** (`Processo.indicadorAutorizacao` + estado `AGUARDANDO_AUTORIZACAO` + `AutorizarProcessoIniciadoAction`). 🟢 A exceção `executarBatch` do filtro **não** se refere a este framework (§7). ❔ Permanecem abertos: quando `USUARIO_BATCH` substitui o solicitante; se MDB/JMS têm autenticação própria; e se a execução revalida permissões (indício forte de que não). ❔ **Abrangência no batch não foi localizada** — nem nas telas nem no controlador —, então a pergunta continua aberta e virou candidato prioritário de caracterização.
 
 ## 22. APIs e tokens
 
@@ -209,7 +241,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 
 ## 24. Regras estruturantes
 
-1. 🟢 **A autorização é aplicada centralmente num filtro de requisição** (`*.do`), não no menu — acesso direto por URL é barrado.
+1. 🟢 **Existe um gate transversal de autorização para rotas web** (`FiltroSegurancaAcesso`, `*.do`): para rotas protegidas e não excepcionadas, o controle não depende do menu e a URL direta passa por ele. ⚠️ O gate **não é universal** — há lista de exceções no próprio filtro, controles internos nas Actions e superfícies fora de `*.do`.
 2. 🟢 **Funcionalidade e Operação são identificadas pela URL** e a concessão é o trio **grupo × funcionalidade × operação**.
 3. 🟢 **União dos grupos**: basta um grupo conceder; não há *deny* no caminho de decisão observado.
 4. 🟢 **Dependência entre funcionalidades participa** do cálculo (funcionalidade principal habilita dependentes).
@@ -273,7 +305,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 9. Acesso a funcionalidade concedida por um grupo.
 10. Usuário em múltiplos grupos com concessões diferentes (união).
 11. Acesso a funcionalidade **dependente** tendo apenas a principal concedida.
-12. **Acesso direto por URL** a funcionalidade não concedida (deve ser barrado pelo filtro).
+12. **Acesso direto por URL** a funcionalidade não concedida, em rota **protegida e não excepcionada** (esperado: barrado pelo filtro); e o contraste com uma rota **excepcionada** (ex.: nome contendo `pesquisar`/`relatorio`), para verificar qual controle atua.
 13. Acesso a operação (URL de operação) sem a concessão correspondente.
 14. Usuário com concessão funcional, mas **fora da abrangência** do objeto consultado.
 15. Cada nível de abrangência (gerência regional, unidade de negócio, elo/polo, localidade).
@@ -298,7 +330,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 7. ❔ Semântica de `usur_nnacessos` (acessos × tentativas).
 8. ❔ Conteúdo exato registrado em `OperacaoEfetuada` (IP, unidade, data/hora).
 9. ❔ Workflow de solicitação de acesso: quem aprova, recusa, revogação, validade.
-10. ❔ Abrangência e verificação de autorização nos fluxos **batch** (encaminhado ao mapa de Batch).
+10. ❔ Abrangência nos fluxos **batch** — investigada no [mapa do Batch](batch.md) e **não localizada** (nem nas telas de disparo nem no `ControladorBatchSEJB`); a autorização do disparo, essa sim, foi esclarecida (§21). Permanece como caracterização prioritária.
 11. ❔ Escopo/validade/vínculo dos tokens de API.
 12. ❔ Existência de controle de sessão simultânea e de registro de IP no login.
 

@@ -138,7 +138,7 @@ Quatro planos independentes (não confundir): situação da **ligação** (água
 
 ## 19. Faturamento em lote (fronteira com Batch)
 
-Deployment EJB dedicado (`descriptors/batchFaturarGrupoFaturamento`); orquestração em `ControladorBatchFaturamento`/framework batch próprio; **unidade de processamento = rota** do cronograma (`faturarGrupoFaturamento(colecaoFaturamentoAtividadeCronogramaRota, ...)`); o registro de execução/falha usa as tabelas do schema `batch` (funcionalidade iniciada/unidades). Commits parciais, paralelismo e reprocesso serão detalhados no mapa do Batch — aqui fica a fronteira: o lote repete o cálculo individual por imóvel dentro de cada rota.
+Deployment EJB dedicado (`descriptors/batchFaturarGrupoFaturamento`); **unidade de processamento = rota** do cronograma (`faturarGrupoFaturamento(colecaoFaturamentoAtividadeCronogramaRota, ...)`); o registro de execução/falha usa as tabelas do schema `batch`. **A orquestração foi mapeada em 2026-08-14** — ver [batch.md §18](batch.md): o faturamento **não tem orquestração própria**, usa o framework padrão (processo iniciado → funcionalidades por ordem → tarefa Quartz com parâmetros nomeados → mensagem JMS por rota → MDB → este controlador), com retomada por unidade e reprocessamento por etapa. Aqui fica a fronteira: o lote repete o cálculo individual por imóvel dentro de cada rota.
 
 ## 20. Variações por companhia
 

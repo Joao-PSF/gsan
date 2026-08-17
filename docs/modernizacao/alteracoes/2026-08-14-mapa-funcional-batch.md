@@ -1,0 +1,22 @@
+# [2026-08-14] Mapa funcional do Batch + correção residual do gate de autorização
+
+## Parte A — correção residual da Segurança (gate do `FiltroSegurancaAcesso`)
+
+- **Motivo**: a descrição do filtro em `seguranca.md` ficou mais forte do que o código sustenta.
+- **Corrigido** (sem reanálise, sem novo documento de Segurança):
+  1. **Fluxo real**: não existe sequência universal "funcionalidade → operação → abrangência". O filtro aplica uma **guarda de entrada** (usuário em sessão + **lista de exceções por `contains` na URL**) e, passando, usa `verificarTipoURL` para classificar a URL como **funcionalidade OU operação** (caminhos alternativos). A **abrangência é condicional** — só no ramo "operação" e só quando há contexto de abrangência. URL não catalogada (`tipoURL == null`) é **negada** (padrão *fail-closed* dentro do bloco).
+  2. **"Autorização centralizada"** → **"principal gate transversal para rotas web protegidas"**, explicitando as três camadas: gate do filtro, controles internos nas Actions/controladores, e superfícies excepcionadas ou fora de `*.do`.
+  3. **"Acesso direto por URL é barrado"** → calibrado por situação: rotas protegidas e não excepcionadas (passa pelo filtro), rotas excepcionadas (não passam por esse bloco), superfícies fora do filtro (mecanismo próprio).
+  4. **Exceções documentadas por categoria** (autenticação/sessão; consultas/relatórios — inclusive qualquer URL contendo `pesquisar` ou `relatorio`; integrações/dispositivos; portal/público; rotina específica; outras), sem inventário de URLs.
+  5. **`executarBatch`**: comprovado que `gcom.batch.ExecutarBatch` é uma **Action Struts específica** (`/executarBatch`) que chama `ControladorOrdemServico.atualizarOrdemServicoAcompanhamentoServico(...)` — **não** o framework Batch. A exceção do filtro não implica batch sem autorização.
+- **Propagação**: `seguranca.md` (§7, §18, regra 1, cenário 12), `atendimento.md` §31, `MODERNIZACAO_GSAN.md`, `seguranca/modelo-legado.md`.
+
+## Parte B — Mapa funcional do Batch
+
+- **Documento criado**: `docs/modernizacao/modulos/batch.md` (27 seções, com níveis de certeza). Nenhum inventário técnico refeito; **nenhuma contagem de classes/MDBs/deployments** realizada, e o número "246 deployments" não é reproduzido por falta de fonte verificada.
+- **Principais descobertas**: separação **definição × execução em três níveis** (Processo/ProcessoIniciado, ProcessoFuncionalidade/FuncionalidadeIniciada, UnidadeProcessamento/UnidadeIniciada), cada um com estado, tempos e erro persistidos; **etapas ancoradas no catálogo de funcionalidades da Segurança**, com ordem por `sequencialExecucao`; **partição declarada por processo** (métodos abstratos de unidades normal e de reinício), identificada por `codigoRealUnidadeProcessamento`; **retomada segura** — unidade já `CONCLUIDA` não é reexecutada (`encerrarUnidadeIniciadaJaExecutada`, exceção "Unidade já executada" tratada como conclusão); **falha por unidade** com exceção persistida e processo terminando `CONCLUIDO_COM_ERRO`; **reprocessamento por etapa** (`reiniciarFuncionalidadesIniciadas`); **parâmetros genéricos nomeados e persistidos** (`fuin_parametros`); **solicitante registrado** (`ProcessoIniciado.usuario`) e usuário carregado pela tarefa; **autorização de processo** (`indicadorAutorizacao` + `AGUARDANDO_AUTORIZACAO` + Action dedicada) além da permissão de tela; **camadas separadas** — Quartz agenda, `ControladorBatchSEJB` controla, JMS/MDB distribui, controlador do módulo executa a regra; `VerificadorProcessosIniciados` é **job de monitoramento**, não disparador.
+- **Casos representativos**: `FATURAR_GRUPO_FATURAMENTO` (unidade = rota) e `ENCERRAR_ARRECADACAO_MES` (unidade = localidade) — confirmam que o padrão pertence ao **framework**, não ao processo.
+- **Fronteiras atualizadas**: `seguranca.md` §21 (identidade e autorização no batch esclarecidas; **abrangência não localizada — dúvida mantida**) e §28-10; `faturamento.md` §19 (referência cruzada à orquestração, sem reescrever regra de negócio).
+- **Cenários**: 20 identificados. **Dúvidas abertas**: 10, com destaque para abrangência no disparo, proteção contra dupla execução do mesmo processo, semântica de `Processo.limite`/`prioridade` e granularidade de commit dentro da unidade.
+- **Fronteira registrada**: o framework batch também é infraestrutura de **geração assíncrona de relatórios** — próxima atividade, não executada aqui.
+- **Testes**: n/a (documental) · **Risco**: baixo · **Rollback**: `git revert` do commit.
