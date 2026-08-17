@@ -140,7 +140,7 @@ Grupo de Faturamento (cronograma AAAAMM, atividades 0–7, datas por rota)
 
 ## 9. Relação com Atendimento/OS
 
-OSs executam instalação/substituição/retirada/aferição de hidrômetro e fiscalização de leitura; **anormalidade de leitura pode emitir OS automaticamente** (`ltan_icemissaoordemservico`). O encerramento dessas OSs altera o estado da micromedição (nova instalação vigente, leituras de fronteira) — mesmo padrão de retroalimentação já visto no Cadastro. Correção de leitura via análise/fiscalização gera `LEITURA_ALTERADA`/`CONFIRMADA` com usuário registrado.
+OSs executam instalação/substituição/retirada/aferição de hidrômetro e fiscalização de leitura; **anormalidade de leitura pode emitir OS automaticamente** (`ltan_icemissaoordemservico`). **Precisão (2026-08-14, mapa do Atendimento)**: as Actions que efetivam esses serviços vivem no Atendimento (`EfetuarInstalacaoHidrometroAction`, `EfetuarSubstituicaoHidrometroAction`, `EfetuarRetiradaHidrometroAction`, `EfetuarRemanejamentoHidrometroAction`) e disparam o efeito **aqui**, onde a instalação vigente é mantida; a OS é então marcada como comercialmente atualizada. Fronteira: **o Atendimento origina e registra o evento; a Micromedição é a dona do dado de medição**. Ver [atendimento.md §16–17](atendimento.md). Correção de leitura via análise/fiscalização gera `LEITURA_ALTERADA`/`CONFIRMADA` com usuário registrado.
 
 ## 10. Regras estruturantes identificadas
 

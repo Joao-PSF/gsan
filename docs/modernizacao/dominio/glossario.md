@@ -53,7 +53,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   Mapeamento:   Imovel.hbm.xml → cadastro.imovel (loca_id, stcm_id, qdra_id, last_id, lest_id, hidi_id, cstf_id, iper_id, rota_identrega...)
   Banco:        FKs de ligacao_agua/ligacao_esgoto apontam para imov_id (ver termos 9 e 10)
   ```
-- **Observações de modernização**: entidade **sobrecarregada** (endereço, situações de ligação, características físicas, flags de faturamento/cobrança e campos sociais customizados como `imov_classe_social` e `imov_qtd_economias_social`). Forte candidata a análise de decomposição na modelagem — preservando a matrícula como identidade estável para migração.
+- **Observações de modernização**: entidade **sobrecarregada** (endereço, situações de ligação, características físicas, flags de faturamento/cobrança e campos sociais customizados como `imov_classe_social` e `imov_qtd_economias_social`). Forte candidata a análise de decomposição na modelagem — preservando a matrícula como identidade estável para migração. Nota (2026-08-14): **não toda demanda tem imóvel como objeto** — o Atendimento admite ocorrências de rede/área ancoradas em bairro-área, endereço ou coordenadas, e o banco permite `registro_atendimento.imov_id` nulo (ver [modulos/atendimento.md §6](../modulos/atendimento.md)).
 
 ## 3. Economia
 
@@ -390,8 +390,9 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
 - **Módulo principal**: `atendimentopublico`
 - **Evidências**:
   ```text
-  Mapeamento:  RegistroAtendimento.hbm.xml → atendimentopublico.registro_atendimento (step_id, meso_id, unid_idatual, amen_id, rgat_idreativacao, rgat_idduplicidade, imov_id opcional, campos de endereço/perímetro)
+  Mapeamento:  RegistroAtendimento.hbm.xml → atendimentopublico.registro_atendimento (step_id, meso_id, unid_idatual, amen_id, rgat_idreativacao, rgat_idduplicidade, imov_id, campos de endereço/perímetro)
   ```
+- **Observações de modernização** (2026-08-14): o RA é o **protocolo da demanda** (compromisso de atendimento com prazo), distinto da OS (unidade de execução) — o vínculo entre eles é **opcional nos dois sentidos**. Estados: PENDENTE / ENCERRADO / BLOQUEADO; reativação e duplicidade **encadeiam protocolos distintos**, não sobrescrevem o RA. O comportamento é fortemente parametrizado por `SolicitacaoTipoEspecificacao`. Sobre `imov_id`: o banco permite nulo e há demandas de rede/área sem matrícula, mas o mapping atual exige imóvel — ver [modulos/atendimento.md §6](../modulos/atendimento.md).
 
 ## 23. Ordem de Serviço (OS)
 
