@@ -27,6 +27,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [seguranca/modelo-legado.md](seguranca/modelo-legado.md) | Modelo de autenticação/autorização atual (RBAC próprio) |
 | [seguranca/riscos-identificados.md](seguranca/riscos-identificados.md) | Achados de segurança e ações requeridas |
 | [testes/estrategia-testes.md](testes/estrategia-testes.md) | Estratégia de testes: **dois oráculos** (funcional/financeiro × técnico/segurança), modelo de especificação de cenário, comparação semântica de relatórios |
+| [compatibilidade/estruturas-centrais.md](compatibilidade/estruturas-centrais.md) | **Análise de compatibilidade das estruturas centrais**: 64 decisões `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR` sobre os conceitos do domínio, com semântica × estrutura separadas, justificativa completa de cada reestruturação, análise transversal de parametrização e de histórico/versão/linhagem/snapshot, tratamento de identificadores e famílias não transportadas |
 | [compatibilidade/divergencias-aprovadas.md](compatibilidade/divergencias-aprovadas.md) | **Registro de divergências aprovadas**: onde o SISAN deve divergir do GSAN de propósito, para que o teste não trate correção de segurança como falha |
 | [integracoes/integracoes-identificadas.md](integracoes/integracoes-identificadas.md) | Integrações externas identificadas no código e no banco |
 | [modulos/README.md](modulos/README.md) | Ordem de migração dos módulos e status |
@@ -42,5 +43,5 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 ## Pastas planejadas (backlog da Fase 0)
 
 - `dominio/` — criada; contém o glossário **e o mapa de domínio consolidado** (2026-09-14). Receberá a **visão conceitual alvo do SISAN** após a análise de compatibilidade.
-- `compatibilidade/` — criada; contém o registro de divergências aprovadas. Receberá a análise de compatibilidade das estruturas centrais (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→SISAN (ADR-0005).
+- `compatibilidade/` — contém o registro de divergências e **a análise de compatibilidade das estruturas centrais** (2026-09-14). Receberá o documento de compatibilidade/migração GSAN→SISAN (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→SISAN (ADR-0005).
 - `modulos/` — **os dez mapas funcionais estão concluídos** (cadastro → integrações). Receberá ainda o catálogo de funcionalidades futuras descobertas no `gsan_comercial` (`funcionalidades-futuras.md`).

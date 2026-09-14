@@ -35,6 +35,16 @@ Onde o legado está errado, **equivalência literal seria o defeito**. Este arqu
 | D-15 | Consumo de fallback | `setNumeroConsumoFaturadoMes(20)` fixo em código (`ControladorFaturamentoFINAL:1880/1897`) | Parâmetro configurável | Constante mágica em caminho financeiro | Proposta |
 | D-16 | Credenciais de banco | Roles `gsan_*` com senha = login, versionadas | Credencial por ambiente, contas distintas por finalidade, menor privilégio | Achado 2 | Proposta |
 
+## Divergências PROPOSTAS (⚠️ não aprovadas — não valem como oráculo 2)
+
+⚠️ Seção distinta das aprovadas. Uma divergência **proposta** ainda é avaliada pelo oráculo 1 (equivalência estrita) até receber aprovação. Registrada aqui apenas para não se perder.
+
+| # | Área | Comportamento do GSAN | Comportamento proposto | Motivo | Origem |
+| - | ---- | --------------------- | ---------------------- | ------ | ------ |
+| **D-17** | Abrangência territorial | Em superfícies onde `verificarAcessoAbrangencia` não é chamado, o usuário acessa dados **fora de sua abrangência** — o modelo está correto, a aplicação depende de disciplina | Escopo territorial aplicado **sistematicamente** em toda consulta | Vazamento por omissão (LGPD); o SISAN não deve herdar a garantia frágil | [`estruturas-centrais.md §19.10`](estruturas-centrais.md) (SEG-03) |
+
+⚠️ **Por que exige aprovação**: altera comportamento **visível** — consultas que hoje retornam dados passariam a restringi-los. É correção, não regressão, mas operadores podem perceber como perda de acesso.
+
 ## Fora deste registro (equivalência estrita — oráculo 1)
 
 Para evitar leitura errada: **nada** do comportamento financeiro e funcional entra aqui sem justificativa própria. Cálculo de conta, tarifa por vigência e faixas, mínimos, esgoto, impostos, **os modos de arredondamento ponto a ponto** ([`faturamento.md §27`](../modulos/faturamento.md)), baixa de pagamento, parcelamento, consumo e média — tudo isso é avaliado pelo **oráculo 1**, com igualdade exigida ao centavo.

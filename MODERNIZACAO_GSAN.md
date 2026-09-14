@@ -8,6 +8,8 @@ Fase 0 em andamento. 1ª execução (2026-08-13): diagnóstico técnico do legad
 
 14ª execução (2026-09-14): **mapa de domínio consolidado concluído** — [dominio/mapa-de-dominio.md](docs/modernizacao/dominio/mapa-de-dominio.md): os dez mapas funcionais viraram **uma** visão integrada (conceitos centrais e sua natureza, 12 identidades estáveis com criticidade de migração, os quatro mecanismos de tempo, ownership por conceito, 14 fronteiras entre módulos, **7 dependências circulares confirmadas**, núcleo comercial, domínios financeiro e operacional, 16 famílias de regra-como-dado, 5 mecanismos de variação por companhia, 5 conceitos sobrecarregados, 9 conceitos implícitos e 10 pontos de maior risco).
 
+15ª execução (2026-09-14): **análise de compatibilidade das estruturas centrais concluída** — [compatibilidade/estruturas-centrais.md](docs/modernizacao/compatibilidade/estruturas-centrais.md): **64 decisões estruturais** classificadas conforme ADR-0006 (classificação primária: 37 PRESERVAR · 14 REESTRUTURAR · 6 MODERNIZAR · 5 EXIGE APROFUNDAMENTO · 2 NÃO TRANSPORTAR; 12 decisões têm classificação dupla), mais 6 famílias não transportadas e 16 famílias paramétricas. Cada `REESTRUTURAR` responde às seis perguntas obrigatórias (problema, benefício, semântica a preservar, transformação, risco, validação). Uma divergência nova **proposta** (D-17, abrangência sistemática) — registrada como proposta, **não aprovada**.
+
 **Leitura honesta do estado (calibrada em 2026-09-14).** Os dez mapas funcionais cobrem o fluxo principal Cadastro → Micromedição → Faturamento → Conta → Cobrança → Arrecadação, o ciclo de demanda/execução do Atendimento, identidade/autorização/abrangência/auditoria, processamento em lote, relatórios e integrações. **Isso não significa que a Fase 0 esteja pronta para orientar implementação**, por duas razões diferentes que não devem ser confundidas:
 
 - **Incompletude normal da descoberta**: faltam o mapa de domínio, a análise de compatibilidade das estruturas centrais, o catálogo de funcionalidades futuras, o refinamento de dependências e a **especificação dos cenários críticos** (itens 3–8 do backlog). Permanecem dúvidas abertas registradas em cada mapa.
@@ -39,36 +41,37 @@ Fase 0 — Descoberta, compatibilidade e arquitetura. Objetivo: compreender o do
 
 - Mapa de domínio consolidado (14ª execução): [dominio/mapa-de-dominio.md](docs/modernizacao/dominio/mapa-de-dominio.md) — **quatro padrões estruturais** atravessam o sistema inteiro (regra como dado · identidade estável + versão + linhagem · fotografia na operação · informado × efetivo); as dez áreas **não são dez domínios equivalentes** (Batch/Relatórios/Integrações têm natureza de plataforma); o **Atendimento é a ponte** e participa de 3 dos 7 ciclos; a **identidade do pagamento é a única anomalia** do padrão de identidade do sistema; **Economia, obrigação financeira e estoque de dívida** são conceitos centrais **sem entidade própria**. Correções de consistência aplicadas: descrição de `arquitetura-alvo.md` no sumário e serviço externo de relatórios (comprovado como `src/gcom/api/GsanApi.java`, OAuth2).
 
+- Análise de compatibilidade das estruturas centrais (15ª execução): [compatibilidade/estruturas-centrais.md](docs/modernizacao/compatibilidade/estruturas-centrais.md) — **o GSAN acertou mais do que errou**: quase 6 em cada 10 decisões são `PRESERVAR`, e o **Faturamento é o mais preservado em proporção (7 de 10)** — apesar de ser o módulo de maior risco financeiro. Onde há dinheiro, o modelo do legado é bom. As reestruturações concentram-se em Segurança (implementação inadequada) e Cadastro (o Imóvel acumulou estado de outros domínios). **Cinco decisões dominam o risco**: identidade estável de documento (semântica inegociável, estrutura a reestruturar), **precisão financeira PRESERVADA** (as 5 políticas de arredondamento são comportamento, não dívida técnica), **snapshots da Conta PRESERVADOS** (parecem desnormalização, são auditoria retroativa), abrangência territorial (conceito preservado, aplicação reestruturada) e **regra como dado** (nenhuma das 16 famílias paramétricas é descartada).
+
 ## EM EXECUÇÃO
 
 - Nada em execução no momento; próxima atividade definida abaixo.
 
 ## PRÓXIMAS ATIVIDADES (backlog restante da Fase 0, em ordem)
 
-**Concluídos**: ✅ glossário de domínio (2026-08-14) · ✅ dez mapas funcionais, cadastro → integrações (2026-08-14 a 2026-09-14) · ✅ **mapa de domínio consolidado** (2026-09-14) · ✅ ADRs 0001 e 0002 formalizadas.
+**Concluídos**: ✅ glossário de domínio (2026-08-14) · ✅ dez mapas funcionais, cadastro → integrações (2026-08-14 a 2026-09-14) · ✅ mapa de domínio consolidado (2026-09-14) · ✅ **análise de compatibilidade das estruturas centrais** (2026-09-14) · ✅ ADRs 0001 e 0002 formalizadas.
 
 Sequência estabelecida (não remover a Visão Conceitual Alvo):
 
 ```text
 Mapa de domínio atual  ✅
         ↓
-Compatibilidade das estruturas centrais
+Compatibilidade das estruturas centrais  ✅
         ↓
-Visão conceitual alvo do SISAN
+Visão conceitual alvo do SISAN   ⬅ próxima
         ↓
 Documento de compatibilidade / migração
 ```
 
 | # | Atividade | Observação |
 | - | --------- | ---------- |
-| 1 | **Análise de compatibilidade das estruturas centrais** ⬅ **próxima** | Classificar os conceitos consolidados no mapa de domínio como `PRESERVAR / MODERNIZAR / REESTRUTURAR / NÃO TRANSPORTAR`, considerando benefício, custo, impacto, dificuldade de migração, dependências e compatibilidade semântica. Em `docs/modernizacao/compatibilidade/` |
-| 2 | **Visão Conceitual Alvo do SISAN** | Ainda **sem** modelo físico: conceitos, fronteiras, identidades e contratos do sistema alvo. Consome as hipóteses registradas no mapa de domínio (§20) e a classificação do item 1 |
-| 3 | **Catálogo de funcionalidades futuras** | Descobertas do `gsan_comercial` (PIX, fiscal/NF, SPED, mobile/campo, recadastramento, tarifa social, SPC/Serasa, APIs, BI, boleto registrado): funcionalidade, problema resolvido, módulo, dependências, prioridade preliminar. Sem modelagem de banco |
-| 4 | **Refinamento das dependências / ordem de implementação** | O mapa de domínio já forneceu a evidência (ownership, fronteiras e **7 ciclos**); falta a decisão de ordem, registrando o motivo de qualquer mudança em `modulos/README.md` |
-| 5 | **Documento de compatibilidade GSAN → SISAN** | O que permanece reconhecível; códigos/identificadores; schemas divergentes entre companhias; registro de transformações; validação de migração |
-| 6 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md) |
-| 7 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ **Bloqueia o piloto (Fase 6)**. Proposta registrada, decisão pendente |
-| 8 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–7 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
+| 1 | **Visão Conceitual Alvo do SISAN** ⬅ **próxima** | Ainda **sem** modelo físico: conceitos, fronteiras, identidades e contratos do sistema alvo. Consome as 37 decisões `PRESERVAR` como restrições de desenho, as 15 que tocam `REESTRUTURAR` como problemas a resolver (com a semântica a preservar já explicitada) e as 14 hipóteses de [`estruturas-centrais.md §21`](docs/modernizacao/compatibilidade/estruturas-centrais.md) |
+| 2 | **Catálogo de funcionalidades futuras** | Descobertas do `gsan_comercial` (PIX, fiscal/NF, SPED, mobile/campo, recadastramento, tarifa social, SPC/Serasa, APIs, BI, boleto registrado): funcionalidade, problema resolvido, módulo, dependências, prioridade preliminar. Sem modelagem de banco |
+| 3 | **Refinamento das dependências / ordem de implementação** | O mapa de domínio já forneceu a evidência (ownership, fronteiras e **7 ciclos**); falta a decisão de ordem, registrando o motivo de qualquer mudança em `modulos/README.md` |
+| 4 | **Documento de compatibilidade GSAN → SISAN** | O que permanece reconhecível; códigos/identificadores; schemas divergentes entre companhias; registro de transformações; validação de migração |
+| 5 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md) |
+| 6 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ **Bloqueia o piloto (Fase 6)**. Proposta registrada, decisão pendente |
+| 7 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–6 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
 
 ## RISCOS
 
