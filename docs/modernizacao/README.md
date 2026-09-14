@@ -8,6 +8,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | --------- | -------- |
 | [procedencia.md](procedencia.md) | **Procedência das fontes e método de verificação**: commits analisados, níveis de certeza, método de contagem, correções de fato já aplicadas |
 | [plano-de-trabalho.md](plano-de-trabalho.md) | Plano de trabalho da modernização: estado atual, arquitetura alvo, riscos, fases, ordem dos módulos, estratégias |
+| [dominio/mapa-de-dominio.md](dominio/mapa-de-dominio.md) | **Mapa de domínio consolidado**: visão integrada dos dez mapas funcionais — conceitos centrais e sua natureza, identidades estáveis, estado/histórico/snapshot, ownership, fronteiras, dependências circulares, núcleo comercial, domínios financeiro e operacional, regras como dados, variação por companhia, conceitos sobrecarregados e implícitos, riscos de modernização |
 | [dominio/glossario.md](dominio/glossario.md) | Glossário de domínio: 25 conceitos estruturantes com definição, relações, evidências (código/banco) e pontos de aprofundamento |
 | [modulos/cadastro.md](modulos/cadastro.md) | Mapa funcional do módulo Cadastro: imóvel/matrícula, economia, cliente×imóvel, ligações, categorias, território, estados, dependências e compatibilidade |
 | [modulos/micromedicao.md](modulos/micromedicao.md) | Mapa funcional da Micromedição: hidrômetro/instalação, ciclo de leitura, anormalidades paramétricas, consumo (real/média/mínimo), fronteira com faturamento, cenários de caracterização |
@@ -20,7 +21,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [modulos/integracoes.md](modulos/integracoes.md) | Mapa funcional das Integrações: os sete padrões técnicos, entry points fora do gate, APIs `/api/*`, cliente OAuth2, integração por banco compartilhado (UPA/SAM), SOAP/SPC, e-mail e SMS; autenticação comparada, identidade na fronteira, achados de segurança |
 | [modulos/relatorios.md](modulos/relatorios.md) | Mapa funcional dos Relatórios: relatório × tarefa × resultado, decisão automática online/batch por contagem versus limite, motor Jasper com template compilado e datasource, artefato persistido e download, autorização operacional, segurança do acesso ao artefato |
 | [arquitetura/arquitetura-legada.md](arquitetura/arquitetura-legada.md) | Mapa técnico do GSAN legado: runtime, build, frameworks, camadas, batch, relatórios |
-| [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e estratégia de coexistência |
+| [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e princípios de compatibilidade GSAN→SISAN (banco próprio UTF-8; coexistência **não** é premissa deste projeto — é cenário do playbook de migração futura) |
 | [banco/estrutura-atual.md](banco/estrutura-atual.md) | Inventário do banco `gsan_comercial`: schemas, objetos, classificação, drift |
 | [banco/migracao-postgresql.md](banco/migracao-postgresql.md) | Estratégia de atualização do PostgreSQL e versionamento do banco |
 | [seguranca/modelo-legado.md](seguranca/modelo-legado.md) | Modelo de autenticação/autorização atual (RBAC próprio) |
@@ -40,6 +41,6 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 
 ## Pastas planejadas (backlog da Fase 0)
 
-- `dominio/` — criada; contém o glossário. Receberá ainda o mapa de domínio (`mapa-de-dominio.md`).
+- `dominio/` — criada; contém o glossário **e o mapa de domínio consolidado** (2026-09-14). Receberá a **visão conceitual alvo do SISAN** após a análise de compatibilidade.
 - `compatibilidade/` — criada; contém o registro de divergências aprovadas. Receberá a análise de compatibilidade das estruturas centrais (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→SISAN (ADR-0005).
 - `modulos/` — **os dez mapas funcionais estão concluídos** (cadastro → integrações). Receberá ainda o catálogo de funcionalidades futuras descobertas no `gsan_comercial` (`funcionalidades-futuras.md`).

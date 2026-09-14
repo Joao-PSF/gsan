@@ -224,7 +224,9 @@ FiltroRelatorioGerado por FUNCIONALIDADE_INICIADA_ID
 
 ## 22. Serviço externo de relatórios
 
-🟡 Existe evidência de um **serviço externo**: o diagnóstico técnico registrou a biblioteca `gsan-relatorios` (Jersey + Gson) e a classe `api/GsanApi.java` com URL e token; há também `AcessoServicoReportException`. ❔ **Não comprovei** nesta análise: qual servidor/serviço é, quais relatórios o utilizam, se é alternativa ou complemento ao motor local, se é obrigatório e se é específico de companhia. 🔵 Registrado como **caminho paralelo provável**, a investigar no mapa de Integrações — **não** documentar arquitetura por inferência de nome.
+🟢 **Parcialmente resolvido em 2026-09-14** ([integracoes.md §5](integracoes.md)): o cliente existe e é **`src/gcom/api/GsanApi.java`** — não a cópia obsoleta da raiz que o diagnóstico anterior citava. Ele faz **OAuth2 *client credentials*** (`:128-160`): lê a URL de `SegurancaParametro.URL_BASIC_AUTH` e as credenciais de `obterCredenciaisOauth()` (**banco, não código**), troca Basic por Bearer e expõe `invoke(...)` e `download(nome, response)`. Biblioteca `gsan-relatorios` (Jersey + Gson); `AcessoServicoReportException` é o erro correlato.
+
+❔ **Permanece aberto**: quais relatórios efetivamente o utilizam, se é alternativa ou complemento ao motor Jasper local, se é obrigatório, e se é específico de companhia. 🔵 O que mudou é que o **mecanismo** está comprovado; o **uso** não.
 
 ## 23. Casos representativos
 

@@ -435,7 +435,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
 
 ## Relações principais do domínio
 
-Mapa textual construído a partir das evidências acima (não é o mapa de domínio definitivo — item 3 do backlog):
+Mapa textual construído a partir das evidências acima. **A visão integrada do domínio está em [`mapa-de-dominio.md`](mapa-de-dominio.md)** (2026-09-14), que consolida os dez mapas funcionais — identidades estáveis, ownership, fronteiras, ciclos, regras como dados e riscos de modernização. O mapa abaixo permanece como referência rápida de relações:
 
 ```text
 Gerência Regional / Unidade de Negócio
