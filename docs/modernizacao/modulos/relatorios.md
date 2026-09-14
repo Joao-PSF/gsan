@@ -171,9 +171,27 @@ FiltroRelatorioGerado por FUNCIONALIDADE_INICIADA_ID
 
 ⚠️ 🟢 **Fato**: no trecho analisado de `ExibirRelatorioBatchAction`, a recuperação usa **apenas o `idFuncionalidadeIniciada` recebido no request** para localizar o `RelatorioGerado`; **não localizei, nesse trecho, comparação com o usuário logado** (nem via `ProcessoIniciado.usuario`, nem por abrangência).
 
-🔵 Isso **não é declaração de vulnerabilidade** — a proteção poderia estar (a) no gate de autorização da URL, (b) em validação anterior na tela de status que fornece o id, ou (c) em outro ponto do fluxo que não inspecionei. ⚠️ Porém, há dois agravantes conhecidos que tornam o ponto **prioritário**: o `FiltroSegurancaAcesso` **exclui do bloco de autorização qualquer URL contendo `relatorio`** ([seguranca.md §7](seguranca.md)), e a Action de download se chama `ExibirRelatorioBatchAction` — cuja URL provavelmente contém "relatorio".
+> ⚠️ **ELEVADO A ACHADO CONFIRMADO em 2026-09-14.** A versão anterior classificava isto como "dúvida prioritária, não declaração de vulnerabilidade", por eu ter lido apenas a Action. O rastreio dirigido do **caminho completo** fechou a cadeia. Leitura de código apenas — **nenhuma execução, nenhuma exploração ofensiva**.
 
-❔ **Dúvida prioritária registrada** (§30): *um usuário autenticado consegue baixar o relatório gerado por outro informando outro `idFuncionalidadeIniciada`?* Precisa de rastreio dirigido — **não presumir** nem em favor nem contra.
+🟢 **Cadeia verificada, elo a elo** (ordem dos filtros conforme `web.xml`):
+
+| # | Elo | Evidência | Efeito |
+| - | --- | --------- | ------ |
+| 1 | `FiltroSSO` | `:22` chama `getSession()` (sem argumento — **cria** a sessão). `:25-29`: `if (sso.isLogado()) chain.doFilter(...) else chain.doFilter(...)` — **os dois ramos são idênticos** | Segue sempre; o gate SSO não condiciona nada |
+| 2 | `FiltroSessaoExpirada` | `:38` só bloqueia quando `sessao == null` | **Guarda inalcançável**: o filtro anterior acabou de criar a sessão. Código morto para `*.do` |
+| 3 | `FiltroLimparSessao` | `:96` sempre chama `filterChain.doFilter` | Segue sempre |
+| 4 | `FiltroSegurancaAcesso` | `:279` — no ramo `usuarioLogado == null`, chama `contemUrl(enderecoURL)`; se casar, invoca o `doFilter` privado (`:298-301`), que **só mede tempo** e segue. `:307-309` até trata `usuarioLogado == null` no log — o caminho é **previsto** para anônimo | Passa sem usuário autenticado |
+| 5 | `contemUrl` | `:451-456` — `url.contains(key) \|\| url.toLowerCase().contains(key)`, sobre `urls_sem_usuario_na_sessao.properties:7` → **`relatorio=relatorio`** | `/exibirRelatorioBatchAction.do` casa pela comparação em minúsculas |
+| 6 | Action | `ExibirRelatorioBatchAction:40-52` localiza o `RelatorioGerado` **apenas pelo `idFuncionalidadeIniciada` do request** | Entrega os bytes sem verificar propriedade |
+| 7 | Classe pai | `GcomAction` não autoriza esse objeto | Sem rede de proteção |
+
+🟢 **O que eu tinha deixado passar**: documentei a lista de exceções *hard-coded* de `FiltroSegurancaAcesso:168-199`, que se aplica ao usuário **logado**, e nunca conectei o ramo **separado**, dirigido por properties, de `:279`, que trata o caso **sem usuário**. São **dois caminhos independentes** contendo `relatorio`, com o mesmo efeito.
+
+🟢 **Conclusão**: no nível da aplicação contida neste repositório, o artefato de relatório batch é recuperável **por identificador, sem verificação de propriedade, e alcançável sem usuário autenticado**. Relatórios batch contêm dados de clientes → também é exposição LGPD.
+
+🔵 **Única ressalva legítima, operacional**: proxy reverso, VPN ou SSO externo não presentes no repositório podem reduzir a explorabilidade de uma instalação específica. Isso **não elimina** o defeito de controle de acesso da aplicação.
+
+✅ **Dúvida fechada** (era §30): *um usuário consegue baixar o relatório gerado por outro informando outro `idFuncionalidadeIniciada`?* — **Sim, segundo o código da aplicação**, e sem sequer precisar estar autenticado. Registrado como achado 13 em [`riscos-identificados.md`](../seguranca/riscos-identificados.md), com os achados correlatos 14 (cadeia de filtros que não barra nada) e a ação `REESTRUTURAR` correspondente em §29.
 
 ## 17. Segurança — a exceção `relatorio` no filtro
 

@@ -6,6 +6,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 
 | Documento | Conteúdo |
 | --------- | -------- |
+| [procedencia.md](procedencia.md) | **Procedência das fontes e método de verificação**: commits analisados, níveis de certeza, método de contagem, correções de fato já aplicadas |
 | [plano-de-trabalho.md](plano-de-trabalho.md) | Plano de trabalho da modernização: estado atual, arquitetura alvo, riscos, fases, ordem dos módulos, estratégias |
 | [dominio/glossario.md](dominio/glossario.md) | Glossário de domínio: 25 conceitos estruturantes com definição, relações, evidências (código/banco) e pontos de aprofundamento |
 | [modulos/cadastro.md](modulos/cadastro.md) | Mapa funcional do módulo Cadastro: imóvel/matrícula, economia, cliente×imóvel, ligações, categorias, território, estados, dependências e compatibilidade |
@@ -16,6 +17,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [modulos/atendimento.md](modulos/atendimento.md) | Mapa funcional do Atendimento: RA como protocolo × OS como execução, especificação como núcleo paramétrico, prazo/espera/reiteração, tramitação, estados, efeito cadastral pela execução, fronteiras financeiras, matrícula opcional |
 | [modulos/seguranca.md](modulos/seguranca.md) | Mapa funcional da Segurança (comportamento): gate transversal de autorização por URL (com exceções), união de grupos, permissões especiais nomeadas, abrangência territorial e sua aplicação manual, ciclo do usuário, auditoria em dois níveis |
 | [modulos/batch.md](modulos/batch.md) | Mapa funcional do Batch: definição × execução em três níveis (processo/etapa/unidade), disparo manual/agendado/mensageria, retomada por unidade, reprocessamento por etapa, estados, identidade do solicitante, casos FATURAR_GRUPO e ENCERRAR_ARRECADACAO_MES |
+| [modulos/integracoes.md](modulos/integracoes.md) | Mapa funcional das Integrações: os sete padrões técnicos, entry points fora do gate, APIs `/api/*`, cliente OAuth2, integração por banco compartilhado (UPA/SAM), SOAP/SPC, e-mail e SMS; autenticação comparada, identidade na fronteira, achados de segurança |
 | [modulos/relatorios.md](modulos/relatorios.md) | Mapa funcional dos Relatórios: relatório × tarefa × resultado, decisão automática online/batch por contagem versus limite, motor Jasper com template compilado e datasource, artefato persistido e download, autorização operacional, segurança do acesso ao artefato |
 | [arquitetura/arquitetura-legada.md](arquitetura/arquitetura-legada.md) | Mapa técnico do GSAN legado: runtime, build, frameworks, camadas, batch, relatórios |
 | [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e estratégia de coexistência |
@@ -23,7 +25,8 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [banco/migracao-postgresql.md](banco/migracao-postgresql.md) | Estratégia de atualização do PostgreSQL e versionamento do banco |
 | [seguranca/modelo-legado.md](seguranca/modelo-legado.md) | Modelo de autenticação/autorização atual (RBAC próprio) |
 | [seguranca/riscos-identificados.md](seguranca/riscos-identificados.md) | Achados de segurança e ações requeridas |
-| [testes/estrategia-testes.md](testes/estrategia-testes.md) | Estratégia de testes de caracterização e equivalência legado × novo |
+| [testes/estrategia-testes.md](testes/estrategia-testes.md) | Estratégia de testes: **dois oráculos** (funcional/financeiro × técnico/segurança), modelo de especificação de cenário, comparação semântica de relatórios |
+| [compatibilidade/divergencias-aprovadas.md](compatibilidade/divergencias-aprovadas.md) | **Registro de divergências aprovadas**: onde o SISAN deve divergir do GSAN de propósito, para que o teste não trate correção de segurança como falha |
 | [integracoes/integracoes-identificadas.md](integracoes/integracoes-identificadas.md) | Integrações externas identificadas no código e no banco |
 | [modulos/README.md](modulos/README.md) | Ordem de migração dos módulos e status |
 | [decisoes/README.md](decisoes/README.md) | Registro de decisões arquiteturais (ADRs) |
@@ -38,5 +41,5 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 ## Pastas planejadas (backlog da Fase 0)
 
 - `dominio/` — criada; contém o glossário. Receberá ainda o mapa de domínio (`mapa-de-dominio.md`).
-- `compatibilidade/` — análise de compatibilidade das estruturas centrais (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→SISAN (ADR-0005).
-- `modulos/` — receberá os mapas funcionais por módulo (próxima atividade: cadastro) e o catálogo de funcionalidades futuras descobertas no `gsan_comercial` (`funcionalidades-futuras.md`).
+- `compatibilidade/` — criada; contém o registro de divergências aprovadas. Receberá a análise de compatibilidade das estruturas centrais (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→SISAN (ADR-0005).
+- `modulos/` — **os dez mapas funcionais estão concluídos** (cadastro → integrações). Receberá ainda o catálogo de funcionalidades futuras descobertas no `gsan_comercial` (`funcionalidades-futuras.md`).

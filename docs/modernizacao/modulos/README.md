@@ -1,6 +1,8 @@
 # Módulos — Ordem de Migração e Status
 
-**Mapas funcionais concluídos (Fase 0)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md) · [arrecadacao](arrecadacao.md) · [atendimento](atendimento.md) · [seguranca](seguranca.md) · [batch](batch.md) · [relatorios](relatorios.md). Próximo: integrações.
+**Mapas funcionais concluídos (Fase 0 — todos)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md) · [arrecadacao](arrecadacao.md) · [atendimento](atendimento.md) · [seguranca](seguranca.md) · [batch](batch.md) · [relatorios](relatorios.md) · [integracoes](integracoes.md).
+
+⚠️ Mapa concluído **não é** especificação pronta para implementar: cada um lista dúvidas abertas, e a especificação dos cenários críticos é item do fechamento da Fase 0 (ver [`estrategia-testes.md`](../testes/estrategia-testes.md)).
 
 Ordem recomendada (refinamento previsto no item 6 do backlog da Fase 0, com base nos mapas funcionais; mudanças de ordem devem registrar o motivo aqui). Critério: começar por risco moderado e dependências simples; faturamento e arrecadação por último entre os críticos (risco financeiro); batch crítico ao final.
 
@@ -15,7 +17,7 @@ Ordem recomendada (refinamento previsto no item 6 do backlog da Fase 0, com base
 | 7 | Arrecadação (retornos bancários, baixas, devoluções) | Crítico financeiro — só após maturidade da plataforma | Pendente |
 | 8 | Faturamento (cálculo de contas, tarifas, créditos/débitos) | Núcleo financeiro de maior risco | Pendente |
 | 9 | Batch críticos (faturamento/arrecadação em lote, resumos) | Último estágio; Spring Batch substituindo EJB/MDB/Quartz 1.5 | Pendente |
-| — | Transversais: seguranca (Fase 5), relatorios (contínuo, por módulo), integracoes (junto ao módulo dono), fiscal/SPED (junto a faturamento/financeiro) | — | Pendente |
+| — | Transversais: seguranca (Fase 5), relatorios (contínuo, por módulo), integracoes (junto ao módulo dono — mas a **camada** de integração é fundação, pois o GSAN não tem uma: ver [integracoes.md §1](integracoes.md)), fiscal/SPED (junto a faturamento/financeiro) | — | Pendente |
 
 ## Regras
 

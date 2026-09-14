@@ -31,7 +31,23 @@ A decisão final é do Faturamento, em cima de dados paramétricos do Cadastro:
 
 ## 5. Consumo utilizado (resolve dúvida da Micromedição)
 
-**A Micromedição determina e mantém o consumo; o Faturamento o utiliza como insumo.** Evidências: `faturarGrupoFaturamento` obtém `ConsumoHistorico` de água e esgoto via `getControladorMicromedicao().obterConsumoHistoricoMedicaoIndividualizada(imovel, ligacaoTipo, anoMesFaturamento)` (linhas 1441–1453); **no fluxo principal analisado do Faturamento não foi identificado reprocessamento ou gravação de `ConsumoHistorico`** (sem `inserirConsumoHistorico`/`atualizarConsumoHistorico` em `ControladorFaturamentoFINAL`). O valor monetizado é o **`cshi_nnconsumofaturadomes`** com sua **origem** (`ConsumoTipo`: real/média/mínimo/fixado) e anormalidade. Alterações posteriores de consumo (retificação/revisão) passam de novo pela Micromedição (ajuste com versões preservadas em `consumo_hist_anterior`).
+> ⚠️ **Seção corrigida em 2026-09-14.** A versão anterior afirmava que "no fluxo principal do Faturamento não foi identificado reprocessamento ou gravação de `ConsumoHistorico`", apoiada na ausência de `inserirConsumoHistorico`/`atualizarConsumoHistorico` em `ControladorFaturamentoFINAL`. A busca era literalmente verdadeira; **a conclusão extrapolava** — ausência daqueles nomes não é ausência de escrita. Abaixo, o comportamento verificado caso a caso.
+
+**A Micromedição determina e mantém o consumo; o Faturamento o utiliza como insumo — com uma exceção comprovada.**
+
+🟢 **Leitura (regra geral)**: `faturarGrupoFaturamento` obtém `ConsumoHistorico` de água e esgoto via `getControladorMicromedicao().obterConsumoHistoricoMedicaoIndividualizada(imovel, ligacaoTipo, anoMesFaturamento)` (linhas 1441–1453). O valor monetizado é o **`cshi_nnconsumofaturadomes`** com sua **origem** (`ConsumoTipo`: real/média/mínimo/fixado) e anormalidade.
+
+🟢 **Três casos de contato com `ConsumoHistorico`, verificados:**
+
+| Caso | Evidência | Quem escreve |
+| ---- | --------- | ------------ |
+| **Macromedição / condomínio / rateio** | `:1233` chama `atualizarConsumosImoveisMacro` dentro do fluxo principal de `faturarGrupoFaturamento`, logo antes do `encerrarUnidadeProcessamentoBatch`. Em `:1261-1265` o método é **delegação de três linhas** para `getControladorMicromedicao().atualizarConsumosCondominios(rota, ligacaoTipo)`; a escrita ocorre em `ControladorMicromedicao:39797/39837/39858` | **Micromedição escreve.** Faturamento **orquestra** — colaboração entre módulos, não violação de fronteira |
+| **`faturarImovel`** | `:1867-1900` — `new ConsumoHistorico()` só quando `obterUltimoConsumoImovel` devolve `null`, com `setConsumoTipo(SEM_CONSUMO)` e `setNumeroConsumoFaturadoMes(20)`; usado em memória e **nunca persistido** | **Ninguém.** Objeto transitório |
+| **Retificação de conta** | `src/gcom/faturamento/controladores/ControladorRetificarConta:267-273` — `corrigirConsumos` faz `setNumeroConsumoFaturadoMes(consumo)`, `setUltimaAlteracao(...)` e **`getControladorUtil().atualizar(consumoHistorico)`**; `:263` também altera a leitura via `getControladorMicromedicao().atualizarLeituraRetificarConta(...)` | **Faturamento escreve diretamente** na entidade da Micromedição |
+
+🟢 **Constante mágica descoberta na verificação**: `setNumeroConsumoFaturadoMes(20)` em `:1880` e `:1897` — **20 m³ fixos em código** como consumo de fallback quando não há consumo anterior. Não é parâmetro, não é tabela. Entra como cenário de caracterização (§31) e como item de parametrização no SISAN.
+
+🔵 **Consequência para o desenho do SISAN**: a fronteira **não é limpa**, mas a impureza é específica. Colaboração orquestrada (caso 1) é legítima e vira chamada de serviço. Escrita direta no agregado alheio (caso 3) é acoplamento a corrigir: a retificação deve invocar uma **operação exposta pela Micromedição** ("corrigir consumo faturado de referência X, com motivo"), preservando o versionamento em `consumo_hist_anterior`, em vez de alterar a linha por fora.
 
 ## 6. Consumo mínimo (precedência — núcleo resolvido)
 
@@ -199,7 +215,24 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 
 ## 27. Precisão financeira
 
-- **`BigDecimal` com arredondamento HALF_UP centralizado em `gcom.util.Util`**: `arredondar(BigDecimal)` = `setScale(0, ROUND_HALF_UP)` (consumo em m³ inteiro, linha 653–654); divisões monetárias com escala 2 (linhas 3110/3141) e intermediárias com escalas 4 e 7 (682, 1668); conversões via `formatarMoedaRealparaBigDecimal`.
+> ⚠️ **Seção corrigida em 2026-09-14.** A versão anterior afirmava "arredondamento HALF_UP **centralizado**". Isso estava errado: eu vi `HALF_UP` no utilitário e generalizei para o módulo, sem contar. A contagem verificada está abaixo.
+
+- 🟢 **Não existe política centralizada de arredondamento.** Contagem em `ControladorFaturamentoFINAL.java` (escopo declarado: **uma classe**; o pacote inteiro não foi contado neste round):
+
+  | Modo semântico | Ocorrências | Constantes/APIs usadas |
+  | -------------- | ----------: | ---------------------- |
+  | `HALF_UP` | 27 | `BigDecimal.ROUND_HALF_UP` (23) + `RoundingMode.HALF_UP` (4) |
+  | `UP` | 21 | `RoundingMode.UP` |
+  | `DOWN` | 5 | `BigDecimal.ROUND_DOWN` |
+  | `HALF_DOWN` | 2 | `BigDecimal.ROUND_HALF_DOWN` |
+  | `FLOOR` | 2 | `BigDecimal.ROUND_FLOOR` |
+
+  🟢 **Cinco políticas semânticas distintas** convivendo. (`BigDecimal.ROUND_HALF_UP` e `RoundingMode.HALF_UP` são a mesma semântica em duas APIs — contá-las como modos diferentes seria erro de leitura.)
+
+- 🟢 **`RoundingMode.UP` não é arredondamento comercial** — afasta do zero *sempre*, mesmo em `0,001`. São 21 usos dentro do núcleo de cálculo financeiro.
+- 🟢 **Truncamento em base de cálculo de imposto**: `:29943` — `baseCalculo = baseCalculo.setScale(2, BigDecimal.ROUND_DOWN)`.
+- 🟢 **Utilitário**: `gcom.util.Util.arredondar(BigDecimal)` = `setScale(0, ROUND_HALF_UP)` (consumo em m³ inteiro, linhas 653–654); divisões monetárias com escala 2 (linhas 3110/3141) e intermediárias com escalas 4 e 7 (682, 1668); conversões via `formatarMoedaRealparaBigDecimal`. O utilitário é consistente — **o que não é consistente é o uso no controlador**.
+- 🔵 **Consequência para a migração**: a regra "no SISAN, usar HALF_UP" produziria divergência de centavos em massa contra o GSAN de referência. O arredondamento **é regra de negócio por ponto de cálculo**, e cada ponto precisa ser caracterizado antes de ser reimplementado. Este é o item de maior risco de equivalência financeira do módulo.
 - Valores monetários nas tabelas com `numeric(13,2)`-equivalente (length 13 nos mapeamentos, escala 2).
 - **O momento do arredondamento (por faixa, por categoria, no total) é regra de resultado** — deve ser capturado pelos golden masters, não reimplementado "matematicamente melhor" no SISAN.
 
@@ -209,7 +242,7 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 2. **Fotografia completa na emissão** (tarifa, categorias/economias/mínimos, situações, percentuais, clientes) — a conta é reproduzível para sempre, independente do estado atual do cadastro.
 3. **Mesmo cálculo no individual e no lote** (`gerarConta` único) — propriedade que viabiliza caracterização e migração por comparação.
 4. **Faturabilidade é decisão do Faturamento sobre flags paramétricos** do Cadastro/Micromedição.
-5. **Consumo é insumo do Faturamento** — no fluxo principal analisado ele não é regravado aqui; a determinação e a manutenção pertencem à Micromedição.
+5. **Consumo é insumo do Faturamento — com uma exceção comprovada**: a determinação e a manutenção pertencem à Micromedição (inclusive no fluxo de condomínio/macro, apenas *orquestrado* daqui), mas a **retificação escreve diretamente** em `ConsumoHistorico` (`ControladorRetificarConta:273`). Ver §5.
 6. **Tarifa é versionada por vigência** e selecionada por referência; a Conta preserva os principais parâmetros usados no cálculo, mantendo o contexto histórico das contas já emitidas mesmo após alterações tarifárias (reprocessamentos deliberados — retificação, revisão — seguem seus próprios fluxos).
 7. **Mínimos são função de tarifa × economias por categoria** (com overrides paramétricos).
 8. **Cancelar/retificar nunca apaga** — transições de estado com motivo + arquivamento no encerramento mensal.
@@ -225,9 +258,11 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 | **Linhagem entre retificações** (nova conta com nova identidade + vínculo de origem + motivo) | PRESERVAR CONCEITO | É o que dá continuidade financeira **entre** documentos — mecanismo distinto da identidade estável de cada um |
 | Cancelamento como estado com motivo | PRESERVAR CONCEITO | Nada se apaga |
 | Estrutura tarifária vigência→categoria→faixas/mínimos | PRESERVAR CONCEITO | Modelo paramétrico provado |
-| Consumo com origem como insumo (fronteira com Micromedição) | PRESERVAR CONCEITO | Separação de responsabilidades correta |
+| Consumo com origem como insumo (leitura e orquestração) | PRESERVAR CONCEITO | Separação correta nos casos 1 e 2 da §5 |
+| Escrita direta de `ConsumoHistorico` na retificação | REESTRUTURAR | Acoplamento ao agregado da Micromedição; deve virar operação exposta por ela (§5, caso 3) |
+| Consumo de fallback fixo em 20 m³ (`:1880/1897`) | MODERNIZAR | Constante mágica em caminho de faturamento; vira parâmetro |
 | Referência AAAAMM + referência contábil distinta | PRESERVAR CONCEITO | Competência financeira |
-| Precisão/arredondamento HALF_UP nos momentos atuais | PRESERVAR CONCEITO | Resultados ao centavo |
+| Precisão/arredondamento **nos momentos e modos atuais** (5 políticas semânticas distintas, §27) | PRESERVAR CONCEITO | Resultados ao centavo. **Não** unificar em HALF_UP sem caracterizar ponto a ponto |
 | Encerramento mensal como marco | PRESERVAR CONCEITO | Fecha competência; migração respeita |
 | Implementação física conta/conta_historico duplicada | POSSÍVEL MODERNIZAÇÃO | Semântica mantida; forma (duas tabelas espelho) pode evoluir |
 | Fórmula de faixas por economia/companhia | EXIGE APROFUNDAMENTO | Capturar por caracterização antes de qualquer generalização |
@@ -273,7 +308,8 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 Ciclo/lote:    faturarGrupoFaturamento (ControladorFaturamentoFINAL:1146, unidade=rota); preFaturarGrupoFaturamento:52323; descriptors/batchFaturarGrupoFaturamento; FaturamentoAtivCronRota
 Individual:    gerarConta:53545; gerarContaCategoria*:53835–54175; FaturamentoImediatoAjuste* (GUI)
 Faturabilidade: permiteFaturamentoParaAgua:1957 / ParaEsgoto:2019; FaturamentoSituacaoTipo (constantes)
-Consumo:       obterConsumoHistoricoMedicaoIndividualizada chamado em 1441–1453; ausência de inserir/atualizarConsumoHistorico no FINAL
+Consumo:       leitura em 1441-1453; orquestração macro/condominio em 1233->1261 (escrita em ControladorMicromedicao:39797/39837/39858);
+               fallback transitorio 1875/1893 com 20 m3 fixo; ESCRITA DIRETA em ControladorRetificarConta:267-273
 Mínimo:        ControladorMicromedicao.obterConsumoMinimoLigacao:6353 (Σ mínimo tarifa categoria × economias na vigência); chamadas 7290/52840/60699; consumo_minimo_parametro/area
 Tarifa:        consumo_tarifa / consumo_tarifa_vigencia (cstv_dtvigencia) / consumo_tarifa_categoria (cstc_nnconsumominimo, cstc_vltarifaminima) / consumo_tarifa_faixa (ctfx_nncosumofaixainicio/fim, ctfx_vlconsumotarifa); obterConsumoTarifaVigencia:5894
 Esgoto:        LigacaoEsgoto.hbm (lesg_pcesgoto, lesg_pccoleta, lesg_pcalternativo + lesg_nnconsumopcalternativo); setPercentualEsgoto:7785; Conta.hbm (cnta_pcesgoto, cnta_pccoleta)
@@ -282,7 +318,8 @@ Retificação:   getControladorRetificarConta().retificarConta(...) retorna id d
 Cancelamento:  cancelarConta:8447 (motivo + situação CANCELADA/DEBITO_PRESCRITO; sem exclusão)
 Histórico:     descriptors/batchGerarHistoricoConta, batchGerarHistoricoParaEncerrarFaturamentoMes/ArrecadacaoMes; ContaHistorico/ContaCategoriaHistorico/ContaImpostosDeduzidosHistorico
 Vencimento:    determinarVencimentoConta:3484; alterarVencimentoConta:9239; imov_ddvencimento + imov_icvencimentomesseguinte + ftgr_nndiavencimento/icvencimentomesfatura
-Precisão:      Util.arredondar:653 (setScale(0,HALF_UP)); divisões HALF_UP escalas 2/4/7 (629/682/1668/3110/3141)
+Precisão:      Util.arredondar:653 (setScale(0,HALF_UP)); no FINAL: HALF_UP 27, UP 21, DOWN 5, HALF_DOWN 2, FLOOR 2;
+               truncamento da base de calculo de imposto em 29943 (ROUND_DOWN)
 Companhia:     ControladorFaturamento{CAEMA,CAERN,CAER,COMPESA,COSAMA,COSANPA,JUAZEIRO}SEJB; calcularValorFaturadoFaixaCAER:5723; validator-compesa.xml
 Débitos/impostos: DebitoCobrado/CreditoRealizado.hbm; conta_impostos_deduzidos(+historico); grandes consumidores: identificarGrandesConsumidores:59186
 ```

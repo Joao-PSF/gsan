@@ -23,7 +23,7 @@ O `gsan_comercial` é **fonte complementar** de análise — uma instalação GS
 | Índices | 2.371 |
 | Foreign keys | 2.940 |
 
-Encoding: LATIN1 (confirmado por `script_char_set=LATIN1` nas migrations e encoding ISO-8859-1 do build). Roles conhecidas: `gsan_admin` (owner), `gsan_batch`, `gsan_dba`, `gsan_olap`, `gsan_online`, `role_users`, `role_aplic`, `postgres`.
+Encoding: 🔵 **LATIN1 — indício forte, não confirmado** (`script_char_set=LATIN1` nas migrations e encoding ISO-8859-1 do build; não houve verificação contra instância viva — correção de 2026-09-14, ver [`procedencia.md`](../procedencia.md)). Roles conhecidas: `gsan_admin` (owner), `gsan_batch`, `gsan_dba`, `gsan_olap`, `gsan_online`, `role_users`, `role_aplic`, `postgres`.
 
 ## Tabelas por schema
 

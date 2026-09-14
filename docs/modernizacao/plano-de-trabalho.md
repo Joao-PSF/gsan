@@ -1,98 +1,115 @@
-# Plano de Trabalho — Modernização do GSAN
+# Plano de Trabalho — Modernização do GSAN → SISAN
 
-Elaborado em 2026-08-13 após diagnóstico dos repositórios `gsan` e `gsan-migracoes` e do DDL do banco `gsan_comercial`. Detalhes em: [arquitetura legada](arquitetura/arquitetura-legada.md), [estrutura do banco](banco/estrutura-atual.md), [segurança](seguranca/riscos-identificados.md).
+Elaborado em 2026-08-13 após diagnóstico dos repositórios `gsan` e `gsan-migracoes` e do DDL do banco `gsan_comercial`. **Reescrito em 2026-09-14.** Detalhes em: [arquitetura legada](arquitetura/arquitetura-legada.md), [estrutura do banco](banco/estrutura-atual.md), [segurança](seguranca/riscos-identificados.md), [procedência das fontes](procedencia.md).
 
-> **Revisão de premissas (2026-08-13, 2ª execução)** — este plano foi escrito sob a premissa de uma instalação GSAN em produção a ser migrada; a premissa foi corrigida: **não há produção neste projeto**, o SISAN é modernização evolutiva do GSAN com banco próprio (UTF-8) e a migração de instalações GSAN é requisito arquitetural futuro. **Permanecem válidos**: seção 1 (diagnóstico), seção 2 (stack, exceto "mesmo schema"), seções 5 e 7 (com massa sintética/base de referência e comparação semântica) e o arcabouço de fases. **Superados/reinterpretados**: coexistência obrigatória e roteamento por proxy (seção 2 e Fase 6); Fase 8 como corte de produção (vira preparo do PostgreSQL do SISAN + playbook de migração futura); Fase 12 (aplica-se apenas a companhias que venham a operar o SISAN); riscos 2, 5, 6, 7 e 10 (reinterpretados); seção 9 "primeiro ciclo" (substituído pelo backlog da Fase 0 em `MODERNIZACAO_GSAN.md`). Detalhes: [revisão de premissas](alteracoes/2026-08-13-revisao-premissas-fase0.md).
+> **Nota de reescrita (2026-09-14)** — a versão original foi escrita sob a premissa de uma instalação GSAN **em produção** a ser migrada por coexistência (*strangler*), com roteamento em proxy e banco compartilhado. Essa premissa foi corrigida em 2026-08-13, mas a correção tinha sido registrada apenas como aviso no topo, enquanto o corpo continuava descrevendo a estratégia antiga — o documento se contradizia e não servia de base para decisão. Esta versão **remove** a estratégia superada do corpo. O histórico está em [revisão de premissas](alteracoes/2026-08-13-revisao-premissas-fase0.md).
+
+## Premissas vigentes
+
+1. **Não há GSAN em produção neste projeto.** Sem base real, sem usuários, sem DBA, sem janela de corte.
+2. **O SISAN é modernização evolutiva do GSAN** (ADR-0005), não greenfield: conceitos e regras do legado são a especificação.
+3. **O SISAN tem banco próprio, UTF-8** (ADR-0004), construído por decisões de compatibilidade (ADR-0006) — **nunca** por cópia do schema do `gsan_comercial`.
+4. **Migrar instalações GSAN existentes é requisito arquitetural futuro**, não atividade deste projeto. O que este projeto produz é o *playbook* e a compatibilidade que tornam essa migração possível.
+5. **`gsan_comercial` é fonte complementar** — compatibilidade e descoberta funcional apenas.
 
 ## 1. Estado atual
 
-Monólito Java EE 1.4: Java 1.5/1.6 (encoding ISO-8859-1), JBoss 4.0.1sp1, EAR `gcom.ear`, build Ant com JARs vendorizados. ~2,39M linhas Java (7.900 classes), 1.618 JSPs, 3.012 Actions Struts 1.1, 234 EJBs 2.x (166 MDBs; 246 deployments de batch separados), Hibernate 3 com 812 `.hbm.xml` gerados por Middlegen, Quartz 1.5.2, JasperReports 1.2.2 (504 relatórios), Axis2 1.5.1, applet de impressão térmica. Fluxo: JSP → Action → Fachada → `Controlador*SEJB` (250) → `Repositorio*HBM` com ~4.500 consultas HQL/SQL, ~830 delas com concatenação de strings.
+Monólito Java EE 1.4: Java 1.5/1.6 (encoding ISO-8859-1), JBoss 4.0.1sp1, EAR `gcom.ear`, build Ant com JARs vendorizados. ~2,39M linhas Java (7.900 classes), 1.618 JSPs, 3.012 Actions Struts 1.1, **234 classes EJB concretas** (166 MDB + 68 Session Beans; método de contagem em [`procedencia.md §3.1`](procedencia.md) — não confundir com as ~247 declarações nos descritores), Hibernate 3 com 812 `.hbm.xml` gerados por Middlegen, Quartz 1.5.2, JasperReports 1.2.2 (504 relatórios), Axis2 1.5.1, applet de impressão térmica. Fluxo: JSP → Action → Fachada → `Controlador*SEJB` (250) → `Repositorio*HBM` com ~4.500 consultas HQL/SQL, ~830 delas com concatenação de strings.
 
-Banco `gsan_comercial` (LATIN1): 18 schemas, 1.838 tabelas, 849 sequences, 116 funções (56 em C — `dblink` e `pg_trgm` instalados no estilo pré-extensão, indício de origem PostgreSQL 8.x), 46 views, 3 matviews, 2.371 índices, 2.940 FKs, ~212 tabelas de backup/manutenção no `public`. Customizações relevantes vs. GSAN público: fiscal/NF + SPED, mobile/campo, recadastramento (NIS/tarifa social), SPC/Serasa, APIs HTTP próprias, BI direto no banco.
+Banco `gsan_comercial` (🔵 encoding LATIN1 — **indício forte**, por `script_char_set=LATIN1` nas migrations e encoding ISO-8859-1 do build; não confirmado contra instância viva): 18 schemas, 1.838 tabelas, 849 sequences, 116 funções (56 em C — `dblink` e `pg_trgm` no estilo pré-extensão, indício de origem PostgreSQL 8.x), 46 views, 3 matviews, 2.371 índices, 2.940 FKs, ~212 tabelas de backup/manutenção no `public`. Customizações relevantes vs. GSAN público: fiscal/NF + SPED, mobile/campo, recadastramento (NIS/tarifa social), SPC/Serasa, APIs HTTP próprias, BI direto no banco.
 
-Pontos críticos de partida: 19 classes de teste no total; migrations (MyBatis) paradas em 2024-06 enquanto o banco tem objetos de até 2026 (drift); repositório de código com último commit em 2023-10 (confirmar se reflete produção); senhas MD5/SHA-1 sem salt; roles de banco com senha = login versionadas; API de pagamento com pseudo-autenticação por domínio HTTP.
+Pontos críticos de partida: 19 classes de teste no total; migrations (MyBatis) paradas em 2024-06 enquanto o banco tem objetos de até 2026 (drift); repositório de código com último commit em 2023-10; **senha de login em SHA-1 sem salt** (MD5 é token efêmero de servlets auxiliares, não participa do login — ver [riscos](seguranca/riscos-identificados.md)); roles de banco com senha = login versionadas; APIs HTTP sem autenticação real.
 
 ## 2. Arquitetura alvo
 
-Java 25 LTS · Spring Boot 4.1.x (Spring Framework 7/Jakarta) · Spring MVC + Spring Security (RBAC reproduzindo `seguranca.*`) · Spring Data JPA para CRUD e `JdbcTemplate`/SQL nativo para consultas complexas e relatórios · Spring Batch · Maven multi-módulo · Flyway com baseline do banco real · PostgreSQL 18.x · Docker + CI/CD (SAST/SCA/SBOM/secrets) · Actuator/Micrometer para observabilidade. Organização: **monólito modular** (cadastro, faturamento, arrecadacao, cobranca, micromedicao, atendimento, seguranca, relatorios, batch, integracoes, shared), separação domain/application/infrastructure/web onde houver benefício real. Coexistência: legado e novo compartilham o mesmo banco (fonte de verdade), roteamento por funcionalidade em proxy reverso, sequences do banco, sem redesenho de tabelas durante a migração de módulos. Versões reconfirmadas a cada fase (em 2026-08: Spring Boot 4.1.0 é a linha estável; PostgreSQL 18.6 é a minor atual; PG 14 sai de suporte em 2026-11).
+Java 25 LTS · Spring Boot 4.1.x (Spring Framework 7/Jakarta) · Spring Security (RBAC reproduzindo a semântica de `seguranca.*`) · Spring Data JPA para CRUD e `JdbcTemplate`/SQL nativo para consultas complexas e relatórios · Spring Batch · Maven multi-módulo · **Flyway a partir de `V1`, sem baseline copiada do banco legado** (ADR-0002) · PostgreSQL 18.x **em UTF-8** (ADR-0004) · Docker + CI/CD (SAST/SCA/SBOM/secrets) · Actuator/Micrometer.
+
+Organização: **monólito modular** (ADR-0001) — `cadastro`, `micromedicao`, `faturamento`, `cobranca`, `arrecadacao`, `atendimento`, `seguranca`, `relatorios`, `batch`, `integracoes`, `shared` —, com fronteiras explícitas entre módulos.
+
+**Não há coexistência, banco compartilhado nem roteamento por proxy.** O SISAN é um sistema próprio, com banco próprio. A relação com o GSAN é de **compatibilidade** — o legado é a referência de comportamento e a origem dos dados numa migração futura, não um parceiro de execução simultânea.
+
+⚠️ **Arquitetura de interface não decidida** (ADR-0007) — pré-requisito do piloto.
+
+Versões reconfirmadas a cada fase (em 2026-08: Spring Boot 4.1.0 estável; PostgreSQL 18.6 minor atual; PG 14 sai de suporte em 2026-11).
 
 ## 3. Principais riscos
 
 | # | Risco | Mitigação principal |
 | - | ----- | ------------------- |
-| 1 | Ausência de rede de testes (19 testes / 2,39M LOC): regressões financeiras silenciosas | Fase 2 antes de qualquer mudança; equivalência A=B por módulo |
-| 2 | Drift tripla: banco real × migrations (2024) × código (2023) — fonte de verdade incerta | Reconciliação e nova baseline na Fase 0; confirmar origem do código de produção |
-| 3 | PostgreSQL de origem muito antiga (artefatos 8.x, LATIN1, contribs em C): restore direto em PG 18 falha | Projeto próprio (Fase 8) com homolog, conversão para extensões e bateria de validação |
-| 4 | Regras financeiras espalhadas em ~830 SQLs concatenados e 116 funções de banco | Caracterização antes de migrar; SQL nativo preservado; comparação ao centavo |
-| 5 | Segurança atual frágil (MD5/SHA-1, credenciais padrão, API sem autenticação real, sem TLS) | Ações P0 imediatas (rotação, TLS no proxy); Fase 5 reproduz e fortalece |
-| 6 | Coexistência legado+novo no mesmo banco (Hibernate 3 × JPA moderno: locks, sequences, cache) | Regras de coexistência (sem cache L2 compartilhado, sequences do banco); piloto valida |
-| 7 | Batch crítico acoplado a EJB/MDB/JBoss (246 deployments): janela de faturamento não pode falhar | Batch migra por último; execução paralela comparada por competência |
-| 8 | Dependências mortas sem upgrade direto (Jasper 1.2.2, Quartz 1.5, Axis2, applet de impressão) | Substituição planejada por equivalente moderno, com teste de saída idêntica |
-| 9 | Conhecimento tácito (customizações por companhia, integrações bancárias/fiscais pouco documentadas) | Fichas de integração e documentação por módulo antes de implementar |
-| 10 | Capacidade de infra/equipe para CI/CD, containers e dois sistemas em produção simultâneos | Fase 1 entrega ambiente reproduzível; fases só avançam com critério de aceite cumprido |
+| 1 | Ausência de rede de testes (19 testes / 2,39M LOC): regressões financeiras silenciosas | Fase 2 antes de qualquer implementação; equivalência por módulo sob os **dois oráculos** (§7) |
+| 2 | Drift tripla: banco `gsan_comercial` × migrations (2024) × código (2023) | Catalogado na Fase 0 como evidência de **compatibilidade**; não há baseline de produção a congelar |
+| 3 | Regras financeiras espalhadas em ~830 SQLs concatenados e 116 funções de banco | Caracterização antes de implementar; comparação ao centavo |
+| 4 | **Arredondamento não uniforme**: 5 políticas semânticas convivendo no núcleo de faturamento, incluindo 21 usos de `RoundingMode.UP` e truncamento em base de imposto | Caracterizar **ponto a ponto**; proibido unificar em HALF_UP sem decisão registrada ([faturamento §27](modulos/faturamento.md)) |
+| 5 | Segurança do legado frágil e, em vários pontos, **ausente** (SHA-1 sem salt, endpoints de escrita sem autenticação, artefato de relatório sem controle de acesso, segredo em código) | Registro de **divergências aprovadas** (§7); o SISAN nasce correto e a diferença é esperada, não falha de equivalência |
+| 6 | Fronteiras de módulo impuras no legado (ex.: retificação de conta escreve em `ConsumoHistorico`) | Mapeadas nos mapas funcionais; corrigidas por contrato explícito no SISAN (D-14) |
+| 7 | Batch crítico acoplado a EJB/MDB/JBoss/Quartz 1.5 | Batch por último; caracterização por competência antes de substituir |
+| 8 | Dependências mortas sem upgrade direto (Jasper 1.2.2, Quartz 1.5, Axis2, applet de impressão) | Substituição planejada com teste de saída equivalente (relatórios: comparação **semântica**, §7) |
+| 9 | Conhecimento tácito (customizações por companhia, integrações bancárias/fiscais pouco documentadas) | Mapas funcionais por módulo + fichas de integração antes de implementar |
+| 10 | Serialização Java de tarefas batch/relatório no legado | Classificado REESTRUTURAR; não transportar o mecanismo |
 
 ## 4. Fases
 
 | Fase | Objetivo | Atividades | Dependências | Entrega | Critério de aceite |
 | ---- | -------- | ---------- | ------------ | ------- | ------------------ |
-| 0 — Inventário | Mapa técnico completo | Diagnóstico código/banco/infra/integrações; inventário do banco real (versão, roles, grants, jobs); reconciliação do drift; classificação de objetos; fichas de integração | Acesso ao banco real e à infra de produção | Mapa técnico + baseline documental (`docs/modernizacao/`) | Premissas confirmadas pela equipe; drift catalogado; nenhuma pergunta aberta bloqueante |
-| 1 — Ambiente reproduzível | Legado executável de forma controlada | Documentar build Ant/JBoss; ambiente dev + homolog com restore da base; config por ambiente; Docker do legado se viável | Fase 0 | GSAN legado rodando em homolog reproduzível | Build + deploy do EAR reproduzidos do zero seguindo somente a documentação |
-| 2 — Rede de segurança | Baseline funcional automatizada | Massa de dados anonimizada congelada; golden masters de batch/cálculos; testes HTTP das telas críticas; catálogo + resultados de consultas críticas; baseline de performance | Fase 1 | Suíte de caracterização executável | Rodadas repetidas produzem resultados idênticos; cobre os 7 comportamentos priorizados |
-| 3 — Build e Java | Compilação moderna do legado | Migrar build Ant→Maven (mantendo Java alvo do JBoss 4); gestão de dependências; CI compilando | Fase 1 | Build Maven reproduzível do legado | EAR gerado por Maven idêntico em conteúdo ao gerado por Ant |
-| 4 — Fundação Spring Boot | Núcleo moderno funcionando | Projeto SISAN (Maven multi-módulo); datasource/pool no banco GSAN; profiles; logging; exception handling; Actuator; Flyway baseline; esqueleto de segurança | Fases 0–2 | Aplicação Spring Boot conectada ao banco em homolog | Health checks OK; leitura de tabelas reais; baseline Flyway aplicada em banco limpo = schema real |
-| 5 — Segurança | Modelo equivalente ou superior | Reproduzir autenticação (compatível com hashes atuais + re-hash BCrypt/Argon2), RBAC completo (grupos, funcionalidades, permissões especiais, abrangência), auditoria; secrets por ambiente; TLS; contas de banco segregadas | Fase 4 | Login + autorização no sistema novo contra `seguranca.*` | Matriz perfil×funcionalidade idêntica à do legado nos testes; nenhum controle atual reduzido |
-| 6 — Piloto | Validar arquitetura ponta a ponta | Migrar 1 módulo de risco moderado (cadastro auxiliar + consulta + 1 tela de atendimento com 1 relatório); roteamento por funcionalidade no proxy; deploy containerizado | Fases 4–5 | Funcionalidade real em produção na nova stack | Equivalência A=B comprovada; usuários validaram; rollback testado (desligar roteamento) |
-| 7 — Migração dos módulos | Substituição progressiva | Ordem da seção 5; por módulo: documentar comportamento → testes → implementar → comparar → validar segurança/performance → produção com rollback | Fase 6 | Módulos em produção incremental | Cada módulo cumpre o ciclo completo antes do próximo crítico começar |
-| 8 — PostgreSQL | Banco na versão alvo | Ensaios de dump/restore em homolog PG 18; conversão contribs→extensões; bateria de validação (schema, contagens, financeiro, performance); ensaio cronometrado; corte com janela e rollback | Fases 0–2 (pode rodar em paralelo às fases 6–7) | `gsan_comercial` em PostgreSQL 18.x | Zero divergência em contagens e somas financeiras; batch de referência idêntico; janela dentro do acordado |
-| 9 — Interface | Eliminar Struts/JSP | Decidir opção A (Spring MVC + templates) × B (REST + frontend) com base no custo/equipe; migrar telas junto com os módulos | Fase 6 | Telas migradas sem Struts | Nenhuma tela nova depende de Struts/JSP; usuários validaram as telas críticas |
-| 10 — Observabilidade | Operação visível | Logs estruturados com ID de transação, métricas, alertas para financeiro e batch, auditoria centralizada | Fase 4+ | Monitoramento em produção | Erros de batch/financeiro detectados por alerta antes do usuário reportar |
-| 11 — CI/CD | Pipeline completo | build → testes → análise estática → SCA/SAST → SBOM → scan de secrets → homolog → deploy controlado | Fases 3–4 | Pipeline nos repositórios | Nenhum deploy manual; pipeline bloqueia vulnerabilidade crítica |
-| 12 — Desativação do legado | Desligar com segurança | Por funcionalidade: equivalência em produção, validação de usuários, logs estáveis, rollback disponível; descomissionar EAR/JBoss ao final | Fase 7 completa | Legado desativado | Zero funcionalidades ativas no legado; infraestrutura JBoss desligada |
+| **0 — Descoberta** | Compreender o comportamento atual | Diagnóstico código/banco; glossário; **mapas funcionais por módulo**; fronteiras; compatibilidade; hipóteses; **especificação dos cenários críticos**; ADRs | — | Baseline documental em `docs/modernizacao/` | Mapas completos; cenários críticos **especificados** (não só listados); ADRs estruturais aceitas; dúvidas abertas registradas |
+| 1 — Ambiente de referência | Legado executável de forma controlada | Documentar build Ant/JBoss; ambiente do GSAN de referência com massa sintética; config por ambiente | Fase 0 | GSAN de referência rodando | Build + deploy do EAR reproduzidos do zero seguindo apenas a documentação |
+| 2 — Rede de segurança | Baseline funcional automatizada | Massa congelada; *harness*; captura dos golden masters (preenche o "resultado esperado" das especificações da Fase 0); baseline de performance | Fase 1 | Suíte de caracterização executável | Rodadas repetidas produzem resultados idênticos; cobre os comportamentos priorizados |
+| 3 — Build | Compilação moderna do legado de referência | Ant→Maven mantendo o Java alvo; CI compilando | Fase 1 | Build reproduzível | EAR gerado por Maven equivalente ao gerado por Ant |
+| 4 — Fundação SISAN | Núcleo moderno funcionando | Projeto Maven multi-módulo; **banco próprio UTF-8 versionado por Flyway desde `V1`**; profiles; logging; exception handling; Actuator; esqueleto de segurança | Fases 0–2 | Aplicação Spring Boot com schema próprio | Health checks OK; `V1` aplicada em banco limpo produz o schema esperado |
+| 5 — Segurança | Modelo equivalente **ou superior** | Autenticação com BCrypt/Argon2 (compatibilidade com hash legado apenas no caminho de migração); RBAC completo (grupos, funcionalidades, permissões especiais, abrangência); auditoria; secrets por ambiente; TLS; contas de banco segregadas | Fase 4 | Login + autorização no SISAN | Concessões legítimas preservadas; **divergências do registro aplicadas e testadas**; nenhum controle atual reduzido |
+| 6 — Piloto | Validar arquitetura ponta a ponta | Cadastros auxiliares + consulta + 1 fluxo de atendimento com 1 relatório | Fases 4–5 + **ADR-0007** | Módulo completo na nova stack | Equivalência sob o oráculo 1; divergências do oráculo 2 registradas; fronteiras de módulo verificadas |
+| 7 — Módulos | Construção progressiva | Ordem da §5; por módulo: mapa → especificação → implementação → comparação → segurança → performance | Fase 6 | Módulos entregues incrementalmente | Cada módulo cumpre o ciclo completo antes de o próximo crítico começar |
+| 8 — Playbook de migração | Tornar possível migrar uma instalação GSAN | Procedimento de extração/conversão LATIN1→UTF-8; mapeamento GSAN→SISAN por tabela; bateria de validação (contagens, somas financeiras, sequences); ensaio cronometrado | Fases 0, 4, 7 parcial | Playbook + scripts validados em ensaio | Ensaio com massa de referência: zero divergência em contagens e somas financeiras |
+| 9 — Interface | Concluir a decisão da ADR-0007 | Implementar a arquitetura decidida; telas acompanham os módulos | Fase 6 | Telas na stack decidida | Usuários validam as telas críticas |
+| 10 — Observabilidade | Operação visível | Logs estruturados com ID de transação, métricas, alertas para financeiro e batch, auditoria centralizada | Fase 4+ | Monitoramento | Erros de batch/financeiro detectados por alerta |
+| 11 — CI/CD | Pipeline completo | build → testes → análise estática → SCA/SAST → SBOM → *secret scan* → deploy controlado | Fases 3–4 | Pipeline nos repositórios | Nenhum deploy manual; pipeline bloqueia vulnerabilidade crítica e segredo commitado |
+| 12 — Adoção | Companhia operando o SISAN | Aplicável **apenas** quando existir instalação a migrar: execução do playbook (Fase 8), validação por usuários reais, desativação do legado daquela instalação | Fases 7, 8 | Instalação migrada | Critérios acordados com a companhia |
 
 ## 5. Ordem dos módulos
 
 ```text
 1. cadastros auxiliares   → CRUD simples, valida a stack com risco baixo (parte do piloto)
-2. consultas              → somente leitura sobre o schema real; mede performance
+2. consultas              → somente leitura; mede performance
 3. atendimento (RA)       → risco moderado, alto valor; completa o piloto
-4. ordens de serviço      → encadeia com atendimento; toca integração mobile
+4. ordens de serviço      → encadeia com atendimento; toca integração de campo
 5. micromedição           → leituras/consumo/média alimentam o faturamento
 6. cobrança               → financeiro com janelas de correção maiores (inclui parcelamento)
 7. arrecadação            → crítico: baixas e retornos bancários
 8. faturamento            → núcleo financeiro de maior risco
-9. batch críticos         → por último, com execução paralela comparada por competência
+9. batch críticos         → por último, comparados por competência
 ```
 
-Transversais: `seguranca` na Fase 5; `relatorios` e `integracoes` migram junto do módulo dono; `fiscal`/SPED junto de faturamento/financeiro. Justificativa geral: risco crescente, dependências respeitadas (micromedição antes de faturamento), financeiro por último com a plataforma já madura.
+Transversais: `seguranca` na Fase 5; `relatorios` e `integracoes` acompanham o módulo dono; `fiscal`/SPED junto de faturamento/financeiro. Justificativa: risco crescente, dependências respeitadas (micromedição antes de faturamento), financeiro por último com a plataforma madura.
 
 ## 6. Estratégia PostgreSQL
 
-Resumo (detalhe em [banco/migracao-postgresql.md](banco/migracao-postgresql.md)):
+Detalhe em [banco/migracao-postgresql.md](banco/migracao-postgresql.md). Duas frentes **distintas**, antes confundidas:
 
-1. **Inventário real primeiro**: versão de origem, encoding/collation, roles/GRANTs (ausentes no DDL exportado), tamanho, consumidores diretos (BI/OLAP/dblink/sincronismo `admindb`), jobs externos.
-2. **Homologação PG 18.x** via `pg_dump -Fc`/restore com correções scriptadas: substituir `dblink`/`pg_trgm`/`plpgsql_call_handler` pré-extensão por `CREATE EXTENSION`; revalidar as 46 views, funções PL/pgSQL e matviews; manter LATIN1 (ADR-0004).
-3. **Estratégia de corte**: dump/restore com janela e freeze é o padrão (pg_upgrade inviável pelos contribs antigos e salto de versões; replicação lógica só se a origem confirmar versão que a suporte). Ensaio cronometrado define a janela; origem preservada intocada como rollback.
-4. **Validação obrigatória**: diff de schema; contagem de 100% das tabelas; somas financeiras por competência (contas, pagamentos, devoluções, créditos, débitos, parcelamentos, saldos, hidrômetros, OS) com **tolerância zero**; re-execução de batch de referência; performance das consultas críticas.
-5. **Versionamento**: baseline Flyway do DDL real; depois, nenhuma alteração estrutural sem migration (alterações emergenciais geram migration retroativa em 1 dia útil).
+**(a) Banco do SISAN** — PostgreSQL 18.x, **UTF-8**, schema construído pelas decisões de compatibilidade (ADR-0006) e versionado por Flyway desde `V1` (ADR-0002). Sem herança direta do schema legado.
+
+**(b) Playbook de migração de instalações GSAN (Fase 8)** — para quando existir base real a migrar: extração da origem (tipicamente LATIN1, possivelmente PG 8.x), conversão de encoding caso a caso (tamanhos de campo, caracteres inválidos, ordenações), substituição de `dblink`/`pg_trgm`/`plpgsql_call_handler` pré-extensão por `CREATE EXTENSION`, mapeamento GSAN→SISAN por tabela, e validação obrigatória: diff de schema mapeado, contagem de 100% das tabelas, somas financeiras por competência com **tolerância zero**, sequences, re-execução de batch de referência.
 
 ## 7. Estratégia de testes
 
-Regra central: mesma entrada no legado e no novo ⇒ mesmo resultado (`A = B`); diferenças só quando deliberadas, documentadas e aprovadas; financeiro comparado ao centavo. Camadas: (1) caracterização do legado com golden masters sobre massa anonimizada congelada; (2) harness de equivalência por módulo comparando estado do banco, arquivos e relatórios gerados; (3) testes do sistema novo com JUnit 5 + Testcontainers PG 18 sobre o schema real (nunca H2); (4) validação da migração de banco (seção 6); (5) matriz de autorização perfil×funcionalidade. Prioridade de cobertura: autenticação/autorização → cálculo de conta → baixa de pagamento → parcelamento → consumo/média → OS → resumos financeiros. Detalhe em [testes/estrategia-testes.md](testes/estrategia-testes.md).
+Detalhe em [testes/estrategia-testes.md](testes/estrategia-testes.md). **Dois oráculos independentes** — a regra única `A = B` foi corrigida em 2026-09-14 porque, sozinha, obrigaria o SISAN a reproduzir falhas de segurança do legado:
+
+- **Oráculo 1 — funcional/financeiro**: mesma entrada ⇒ mesmo resultado. Financeiro **exato ao centavo**. Diferença = defeito.
+- **Oráculo 2 — técnico/segurança**: o SISAN **deve divergir** nos pontos do [registro de divergências aprovadas](compatibilidade/divergencias-aprovadas.md). Igualdade = defeito.
+
+Comparação **semântica via mapeamento GSAN→SISAN** (os schemas divergem por decisão). Relatórios comparados pelo *datasource* ou por conteúdo extraído — **nunca** byte a byte de PDF. Camadas: caracterização do legado (golden masters sobre massa congelada) → equivalência por módulo → testes do SISAN (JUnit 5 + Testcontainers PG 18 sobre o schema real, nunca H2) → validação de migração (§6b) → matriz de autorização.
+
+Prioridade: autenticação/autorização → cálculo de conta → baixa de pagamento → parcelamento → consumo/média → OS → resumos financeiros.
 
 ## 8. Segurança
 
-Imediatas (P0, independem da modernização): rotacionar roles `gsan_*` com senha = login (comprometidas por script público) e credenciais dos `*-ds.xml`; avaliar exposição das APIs `/api/*` (pseudo-autenticação por domínio HTTP) e proteger com TLS + token real via proxy. Na fundação (P1): hashes BCrypt/Argon2 com re-hash no primeiro login preservando expiração/bloqueio/histórico atuais; Spring Security consumindo o RBAC `seguranca.*` sem substituí-lo antes do mapeamento completo; cookies seguros, CSRF, headers, sessão controlada; secrets fora do código por ambiente; contas de banco segregadas com menor privilégio. Contínuas (P2): queries 100% parametrizadas no novo; validação de upload centralizada; anonimização de massas de teste (LGPD); auditoria preservada e centralizada; pipeline com SAST/SCA/SBOM/secret-scan. OAuth2/OIDC apenas se houver infraestrutura de identidade; não é pré-requisito. Detalhe em [seguranca/riscos-identificados.md](seguranca/riscos-identificados.md).
+Detalhe em [seguranca/riscos-identificados.md](seguranca/riscos-identificados.md). Três níveis:
 
-## 9. Primeiro ciclo de execução
+- **P0\*** — obrigatório em qualquer instalação GSAN operante e item do checklist de migração futura (**não** é atividade de execução deste projeto): rotação de roles `gsan_*` com senha = login; **rotação da chave de API de SMS** (achado 11, considerada comprometida); bloqueio de `/api/ordem-servico/*` e dos entry points de campo até haver autenticação; proteção do download de relatório batch; TLS no proxy.
+- **P1 — requisito de nascimento do SISAN**, antes do primeiro deploy acessível: BCrypt/Argon2 preservando expiração/bloqueio/histórico; Spring Security consumindo a semântica do RBAC legado; cookies seguros, CSRF, headers, sessão controlada; **secrets fora do código, por ambiente**; contas de banco segregadas com menor privilégio; **nenhum filtro decorativo** (achado 14).
+- **P2 — durante os módulos**: queries 100% parametrizadas; validação de upload centralizada; anonimização de massas (LGPD); auditoria preservada e centralizada; pipeline com SAST/SCA/SBOM/*secret scan*.
 
-Somente estas tarefas agora (sem produção de código de aplicação):
+OAuth2/OIDC apenas se houver infraestrutura de identidade; não é pré-requisito.
 
-1. **Validar premissas com a equipe**: o repo `gsan` (2023-10) reflete produção? Onde estão os fontes das mudanças 2024–2026? Qual a versão exata do PostgreSQL/SO de produção? Quais integrações estão ativas? SISAN é mesmo o destino do código novo (ADR-0003)?
-2. **Inventário do banco real** (somente leitura): versão, encoding/collation, roles e GRANTs, tamanhos, extensões/contribs, jobs, replicação, consumidores diretos.
-3. **Reconciliar o drift**: diff DDL real × `gsan-migracoes` × dump fornecido; catalogar objetos sem migration; decidir e registrar a baseline (ADR-0002).
-4. **Classificar com o DBA** as ~212 tabelas de backup/manutenção (nada será removido).
-5. **Rotação de credenciais** (P0 de segurança) + inventário de secrets nos servidores.
-6. **Ambiente reproduzível do legado** (Fase 1): documentação de build validada do zero + restore de homolog.
-7. **Massa de teste**: definir recorte representativo e regras de anonimização.
-8. **Formalizar ADRs 0001–0004** (aceitar/ajustar) e reconfirmar versões alvo.
-9. **Especificar os 3 primeiros testes de caracterização** (login/autorização; cálculo de conta individual; baixa de pagamento) — especificação, não implementação, até o ambiente da Fase 1 existir.
+## 9. Situação da execução
+
+O controle vivo de atividades, backlog e pendências está em [`MODERNIZACAO_GSAN.md`](../../MODERNIZACAO_GSAN.md). A lista de "primeiro ciclo" que ocupava esta seção foi removida: ela pressupunha produção, DBA e acesso a banco real — nada disso existe neste projeto, e o que restava de válido já está no backlog da Fase 0.

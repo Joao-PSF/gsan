@@ -98,7 +98,26 @@ FiltroSegurancaAcesso
 
 ⚠️ 🔵 A exceção por **substring `pesquisar`/`relatorio`** é a de maior alcance: qualquer Action cujo nome contenha esses termos sai do bloco de autorização funcional do filtro. Isso não significa ausência de qualquer controle (a Action pode ter verificações próprias), mas é característica estrutural relevante do legado.
 
-🔵 **Aprofundamento (2026-08-14, [mapa de Relatórios §16–17](relatorios.md))**: no caso dos relatórios, a autorização tende a ocorrer **antes**, na tela chamadora (Action de funcionalidade não excepcionada) que monta os filtros e submete a solicitação; e o filtro só avalia requisições com **usuário em sessão**. ⚠️ Porém, a Action de **download** do relatório batch (`ExibirRelatorioBatchAction`) localiza o artefato **apenas pelo `idFuncionalidadeIniciada` recebido no request**, e **nenhuma comparação com o usuário logado foi localizada** no trecho analisado — combinado com a exceção de URL, isso torna a verificação de acesso ao artefato uma **dúvida prioritária** (não é declaração de vulnerabilidade; exige rastreio dirigido).
+> ⚠️ **Seção corrigida e ampliada em 2026-09-14** após rastreio dirigido do caminho completo. A descrição anterior do gate estava **incompleta em dois pontos materiais**.
+
+🟢 **Correção 1 — o filtro tem dois mecanismos de exceção, não um.** Eu havia documentado apenas o primeiro:
+
+| Mecanismo | Onde | Quando se aplica | Efeito |
+| --------- | ---- | ---------------- | ------ |
+| Lista *hard-coded* | `FiltroSegurancaAcesso:168-199` — cadeia de `&&` com `!enderecoURL.contains(...)` | Ramo do **usuário logado** | Pula a verificação de funcionalidade/operação |
+| Lista em properties | `:279` `else if (contemUrl(enderecoURL))` → `:451-456` sobre `urls_sem_usuario_na_sessao.properties` | Ramo do **`usuarioLogado == null`** | Deixa passar **sem usuário autenticado** |
+
+🟢 Ambas contêm `relatorio`. `contemUrl` compara com `url.contains(key) || url.toLowerCase().contains(key)` — casamento por **substring**, inclusive em minúsculas. O `doFilter` privado invocado nesse ramo (`:298-301`) apenas mede tempo e segue; `:307-309` trata explicitamente o caso `usuarioLogado == null` no log, mostrando que o caminho anônimo é **previsto**.
+
+🟢 **Correção 2 — os três filtros anteriores ao gate não barram nada.** Na ordem do `web.xml`:
+
+1. `FiltroSSO:22` chama `getSession()` (sem argumento — **cria** a sessão) e em `:25-29` tem `if (sso.isLogado()) chain.doFilter(...) else chain.doFilter(...)` — **ramos idênticos**. Não condiciona nada.
+2. `FiltroSessaoExpirada:38` só bloqueia quando `sessao == null` — condição tornada **inalcançável** pelo filtro anterior. É código morto para `*.do`.
+3. `FiltroLimparSessao:96` sempre segue.
+
+🔵 Consequência: **o único controle efetivo para `*.do` é o `FiltroSegurancaAcesso`**. A aparência de defesa em profundidade é falsa — ver achado 14 em [`riscos-identificados.md`](../seguranca/riscos-identificados.md).
+
+🟢 **Consequência concreta comprovada**: a Action de download do relatório batch (`ExibirRelatorioBatchAction:40-52`) localiza o artefato **apenas pelo `idFuncionalidadeIniciada` do request**, sem comparação com usuário, solicitante ou abrangência, e `GcomAction` não autoriza esse objeto. Combinado com os dois pontos acima, o artefato é recuperável por identificador **sem usuário autenticado**. Isso deixou de ser dúvida e é **achado confirmado** (13 em `riscos-identificados.md`; cadeia completa em [relatorios.md §17](relatorios.md)).
 
 ⚠️ 🟢 **Ressalva importante sobre `executarBatch`**: a exceção **não** significa que o framework Batch opere sem autorização. `gcom.batch.ExecutarBatch` é uma **Action Struts específica** (`extends GcomAction`, ~2 KB, mapeada em `struts-config.xml` como `/executarBatch`) que apenas invoca `ControladorOrdemServico.atualizarOrdemServicoAcompanhamentoServico(...)` — é uma **rotina pontual ligada ao Atendimento/OS**, não o disparo do framework de processamento em lote. A autorização dos fluxos batch é analisada em [batch.md §17](batch.md).
 

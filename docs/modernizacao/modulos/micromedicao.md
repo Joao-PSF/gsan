@@ -152,7 +152,7 @@ OSs executam instalação/substituição/retirada/aferição de hidrômetro e fi
 6. **A média é insumo multiuso**: faturar sem leitura, criticar consumo e gerar faixa esperada de leitura (antifraude).
 7. **Rota alternativa sobrepõe a rota da quadra** nos processos de leitura; rota de entrega é só distribuição.
 8. **O ciclo é dirigido pelo cronograma do grupo** (8 atividades com datas por rota) — leitura e faturamento são fases do mesmo trem mensal.
-9. **Customização por companhia via herança de controladores** (`ControladorMicromedicaoCAEMA/CAERN/CAER/COMPESA/COSAMA/COSANPA/JUAZEIRO SEJB`) e métodos específicos no núcleo (ex.: `calcularValorFaturadoFaixaCAER`) — o mecanismo de variação por companhia é estrutural no GSAN.
+9. **Customização por companhia via herança de controladores** (`ControladorMicromedicaoCAEMA/CAERN/CAER/COMPESA/COSAMA/COSANPA/JUAZEIRO SEJB`) — o mecanismo de variação por companhia é estrutural no GSAN. *(Correção 2026-09-14: a versão anterior citava `calcularValorFaturadoFaixaCAER` como exemplo de método específico no núcleo da Micromedição. Esse método existe em **um único arquivo**, `src/gcom/faturamento/ControladorFaturamentoFINAL.java` — é do Faturamento, não deste módulo. O exemplo foi removido; a regra estrutural permanece, sustentada pela herança dos controladores. Ver [`faturamento.md §11`](faturamento.md).)*
 
 ## 11. Compatibilidade GSAN → SISAN
 
@@ -202,7 +202,15 @@ Registrar no catálogo (item 5 do backlog), sem projetar agora: **telemetria/lei
 ## 15. Dúvidas que permanecem
 
 1. **Composição exata do consumo no mês de troca de hidrômetro** (soma dos trechos × regra alternativa) — exige leitura dirigida do fluxo ou caracterização com massa de teste.
-2. ~~Orquestração da escrita de consumo~~ **Resolvida (2026-08-14, mapa do Faturamento)**: o Faturamento **não regrava** consumo — obtém via `obterConsumoHistoricoMedicaoIndividualizada` e não possui inserir/atualizar de `ConsumoHistorico`; a determinação/escrita é da Micromedição, ajustes voltam por ela. Ver [faturamento.md §5](faturamento.md).
+2. ~~Orquestração da escrita de consumo~~ **Resolvida — resposta corrigida em 2026-09-14.** A formulação anterior ("o Faturamento **não regrava** consumo") estava errada, e a evidência que a sustentava era insuficiente (ausência de `inserirConsumoHistorico`/`atualizarConsumoHistorico` em `ControladorFaturamentoFINAL` não prova ausência de escrita). O comportamento real tem **três casos distintos**:
+
+   | Caso | Evidência | Quem escreve |
+   | ---- | --------- | ------------ |
+   | **Macromedição / condomínio** | `ControladorFaturamentoFINAL:1233` chama `atualizarConsumosImoveisMacro`, que em `:1261-1265` é **delegação de três linhas** para `getControladorMicromedicao().atualizarConsumosCondominios(...)`; a escrita ocorre em `ControladorMicromedicao:39797/39837/39858` | **Micromedição escreve**; Faturamento apenas **orquestra** |
+   | **`faturarImovel`** | `ControladorFaturamentoFINAL:1875/1893` instancia `new ConsumoHistorico()` **apenas quando `obterUltimoConsumoImovel` devolve `null`**, atribui `setNumeroConsumoFaturadoMes(20)` (🟢 constante mágica, ver dúvida 13) e usa em memória — **nunca persiste** | **Ninguém**: objeto transitório |
+   | **Retificação de conta** | `src/gcom/faturamento/controladores/ControladorRetificarConta:267-273` — `corrigirConsumos` faz `setNumeroConsumoFaturadoMes(consumo)` e `getControladorUtil().atualizar(consumoHistorico)`; `:263` também altera leitura via `atualizarLeituraRetificarConta` | **Faturamento escreve diretamente** |
+
+   🔵 Conclusão: **a fronteira não é limpa**. Só o terceiro caso é escrita direta do Faturamento sobre entidade da Micromedição — o primeiro é colaboração legítima entre módulos. No SISAN, a retificação precisa de **contrato explícito** (operação exposta pela Micromedição), não de escrita direta no agregado alheio. Ver [faturamento.md §5](faturamento.md).
 3. ~~Precedência das fontes de consumo mínimo~~ **Núcleo resolvido (2026-08-14)**: quem calcula é a Micromedição (`obterConsumoMinimoLigacao` = Σ por categoria do mínimo da tarifa vigente × economias), a serviço do Faturamento; permanece aberta apenas a **ordem fina** entre os overrides (ligação × situação × área) — ver [faturamento.md §6/§32](faturamento.md).
 4. **Diferenças reais entre as variantes por companhia** dos controladores (CAEMA/CAERN/.../COSANPA) — inventário próprio antes da modelagem SISAN.
 5. Regra fina de média com histórico insuficiente/imóvel novo (meses mínimos, fallback imóvel × hidrômetro).
