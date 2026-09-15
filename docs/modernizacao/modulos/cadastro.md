@@ -147,7 +147,7 @@ Situação derivada do imóvel (imovel_situacao_tipo: ATIVO/INATIVO/LIGADO_SO_ES
 
 1. **Matrícula estável com DV**: a identidade pública do imóvel é o `imov_id` com dígito módulo 11; nunca é reaproveitada; exclusão é lógica.
 2. **Economias agregadas governam a tarifa**: o cálculo consulta `imovel_subcategoria` (por categoria); a individualização é informativa; a conta congela o que foi usado (`conta_categoria`).
-3. **Situação da ligação é parametrizada por dados**: faturar ou não, consumo mínimo, corte etc. são atributos da situação (`ligacao_agua_situacao`), não `if`s por código — flexibilidade que **deve ser preservada** no SISAN.
+3. **Situação da ligação é parametrizada por dados**: faturar ou não, consumo mínimo, corte etc. são atributos da situação (`ligacao_agua_situacao`), não `if`s por código — flexibilidade que **deve ser preservada** no OpenGSAN.
 4. **Estados que alteram faturamento** vêm de três eixos: situação das ligações (flags), situação especial de faturamento do imóvel (`FaturamentoSituacaoTipo`: NORMAL(0), PARALISAR_EMISSAO_CONTAS(1), PARALISAR_LEITURA_FATURAR_MEDIA(2), PARALISAR_LEITURA_FATURAR_TAXA_MINIMA(3), FATURAR_NORMAL(5)) e situação de cobrança.
 5. **Relação cliente×imóvel tem papel, vigência e motivo** — nunca reduzir a um FK simples; a conta preserva os clientes da emissão.
 6. **Fotografias na emissão**: conta e parcelamento congelam situações/percentuais/categorias vigentes — trilha de auditoria financeira.
@@ -180,7 +180,7 @@ Situação derivada do imóvel (imovel_situacao_tipo: ATIVO/INATIVO/LIGADO_SO_ES
 | Recadastramento / Mobile (extensões) | `atualizacaocadastral` e schema `mobile` leem/atualizam imóvel, economias, características e fotos |
 | Segurança | Abrangência de usuário por localidade/gerência (restringe o que cada usuário vê/faz) |
 
-## 8. Pontos de compatibilidade GSAN → SISAN
+## 8. Pontos de compatibilidade GSAN → OpenGSAN
 
 Classificação preliminar (ADR-0006; sem decisão de modelo físico):
 
@@ -195,18 +195,18 @@ Classificação preliminar (ADR-0006; sem decisão de modelo físico):
 | Estrutura territorial (localidade/setor/quadra/rota) | PRESERVAR CONCEITO | Consolidada, atravessa todos os processos |
 | Ligação 1:1 com id compartilhado | EXIGE APROFUNDAMENTO | Decidir na modelagem: entidade própria × extensão; migração precisa mapear o padrão atual |
 | Situação derivada do imóvel (`imovel_situacao`) | EXIGE APROFUNDAMENTO | Confirmar uso real e completude da parametrização |
-| Denormalizações (`imov_qteconomia`, categoria principal, rota de entrega no imóvel) | POSSÍVEL MODERNIZAÇÃO | Conveniências que podem virar consultas/projeções no SISAN |
+| Denormalizações (`imov_qteconomia`, categoria principal, rota de entrega no imóvel) | POSSÍVEL MODERNIZAÇÃO | Conveniências que podem virar consultas/projeções no OpenGSAN |
 | Endereçamento próprio (logradouro/bairro/CEP) | POSSÍVEL MODERNIZAÇÃO | Conceito ok; avaliar higienização e integração com bases externas |
 | Campos sociais e programas especiais no imóvel | EXIGE APROFUNDAMENTO | Separar núcleo × extensão de companhia antes de transportar |
 | Nomenclaturas de companhia no núcleo (`numeroCelpe`, DV CAERN) | POSSÍVEL MODERNIZAÇÃO | Generalizar nomes preservando semântica e migração |
 
 ## 9. Hipóteses para avaliação futura (não são decisões)
 
-1. **Economia como conceito explícito** no modelo do SISAN (entidade/valor com quantidade por subcategoria), mantendo equivalência direta com `imovel_subcategoria` para migração trivial.
+1. **Economia como conceito explícito** no modelo do OpenGSAN (entidade/valor com quantidade por subcategoria), mantendo equivalência direta com `imovel_subcategoria` para migração trivial.
 2. **Decomposição do agregado Imóvel** em aspectos coesos (identificação/localização; classificação/economias; situação; parâmetros de faturamento/cobrança; extensão social) preservando a matrícula única — motivada pela concentração descrita em 3.1.
 3. **Ligação como entidade com identidade própria** e FK ao imóvel (a migração mapearia `lagu_id=imov_id` → nova chave), OU manutenção do padrão extensão-1:1 — decidir com a análise de micromedição/faturamento.
 4. **Situações como dados versionados** (manter o modelo paramétrico do GSAN com governança de mudanças/migrations), eliminando as constantes duplicadas no código.
-5. **Extensões de companhia como módulo separado** (social/NIS/programas/recadastramento) plugado ao núcleo do cadastro, para que o núcleo SISAN permaneça genérico.
+5. **Extensões de companhia como módulo separado** (social/NIS/programas/recadastramento) plugado ao núcleo do cadastro, para que o núcleo OpenGSAN permaneça genérico.
 
 ## 10. Dúvidas que permanecem
 

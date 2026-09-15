@@ -45,9 +45,9 @@ A decisão final é do Faturamento, em cima de dados paramétricos do Cadastro:
 | **`faturarImovel`** | `:1867-1900` — `new ConsumoHistorico()` só quando `obterUltimoConsumoImovel` devolve `null`, com `setConsumoTipo(SEM_CONSUMO)` e `setNumeroConsumoFaturadoMes(20)`; usado em memória e **nunca persistido** | **Ninguém.** Objeto transitório |
 | **Retificação de conta** | `src/gcom/faturamento/controladores/ControladorRetificarConta:267-273` — `corrigirConsumos` faz `setNumeroConsumoFaturadoMes(consumo)`, `setUltimaAlteracao(...)` e **`getControladorUtil().atualizar(consumoHistorico)`**; `:263` também altera a leitura via `getControladorMicromedicao().atualizarLeituraRetificarConta(...)` | **Faturamento escreve diretamente** na entidade da Micromedição |
 
-🟢 **Constante mágica descoberta na verificação**: `setNumeroConsumoFaturadoMes(20)` em `:1880` e `:1897` — **20 m³ fixos em código** como consumo de fallback quando não há consumo anterior. Não é parâmetro, não é tabela. Entra como cenário de caracterização (§31) e como item de parametrização no SISAN.
+🟢 **Constante mágica descoberta na verificação**: `setNumeroConsumoFaturadoMes(20)` em `:1880` e `:1897` — **20 m³ fixos em código** como consumo de fallback quando não há consumo anterior. Não é parâmetro, não é tabela. Entra como cenário de caracterização (§31) e como item de parametrização no OpenGSAN.
 
-🔵 **Consequência para o desenho do SISAN**: a fronteira **não é limpa**, mas a impureza é específica. Colaboração orquestrada (caso 1) é legítima e vira chamada de serviço. Escrita direta no agregado alheio (caso 3) é acoplamento a corrigir: a retificação deve invocar uma **operação exposta pela Micromedição** ("corrigir consumo faturado de referência X, com motivo"), preservando o versionamento em `consumo_hist_anterior`, em vez de alterar a linha por fora.
+🔵 **Consequência para o desenho do OpenGSAN**: a fronteira **não é limpa**, mas a impureza é específica. Colaboração orquestrada (caso 1) é legítima e vira chamada de serviço. Escrita direta no agregado alheio (caso 3) é acoplamento a corrigir: a retificação deve invocar uma **operação exposta pela Micromedição** ("corrigir consumo faturado de referência X, com motivo"), preservando o versionamento em `consumo_hist_anterior`, em vez de alterar a linha por fora.
 
 ## 6. Consumo mínimo (precedência — núcleo resolvido)
 
@@ -122,7 +122,7 @@ Elementos confirmados: tarifa mínima (valor fixo por economia/categoria), faixa
 
 - **`ContaGeral` é entidade física** (`faturamento.conta_geral`): **fonte da identidade** (`cnta_id` de `seq_conta_geral`) + `indicadorHistorico` + one-to-one com `Conta` (corrente), `ContaHistorico` (arquivada) e `ContaImpressao` — todas compartilham o mesmo id (Conta usa generator `assigned`).
 - **Problema de negócio que resolve**: referências externas (pagamento, cobrança, parcelamento, relatórios) precisam de um **id estável ao longo da vida daquela conta** — `Pagamento.cnta_id → ContaGeral` funciona igual antes e depois de a conta ir a histórico.
-- **Precisão importante (revisão 2026-08-14)**: `ContaGeral` preserva a identidade **de uma determinada Conta durante sua passagem entre a representação corrente e a histórica** (mesmo `cnta_id`). **A retificação é outro mecanismo**: cria uma **nova Conta com nova identidade**, ligada à anterior pela relação de origem (`cnta_idorigem`). Ou seja, não há um único id atravessando a cadeia de retificações — há **linhagem explícita** entre documentos. O conceito a preservar no SISAN não é "ContaGeral" como tabela, e sim o trio: **identidade estável do documento + versionamento corrente/histórico + linhagem entre retificações**.
+- **Precisão importante (revisão 2026-08-14)**: `ContaGeral` preserva a identidade **de uma determinada Conta durante sua passagem entre a representação corrente e a histórica** (mesmo `cnta_id`). **A retificação é outro mecanismo**: cria uma **nova Conta com nova identidade**, ligada à anterior pela relação de origem (`cnta_idorigem`). Ou seja, não há um único id atravessando a cadeia de retificações — há **linhagem explícita** entre documentos. O conceito a preservar no OpenGSAN não é "ContaGeral" como tabela, e sim o trio: **identidade estável do documento + versionamento corrente/histórico + linhagem entre retificações**.
 - **Quando vai a histórico**: no **encerramento mensal** — batches `batchGerarHistoricoConta` e `batchGerarHistoricoParaEncerrarFaturamentoMes` (e o par de arrecadação) movem `conta` → `conta_historico` (com satélites: `conta_categoria_historico`, impostos etc.) e marcam `indicadorHistorico`. O mesmo padrão vale para guia, débito e crédito (`*_geral`).
 - O histórico **participa de consultas e regras** (helpers de relatório específicos, 2ª via, reconstrução do faturamento original) — não é só armazenamento morto.
 
@@ -168,7 +168,7 @@ Mesmo padrão da Micromedição, mais intenso:
 | Tarifas, vigências, faixas, mínimos, situações, anormalidades, cronogramas | tabelas | EXTENSÃO PARAMÉTRICA |
 | Ciclo por grupo/rota, mecanismo de conta/versões, fotografias | núcleo estável | REGRA GERAL DO GSAN |
 
-Para o SISAN: a variação de cálculo por companhia precisa virar **ponto de extensão explícito** (a herança de EJB inteiro é o anti-padrão a evitar) — hipótese em §30.
+Para o OpenGSAN: a variação de cálculo por companhia precisa virar **ponto de extensão explícito** (a herança de EJB inteiro é o anti-padrão a evitar) — hipótese em §30.
 
 ## 21. Parametrização das regras
 
@@ -211,7 +211,7 @@ Conta vencida e não paga em situação normal é o insumo da cobrança; cobran�
 
 ## 26. Relação com Fiscal (evolução — `gsan_comercial`)
 
-A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal` (nota_fiscal_*, certificado), `conta_impostos_deduzidos`, integração SPED (`integracao.sped_documento`, `ti_*`) e funções `sp*_gerar_conta_rec_ctb` (contabilização). Para o SISAN: registrar no catálogo de funcionalidades futuras; a conta emitida é a fonte dos documentos fiscais — não copiar o schema.
+A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal` (nota_fiscal_*, certificado), `conta_impostos_deduzidos`, integração SPED (`integracao.sped_documento`, `ti_*`) e funções `sp*_gerar_conta_rec_ctb` (contabilização). Para o OpenGSAN: registrar no catálogo de funcionalidades futuras; a conta emitida é a fonte dos documentos fiscais — não copiar o schema.
 
 ## 27. Precisão financeira
 
@@ -232,9 +232,9 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 - 🟢 **`RoundingMode.UP` não é arredondamento comercial** — afasta do zero *sempre*, mesmo em `0,001`. São 21 usos dentro do núcleo de cálculo financeiro.
 - 🟢 **Truncamento em base de cálculo de imposto**: `:29943` — `baseCalculo = baseCalculo.setScale(2, BigDecimal.ROUND_DOWN)`.
 - 🟢 **Utilitário**: `gcom.util.Util.arredondar(BigDecimal)` = `setScale(0, ROUND_HALF_UP)` (consumo em m³ inteiro, linhas 653–654); divisões monetárias com escala 2 (linhas 3110/3141) e intermediárias com escalas 4 e 7 (682, 1668); conversões via `formatarMoedaRealparaBigDecimal`. O utilitário é consistente — **o que não é consistente é o uso no controlador**.
-- 🔵 **Consequência para a migração**: a regra "no SISAN, usar HALF_UP" produziria divergência de centavos em massa contra o GSAN de referência. O arredondamento **é regra de negócio por ponto de cálculo**, e cada ponto precisa ser caracterizado antes de ser reimplementado. Este é o item de maior risco de equivalência financeira do módulo.
+- 🔵 **Consequência para a migração**: a regra "no OpenGSAN, usar HALF_UP" produziria divergência de centavos em massa contra o GSAN de referência. O arredondamento **é regra de negócio por ponto de cálculo**, e cada ponto precisa ser caracterizado antes de ser reimplementado. Este é o item de maior risco de equivalência financeira do módulo.
 - Valores monetários nas tabelas com `numeric(13,2)`-equivalente (length 13 nos mapeamentos, escala 2).
-- **O momento do arredondamento (por faixa, por categoria, no total) é regra de resultado** — deve ser capturado pelos golden masters, não reimplementado "matematicamente melhor" no SISAN.
+- **O momento do arredondamento (por faixa, por categoria, no total) é regra de resultado** — deve ser capturado pelos golden masters, não reimplementado "matematicamente melhor" no OpenGSAN.
 
 ## 28. Regras estruturantes do Faturamento
 
@@ -247,9 +247,9 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 7. **Mínimos são função de tarifa × economias por categoria** (com overrides paramétricos).
 8. **Cancelar/retificar nunca apaga** — transições de estado com motivo + arquivamento no encerramento mensal.
 9. **Encerramento mensal** é um marco duro: move documentos a histórico e fecha a competência (referência contábil).
-10. **Variação por companhia existe em três camadas** (parâmetro, subclasse, método no núcleo) — o SISAN precisa reduzi-la a parâmetro + ponto de extensão.
+10. **Variação por companhia existe em três camadas** (parâmetro, subclasse, método no núcleo) — o OpenGSAN precisa reduzi-la a parâmetro + ponto de extensão.
 
-## 29. Compatibilidade GSAN → SISAN
+## 29. Compatibilidade GSAN → OpenGSAN
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |

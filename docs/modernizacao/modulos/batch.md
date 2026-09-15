@@ -306,7 +306,7 @@ Quartz (quando) ──► │ ProcessoIniciado → FuncionalidadeIniciada → Un
 11. 🔵 **Agendador, orquestrador, transporte e regra de negócio são camadas separadas** — o MDB é ponte, não dono da regra.
 12. 🔵 **O estado funcional vive no banco**, permitindo acompanhamento operacional sem log técnico.
 
-## 23. Compatibilidade GSAN → SISAN
+## 23. Compatibilidade GSAN → OpenGSAN
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |

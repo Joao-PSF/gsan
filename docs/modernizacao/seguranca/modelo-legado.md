@@ -1,6 +1,6 @@
 # Modelo de Segurança Legado
 
-Levantamento do comportamento atual — base para reproduzir o **modelo conceitual** de segurança no SISAN (Fase 5) antes de qualquer fortalecimento. As estruturas físicas podem evoluir (ADR-0006); o modelo de autorização, não, sem mapeamento completo.
+Levantamento do comportamento atual — base para reproduzir o **modelo conceitual** de segurança no OpenGSAN (Fase 5) antes de qualquer fortalecimento. As estruturas físicas podem evoluir (ADR-0006); o modelo de autorização, não, sem mapeamento completo.
 
 ## Autenticação
 
@@ -16,7 +16,7 @@ Levantamento do comportamento atual — base para reproduzir o **modelo conceitu
 - Granularidade por funcionalidade e operação (URL/ação), com categorias (`funcionalidade_categoria`) e dependências (`funcionalidade_depend`).
 - Auditoria de uso: `operacao_efetuada`, `usuario_acao`, alteração de linhas (`tabela_linha_alteracao`, `tab_linha_col_alteracao`) — trilha de auditoria de dados feita pela aplicação.
 - **Comportamento comprovado (2026-08-14)**: existe um **gate transversal** para rotas web (`FiltroSegurancaAcesso`, mapeado para `*.do`) que classifica a URL como **funcionalidade ou operação** (caminhos alternativos) e concede por **união dos grupos** (`GrupoFuncionalidadeOperacao`), com **abrangência verificada condicionalmente** (ramo de operação, quando há contexto) e **permissões especiais nomeadas** como exceções dentro da funcionalidade. O filtro possui **lista própria de exceções** e não cobre superfícies fora de `*.do` — portanto não é política universal. Detalhamento funcional em [modulos/seguranca.md](../modulos/seguranca.md); atenção especial a dois achados: a abrangência **depende de verificações explícitas** em cada consulta, e o uso de `UsuarioGrupoRestricao` no cálculo **não foi comprovado**.
-- **Regra da modernização**: o Spring Security do SISAN deverá reproduzir esse modelo conceitual (perfis, grupos, funcionalidades, operações, permissões especiais e abrangência) — as tabelas podem ser modernizadas (ADR-0006), mas o modelo de autorização não será substituído sem mapeamento completo, e a migração de perfis/permissões de instalações GSAN deve ser possível.
+- **Regra da modernização**: o Spring Security do OpenGSAN deverá reproduzir esse modelo conceitual (perfis, grupos, funcionalidades, operações, permissões especiais e abrangência) — as tabelas podem ser modernizadas (ADR-0006), mas o modelo de autorização não será substituído sem mapeamento completo, e a migração de perfis/permissões de instalações GSAN deve ser possível.
 
 ## Superfícies expostas
 
@@ -27,4 +27,4 @@ Levantamento do comportamento atual — base para reproduzir o **modelo conceitu
 ## Credenciais e segredos conhecidos
 
 - Roles de banco criadas com **senha igual ao login** em script versionado público (`gsan-migracoes/comercial/scripts/20160118183208_create_roles.sql`: `gsan_admin`, `gsan_batch`, `gsan_dba`, `gsan_olap`, `gsan_online`) — considerar comprometidas.
-- Credenciais reais do datasource ficam nos `*-ds.xml` do JBoss dos servidores de cada instalação — em instalações operantes, inventariar e rotacionar (item do checklist de migração futura; este projeto não opera infraestrutura GSAN). Nenhuma dessas credenciais deve ser reutilizada em qualquer ambiente SISAN.
+- Credenciais reais do datasource ficam nos `*-ds.xml` do JBoss dos servidores de cada instalação — em instalações operantes, inventariar e rotacionar (item do checklist de migração futura; este projeto não opera infraestrutura GSAN). Nenhuma dessas credenciais deve ser reutilizada em qualquer ambiente OpenGSAN.

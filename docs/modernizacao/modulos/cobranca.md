@@ -179,7 +179,7 @@ Mesmo padrão dos demais módulos: subclasses `ControladorCobrancaCAEMA/CAERN/CA
 9. **Situação especial de cobrança do imóvel** (com comando, motivo e histórico) suspende/redireciona ações sem apagar o saldo.
 10. **Corte/religação são OSs geradas e monitoradas pela cobrança** — o estado físico volta pelo encerramento da OS.
 
-## 30. Compatibilidade GSAN → SISAN
+## 30. Compatibilidade GSAN → OpenGSAN
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |

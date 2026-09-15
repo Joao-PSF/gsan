@@ -154,7 +154,7 @@ OSs executam instalação/substituição/retirada/aferição de hidrômetro e fi
 8. **O ciclo é dirigido pelo cronograma do grupo** (8 atividades com datas por rota) — leitura e faturamento são fases do mesmo trem mensal.
 9. **Customização por companhia via herança de controladores** (`ControladorMicromedicaoCAEMA/CAERN/CAER/COMPESA/COSAMA/COSANPA/JUAZEIRO SEJB`) — o mecanismo de variação por companhia é estrutural no GSAN. *(Correção 2026-09-14: a versão anterior citava `calcularValorFaturadoFaixaCAER` como exemplo de método específico no núcleo da Micromedição. Esse método existe em **um único arquivo**, `src/gcom/faturamento/ControladorFaturamentoFINAL.java` — é do Faturamento, não deste módulo. O exemplo foi removido; a regra estrutural permanece, sustentada pela herança dos controladores. Ver [`faturamento.md §11`](faturamento.md).)*
 
-## 11. Compatibilidade GSAN → SISAN
+## 11. Compatibilidade GSAN → OpenGSAN
 
 | Conceito/estrutura | Classificação preliminar | Motivo |
 | ------------------ | ------------------------ | ------ |
@@ -168,13 +168,13 @@ OSs executam instalação/substituição/retirada/aferição de hidrômetro e fi
 | Identidade do hidrômetro (nº série + características metrológicas) | PRESERVAR CONCEITO | Patrimônio e histórico |
 | Rota alternativa como override | POSSÍVEL MODERNIZAÇÃO | Semântica útil; forma (3 colunas de rota no imóvel) pode melhorar |
 | Denormalizações no movimento de leitura (endereço/categoria copiados) | POSSÍVEL MODERNIZAÇÃO | Movimento é interface, pode ser projeção |
-| Variação por companhia via subclasses de EJB | EXIGE APROFUNDAMENTO | Precisa de mecanismo de extensão explícito no SISAN; inventariar diferenças reais entre as variantes |
+| Variação por companhia via subclasses de EJB | EXIGE APROFUNDAMENTO | Precisa de mecanismo de extensão explícito no OpenGSAN; inventariar diferenças reais entre as variantes |
 | Composição do consumo no mês de troca de hidrômetro | EXIGE APROFUNDAMENTO | Caso crítico sem fórmula única evidenciada; caracterizar |
 | Precedência entre fontes de consumo mínimo (ligação/situação/categoria/área) | EXIGE APROFUNDAMENTO | Resolver no mapa do Faturamento |
 
 ## 12. Hipóteses para avaliação futura (não são decisões)
 
-1. Modelar explicitamente **Equipamento** (hidrômetro) e **Instalação** como conceitos distintos no SISAN — o GSAN já os separa; formalizar.
+1. Modelar explicitamente **Equipamento** (hidrômetro) e **Instalação** como conceitos distintos no OpenGSAN — o GSAN já os separa; formalizar.
 2. Tratar **Consumo como resultado mensal do imóvel** com **origem explícita** (medido/média/mínimo/rateado/ajustado) — já é a semântica do GSAN via `ConsumoTipo`; torná-la de primeira classe.
 3. Unificar o padrão "regra como dado" (situações, anormalidades, ações) em um mecanismo paramétrico consistente e versionado.
 4. Substituir as três colunas de rota do imóvel por um vínculo rota-por-finalidade (leitura/entrega/override), preservando a semântica e o mapeamento de migração.
@@ -210,9 +210,9 @@ Registrar no catálogo (item 5 do backlog), sem projetar agora: **telemetria/lei
    | **`faturarImovel`** | `ControladorFaturamentoFINAL:1875/1893` instancia `new ConsumoHistorico()` **apenas quando `obterUltimoConsumoImovel` devolve `null`**, atribui `setNumeroConsumoFaturadoMes(20)` (🟢 constante mágica, ver dúvida 13) e usa em memória — **nunca persiste** | **Ninguém**: objeto transitório |
    | **Retificação de conta** | `src/gcom/faturamento/controladores/ControladorRetificarConta:267-273` — `corrigirConsumos` faz `setNumeroConsumoFaturadoMes(consumo)` e `getControladorUtil().atualizar(consumoHistorico)`; `:263` também altera leitura via `atualizarLeituraRetificarConta` | **Faturamento escreve diretamente** |
 
-   🔵 Conclusão: **a fronteira não é limpa**. Só o terceiro caso é escrita direta do Faturamento sobre entidade da Micromedição — o primeiro é colaboração legítima entre módulos. No SISAN, a retificação precisa de **contrato explícito** (operação exposta pela Micromedição), não de escrita direta no agregado alheio. Ver [faturamento.md §5](faturamento.md).
+   🔵 Conclusão: **a fronteira não é limpa**. Só o terceiro caso é escrita direta do Faturamento sobre entidade da Micromedição — o primeiro é colaboração legítima entre módulos. No OpenGSAN, a retificação precisa de **contrato explícito** (operação exposta pela Micromedição), não de escrita direta no agregado alheio. Ver [faturamento.md §5](faturamento.md).
 3. ~~Precedência das fontes de consumo mínimo~~ **Núcleo resolvido (2026-08-14)**: quem calcula é a Micromedição (`obterConsumoMinimoLigacao` = Σ por categoria do mínimo da tarifa vigente × economias), a serviço do Faturamento; permanece aberta apenas a **ordem fina** entre os overrides (ligação × situação × área) — ver [faturamento.md §6/§32](faturamento.md).
-4. **Diferenças reais entre as variantes por companhia** dos controladores (CAEMA/CAERN/.../COSANPA) — inventário próprio antes da modelagem SISAN.
+4. **Diferenças reais entre as variantes por companhia** dos controladores (CAEMA/CAERN/.../COSANPA) — inventário próprio antes da modelagem OpenGSAN.
 5. Regra fina de média com histórico insuficiente/imóvel novo (meses mínimos, fallback imóvel × hidrômetro).
 
 ## 16. Evidências principais

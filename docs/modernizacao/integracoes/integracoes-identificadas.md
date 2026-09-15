@@ -2,7 +2,7 @@
 
 > **Inventário.** O aprofundamento de comportamento (protocolos, autenticação, identidade, tratamento de erro) está no **[mapa funcional das Integrações](../modulos/integracoes.md)** (2026-09-14). Este arquivo permanece como inventário e não foi refeito.
 
-Levantamento inicial (Fase 0) a partir do código e do banco. Cada integração deverá ter ficha própria (protocolo, formato, frequência, criticidade, contatos) antes de ser implementada no SISAN. Este levantamento também alimenta o **catálogo de funcionalidades futuras** (backlog da Fase 0): várias linhas abaixo são funcionalidades posteriores descobertas no `gsan_comercial`, não presentes no GSAN público.
+Levantamento inicial (Fase 0) a partir do código e do banco. Cada integração deverá ter ficha própria (protocolo, formato, frequência, criticidade, contatos) antes de ser implementada no OpenGSAN. Este levantamento também alimenta o **catálogo de funcionalidades futuras** (backlog da Fase 0): várias linhas abaixo são funcionalidades posteriores descobertas no `gsan_comercial`, não presentes no GSAN público.
 
 | Integração | Evidências | Observações |
 | ---------- | ---------- | ----------- |
@@ -27,4 +27,4 @@ Levantamento inicial (Fase 0) a partir do código e do banco. Cada integração 
 
 ## Regra
 
-No SISAN, cada integração só é implementada após ficha completa e compreensão da regra (rito da descoberta funcional: objetivo → regra → relação com conceitos GSAN → evolução de estruturas → decisão). Em migrações futuras de companhias, nenhuma integração operante será desligada ou substituída sem: ficha completa, consumidores confirmados, teste de equivalência do arquivo/mensagem gerada e janela combinada com a contraparte.
+No OpenGSAN, cada integração só é implementada após ficha completa e compreensão da regra (rito da descoberta funcional: objetivo → regra → relação com conceitos GSAN → evolução de estruturas → decisão). Em migrações futuras de companhias, nenhuma integração operante será desligada ou substituída sem: ficha completa, consumidores confirmados, teste de equivalência do arquivo/mensagem gerada e janela combinada com a contraparte.

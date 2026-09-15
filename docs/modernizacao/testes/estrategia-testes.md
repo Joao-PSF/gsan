@@ -8,7 +8,7 @@ MESMA ENTRADA → GSAN NOVO   → RESULTADO B
 REGRA: RESULTADO A = RESULTADO B
 ```
 
-> ⚠️ **Correção estrutural de 2026-09-14.** A regra acima, sozinha, **contradiz uma regra de segurança do próprio projeto** e precisa ser desdobrada. O legado contém comportamento que o SISAN **não deve** reproduzir: endpoint de escrita sem autenticação (achados 12 e 15), artefato de relatório acessível sem controle de acesso (achado 13), senha em SHA-1 sem *salt* (achado 1), segredo em código (achado 11). Exigir `RESULTADO A = RESULTADO B` literalmente obrigaria o SISAN a reproduzir essas falhas. As duas regras do projeto colidiam e a colisão não estava registrada.
+> ⚠️ **Correção estrutural de 2026-09-14.** A regra acima, sozinha, **contradiz uma regra de segurança do próprio projeto** e precisa ser desdobrada. O legado contém comportamento que o OpenGSAN **não deve** reproduzir: endpoint de escrita sem autenticação (achados 12 e 15), artefato de relatório acessível sem controle de acesso (achado 13), senha em SHA-1 sem *salt* (achado 1), segredo em código (achado 11). Exigir `RESULTADO A = RESULTADO B` literalmente obrigaria o OpenGSAN a reproduzir essas falhas. As duas regras do projeto colidiam e a colisão não estava registrada.
 
 ## Dois oráculos, não um
 
@@ -16,16 +16,16 @@ A equivalência é avaliada por **dois critérios independentes**, e todo compor
 
 | Oráculo | Pergunta | Critério | O que uma diferença significa |
 | ------- | -------- | -------- | ----------------------------- |
-| **1. Funcional / financeiro** | O SISAN produz o mesmo resultado de negócio? | `RESULTADO A = RESULTADO B`. Valores financeiros: **exato ao centavo** | **Defeito.** Investigar e corrigir o SISAN |
-| **2. Técnico / de segurança** | O SISAN se comporta melhor onde o legado está errado? | O SISAN **deve divergir** nos pontos registrados | **Conformidade.** Uma igualdade aqui é que seria o defeito |
+| **1. Funcional / financeiro** | O OpenGSAN produz o mesmo resultado de negócio? | `RESULTADO A = RESULTADO B`. Valores financeiros: **exato ao centavo** | **Defeito.** Investigar e corrigir o OpenGSAN |
+| **2. Técnico / de segurança** | O OpenGSAN se comporta melhor onde o legado está errado? | O OpenGSAN **deve divergir** nos pontos registrados | **Conformidade.** Uma igualdade aqui é que seria o defeito |
 
 **Nada fica fora dos dois.** Um comportamento não classificado é uma pendência de análise, não um caso "neutro".
 
 ### Registro de divergências aprovadas
 
-Toda divergência intencional é registrada **antes** de a implementação começar, em [`compatibilidade/divergencias-aprovadas.md`](../compatibilidade/divergencias-aprovadas.md), com: comportamento legado, comportamento SISAN, motivo, quem aprovou, e como o teste reconhece a divergência como esperada. Sem esse registro, uma correção de segurança aparece no relatório de testes como "falha de equivalência" e tende a ser revertida por engano.
+Toda divergência intencional é registrada **antes** de a implementação começar, em [`compatibilidade/divergencias-aprovadas.md`](../compatibilidade/divergencias-aprovadas.md), com: comportamento legado, comportamento OpenGSAN, motivo, quem aprovou, e como o teste reconhece a divergência como esperada. Sem esse registro, uma correção de segurança aparece no relatório de testes como "falha de equivalência" e tende a ser revertida por engano.
 
-> Revisão 2026-08-13: **não há produção neste projeto**. "GSAN antigo" = instância de referência do legado levantada a partir do repositório (Fase 1) com massa de dados controlada. Como os schemas GSAN e SISAN podem divergir (ADR-0006), a comparação de resultados é **semântica, via mapeamento GSAN→SISAN**, não byte a byte de tabelas.
+> Revisão 2026-08-13: **não há produção neste projeto**. "GSAN antigo" = instância de referência do legado levantada a partir do repositório (Fase 1) com massa de dados controlada. Como os schemas GSAN e OpenGSAN podem divergir (ADR-0006), a comparação de resultados é **semântica, via mapeamento GSAN→OpenGSAN**, não byte a byte de tabelas.
 
 ## Especificação de cenário — entregável do fechamento da Fase 0
 
@@ -71,8 +71,8 @@ A comparação de relatórios é **semântica**, em ordem de preferência:
    - Batch/cálculos: executar rotinas em homolog sobre massa congelada e gravar as saídas (tabelas resultantes, resumos, arquivos gerados) como "golden files" versionados.
    - Telas críticas: testes HTTP contra o legado (login → fluxo → resultado no banco), priorizando cadastro, faturamento, arrecadação, cobrança, parcelamento, micromedição, OS, autenticação e autorização.
    - Consultas/relatórios críticos: catalogar SQL, executar sobre massa congelada e versionar resultados.
-2. **Equivalência legado × novo (por módulo)** — harness que aplica a mesma entrada nos dois sistemas e compara semanticamente, via mapeamento GSAN→SISAN: estado final dos dados mapeados, valores financeiros, arquivos/relatórios gerados e códigos de retorno.
-3. **Testes do sistema novo** — JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL 18 com o schema do SISAN aplicado pelas migrations Flyway); testes de repositório contra o schema verdadeiro, não H2.
+2. **Equivalência legado × novo (por módulo)** — harness que aplica a mesma entrada nos dois sistemas e compara semanticamente, via mapeamento GSAN→OpenGSAN: estado final dos dados mapeados, valores financeiros, arquivos/relatórios gerados e códigos de retorno.
+3. **Testes do sistema novo** — JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL 18 com o schema do OpenGSAN aplicado pelas migrations Flyway); testes de repositório contra o schema verdadeiro, não H2.
 4. **Migração de banco (Fase 8)** — contagens por tabela, checksums por amostragem, somatórios financeiros por competência, sequences, e re-execução de batch de referência (ver `banco/migracao-postgresql.md`).
 5. **Segurança (oráculo 2)** — testes de autorização por funcionalidade (matriz perfil × funcionalidade extraída de `seguranca.*`). ⚠️ **Correção 2026-09-14**: o objetivo **não** é "negar/permitir exatamente como o legado". É preservar as concessões legítimas (união de grupos, abrangência, permissões especiais) e **negar deliberadamente** onde o legado permite por defeito — cada caso constando do registro de divergências aprovadas. Casos conhecidos: acesso ao artefato de relatório (achado 13), `/api/ordem-servico/*` (12), entrada de dados de campo (15), filtros decorativos (14).
 

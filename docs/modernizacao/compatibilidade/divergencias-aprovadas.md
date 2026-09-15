@@ -1,11 +1,11 @@
-# Registro de Divergências Aprovadas (GSAN → SISAN)
+# Registro de Divergências Aprovadas (GSAN → OpenGSAN)
 
 Criado em 2026-09-14. Resolve a contradição entre duas regras do projeto que conviviam sem registro:
 
 - *"MESMA ENTRADA → RESULTADO A = RESULTADO B"* (critério de equivalência)
-- *"MD5/SHA-1, ausência de salt, pseudo-autenticação e segredos em código **não devem ser preservados tecnicamente no SISAN**"* (regra de segurança)
+- *"MD5/SHA-1, ausência de salt, pseudo-autenticação e segredos em código **não devem ser preservados tecnicamente no OpenGSAN**"* (regra de segurança)
 
-Onde o legado está errado, **equivalência literal seria o defeito**. Este arquivo registra cada ponto em que o SISAN **deve** divergir, para que o teste reconheça a diferença como esperada em vez de reportá-la como falha.
+Onde o legado está errado, **equivalência literal seria o defeito**. Este arquivo registra cada ponto em que o OpenGSAN **deve** divergir, para que o teste reconheça a diferença como esperada em vez de reportá-la como falha.
 
 ## Como usar
 
@@ -16,7 +16,7 @@ Onde o legado está errado, **equivalência literal seria o defeito**. Este arqu
 
 ## Divergências
 
-| # | Área | Comportamento do GSAN | Comportamento exigido do SISAN | Motivo | Status |
+| # | Área | Comportamento do GSAN | Comportamento exigido do OpenGSAN | Motivo | Status |
 | - | ---- | --------------------- | ------------------------------ | ------ | ------ |
 | D-01 | Autenticação | Senha em **SHA-1 sem salt** (`Criptografia.java:17`) | BCrypt/Argon2 com salt; autenticação contra hash legado apenas na migração, com re-hash no primeiro login | Regra de segurança do projeto (achado 1) | Proposta |
 | D-02 | Autenticação auxiliar | Token **MD5** efêmero (`AcessarOperacionalServlet:48`, `AcessarNovoBatchServlet:98`) | Token com escopo e expiração | Achado 1b | Proposta |
@@ -41,7 +41,7 @@ Onde o legado está errado, **equivalência literal seria o defeito**. Este arqu
 
 | # | Área | Comportamento do GSAN | Comportamento proposto | Motivo | Origem |
 | - | ---- | --------------------- | ---------------------- | ------ | ------ |
-| **D-17** | Abrangência territorial | Em superfícies onde `verificarAcessoAbrangencia` não é chamado, o usuário acessa dados **fora de sua abrangência** — o modelo está correto, a aplicação depende de disciplina | Escopo territorial aplicado **sistematicamente** em toda consulta | Vazamento por omissão (LGPD); o SISAN não deve herdar a garantia frágil | [`estruturas-centrais.md §19.10`](estruturas-centrais.md) (SEG-03) |
+| **D-17** | Abrangência territorial | Em superfícies onde `verificarAcessoAbrangencia` não é chamado, o usuário acessa dados **fora de sua abrangência** — o modelo está correto, a aplicação depende de disciplina | Escopo territorial aplicado **sistematicamente** em toda consulta | Vazamento por omissão (LGPD); o OpenGSAN não deve herdar a garantia frágil | [`estruturas-centrais.md §19.10`](estruturas-centrais.md) (SEG-03) |
 
 ⚠️ **Por que exige aprovação**: altera comportamento **visível** — consultas que hoje retornam dados passariam a restringi-los. É correção, não regressão, mas operadores podem perceber como perda de acesso.
 

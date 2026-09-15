@@ -1,4 +1,4 @@
-# Plano de Trabalho — Modernização do GSAN → SISAN
+# Plano de Trabalho — Modernização do GSAN → OpenGSAN
 
 Elaborado em 2026-08-13 após diagnóstico dos repositórios `gsan` e `gsan-migracoes` e do DDL do banco `gsan_comercial`. **Reescrito em 2026-09-14.** Detalhes em: [arquitetura legada](arquitetura/arquitetura-legada.md), [estrutura do banco](banco/estrutura-atual.md), [segurança](seguranca/riscos-identificados.md), [procedência das fontes](procedencia.md).
 
@@ -7,9 +7,9 @@ Elaborado em 2026-08-13 após diagnóstico dos repositórios `gsan` e `gsan-migr
 ## Premissas vigentes
 
 1. **Não há GSAN em produção neste projeto.** Sem base real, sem usuários, sem DBA, sem janela de corte.
-2. **O SISAN é modernização evolutiva do GSAN** (ADR-0005), não greenfield: conceitos e regras do legado são a especificação.
-3. **O SISAN tem banco próprio, UTF-8** (ADR-0004), construído por decisões de compatibilidade (ADR-0006) — **nunca** por cópia do schema do `gsan_comercial`.
-4. **Migrar instalações GSAN existentes é requisito arquitetural futuro**, não atividade deste projeto. O que este projeto produz é o *playbook* e a compatibilidade que tornam essa migração possível.
+2. **O OpenGSAN é a evolução aberta e moderna do GSAN** (ADR-0005), não greenfield: conceitos e regras do legado são a especificação, e o sistema é **software livre**.
+3. **O OpenGSAN tem banco próprio, UTF-8** (ADR-0004), construído por decisões de compatibilidade (ADR-0006) — **nunca** por cópia do schema do `gsan_comercial`.
+4. ⚠️ **Migrar instalações GSAN existentes está FORA do escopo deste projeto** (revisão 2026-09-15, ADR-0005). Estratégia gradual, coexistência, sincronização, ETL, cutover e replicação serão tratados em **projeto separado**. O que este projeto registra é a **correspondência conceitual** GSAN → OpenGSAN — não a transformação de dados.
 5. **`gsan_comercial` é fonte complementar** — compatibilidade e descoberta funcional apenas.
 
 ## 1. Estado atual
@@ -26,7 +26,7 @@ Java 25 LTS · Spring Boot 4.1.x (Spring Framework 7/Jakarta) · Spring Security
 
 Organização: **monólito modular** (ADR-0001) — `cadastro`, `micromedicao`, `faturamento`, `cobranca`, `arrecadacao`, `atendimento`, `seguranca`, `relatorios`, `batch`, `integracoes`, `shared` —, com fronteiras explícitas entre módulos.
 
-**Não há coexistência, banco compartilhado nem roteamento por proxy.** O SISAN é um sistema próprio, com banco próprio. A relação com o GSAN é de **compatibilidade** — o legado é a referência de comportamento e a origem dos dados numa migração futura, não um parceiro de execução simultânea.
+**Não há coexistência, banco compartilhado nem roteamento por proxy.** O OpenGSAN é um sistema próprio, com banco próprio. A relação com o GSAN é de **compatibilidade** — o legado é a referência de comportamento e a origem dos dados numa migração futura, não um parceiro de execução simultânea.
 
 ⚠️ **Arquitetura de interface não decidida** (ADR-0007) — pré-requisito do piloto.
 
@@ -40,8 +40,8 @@ Versões reconfirmadas a cada fase (em 2026-08: Spring Boot 4.1.0 estável; Post
 | 2 | Drift tripla: banco `gsan_comercial` × migrations (2024) × código (2023) | Catalogado na Fase 0 como evidência de **compatibilidade**; não há baseline de produção a congelar |
 | 3 | Regras financeiras espalhadas em ~830 SQLs concatenados e 116 funções de banco | Caracterização antes de implementar; comparação ao centavo |
 | 4 | **Arredondamento não uniforme**: 5 políticas semânticas convivendo no núcleo de faturamento, incluindo 21 usos de `RoundingMode.UP` e truncamento em base de imposto | Caracterizar **ponto a ponto**; proibido unificar em HALF_UP sem decisão registrada ([faturamento §27](modulos/faturamento.md)) |
-| 5 | Segurança do legado frágil e, em vários pontos, **ausente** (SHA-1 sem salt, endpoints de escrita sem autenticação, artefato de relatório sem controle de acesso, segredo em código) | Registro de **divergências aprovadas** (§7); o SISAN nasce correto e a diferença é esperada, não falha de equivalência |
-| 6 | Fronteiras de módulo impuras no legado (ex.: retificação de conta escreve em `ConsumoHistorico`) | Mapeadas nos mapas funcionais; corrigidas por contrato explícito no SISAN (D-14) |
+| 5 | Segurança do legado frágil e, em vários pontos, **ausente** (SHA-1 sem salt, endpoints de escrita sem autenticação, artefato de relatório sem controle de acesso, segredo em código) | Registro de **divergências aprovadas** (§7); o OpenGSAN nasce correto e a diferença é esperada, não falha de equivalência |
+| 6 | Fronteiras de módulo impuras no legado (ex.: retificação de conta escreve em `ConsumoHistorico`) | Mapeadas nos mapas funcionais; corrigidas por contrato explícito no OpenGSAN (D-14) |
 | 7 | Batch crítico acoplado a EJB/MDB/JBoss/Quartz 1.5 | Batch por último; caracterização por competência antes de substituir |
 | 8 | Dependências mortas sem upgrade direto (Jasper 1.2.2, Quartz 1.5, Axis2, applet de impressão) | Substituição planejada com teste de saída equivalente (relatórios: comparação **semântica**, §7) |
 | 9 | Conhecimento tácito (customizações por companhia, integrações bancárias/fiscais pouco documentadas) | Mapas funcionais por módulo + fichas de integração antes de implementar |
@@ -55,15 +55,15 @@ Versões reconfirmadas a cada fase (em 2026-08: Spring Boot 4.1.0 estável; Post
 | 1 — Ambiente de referência | Legado executável de forma controlada | Documentar build Ant/JBoss; ambiente do GSAN de referência com massa sintética; config por ambiente | Fase 0 | GSAN de referência rodando | Build + deploy do EAR reproduzidos do zero seguindo apenas a documentação |
 | 2 — Rede de segurança | Baseline funcional automatizada | Massa congelada; *harness*; captura dos golden masters (preenche o "resultado esperado" das especificações da Fase 0); baseline de performance | Fase 1 | Suíte de caracterização executável | Rodadas repetidas produzem resultados idênticos; cobre os comportamentos priorizados |
 | 3 — Build | Compilação moderna do legado de referência | Ant→Maven mantendo o Java alvo; CI compilando | Fase 1 | Build reproduzível | EAR gerado por Maven equivalente ao gerado por Ant |
-| 4 — Fundação SISAN | Núcleo moderno funcionando | Projeto Maven multi-módulo; **banco próprio UTF-8 versionado por Flyway desde `V1`**; profiles; logging; exception handling; Actuator; esqueleto de segurança | Fases 0–2 | Aplicação Spring Boot com schema próprio | Health checks OK; `V1` aplicada em banco limpo produz o schema esperado |
-| 5 — Segurança | Modelo equivalente **ou superior** | Autenticação com BCrypt/Argon2 (compatibilidade com hash legado apenas no caminho de migração); RBAC completo (grupos, funcionalidades, permissões especiais, abrangência); auditoria; secrets por ambiente; TLS; contas de banco segregadas | Fase 4 | Login + autorização no SISAN | Concessões legítimas preservadas; **divergências do registro aplicadas e testadas**; nenhum controle atual reduzido |
+| 4 — Fundação OpenGSAN | Núcleo moderno funcionando | Projeto Maven multi-módulo; **banco próprio UTF-8 versionado por Flyway desde `V1`**; profiles; logging; exception handling; Actuator; esqueleto de segurança | Fases 0–2 | Aplicação Spring Boot com schema próprio | Health checks OK; `V1` aplicada em banco limpo produz o schema esperado |
+| 5 — Segurança | Modelo equivalente **ou superior** | Autenticação com BCrypt/Argon2 (compatibilidade com hash legado apenas no caminho de migração); RBAC completo (grupos, funcionalidades, permissões especiais, abrangência); auditoria; secrets por ambiente; TLS; contas de banco segregadas | Fase 4 | Login + autorização no OpenGSAN | Concessões legítimas preservadas; **divergências do registro aplicadas e testadas**; nenhum controle atual reduzido |
 | 6 — Piloto | Validar arquitetura ponta a ponta | Cadastros auxiliares + consulta + 1 fluxo de atendimento com 1 relatório | Fases 4–5 + **ADR-0007** | Módulo completo na nova stack | Equivalência sob o oráculo 1; divergências do oráculo 2 registradas; fronteiras de módulo verificadas |
 | 7 — Módulos | Construção progressiva | Ordem da §5; por módulo: mapa → especificação → implementação → comparação → segurança → performance | Fase 6 | Módulos entregues incrementalmente | Cada módulo cumpre o ciclo completo antes de o próximo crítico começar |
-| 8 — Playbook de migração | Tornar possível migrar uma instalação GSAN | Procedimento de extração/conversão LATIN1→UTF-8; mapeamento GSAN→SISAN por tabela; bateria de validação (contagens, somas financeiras, sequences); ensaio cronometrado | Fases 0, 4, 7 parcial | Playbook + scripts validados em ensaio | Ensaio com massa de referência: zero divergência em contagens e somas financeiras |
+| ~~8 — Playbook de migração~~ | ⚠️ **REMOVIDA do escopo em 2026-09-15** — migrar instalações GSAN é **projeto separado** (ADR-0005). O conhecimento levantado (encoding de origem, contribs pré-extensão, correspondência conceitual) fica registrado na documentação e serve de insumo a esse projeto | — | — | — | — |
 | 9 — Interface | Concluir a decisão da ADR-0007 | Implementar a arquitetura decidida; telas acompanham os módulos | Fase 6 | Telas na stack decidida | Usuários validam as telas críticas |
 | 10 — Observabilidade | Operação visível | Logs estruturados com ID de transação, métricas, alertas para financeiro e batch, auditoria centralizada | Fase 4+ | Monitoramento | Erros de batch/financeiro detectados por alerta |
 | 11 — CI/CD | Pipeline completo | build → testes → análise estática → SCA/SAST → SBOM → *secret scan* → deploy controlado | Fases 3–4 | Pipeline nos repositórios | Nenhum deploy manual; pipeline bloqueia vulnerabilidade crítica e segredo commitado |
-| 12 — Adoção | Companhia operando o SISAN | Aplicável **apenas** quando existir instalação a migrar: execução do playbook (Fase 8), validação por usuários reais, desativação do legado daquela instalação | Fases 7, 8 | Instalação migrada | Critérios acordados com a companhia |
+| 12 — Adoção | Companhia operando o OpenGSAN | Instalação nova do OpenGSAN, com validação por usuários reais. ⚠️ A **migração de uma base GSAN existente** não faz parte desta fase — depende do projeto de migração | Fase 7 | Companhia em operação | Critérios acordados com a companhia |
 
 ## 5. Ordem dos módulos
 
@@ -85,18 +85,18 @@ Transversais: `seguranca` na Fase 5; `relatorios` e `integracoes` acompanham o m
 
 Detalhe em [banco/migracao-postgresql.md](banco/migracao-postgresql.md). Duas frentes **distintas**, antes confundidas:
 
-**(a) Banco do SISAN** — PostgreSQL 18.x, **UTF-8**, schema construído pelas decisões de compatibilidade (ADR-0006) e versionado por Flyway desde `V1` (ADR-0002). Sem herança direta do schema legado.
+**(a) Banco do OpenGSAN** — PostgreSQL 18.x, **UTF-8**, schema construído pelas decisões de compatibilidade (ADR-0006) e versionado por Flyway desde `V1` (ADR-0002). Sem herança direta do schema legado.
 
-**(b) Playbook de migração de instalações GSAN (Fase 8)** — para quando existir base real a migrar: extração da origem (tipicamente LATIN1, possivelmente PG 8.x), conversão de encoding caso a caso (tamanhos de campo, caracteres inválidos, ordenações), substituição de `dblink`/`pg_trgm`/`plpgsql_call_handler` pré-extensão por `CREATE EXTENSION`, mapeamento GSAN→SISAN por tabela, e validação obrigatória: diff de schema mapeado, contagem de 100% das tabelas, somas financeiras por competência com **tolerância zero**, sequences, re-execução de batch de referência.
+**(b) ⚠️ Migração de instalações GSAN — FORA DESTE PROJETO** (2026-09-15). O conhecimento técnico já levantado permanece registrado como **insumo** ao projeto futuro: encoding de origem tipicamente LATIN1 com conversão caso a caso, contribs (`dblink`, `pg_trgm`, `plpgsql_call_handler`) instalados no estilo pré-extensão, e a bateria de validação que tal projeto precisaria (contagens, somas financeiras por competência com tolerância zero, sequences). **Nada disso é atividade deste repositório nesta fase.**
 
 ## 7. Estratégia de testes
 
-Detalhe em [testes/estrategia-testes.md](testes/estrategia-testes.md). **Dois oráculos independentes** — a regra única `A = B` foi corrigida em 2026-09-14 porque, sozinha, obrigaria o SISAN a reproduzir falhas de segurança do legado:
+Detalhe em [testes/estrategia-testes.md](testes/estrategia-testes.md). **Dois oráculos independentes** — a regra única `A = B` foi corrigida em 2026-09-14 porque, sozinha, obrigaria o OpenGSAN a reproduzir falhas de segurança do legado:
 
 - **Oráculo 1 — funcional/financeiro**: mesma entrada ⇒ mesmo resultado. Financeiro **exato ao centavo**. Diferença = defeito.
-- **Oráculo 2 — técnico/segurança**: o SISAN **deve divergir** nos pontos do [registro de divergências aprovadas](compatibilidade/divergencias-aprovadas.md). Igualdade = defeito.
+- **Oráculo 2 — técnico/segurança**: o OpenGSAN **deve divergir** nos pontos do [registro de divergências aprovadas](compatibilidade/divergencias-aprovadas.md). Igualdade = defeito.
 
-Comparação **semântica via mapeamento GSAN→SISAN** (os schemas divergem por decisão). Relatórios comparados pelo *datasource* ou por conteúdo extraído — **nunca** byte a byte de PDF. Camadas: caracterização do legado (golden masters sobre massa congelada) → equivalência por módulo → testes do SISAN (JUnit 5 + Testcontainers PG 18 sobre o schema real, nunca H2) → validação de migração (§6b) → matriz de autorização.
+Comparação **semântica via mapeamento GSAN→OpenGSAN** (os schemas divergem por decisão). Relatórios comparados pelo *datasource* ou por conteúdo extraído — **nunca** byte a byte de PDF. Camadas: caracterização do legado (golden masters sobre massa congelada) → equivalência por módulo → testes do OpenGSAN (JUnit 5 + Testcontainers PG 18 sobre o schema real, nunca H2) → validação de migração (§6b) → matriz de autorização.
 
 Prioridade: autenticação/autorização → cálculo de conta → baixa de pagamento → parcelamento → consumo/média → OS → resumos financeiros.
 
@@ -105,7 +105,7 @@ Prioridade: autenticação/autorização → cálculo de conta → baixa de paga
 Detalhe em [seguranca/riscos-identificados.md](seguranca/riscos-identificados.md). Três níveis:
 
 - **P0\*** — obrigatório em qualquer instalação GSAN operante e item do checklist de migração futura (**não** é atividade de execução deste projeto): rotação de roles `gsan_*` com senha = login; **rotação da chave de API de SMS** (achado 11, considerada comprometida); bloqueio de `/api/ordem-servico/*` e dos entry points de campo até haver autenticação; proteção do download de relatório batch; TLS no proxy.
-- **P1 — requisito de nascimento do SISAN**, antes do primeiro deploy acessível: BCrypt/Argon2 preservando expiração/bloqueio/histórico; Spring Security consumindo a semântica do RBAC legado; cookies seguros, CSRF, headers, sessão controlada; **secrets fora do código, por ambiente**; contas de banco segregadas com menor privilégio; **nenhum filtro decorativo** (achado 14).
+- **P1 — requisito de nascimento do OpenGSAN**, antes do primeiro deploy acessível: BCrypt/Argon2 preservando expiração/bloqueio/histórico; Spring Security consumindo a semântica do RBAC legado; cookies seguros, CSRF, headers, sessão controlada; **secrets fora do código, por ambiente**; contas de banco segregadas com menor privilégio; **nenhum filtro decorativo** (achado 14).
 - **P2 — durante os módulos**: queries 100% parametrizadas; validação de upload centralizada; anonimização de massas (LGPD); auditoria preservada e centralizada; pipeline com SAST/SCA/SBOM/*secret scan*.
 
 OAuth2/OIDC apenas se houver infraestrutura de identidade; não é pré-requisito.

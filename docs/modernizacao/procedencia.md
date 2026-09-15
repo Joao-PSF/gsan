@@ -11,7 +11,7 @@ Criado em 2026-09-14 em resposta à crítica de rastreabilidade da revisão exte
 | Código GSAN | repositório `Joao-PSF/gsan`, branch `claude/gsan-modernizacao-tecnica-rd5g60` | Fonte primária de comportamento |
 | — commit dos mapas de módulo (cadastro → relatórios) | `2031c4ca762c3ec2597ea8c057db97aa388e5589` | Base das análises de 2026-08-13 a 2026-08-14 |
 | — commit do mapa de Integrações e das correções | este commit | Base das análises de 2026-09-14 |
-| DDL `gsan_comercial` | arquivo fornecido pelo usuário (`03056c39-gsan_comercial.txt`) | **Fonte complementar** — compatibilidade e descoberta funcional. Nunca é o schema alvo do SISAN (ADR-0006) |
+| DDL `gsan_comercial` | arquivo fornecido pelo usuário (`03056c39-gsan_comercial.txt`) | **Fonte complementar** — compatibilidade e descoberta funcional. Nunca é o schema alvo do OpenGSAN (ADR-0006) |
 | Migrations | repositório `Joao-PSF/gsan-migracoes` | Versionamento histórico do banco |
 
 ⚠️ **Limitação declarada**: o hash do arquivo DDL não foi registrado na época em que a análise do banco foi feita. Toda afirmação derivada do DDL está marcada como tal e deve ser reconferida contra o arquivo vigente antes de virar decisão. Este é um débito reconhecido, não uma omissão silenciosa.

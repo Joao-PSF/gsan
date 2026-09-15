@@ -28,7 +28,7 @@ A Segurança responde por quatro eixos **distintos** que o GSAN mantém separado
 
 🟢 **Expiração é eixo independente da situação**: `dataExpiracaoAcesso` é verificada separadamente (`:168–174`), com aviso de dias restantes calculado antes do login (`:89`). 🟢 **Bloqueio por tentativas**: o número de tentativas é contado **na sessão** (`numeroTentativas`, `loginUsuarioSessao`) e, ao exceder o permitido, o sistema **bloqueia a senha** (`bloquearSenha(login)` → situação `SENHA_BLOQUEADA`, `:142`, `:310`).
 
-🔵 Portanto, três conceitos distintos que o SISAN precisa manter separados: **inativo** (usuário desativado), **senha bloqueada** (consequência de tentativas), **acesso expirado** (validade vencida — o usuário continua cadastrado, com grupos preservados). 🟢 Complementos do modelo (já inventariados no documento preliminar): `usuario_periodo_bloqueio`, `usuario_afastamento` (+ motivo), `usuario_senha_historico`, `senha_invalida`, datas de cadastro/início/fim, `usur_nnacessos`, `usur_tmultimoacesso`.
+🔵 Portanto, três conceitos distintos que o OpenGSAN precisa manter separados: **inativo** (usuário desativado), **senha bloqueada** (consequência de tentativas), **acesso expirado** (validade vencida — o usuário continua cadastrado, com grupos preservados). 🟢 Complementos do modelo (já inventariados no documento preliminar): `usuario_periodo_bloqueio`, `usuario_afastamento` (+ motivo), `usuario_senha_historico`, `senha_invalida`, datas de cadastro/início/fim, `usur_nnacessos`, `usur_tmultimoacesso`.
 
 ❔ Não comprovei nesta análise se `usur_nnacessos` conta acessos bem-sucedidos ou tentativas, nem o limite exato de tentativas (parâmetro do sistema).
 
@@ -147,7 +147,7 @@ FiltroSegurancaAcesso
 
 🟢 `UsuarioGrupoRestricao` existe e seu mapping vincula-se a **`GrupoFuncionalidadeOperacao`** e a **`UsuarioGrupo`** (ambas as associações com `update="false" insert="false"` sobre a coluna `grup_id`) — 🔵 ou seja, a restrição é modelada **no cruzamento entre um vínculo usuário-grupo e uma concessão específica do grupo**, o que sugere semântica de **"este usuário, neste grupo, não recebe esta concessão"**.
 
-❔ **Não comprovei que a restrição participe do cálculo de autorização do filtro**: os métodos `verificarAcessoPermitido*` que li consultam `GrupoFuncionalidadeOperacao` e os grupos do usuário, sem consulta visível a `UsuarioGrupoRestricao`. Isso é uma **lacuna importante** — a existência da tabela não prova o uso (regra do §35 do roteiro). Classificação: **DÚVIDA ABERTA** de alta prioridade, com duas leituras possíveis: (a) a restrição é aplicada em outro ponto (montagem da coleção de grupos/consulta específica), (b) é estrutura pouco utilizada. Precisa de rastreio dirigido antes de qualquer decisão no SISAN.
+❔ **Não comprovei que a restrição participe do cálculo de autorização do filtro**: os métodos `verificarAcessoPermitido*` que li consultam `GrupoFuncionalidadeOperacao` e os grupos do usuário, sem consulta visível a `UsuarioGrupoRestricao`. Isso é uma **lacuna importante** — a existência da tabela não prova o uso (regra do §35 do roteiro). Classificação: **DÚVIDA ABERTA** de alta prioridade, com duas leituras possíveis: (a) a restrição é aplicada em outro ponto (montagem da coleção de grupos/consulta específica), (b) é estrutura pouco utilizada. Precisa de rastreio dirigido antes de qualquer decisão no OpenGSAN.
 
 ## 11. Permissões especiais
 
@@ -193,7 +193,7 @@ requisição *.do
 
 🔵 Interpretação: a abrangência é um **recorte territorial hierárquico por níveis** (do mais amplo ao mais restrito), e a verificação é essencialmente *"o que você pediu está dentro do que sua abrangência permite?"*.
 
-⚠️ 🟢 **Ponto estrutural crítico**: além do filtro, a abrangência é verificada **manualmente em muitos pontos** — `Fachada`, `ControladorImovelSEJB`, `ControladorLocalidadeSEJB`, `ControladorArrecadacao`, `ControladorMicromedicao`, `FiltrarImovelInserirManterContaAction`, `ExibirManterContaAction` chamam `verificarAcessoAbrangencia` / `existeLocalidadeForaDaAbrangenciaUsuario` (`:4412`). 🔵 Conclusão: **a filtragem territorial das consultas não é garantida automaticamente pelo framework** — depende de cada Action/controlador/repositório aplicar a verificação. 🔵 Isso é um **risco estrutural de autorização** (uma consulta nova que esqueça a checagem vaza dados fora da abrangência) e uma diferença importante de projeto para o SISAN. Registrado aqui por ser **fato funcional do modelo**, complementando (sem repetir) o inventário de riscos.
+⚠️ 🟢 **Ponto estrutural crítico**: além do filtro, a abrangência é verificada **manualmente em muitos pontos** — `Fachada`, `ControladorImovelSEJB`, `ControladorLocalidadeSEJB`, `ControladorArrecadacao`, `ControladorMicromedicao`, `FiltrarImovelInserirManterContaAction`, `ExibirManterContaAction` chamam `verificarAcessoAbrangencia` / `existeLocalidadeForaDaAbrangenciaUsuario` (`:4412`). 🔵 Conclusão: **a filtragem territorial das consultas não é garantida automaticamente pelo framework** — depende de cada Action/controlador/repositório aplicar a verificação. 🔵 Isso é um **risco estrutural de autorização** (uma consulta nova que esqueça a checagem vaza dados fora da abrangência) e uma diferença importante de projeto para o OpenGSAN. Registrado aqui por ser **fato funcional do modelo**, complementando (sem repetir) o inventário de riscos.
 
 ## 14. Unidade organizacional × abrangência
 
@@ -224,7 +224,7 @@ Com o mecanismo esclarecido, as ações do Atendimento se classificam assim:
 | Tramitar/encerrar RA de **outra unidade** | ❔ **Sem controle central identificado** — a unidade aparece como dado de roteamento/estado, não como checagem de autorização no filtro | ❔ |
 | Aplicar motivo de não cobrança, liberar OS em "aguardando liberação", alterar prioridade | ❔ Não localizei permissão especial nomeada nem checagem central específica — provável combinação de operação + regra na Action | ❔ |
 
-🔵 **Padrão comprovado**: o GSAN controla o **acesso** de forma central (filtro) e as **exceções** de forma nomeada (permissões especiais nas Actions); regras de negócio parametrizadas (ex.: "permite alterar valor") vivem em tabelas de domínio. 🔵 Quando uma autorização **não** tem funcionalidade/operação própria nem permissão especial, ela tende a ser **regra dentro da Action** — o que significa autorização dispersa e difícil de auditar (característica do legado a considerar no SISAN).
+🔵 **Padrão comprovado**: o GSAN controla o **acesso** de forma central (filtro) e as **exceções** de forma nomeada (permissões especiais nas Actions); regras de negócio parametrizadas (ex.: "permite alterar valor") vivem em tabelas de domínio. 🔵 Quando uma autorização **não** tem funcionalidade/operação própria nem permissão especial, ela tende a ser **regra dentro da Action** — o que significa autorização dispersa e difícil de auditar (característica do legado a considerar no OpenGSAN).
 
 ## 17. Operações financeiras sensíveis (amostras)
 
@@ -254,7 +254,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 
 ## 22. APIs e tokens
 
-🟢 Fatos: `seguranca.token` e o parâmetro `INDICADOR_VALIDA_TOKEN` (migrations 2024); as APIs `/api/pagamentoCredito/*` e `/api/ordem-servico/*` são **servlets próprios** com `url-pattern` fora de `*.do`, e `/autocomplete` idem. 🔵 Consequência funcional direta: **essas superfícies não passam pelo `FiltroSegurancaAcesso`** — logo **não são cobertas pelo RBAC de funcionalidade/operação**; seguem seus próprios mecanismos (token / filtro próprio). 🔵 Distinção necessária no SISAN: **usuário interativo** (sessão + RBAC) × **cliente de sistema** (credencial própria com escopo). ❔ Escopo, validade e vínculo do token (usuário? sistema? companhia?) não determinados. Fragilidades específicas já em `riscos-identificados.md`.
+🟢 Fatos: `seguranca.token` e o parâmetro `INDICADOR_VALIDA_TOKEN` (migrations 2024); as APIs `/api/pagamentoCredito/*` e `/api/ordem-servico/*` são **servlets próprios** com `url-pattern` fora de `*.do`, e `/autocomplete` idem. 🔵 Consequência funcional direta: **essas superfícies não passam pelo `FiltroSegurancaAcesso`** — logo **não são cobertas pelo RBAC de funcionalidade/operação**; seguem seus próprios mecanismos (token / filtro próprio). 🔵 Distinção necessária no OpenGSAN: **usuário interativo** (sessão + RBAC) × **cliente de sistema** (credencial própria com escopo). ❔ Escopo, validade e vínculo do token (usuário? sistema? companhia?) não determinados. Fragilidades específicas já em `riscos-identificados.md`.
 
 ## 23. Variações por companhia
 
@@ -276,7 +276,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 12. 🟢 **Existe identidade de sistema para batch** e superfícies (APIs/servlets) **fora do RBAC de tela**.
 13. 🟢 **Existe workflow de solicitação de acesso** por grupos, com situação própria — governança, não só permissão estática.
 
-## 25. Compatibilidade GSAN → SISAN
+## 25. Compatibilidade GSAN → OpenGSAN
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |
@@ -292,7 +292,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 | Auditoria em dois níveis (operação + linha/coluna) | PRESERVAR CONCEITO | Rastreabilidade financeira e cadastral |
 | Identidade de sistema para execuções automáticas | PRESERVAR CONCEITO | Auditoria sem autor humano |
 | Autorização ancorada em **URL de Action** | MODERNIZAR MANTENDO COMPATIBILIDADE | A semântica (funcionalidade/operação) se preserva; o identificador não pode continuar sendo a URL de uma Action Struts — precisa de chave estável de funcionalidade/operação para migrar as concessões |
-| Aplicação manual da abrangência em cada consulta | **REESTRUTURAR** | Fonte de vazamento por omissão; o SISAN deve aplicar escopo territorial de forma sistemática |
+| Aplicação manual da abrangência em cada consulta | **REESTRUTURAR** | Fonte de vazamento por omissão; o OpenGSAN deve aplicar escopo territorial de forma sistemática |
 | Auditoria dependente de anotação campo a campo | MODERNIZAR MANTENDO COMPATIBILIDADE | Manter a trilha por linha/coluna, reduzindo a chance de esquecer o que auditar |
 | Hash SHA-1 sem salt e comparação por consulta | **NÃO TRANSPORTAR** (a implementação) | A **semântica** (validar credencial, histórico, blacklist, bloqueio) é preservada; o mecanismo é substituído, com migração progressiva do hash legado |
 | Contagem de tentativas em sessão | REESTRUTURAR | Controle por sessão é contornável; deve ser persistente/por identidade |

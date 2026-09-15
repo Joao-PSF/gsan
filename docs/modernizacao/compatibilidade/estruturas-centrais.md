@@ -1,8 +1,12 @@
-# Compatibilidade das Estruturas Centrais GSAN → SISAN
+# Compatibilidade das Estruturas Centrais GSAN → OpenGSAN
 
 > **Procedência**: consolidação decisória sobre o [mapa de domínio](../dominio/mapa-de-dominio.md), o [glossário](../dominio/glossario.md) e os dez mapas funcionais. Base documental: `HEAD = 4cb9fc7`. **Nenhuma reanálise ampla de código ou banco** — método e níveis de certeza em [`procedencia.md`](../procedencia.md).
 >
-> **Esta atividade responde: *o que fazemos com o que existe?*** Não responde *como o domínio do SISAN ficará* — isso é a Visão Conceitual Alvo, próxima atividade. Onde algo é `REESTRUTURAR`, o documento registra **o problema e a semântica a preservar**, e **para aí**.
+> ⚠️ **Calibração de escopo (2026-09-15)** — a ADR-0005 foi revisada: **a migração de instalações GSAN saiu do escopo deste projeto** e terá projeto próprio. **As 64 classificações permanecem válidas** — foram tomadas por qualidade estrutural, não por conveniência de migração. O que muda é a leitura de duas colunas:
+> - **"Impacto de migração"** deixa de ser critério de decisão deste projeto e passa a ser **informação registrada para o projeto de migração futuro**.
+> - ⚠️ Facilidade de migração **não é mais argumento** para preservar estrutura inadequada (ADR-0005, item 4). Revisei as 37 decisões `PRESERVAR` sob esse critério: **nenhuma se apoiava apenas em facilidade de migração** — todas têm justificativa de qualidade estrutural ou de semântica de negócio.
+>
+> **Esta atividade responde: *o que fazemos com o que existe?*** Não responde *como o domínio do OpenGSAN ficará* — isso é a [Visão Conceitual Alvo](../dominio/visao-conceitual-opengsan.md). Onde algo é `REESTRUTURAR`, o documento registra **o problema e a semântica a preservar**, e **para aí**.
 >
 > **Não contém**: nomes de tabelas ou schemas, tipos de coluna, chaves, índices, migrations, entidades JPA, APIs, modelo físico.
 
@@ -13,11 +17,13 @@
 Classificar as **estruturas centrais do domínio** do GSAN segundo a ADR-0006, equilibrando cinco forças que puxam em direções diferentes:
 
 ```text
-compatibilidade  +  qualidade da arquitetura  +  facilidade de migração
-                 +  preservação das regras     +  manutenção futura
+continuidade conceitual  +  qualidade da arquitetura
+                         +  preservação das regras  +  manutenção futura
+
+(⚠️ "facilidade de migração" saiu desta balança em 2026-09-15 — ADR-0005)
 ```
 
-O objetivo **não** é deixar o SISAN igual ao GSAN. Também **não** é redesenhar tudo. A ADR-0005 fixa a regra: *preservar quando adequado, modernizar quando necessário, redesenhar somente com justificativa*.
+O objetivo **não** é deixar o OpenGSAN igual ao GSAN. Também **não** é redesenhar tudo. A ADR-0005 fixa a regra: *preservar quando adequado, modernizar quando necessário, redesenhar somente com justificativa*.
 
 ⚠️ **Escopo**: **64 decisões estruturais** sobre conceitos centrais. As ~1.800 tabelas **não** foram classificadas — o que é `NÃO TRANSPORTAR` está agrupado por **famílias** (§18).
 
@@ -32,9 +38,9 @@ Conforme ADR-0006, sem reinterpretação:
 | Classificação | Quando se aplica |
 | ------------- | ---------------- |
 | **PRESERVAR** | A estrutura atual é adequada; alterá-la não traria benefício suficiente. Ajustes mínimos permitidos |
-| **MODERNIZAR** | Conceito e estrutura básica permanecem; detalhes melhoram (tipos, nomes, constraints, organização). **Transformação GSAN→SISAN direta** |
+| **MODERNIZAR** | Conceito e estrutura básica permanecem; detalhes melhoram (tipos, nomes, constraints, organização). **Transformação GSAN→OpenGSAN direta** |
 | **REESTRUTURAR** | Problema estrutural relevante justifica alteração. Exige registrar: problema, benefício, semântica a preservar, transformação, risco e validação (§19) |
-| **NÃO TRANSPORTAR** | Não deve existir no SISAN. O migrador ignora e relata |
+| **NÃO TRANSPORTAR** | Não deve existir no OpenGSAN. O migrador ignora e relata |
 | **EXIGE APROFUNDAMENTO** | Não há evidência suficiente para decidir. **Não é classificação** — é recusa honesta a classificar |
 
 ### 2.1 Regra de decisão (peso da evidência)
@@ -64,7 +70,7 @@ Para qualquer estrutura ligada a uma divergência de [`divergencias-aprovadas.md
 ```text
 A. SEMÂNTICA        o que precisa continuar existindo funcionalmente
 B. REPRESENTAÇÃO    como o GSAN implementa isso hoje
-C. TRATAMENTO       a classificação da ESTRUTURA no SISAN
+C. TRATAMENTO       a classificação da ESTRUTURA no OpenGSAN
 ```
 
 Elas não andam juntas. O exemplo canônico:
@@ -72,7 +78,7 @@ Elas não andam juntas. O exemplo canônico:
 ```text
 Identidade estável de uma conta      → semântica: PRESERVAR OBRIGATORIAMENTE
 ContaGeral + conta + conta_historico → representação atual
-estrutura no SISAN                   → REESTRUTURAR
+estrutura no OpenGSAN                   → REESTRUTURAR
 ```
 
 🔵 **Preservar a semântica e reestruturar a representação não é contradição — é o caso mais comum neste documento.** Onze das decisões abaixo têm exatamente esse formato, e confundi-las produziria ou uma cópia fossilizada do legado, ou a perda silenciosa de uma regra.
@@ -151,7 +157,7 @@ Classificação **primária**, por área:
 | **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.1](#191-cad-02--estado-de-outros-domínios-dentro-do-imóvel) |
 | **Motivo** | 🔵 É a causa estrutural das 123 FKs e do acoplamento entre módulos. Não é questão estética: **o estado de cobrança e de ligação escrito no Imóvel é o que obriga Cobrança e Atendimento a escreverem no agregado do Cadastro** |
 | **Impacto de migração** | Médio — a transformação é redistribuição de colunas, sem perda de informação |
-| **Validação** | Para cada imóvel: o estado reconstruído no SISAN reproduz exatamente o que as colunas legadas continham |
+| **Validação** | Para cada imóvel: o estado reconstruído no OpenGSAN reproduz exatamente o que as colunas legadas continham |
 
 ### CAD-03 · Cliente
 
@@ -185,7 +191,7 @@ Classificação **primária**, por área:
 | **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.2](#192-cad-05--economia-com-três-representações) |
 | **Motivo** | 🔴 Três fontes para o mesmo dado, com apenas uma correta. Usar a errada muda o valor da conta. É o conceito mais central do sistema **sem forma explícita** |
 | **Impacto de migração** | Médio — a fonte de verdade já é conhecida (a agregada) |
-| **Validação** | 🔴 **Recálculo de contas**: as economias por categoria do SISAN devem reproduzir `conta_categoria.ctcg_qteconomia` das contas emitidas |
+| **Validação** | 🔴 **Recálculo de contas**: as economias por categoria do OpenGSAN devem reproduzir `conta_categoria.ctcg_qteconomia` das contas emitidas |
 
 ### CAD-06 · Categoria e Subcategoria com parâmetros de consumo
 
@@ -206,7 +212,7 @@ Classificação **primária**, por área:
 | **Semântica** | Consultas e telas precisam de acesso rápido a totais e classificação principal |
 | **Representação atual** | 🟢 `imov_qteconomia`, `imov_idcategoriaprincipal`/`idsubcategoriaprincipal`, `rota_identrega`, `rota_idalternativa` |
 | **Classificação** | **MODERNIZAR** · confiança **MÉDIA** |
-| **Motivo** | São conveniências legítimas, não erros. 🔵 Podem virar projeções/derivações no SISAN — mas isso é decisão de forma, e a semântica não muda. ⚠️ **As rotas não são denormalização**: as três têm finalidades distintas comprovadas (leitura via quadra, entrega, override) — o que muda é a forma (três colunas × vínculo por finalidade) |
+| **Motivo** | São conveniências legítimas, não erros. 🔵 Podem virar projeções/derivações no OpenGSAN — mas isso é decisão de forma, e a semântica não muda. ⚠️ **As rotas não são denormalização**: as três têm finalidades distintas comprovadas (leitura via quadra, entrega, override) — o que muda é a forma (três colunas × vínculo por finalidade) |
 | **Impacto de migração** | Baixo — valores recalculáveis da fonte |
 | **Validação** | Total derivado = total legado, imóvel a imóvel |
 
@@ -241,7 +247,7 @@ Classificação **primária**, por área:
 | **Classificação** | **MODERNIZAR** · confiança **ALTA** |
 | **Motivo** | 🔵 A semântica das três finalidades é real e **deve ser preservada** (a alternativa sobrepõe a da quadra — comprovado). O que pode melhorar é a **forma**: três caminhos distintos (uma FK indireta + duas colunas) para o mesmo tipo de vínculo |
 | **Impacto de migração** | Baixo — mapeamento direto por finalidade |
-| **Validação** | 🔴 Para cada imóvel, a rota **efetiva** de leitura resolvida no SISAN = a resolvida pelo legado (incluindo o caso de override) |
+| **Validação** | 🔴 Para cada imóvel, a rota **efetiva** de leitura resolvida no OpenGSAN = a resolvida pelo legado (incluindo o caso de override) |
 
 ### CAD-11 · Extensões de companhia no núcleo do Cadastro
 
@@ -347,7 +353,7 @@ Classificação **primária**, por área:
 | **Classificação** | ⚠️ **Semântica: PRESERVAR OBRIGATORIAMENTE** · **Estrutura: REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.4](#194-fat-02fat-03--identidade-estável-e-tabelas-espelho) |
 | **Motivo** | 🔵 O mecanismo resolve um problema real de forma engenhosa — mas resolve-o com **uma tabela extra por tipo de documento**, existindo apenas para ser fonte de sequence e ponteiro. O problema (identidade que sobrevive ao arquivamento) tem soluções mais simples; a semântica é obrigatória, a forma não |
 | **Impacto de migração** | 🔴 **Máximo** — todo `cnta_id` do legado precisa continuar resolvendo para o mesmo documento (§17) |
-| **Validação** | 🔴 Para cada pagamento legado, o documento resolvido no SISAN é o mesmo |
+| **Validação** | 🔴 Para cada pagamento legado, o documento resolvido no OpenGSAN é o mesmo |
 
 ### FAT-03 · Conta corrente × conta histórica (tabelas-espelho)
 
@@ -358,7 +364,7 @@ Classificação **primária**, por área:
 | **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.4](#194-fat-02fat-03--identidade-estável-e-tabelas-espelho) |
 | **Motivo** | 🔵 Duplicação estrutural que obriga **toda consulta relevante a saber dos dois lugares** — evidência direta: `classificarPagamentosConta` busca em ambas. Cada satélite dobra junto. O arquivamento é semântica real; a tabela-espelho é uma das formas de implementá-lo, não a única |
 | **Impacto de migração** | Médio — a união das duas fontes é mecânica |
-| **Validação** | Contagem corrente + histórico = contagem no SISAN; nenhuma conta perdida no merge |
+| **Validação** | Contagem corrente + histórico = contagem no OpenGSAN; nenhuma conta perdida no merge |
 
 ### FAT-04 · Snapshots da Conta (contexto de cálculo)
 
@@ -402,7 +408,7 @@ Classificação **primária**, por área:
 | **Classificação** | **REESTRUTURAR** · confiança **MÉDIA** · detalhamento em [§19.5](#195-fat-07--variação-por-companhia-dentro-do-núcleo) |
 | **Motivo** | 🔵 Nome de companhia no núcleo é dívida objetiva. ⚠️ Confiança **MÉDIA** e não alta porque **as diferenças reais nunca foram inventariadas** — sabe-se que o mecanismo é ruim, não o que exatamente ele faz de diferente |
 | **Impacto de migração** | Nenhum sobre dados; total sobre a arquitetura de extensibilidade |
-| **Validação** | 🔴 Por companhia: conta calculada no SISAN = conta da variante legada, ao centavo |
+| **Validação** | 🔴 Por companhia: conta calculada no OpenGSAN = conta da variante legada, ao centavo |
 
 ### FAT-08 · Precisão financeira — as cinco políticas de arredondamento
 
@@ -434,7 +440,7 @@ Classificação **primária**, por área:
 | **Semântica** | 🟢 A **competência do ciclo comercial** (mês do consumo faturado) é distinta da **competência contábil** (que fecha depois) e da data de emissão. AAAAMM indexa leitura, consumo, conta, pagamento e arrecadação |
 | **Representação atual** | 🟢 Inteiro `AAAAMM` em todas as entidades do ciclo; funções utilitárias no banco |
 | **Classificação** | **PRESERVAR** (semântica) · confiança **ALTA** |
-| **Motivo** | 🔵 É o **eixo temporal do sistema inteiro**. Se o SISAN adotar tipo mais expressivo internamente, o mapeamento é trivial — mas **a semântica de competência, e a distinção entre as duas referências, é obrigatória** |
+| **Motivo** | 🔵 É o **eixo temporal do sistema inteiro**. Se o OpenGSAN adotar tipo mais expressivo internamente, o mapeamento é trivial — mas **a semântica de competência, e a distinção entre as duas referências, é obrigatória** |
 | **Impacto de migração** | Baixo |
 | **Validação** | Comparações financeiras por competência batem |
 
@@ -451,7 +457,7 @@ Classificação **primária**, por área:
 | **Classificação** | **PRESERVAR** (semântica) · confiança **ALTA** |
 | **Motivo** | 🔵 **Contraintuitivo, mas correto**: manter a dívida como estado calculado evita o clássico problema de saldo desatualizado. A redução por pagamento acontece porque a consulta passa a deduzi-lo — não porque alguém escreveu num campo. Materializações/projeções por desempenho são decisão de forma, não de semântica |
 | **Impacto de migração** | Nenhum (não há dado a migrar) |
-| **Validação** | 🔴 Estoque calculado no SISAN = estoque calculado no legado, imóvel a imóvel, na mesma data-base |
+| **Validação** | 🔴 Estoque calculado no OpenGSAN = estoque calculado no legado, imóvel a imóvel, na mesma data-base |
 
 ### COB-02 · Obrigação financeira — conceito implícito
 
@@ -632,7 +638,7 @@ Classificação **primária**, por área:
 | **Classificação** | **MODERNIZAR** · confiança **ALTA** |
 | **Motivo** | 🔵 **A configurabilidade é a força do módulo e deve ser preservada** — mudar prazo, obrigatoriedade ou geração de OS é configuração, não código. ⚠️ O que justifica modernizar: (a) ~20 flags booleanas numa linha é difícil de compreender e evoluir; (b) 🔴 **não há versionamento aparente** — mudar uma flag muda o comportamento retroativamente para todos os RAs daquele tipo, sem histórico de quando mudou. ⚠️ Preservar a semântica **não é copiar a tabela** |
 | **Impacto de migração** | Baixo, **por instalação** (a parametrização é a variabilidade do módulo) |
-| **Validação** | 🔴 Por especificação, o comportamento resultante no SISAN = o do legado, cenário a cenário |
+| **Validação** | 🔴 Por especificação, o comportamento resultante no OpenGSAN = o do legado, cenário a cenário |
 
 ### ATE-04 · Tipo de Serviço (segundo nível de regra); Tramitação
 
@@ -691,9 +697,9 @@ Classificação **primária**, por área:
 | **Semântica** | 🟢 Uma funcionalidade e uma operação precisam ser **identificáveis de forma estável** para que concessões durem |
 | **Representação atual** | ⚠️ 🟢 Resolvidas por **`CAMINHO_URL`** — o identificador efetivo da concessão é o caminho HTTP da Action Struts (`/exibirManterConta.do` etc.) |
 | **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.9](#199-seg-02--concessão-ancorada-na-url-da-action) |
-| **Motivo** | 🔴 **Problema de migração antes de ser problema de arquitetura**: o SISAN não terá URLs `.do`. Se a concessão é a URL, **todas as concessões de todas as instalações precisariam ser reconfiguradas manualmente** — inviável e propenso a erro de segurança |
+| **Motivo** | 🔴 **Problema de migração antes de ser problema de arquitetura**: o OpenGSAN não terá URLs `.do`. Se a concessão é a URL, **todas as concessões de todas as instalações precisariam ser reconfiguradas manualmente** — inviável e propenso a erro de segurança |
 | **Impacto de migração** | 🔴 **Bloqueante** sem chave estável |
-| **Validação** | 🔴 Cada concessão legada mapeia para exatamente uma concessão no SISAN, sem perda nem ganho de permissão |
+| **Validação** | 🔴 Cada concessão legada mapeia para exatamente uma concessão no OpenGSAN, sem perda nem ganho de permissão |
 
 ### SEG-03 · Abrangência territorial
 
@@ -746,7 +752,7 @@ Classificação **primária**, por área:
 | **Semântica** | ❔ Aparentemente: "este usuário, neste grupo, **não** recebe esta concessão" |
 | **Representação atual** | 🟢 A tabela e o mapping existem (vinculando `GrupoFuncionalidadeOperacao` e `UsuarioGrupo`). ⚠️ 🟢 **O uso no cálculo de autorização não foi observado** — os métodos `verificarAcessoPermitido*` consultam concessões e grupos, sem consulta visível à restrição |
 | **Classificação** | **EXIGE APROFUNDAMENTO** · confiança **BAIXA** |
-| **Motivo** | 🔴 ⚠️ **Decisão de alta prioridade que não pode ser tomada agora.** Define se o modelo do SISAN tem *deny* ou é allow-only — e isso muda o desenho da autorização inteira. Duas leituras possíveis: aplicada em outro ponto, ou estrutura pouco utilizada. **A existência da tabela não prova o uso** |
+| **Motivo** | 🔴 ⚠️ **Decisão de alta prioridade que não pode ser tomada agora.** Define se o modelo do OpenGSAN tem *deny* ou é allow-only — e isso muda o desenho da autorização inteira. Duas leituras possíveis: aplicada em outro ponto, ou estrutura pouco utilizada. **A existência da tabela não prova o uso** |
 | **O que falta** | 🔴 Rastreio dirigido do cálculo de autorização + verificação de dados reais (há restrições cadastradas?) |
 
 ---
@@ -837,7 +843,7 @@ Classificação **primária**, por área:
 | **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.12](#1912-int-01--camada-de-integração-inexistente) |
 | **Motivo** | 🔵 Não é "melhorar uma camada" — é **criar a que nunca existiu**. O espectro atual vai de OAuth2 com credencial em banco (`INT-03`) a chave de API em constante Java (`INT-04`), e essa desigualdade é consequência direta da ausência de política |
 | **Impacto de migração** | Nenhum sobre dados |
-| **Validação** | Toda integração do SISAN autentica a origem e registra erro de forma durável |
+| **Validação** | Toda integração do OpenGSAN autentica a origem e registra erro de forma durável |
 
 ### INT-02 · Capacidades funcionais de campo e móvel
 
@@ -907,7 +913,7 @@ Classificação **primária**, por área:
 
 🟢 Ficou deliberadamente em código: fórmula de faixas e distribuição por economia, **modos de arredondamento**, fluxo de retificação/cancelamento, fórmulas de acréscimos, fluxo de desfazimento, layouts bancários, retenções tributárias, situações de pagamento, cálculo de dias úteis, atualização cadastral pela execução.
 
-🔵 **Leitura**: o GSAN parametriza **o quê** e **quando**; deixa em código **como se calcula**. É divisão coerente, e o SISAN herda exatamente essa, não outra. ⚠️ Transformar cálculo em parametrização seria erro simétrico ao de transformar parâmetro em código.
+🔵 **Leitura**: o GSAN parametriza **o quê** e **quando**; deixa em código **como se calcula**. É divisão coerente, e o OpenGSAN herda exatamente essa, não outra. ⚠️ Transformar cálculo em parametrização seria erro simétrico ao de transformar parâmetro em código.
 
 ---
 
@@ -948,7 +954,9 @@ Tratá-los como um só mecanismo quebra pagamento, cobrança e parcelamento de c
 
 ## 17. Identificadores e compatibilidade
 
-🔴 Seção decisiva para o futuro migrador. Quatro tratamentos possíveis:
+⚠️ **Reposicionada em 2026-09-15**: esta seção **não é mais requisito de desenho deste projeto** — é **registro de continuidade conceitual** e insumo ao projeto de migração futuro. A pergunta que ela responde permanece válida e independente: *quais identificadores são reconhecidos por pessoas e por outros sistemas, e portanto não deveriam mudar sem motivo?*
+
+Quatro tratamentos possíveis:
 
 | Tratamento | Significado |
 | ---------- | ----------- |
@@ -974,15 +982,15 @@ Tratá-los como um só mecanismo quebra pagamento, cobrança e parcelamento de c
 
 ### 17.1 Estratégia de *legacy id* — hipótese, não padrão
 
-⚠️ O roteiro é explícito: **não decidir automaticamente que toda PK do GSAN vira PK do SISAN**.
+⚠️ O roteiro é explícito: **não decidir automaticamente que toda PK do GSAN vira PK do OpenGSAN**.
 
 🟡 **Hipótese registrada** (não decisão, não implementação): para identificadores classificados **NOVO COM ORIGEM**, um trio conceitual
 
 ```text
-identificador do SISAN  +  origem (qual instalação GSAN)  +  identificador legado
+identificador do OpenGSAN  +  origem (qual instalação GSAN)  +  identificador legado
 ```
 
-resolveria dois problemas simultâneos: (a) o SISAN não fica preso às sequences do legado; (b) o migrador consegue reconciliar e validar. 🔵 A **origem** importa porque a ADR-0005 é explícita: *o SISAN não assume schema único entre companhias* — dois GSANs distintos podem ter `imov_id = 1000` referindo imóveis diferentes.
+resolveria dois problemas simultâneos: (a) o OpenGSAN não fica preso às sequences do legado; (b) o migrador consegue reconciliar e validar. 🔵 A **origem** importa porque a ADR-0005 é explícita: *o OpenGSAN não assume schema único entre companhias* — dois GSANs distintos podem ter `imov_id = 1000` referindo imóveis diferentes.
 
 ⚠️ **Não tornar padrão automático**: para os identificadores **EXTERNO IGUAL**, o trio é desnecessário e acrescenta indireção. A decisão de onde aplicá-lo é da Visão Conceitual Alvo.
 
@@ -1031,7 +1039,7 @@ resolveria dois problemas simultâneos: (a) o SISAN não fica preso às sequence
 | **Semântica a preservar** | 🔴 **Quantidade e composição tarifária**: quantas economias o imóvel tem, **por subcategoria** — é isso que alimenta mínimos e faixas. ⚠️ A individualizada e o total denormalizado precisam ser **avaliados separadamente**: a primeira pode ter valor informativo real; o segundo é derivável |
 | **Transformação** | A agregada é a fonte; o total é derivado; a individualizada **exige decisão própria** (⚠️ não se sabe se é populada em todas as instalações — dúvida aberta) |
 | **Risco** | 🔴 **Alto se mal feito**: erro sistemático de valor em todas as contas. Baixo se a fonte correta for respeitada |
-| **Validação** | 🔴 Economias por categoria no SISAN = `conta_categoria.ctcg_qteconomia` das contas emitidas, imóvel a imóvel |
+| **Validação** | 🔴 Economias por categoria no OpenGSAN = `conta_categoria.ctcg_qteconomia` das contas emitidas, imóvel a imóvel |
 | **⚠️ Parar aqui** | A **representação alvo** é decisão da Visão Conceitual Alvo |
 
 ### 19.3 · CAD-08 — Ligação com PK compartilhada e estado fora da entidade
@@ -1055,7 +1063,7 @@ resolveria dois problemas simultâneos: (a) o SISAN não fica preso às sequence
 | **Semântica a preservar** | 🔴 **INEGOCIÁVEL — duas coisas distintas**: (1) **identidade que sobrevive ao arquivamento** — todo `cnta_id` legado continua resolvendo para o mesmo documento; (2) **o documento arquivado continua participando de regras**, não é depósito morto |
 | **Transformação** | União das duas fontes por tipo de documento, preservando o identificador e a marcação de arquivado |
 | **Risco** | 🔴 **Alto**: é o núcleo financeiro. Uma conta perdida no merge é uma dívida ou um pagamento órfão |
-| **Validação** | 🔴 Contagem corrente + histórico = contagem no SISAN, por tipo e competência; **para cada pagamento legado, o documento resolvido é o mesmo**; nenhum id duplicado |
+| **Validação** | 🔴 Contagem corrente + histórico = contagem no OpenGSAN, por tipo e competência; **para cada pagamento legado, o documento resolvido é o mesmo**; nenhum id duplicado |
 | **⚠️ Parar aqui** | Como representar "arquivado" (coluna, partição, outra estrutura) é decisão da Visão Alvo |
 
 ### 19.5 · FAT-07 — Variação por companhia dentro do núcleo
@@ -1109,7 +1117,7 @@ resolveria dois problemas simultâneos: (a) o SISAN não fica preso às sequence
 
 | | |
 |---|---|
-| **Problema** | 🔴 O identificador efetivo de funcionalidade e operação é o **caminho HTTP da Action Struts**. O SISAN não terá URLs `.do` |
+| **Problema** | 🔴 O identificador efetivo de funcionalidade e operação é o **caminho HTTP da Action Struts**. O OpenGSAN não terá URLs `.do` |
 | **Benefício** | Concessões migráveis; funcionalidade identificada por chave estável, independente da tecnologia de apresentação; e desacoplamento da ADR-0007 (a decisão de interface deixa de afetar a segurança) |
 | **Semântica a preservar** | 🔴 **O modelo inteiro**: funcionalidade, operação, o trio de concessão, a união de grupos, a dependência entre funcionalidades e as permissões especiais nomeadas |
 | **Transformação** | Cada funcionalidade/operação legada recebe **chave estável**; cada concessão é remapeada para o novo par |
@@ -1127,7 +1135,7 @@ resolveria dois problemas simultâneos: (a) o SISAN não fica preso às sequence
 | **Transformação** | Nenhuma sobre dados — a estrutura de abrangência do usuário migra 1:1. A mudança é de **aplicação** |
 | **Risco** | 🟡 **Médio, invertido**: aplicar escopo onde o legado **não** aplicava pode **restringir** consultas que hoje funcionam. ⚠️ Isso seria **correção**, não regressão — mas precisa ser previsto, comunicado e registrado como divergência |
 | **Validação** | 🔴 Usuário com abrangência restrita testado em **cada** superfície de consulta; comparação explícita com o legado, com as diferenças classificadas como correção esperada |
-| **⚠️ DIVERGÊNCIA PROPOSTA** | 🔴 **D-17 (proposta, não aprovada)**: onde o legado hoje **não** aplica abrangência por omissão, o SISAN aplicará. É divergência de comportamento visível e precisa de aprovação — não pode ser tratada como equivalência |
+| **⚠️ DIVERGÊNCIA PROPOSTA** | 🔴 **D-17 (proposta, não aprovada)**: onde o legado hoje **não** aplica abrangência por omissão, o OpenGSAN aplicará. É divergência de comportamento visível e precisa de aprovação — não pode ser tratada como equivalência |
 
 ### 19.11 · BAT-03 — Contexto de execução serializado em bytes
 
@@ -1202,7 +1210,7 @@ resolveria dois problemas simultâneos: (a) o SISAN não fica preso às sequence
 11. **Camada de integração única**, generalizando o padrão que o `GsanApi` já demonstra.
 12. **Adaptadores de layout bancário versionados**, fora do domínio.
 13. **Contexto de execução tipado e legível**, substituindo a serialização Java (batch e relatórios).
-14. **Estratégia de *legacy id*** (identificador SISAN + origem + id legado) **onde necessária**, nunca como padrão automático (§17.1).
+14. **Estratégia de *legacy id*** (identificador OpenGSAN + origem + id legado) **onde necessária**, nunca como padrão automático (§17.1).
 
 ---
 
@@ -1300,7 +1308,7 @@ Esta análise **não gerou evidência nova de código**. Toda afirmação 🟢 r
 
 ### 23.1 Divergência nova proposta nesta análise
 
-| # | Área | Comportamento do GSAN | Comportamento proposto para o SISAN | Status |
+| # | Área | Comportamento do GSAN | Comportamento proposto para o OpenGSAN | Status |
 | - | ---- | --------------------- | ----------------------------------- | ------ |
 | **D-17** | Abrangência territorial | Em superfícies onde a verificação não é chamada, o usuário acessa dados fora de sua abrangência | Escopo territorial aplicado sistematicamente em toda consulta | ⚠️ **PROPOSTA — não aprovada** |
 
@@ -1310,7 +1318,7 @@ Esta análise **não gerou evidência nova de código**. Toda afirmação 🟢 r
 
 ## 24. Próxima atividade
 
-**Visão Conceitual Alvo do SISAN** — ainda **sem modelo físico**. Consome:
+**Visão Conceitual Alvo do OpenGSAN** — ainda **sem modelo físico**. Consome:
 
 - as **37 decisões `PRESERVAR`** como **restrições de desenho** (o que não pode mudar);
 - as **15 decisões que tocam `REESTRUTURAR`** como **problemas a resolver** (com a semântica a preservar já explicitada em §19);

@@ -10,7 +10,7 @@
 
 🟢 O GSAN **não tem** um módulo de integração no sentido arquitetural. O pacote `gcom.integracao` contém 12 arquivos e cobre apenas **uma** das integrações (UPA/SAM). Todas as outras estão espalhadas: em Actions do Struts (`gcom.gui.micromedicao`, `gcom.gui.integracao`), em servlets fora do Struts (`gcom.api.*`), em utilitários (`gcom.util.email`, `gcom.util.sms`), em stubs gerados (`gcom.integracao.webservice.spc`) e dentro dos controladores de negócio (arquivos bancários, contabilidade).
 
-🔵 A consequência para o SISAN é direta: **não há uma fronteira de integração para "portar"**. Há sete padrões técnicos distintos, com níveis de maturidade que vão de OAuth2 com credencial em banco até chave de API escrita no código-fonte. O trabalho do SISAN não é traduzir uma camada — é **criar** a camada que nunca existiu, preservando cada capacidade funcional.
+🔵 A consequência para o OpenGSAN é direta: **não há uma fronteira de integração para "portar"**. Há sete padrões técnicos distintos, com níveis de maturidade que vão de OAuth2 com credencial em banco até chave de API escrita no código-fonte. O trabalho do OpenGSAN não é traduzir uma camada — é **criar** a camada que nunca existiu, preservando cada capacidade funcional.
 
 ---
 
@@ -81,7 +81,7 @@ if (!verificador.validarHash(loginUsuario.getBytes(), hashValidacao.getBytes()))
 
 🔵 **É a única integração de entrada com autenticação criptográfica.** Mostra que a competência existia na equipe — não foi aplicada nas outras.
 
-🟢 Limitação estrutural dessa assinatura: ela cobre **apenas o login** (`loginUsuario.getBytes()`), não o corpo da requisição, nem um *nonce*, nem *timestamp*. 🔵 Uma assinatura válida é portanto um **portador estático e reutilizável indefinidamente** — autenticação sem prova de frescor, vulnerável a repetição. No SISAN isso vira token com expiração e escopo.
+🟢 Limitação estrutural dessa assinatura: ela cobre **apenas o login** (`loginUsuario.getBytes()`), não o corpo da requisição, nem um *nonce*, nem *timestamp*. 🔵 Uma assinatura válida é portanto um **portador estático e reutilizável indefinidamente** — autenticação sem prova de frescor, vulnerável a repetição. No OpenGSAN isso vira token com expiração e escopo.
 
 ### 3.3 Conclusão do padrão A
 
@@ -159,7 +159,7 @@ return tokenDto.getToken_type() + " " + tokenDto.getAccess_token();
 
 🟢 Fluxo OAuth2 *client credentials*: Basic com `client_id:client_pass` → token → `Authorization: Bearer`. 🟢 **As credenciais vêm do banco** (`obterCredenciaisOauth`, `SegurancaParametro`) — não do código, não de properties versionado.
 
-🔵 Este é o padrão mais próximo do alvo do SISAN em todo o repositório, e prova que a prática correta era conhecida. Serve como **referência interna** ao desenhar a camada de integração: configuração externalizada, credencial em repositório de segredos, token com escopo.
+🔵 Este é o padrão mais próximo do alvo do OpenGSAN em todo o repositório, e prova que a prática correta era conhecida. Serve como **referência interna** ao desenhar a camada de integração: configuração externalizada, credencial em repositório de segredos, token com escopo.
 
 ❔ Não foi rastreado neste round: rotação/expiração do token, comportamento em falha de autenticação, e se `obterCredenciaisOauth` lê de tabela com criptografia em repouso.
 
@@ -217,7 +217,7 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 
 🟢 Se o login não resolve, a OS **não é encerrada** e o processo **segue em frente**, registrando apenas em `System.out`. 🔵 Não há registro durável, contador de rejeição, fila de erro ou alerta. A OS fica presa no limbo sem que ninguém seja notificado — o operador só descobre pela ausência do efeito.
 
-🔵 Este é o achado mais importante do padrão D para o SISAN: **acoplamento máximo (escrita no banco alheio) combinado com observabilidade mínima (`System.out` + `continue`)**.
+🔵 Este é o achado mais importante do padrão D para o OpenGSAN: **acoplamento máximo (escrita no banco alheio) combinado com observabilidade mínima (`System.out` + `continue`)**.
 
 ---
 
@@ -279,7 +279,7 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 
 ---
 
-## 9. Compatibilidade GSAN → SISAN
+## 9. Compatibilidade GSAN → OpenGSAN
 
 | Conceito / estrutura | Classificação | Motivo |
 | -------------------- | ------------- | ------ |
@@ -297,7 +297,7 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 | SMTP configurado por `SistemaParametro` | **MODERNIZAR** | Externalização correta; falta autenticação/TLS confirmadas |
 | Consulta SPC por SOAP/Axis2 | **MODERNIZAR** | Capacidade necessária; transporte e biblioteca obsoletos |
 | Agendamento de integração em `SistemaParametro` + Quartz `Job` | **MODERNIZAR** | Conceito preservado; tecnologia substituída junto com o Batch |
-| Estado do protocolo em coluna (`indicadorMovimento` 1→2) | **PRESERVAR CONCEITO** | Máquina de estados simples e adequada; formalizar no SISAN |
+| Estado do protocolo em coluna (`indicadorMovimento` 1→2) | **PRESERVAR CONCEITO** | Máquina de estados simples e adequada; formalizar no OpenGSAN |
 
 ---
 
@@ -362,6 +362,6 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 
 🔵 O GSAN integra por **sete mecanismos independentes**, criados em momentos diferentes, sem política comum de autenticação, de tratamento de erro ou de observabilidade. O espectro vai de OAuth2 com credencial em banco (`GsanApi`) a chave de API escrita em constante Java (`ServicoSMS`), passando por escrita direta no banco de um sistema parceiro (UPA/SAM).
 
-🔵 Para o SISAN, a conclusão não é "portar as integrações": é **preservar todas as capacidades funcionais** (coleta em campo, OS móvel, troca com executante terceirizado, consulta a birô, arquivos bancários, notificação) sob **uma** camada com política única — autenticação real da origem, identidade rastreável atravessando a fronteira, erro durável e observável, segredo fora do código e transporte cifrado.
+🔵 Para o OpenGSAN, a conclusão não é "portar as integrações": é **preservar todas as capacidades funcionais** (coleta em campo, OS móvel, troca com executante terceirizado, consulta a birô, arquivos bancários, notificação) sob **uma** camada com política única — autenticação real da origem, identidade rastreável atravessando a fronteira, erro durável e observável, segredo fora do código e transporte cifrado.
 
-🔵 O `GsanApi` prova que esse padrão já era conhecido dentro do próprio código. A camada de integração do SISAN é a generalização dele, não uma invenção.
+🔵 O `GsanApi` prova que esse padrão já era conhecido dentro do próprio código. A camada de integração do OpenGSAN é a generalização dele, não uma invenção.

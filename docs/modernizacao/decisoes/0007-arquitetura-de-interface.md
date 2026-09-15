@@ -1,4 +1,4 @@
-# ADR-0007 — Arquitetura de interface do SISAN
+# ADR-0007 — Arquitetura de interface do OpenGSAN
 
 - **Status: Proposta** · Data: 2026-09-14 · **Decisão requerida antes do piloto (Fase 6)**
 
@@ -50,5 +50,5 @@ O piloto seria escrito com um modelo implícito e a decisão ficaria tomada de f
 
 ## Pendências relacionadas
 
-- Modelo de autorização do SISAN (por rota × por caso de uso) depende desta ADR.
+- Modelo de autorização do OpenGSAN (por rota × por caso de uso) depende desta ADR.
 - Entrega de relatórios (bytes na resposta × artefato referenciado por URL assinada) depende desta ADR — e precisa corrigir o achado 13 de [`riscos-identificados.md`](../seguranca/riscos-identificados.md).

@@ -2,7 +2,7 @@
 
 - **Status: Aceita** · Data: 2026-08-13 · **Revisada em 2026-09-14**
 
-> **Histórico da revisão**: a versão original ficou em *Proposta* e justificava a decisão com "o prompt do projeto exige modernização incremental com coexistência sobre o mesmo banco". Duas correções: (1) documento técnico não se justifica por autoridade do pedido — a justificativa abaixo é técnica; (2) a premissa de **coexistência sobre o mesmo banco** foi derrubada em 2026-08-13 (não há GSAN em produção neste projeto; o SISAN nasce com banco próprio UTF-8 — ADR-0004/0005/0006) e foi removida.
+> **Histórico da revisão**: a versão original ficou em *Proposta* e justificava a decisão com "o prompt do projeto exige modernização incremental com coexistência sobre o mesmo banco". Duas correções: (1) documento técnico não se justifica por autoridade do pedido — a justificativa abaixo é técnica; (2) a premissa de **coexistência sobre o mesmo banco** foi derrubada em 2026-08-13 (não há GSAN em produção neste projeto; o OpenGSAN nasce com banco próprio UTF-8 — ADR-0004/0005/0006) e foi removida.
 
 ## Contexto
 
@@ -16,7 +16,7 @@ Os mapas funcionais concluídos (cadastro → relatórios → integrações) exp
 
 ## Decisão
 
-SISAN como **monólito modular** em Spring Boot 4.1.x sobre Java 25 LTS. Módulos: `cadastro`, `micromedicao`, `faturamento`, `cobranca`, `arrecadacao`, `atendimento`, `seguranca`, `relatorios`, `batch`, `integracoes`, `shared`. Build Maven multi-módulo, deploy containerizado único.
+OpenGSAN como **monólito modular** em Spring Boot 4.1.x sobre Java 25 LTS. Módulos: `cadastro`, `micromedicao`, `faturamento`, `cobranca`, `arrecadacao`, `atendimento`, `seguranca`, `relatorios`, `batch`, `integracoes`, `shared`. Build Maven multi-módulo, deploy containerizado único.
 
 Fronteiras internas explícitas: cada módulo expõe uma interface de aplicação e **não** acessa entidades de outro módulo diretamente (o caso da retificação escrevendo em `ConsumoHistorico` é exatamente o antipadrão a não reproduzir — ver registro de divergências aprovadas).
 
@@ -41,7 +41,7 @@ Sem microserviços, mensageria distribuída ou Kubernetes sem necessidade técni
 
 ## Rollback
 
-Decisão estrutural: o rollback real é a reversão do repositório do SISAN a um estado anterior. Não há sistema em produção a restaurar (não existe GSAN operante neste projeto — ADR-0005).
+Decisão estrutural: o rollback real é a reversão do repositório do OpenGSAN a um estado anterior. Não há sistema em produção a restaurar (não existe GSAN operante neste projeto — ADR-0005).
 
 ## Pendência ligada
 

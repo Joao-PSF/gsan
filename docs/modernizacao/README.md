@@ -1,5 +1,9 @@
 # Documentação da Modernização do GSAN
 
+> ⚠️ **Nomenclatura (2026-09-15)**: o sistema alvo chama-se **OpenGSAN** — evolução aberta e moderna do GSAN (ADR-0005). Chamava-se **SISAN** até 2026-09-14; registros históricos em `alteracoes/` e seções de histórico das ADRs preservam o nome da época.
+>
+> ⚠️ **Escopo (2026-09-15)**: a **migração de instalações GSAN existentes está fora deste projeto** e terá projeto próprio. Esta documentação trata de **continuidade conceitual**, não de transformação de dados.
+
 Sumário da documentação técnica. A visão executiva do projeto está em [`MODERNIZACAO_GSAN.md`](../../MODERNIZACAO_GSAN.md) na raiz do repositório.
 
 ## Documentos
@@ -8,6 +12,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | --------- | -------- |
 | [procedencia.md](procedencia.md) | **Procedência das fontes e método de verificação**: commits analisados, níveis de certeza, método de contagem, correções de fato já aplicadas |
 | [plano-de-trabalho.md](plano-de-trabalho.md) | Plano de trabalho da modernização: estado atual, arquitetura alvo, riscos, fases, ordem dos módulos, estratégias |
+| [dominio/visao-conceitual-opengsan.md](dominio/visao-conceitual-opengsan.md) | **Visão Conceitual Alvo do OpenGSAN**: visão e escopo, princípios estruturais, core × plataforma, os dez domínios em nível conceitual, matriz de ownership, fronteiras por responsabilidade, identidade/versão/linhagem, seis mecanismos de histórico, parametrização, extensibilidade, tabela GSAN × OpenGSAN, expansão futura, decisões pendentes e riscos |
 | [dominio/mapa-de-dominio.md](dominio/mapa-de-dominio.md) | **Mapa de domínio consolidado**: visão integrada dos dez mapas funcionais — conceitos centrais e sua natureza, identidades estáveis, estado/histórico/snapshot, ownership, fronteiras, dependências circulares, núcleo comercial, domínios financeiro e operacional, regras como dados, variação por companhia, conceitos sobrecarregados e implícitos, riscos de modernização |
 | [dominio/glossario.md](dominio/glossario.md) | Glossário de domínio: 25 conceitos estruturantes com definição, relações, evidências (código/banco) e pontos de aprofundamento |
 | [modulos/cadastro.md](modulos/cadastro.md) | Mapa funcional do módulo Cadastro: imóvel/matrícula, economia, cliente×imóvel, ligações, categorias, território, estados, dependências e compatibilidade |
@@ -21,14 +26,14 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [modulos/integracoes.md](modulos/integracoes.md) | Mapa funcional das Integrações: os sete padrões técnicos, entry points fora do gate, APIs `/api/*`, cliente OAuth2, integração por banco compartilhado (UPA/SAM), SOAP/SPC, e-mail e SMS; autenticação comparada, identidade na fronteira, achados de segurança |
 | [modulos/relatorios.md](modulos/relatorios.md) | Mapa funcional dos Relatórios: relatório × tarefa × resultado, decisão automática online/batch por contagem versus limite, motor Jasper com template compilado e datasource, artefato persistido e download, autorização operacional, segurança do acesso ao artefato |
 | [arquitetura/arquitetura-legada.md](arquitetura/arquitetura-legada.md) | Mapa técnico do GSAN legado: runtime, build, frameworks, camadas, batch, relatórios |
-| [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e princípios de compatibilidade GSAN→SISAN (banco próprio UTF-8; coexistência **não** é premissa deste projeto — é cenário do playbook de migração futura) |
+| [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e princípios de compatibilidade GSAN→OpenGSAN (banco próprio UTF-8; coexistência **não** é premissa deste projeto — é cenário do playbook de migração futura) |
 | [banco/estrutura-atual.md](banco/estrutura-atual.md) | Inventário do banco `gsan_comercial`: schemas, objetos, classificação, drift |
 | [banco/migracao-postgresql.md](banco/migracao-postgresql.md) | Estratégia de atualização do PostgreSQL e versionamento do banco |
 | [seguranca/modelo-legado.md](seguranca/modelo-legado.md) | Modelo de autenticação/autorização atual (RBAC próprio) |
 | [seguranca/riscos-identificados.md](seguranca/riscos-identificados.md) | Achados de segurança e ações requeridas |
 | [testes/estrategia-testes.md](testes/estrategia-testes.md) | Estratégia de testes: **dois oráculos** (funcional/financeiro × técnico/segurança), modelo de especificação de cenário, comparação semântica de relatórios |
 | [compatibilidade/estruturas-centrais.md](compatibilidade/estruturas-centrais.md) | **Análise de compatibilidade das estruturas centrais**: 64 decisões `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR` sobre os conceitos do domínio, com semântica × estrutura separadas, justificativa completa de cada reestruturação, análise transversal de parametrização e de histórico/versão/linhagem/snapshot, tratamento de identificadores e famílias não transportadas |
-| [compatibilidade/divergencias-aprovadas.md](compatibilidade/divergencias-aprovadas.md) | **Registro de divergências aprovadas**: onde o SISAN deve divergir do GSAN de propósito, para que o teste não trate correção de segurança como falha |
+| [compatibilidade/divergencias-aprovadas.md](compatibilidade/divergencias-aprovadas.md) | **Registro de divergências aprovadas**: onde o OpenGSAN deve divergir do GSAN de propósito, para que o teste não trate correção de segurança como falha |
 | [integracoes/integracoes-identificadas.md](integracoes/integracoes-identificadas.md) | Integrações externas identificadas no código e no banco |
 | [modulos/README.md](modulos/README.md) | Ordem de migração dos módulos e status |
 | [decisoes/README.md](decisoes/README.md) | Registro de decisões arquiteturais (ADRs) |
@@ -42,6 +47,6 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 
 ## Pastas planejadas (backlog da Fase 0)
 
-- `dominio/` — criada; contém o glossário **e o mapa de domínio consolidado** (2026-09-14). Receberá a **visão conceitual alvo do SISAN** após a análise de compatibilidade.
-- `compatibilidade/` — contém o registro de divergências e **a análise de compatibilidade das estruturas centrais** (2026-09-14). Receberá o documento de compatibilidade/migração GSAN→SISAN (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→SISAN (ADR-0005).
+- `dominio/` — contém o glossário, o mapa de domínio consolidado e a **visão conceitual alvo do OpenGSAN** (2026-09-15).
+- `compatibilidade/` — contém o registro de divergências e **a análise de compatibilidade das estruturas centrais** (2026-09-14). Receberá o documento de compatibilidade/migração GSAN→OpenGSAN (classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006) e princípios de migração GSAN→OpenGSAN (ADR-0005).
 - `modulos/` — **os dez mapas funcionais estão concluídos** (cadastro → integrações). Receberá ainda o catálogo de funcionalidades futuras descobertas no `gsan_comercial` (`funcionalidades-futuras.md`).

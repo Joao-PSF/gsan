@@ -255,7 +255,7 @@ FiltroRelatorioGerado por FUNCIONALIDADE_INICIADA_ID
 9. 🟢 **A solicitação é preservada** (tarefa serializada), tornando a execução reconstruível.
 10. 🔵 **A consulta ocorre na execução**, enquanto a contagem ocorre na solicitação — há janela temporal entre as duas.
 
-## 27. Compatibilidade GSAN → SISAN
+## 27. Compatibilidade GSAN → OpenGSAN
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |

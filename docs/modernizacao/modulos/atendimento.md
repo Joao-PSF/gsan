@@ -198,13 +198,13 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 11. 🟢 **O Atendimento é a porta de entrada de lançamentos financeiros** (débito de serviço, crédito, devolução, retificação de conta, alteração de vencimento), sempre delegando ao módulo dono.
 12. 🟢 **Não foram identificadas subclasses por companhia** nos controladores centrais de RA/OS, e 🔵 a parametrização (especialmente especificação e tipo de serviço) é fonte importante de variabilidade — ⚠️ sem que se tenha comprovado que **toda** diferença entre companhias seja apenas paramétrica (§25).
 
-## 27. Compatibilidade GSAN → SISAN
+## 27. Compatibilidade GSAN → OpenGSAN
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |
 | Identidade do RA (protocolo) e da OS (execução), separadas | PRESERVAR CONCEITO | Base do domínio e da comunicação com o cliente; identidades reconhecíveis são requisito de migração |
 | Vínculo opcional RA↔OS (0..N nos dois sentidos) | PRESERVAR CONCEITO | Reflete a realidade operacional; simplificar quebraria fluxos (OS de cobrança/coletiva) |
-| Especificação da solicitação como **núcleo paramétrico** | PRESERVAR CONCEITO (a semântica) / MODERNIZAR MANTENDO COMPATIBILIDADE (a forma) | É a força do módulo; o SISAN deve manter a configurabilidade, com forma a definir na modelagem |
+| Especificação da solicitação como **núcleo paramétrico** | PRESERVAR CONCEITO (a semântica) / MODERNIZAR MANTENDO COMPATIBILIDADE (a forma) | É a força do módulo; o OpenGSAN deve manter a configurabilidade, com forma a definir na modelagem |
 | Dois níveis de regra (especificação + tipo de serviço) | PRESERVAR CONCEITO | Distinção real entre "o que foi pedido" e "o que se executa" |
 | Tramitação com histórico (origem/destino/responsável/registrou/parecer) | PRESERVAR CONCEITO | Auditoria de responsabilidade |
 | Prazo original × atual | PRESERVAR CONCEITO | Indicadores de cumprimento dependem disso |
@@ -261,7 +261,7 @@ Esta era uma dúvida herdada do Cadastro e da Micromedição. 🟢 Evidência de
 ## 30. Dúvidas abertas
 
 1. ❔ **Persistência de RA sem imóvel**: o banco permite `NULL`, o mapping não. Existem registros nulos? Por qual caminho? (§6 — resolve o modelo de matrícula opcional).
-1b. ❔ **Persistência de OS sem RA**: mesma divergência (DDL `rgat_id NULL` × mapping `not-null`). As OS originadas por cobrança/fiscalização coletiva/ordem seletiva gravam RA nulo, associam RA técnico ou reutilizam RA existente? (§12 — define a cardinalidade física RA↔OS no SISAN).
+1b. ❔ **Persistência de OS sem RA**: mesma divergência (DDL `rgat_id NULL` × mapping `not-null`). As OS originadas por cobrança/fiscalização coletiva/ordem seletiva gravam RA nulo, associam RA técnico ou reutilizam RA existente? (§12 — define a cardinalidade física RA↔OS no OpenGSAN).
 2. ❔ Papel de **`RegistroAtendimentoUnidade`** frente a `Tramite`.
 3. ❔ Se a **espera suspende formalmente o prazo** (recálculo de `dataPrevistaAtual`).
 4. ❔ Se a **reiteração** altera prazo/prioridade/unidade automaticamente.

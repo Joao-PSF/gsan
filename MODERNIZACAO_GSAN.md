@@ -1,4 +1,4 @@
-# MODERNIZAÇÃO GSAN → SISAN — Controle do Projeto
+# GSAN → OpenGSAN — Controle do Projeto
 
 > Visão executiva e operacional da modernização. Documentação técnica detalhada em [`docs/modernizacao/`](docs/modernizacao/README.md).
 
@@ -10,6 +10,8 @@ Fase 0 em andamento. 1ª execução (2026-08-13): diagnóstico técnico do legad
 
 15ª execução (2026-09-14): **análise de compatibilidade das estruturas centrais concluída** — [compatibilidade/estruturas-centrais.md](docs/modernizacao/compatibilidade/estruturas-centrais.md): **64 decisões estruturais** classificadas conforme ADR-0006 (classificação primária: 37 PRESERVAR · 14 REESTRUTURAR · 6 MODERNIZAR · 5 EXIGE APROFUNDAMENTO · 2 NÃO TRANSPORTAR; 12 decisões têm classificação dupla), mais 6 famílias não transportadas e 16 famílias paramétricas. Cada `REESTRUTURAR` responde às seis perguntas obrigatórias (problema, benefício, semântica a preservar, transformação, risco, validação). Uma divergência nova **proposta** (D-17, abrangência sistemática) — registrada como proposta, **não aprovada**.
 
+16ª execução (2026-09-15): **mudança de identidade e de escopo**, por diretriz do responsável. (a) O sistema passa a chamar-se **OpenGSAN** — evolução **aberta** e moderna do GSAN, não projeto novo; (b) ⚠️ **a migração de instalações GSAN saiu do escopo deste projeto** e terá projeto próprio — facilidade de migração deixa de ser critério de desenho e **não pode mais justificar preservar estrutura inadequada**; (c) **software livre** passa a ser princípio orientador (neutralidade institucional, configuração antes de fork). ADRs 0003, 0005 e 0006 revisadas; 31 documentos de estado corrente renomeados; registros históricos preservam o nome SISAN. **Visão Conceitual Alvo do OpenGSAN produzida** — [dominio/visao-conceitual-opengsan.md](docs/modernizacao/dominio/visao-conceitual-opengsan.md).
+
 **Leitura honesta do estado (calibrada em 2026-09-14).** Os dez mapas funcionais cobrem o fluxo principal Cadastro → Micromedição → Faturamento → Conta → Cobrança → Arrecadação, o ciclo de demanda/execução do Atendimento, identidade/autorização/abrangência/auditoria, processamento em lote, relatórios e integrações. **Isso não significa que a Fase 0 esteja pronta para orientar implementação**, por duas razões diferentes que não devem ser confundidas:
 
 - **Incompletude normal da descoberta**: faltam o mapa de domínio, a análise de compatibilidade das estruturas centrais, o catálogo de funcionalidades futuras, o refinamento de dependências e a **especificação dos cenários críticos** (itens 3–8 do backlog). Permanecem dúvidas abertas registradas em cada mapa.
@@ -19,7 +21,7 @@ Nenhuma implementação iniciada.
 
 ## FASE ATUAL
 
-Fase 0 — Descoberta, compatibilidade e arquitetura. Objetivo: compreender o domínio e as regras do GSAN (mapa funcional, glossário, mapa de domínio), classificar as estruturas centrais (`PRESERVAR / MODERNIZAR / REESTRUTURAR / NÃO TRANSPORTAR`), catalogar funcionalidades futuras descobertas no `gsan_comercial` e estabelecer os princípios de compatibilidade GSAN→SISAN. Sem implementação.
+Fase 0 — Descoberta, compatibilidade e arquitetura do **OpenGSAN**. Objetivo: compreender o domínio e as regras do GSAN (mapa funcional, glossário, mapa de domínio), classificar as estruturas centrais (`PRESERVAR / MODERNIZAR / REESTRUTURAR / NÃO TRANSPORTAR`), catalogar funcionalidades futuras descobertas no `gsan_comercial` e estabelecer os princípios de compatibilidade GSAN→SISAN. Sem implementação.
 
 ## CONCLUÍDO
 
@@ -58,20 +60,20 @@ Mapa de domínio atual  ✅
         ↓
 Compatibilidade das estruturas centrais  ✅
         ↓
-Visão conceitual alvo do SISAN   ⬅ próxima
+Visão conceitual alvo do OpenGSAN  ✅
         ↓
 Documento de compatibilidade / migração
 ```
 
 | # | Atividade | Observação |
 | - | --------- | ---------- |
-| 1 | **Visão Conceitual Alvo do SISAN** ⬅ **próxima** | Ainda **sem** modelo físico: conceitos, fronteiras, identidades e contratos do sistema alvo. Consome as 37 decisões `PRESERVAR` como restrições de desenho, as 15 que tocam `REESTRUTURAR` como problemas a resolver (com a semântica a preservar já explicitada) e as 14 hipóteses de [`estruturas-centrais.md §21`](docs/modernizacao/compatibilidade/estruturas-centrais.md) |
-| 2 | **Catálogo de funcionalidades futuras** | Descobertas do `gsan_comercial` (PIX, fiscal/NF, SPED, mobile/campo, recadastramento, tarifa social, SPC/Serasa, APIs, BI, boleto registrado): funcionalidade, problema resolvido, módulo, dependências, prioridade preliminar. Sem modelagem de banco |
-| 3 | **Refinamento das dependências / ordem de implementação** | O mapa de domínio já forneceu a evidência (ownership, fronteiras e **7 ciclos**); falta a decisão de ordem, registrando o motivo de qualquer mudança em `modulos/README.md` |
-| 4 | **Documento de compatibilidade GSAN → SISAN** | O que permanece reconhecível; códigos/identificadores; schemas divergentes entre companhias; registro de transformações; validação de migração |
-| 5 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md) |
-| 6 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ **Bloqueia o piloto (Fase 6)**. Proposta registrada, decisão pendente |
-| 7 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–6 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
+| — | ~~**Visão Conceitual Alvo do OpenGSAN**~~ ✅ **concluída em 2026-09-15** | Ainda **sem** modelo físico: conceitos, fronteiras, identidades e contratos do sistema alvo. Consome as 37 decisões `PRESERVAR` como restrições de desenho, as 15 que tocam `REESTRUTURAR` como problemas a resolver (com a semântica a preservar já explicitada) e as 14 hipóteses de [`estruturas-centrais.md §21`](docs/modernizacao/compatibilidade/estruturas-centrais.md) |
+| 1 | **Catálogo de funcionalidades futuras** | Descobertas do `gsan_comercial` (PIX, fiscal/NF, SPED, mobile/campo, recadastramento, tarifa social, SPC/Serasa, APIs, BI, boleto registrado): funcionalidade, problema resolvido, módulo, dependências, prioridade preliminar. Sem modelagem de banco |
+| 2 | **Refinamento das dependências / ordem de implementação** | O mapa de domínio já forneceu a evidência (ownership, fronteiras e **7 ciclos**); falta a decisão de ordem, registrando o motivo de qualquer mudança em `modulos/README.md` |
+| 3 | **Documento de compatibilidade conceitual GSAN → OpenGSAN** | ⚠️ **Escopo reduzido em 2026-09-15**: trata de **continuidade conceitual, diferenças e correspondências** — a estratégia operacional de migração pertence a **outro projeto** |
+| 4 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md) |
+| 5 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ **Bloqueia o piloto (Fase 6)**. Proposta registrada, decisão pendente |
+| 6 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–5 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
 
 ## RISCOS
 
@@ -80,7 +82,7 @@ Documento de compatibilidade / migração
 3. Variabilidade de schemas entre instalações GSAN (drift comprovado no `gsan_comercial`, ex.: PIX fora das migrations) — inviabiliza migração futura se a compatibilidade não for requisito desde o início (ADR-0005).
 4. Recriar a roda ou redesenhar por estética, quebrando o caminho de migração (mitigado pela ADR-0006).
 5. Dificuldade de levantar o ambiente de referência do legado (JBoss 4/Java 5 em SO moderno) para caracterização.
-6. SISAN herdar padrões fracos de segurança do legado — **mitigado pelo [registro de divergências aprovadas](docs/modernizacao/compatibilidade/divergencias-aprovadas.md)**, criado em 2026-09-14 porque o critério `A = B`, sozinho, *obrigaria* a herança.
+6. OpenGSAN herdar padrões fracos de segurança do legado — **mitigado pelo [registro de divergências aprovadas](docs/modernizacao/compatibilidade/divergencias-aprovadas.md)**, criado em 2026-09-14 porque o critério `A = B`, sozinho, *obrigaria* a herança.
 8. ⚠️ **Precisão financeira**: 5 políticas semânticas de arredondamento convivendo no núcleo de faturamento (21 usos de `RoundingMode.UP`; truncamento em base de imposto). Unificar sem caracterizar ponto a ponto produz divergência de centavos em massa.
 9. ⚠️ **Segredo comprometido em circulação**: chave de API de SMS versionada em código e em properties (achado 11) — rotação obrigatória em qualquer instalação que use este código.
 7. Inflação de escopo pelo catálogo de funcionalidades futuras antes do núcleo estar migrado.
@@ -94,12 +96,12 @@ Registradas em [`docs/modernizacao/decisoes/`](docs/modernizacao/decisoes/README
 | ADR | Assunto | Status |
 | --- | ------- | ------ |
 | 0001 | Monólito modular Spring Boot | **Aceita** (revisada 2026-09-14) |
-| 0002 | Flyway para migrations (schema SISAN versionado desde V1, sem baseline do legado) | **Aceita** (formalizada 2026-09-14) |
-| 0003 | Código novo no repositório SISAN | **Aceita** |
-| 0004 | UTF-8 no SISAN; encoding de origem tratado na migração | **Aceita** |
-| 0005 | SISAN como modernização evolutiva e compatível do GSAN; migração como requisito arquitetural | **Aceita** |
+| 0002 | Flyway para migrations (schema OpenGSAN versionado desde V1, sem baseline do legado) | **Aceita** (formalizada 2026-09-14) |
+| 0003 | Código novo em repositório próprio, fora do legado — ⚠️ **nome físico do repositório PENDENTE** | **Aceita** (revisada 2026-09-15) |
+| 0004 | UTF-8 no OpenGSAN; encoding de origem tratado na migração | **Aceita** |
+| 0005 | **OpenGSAN é a evolução aberta e moderna do GSAN**; migração de instalações **fora do escopo** deste projeto | **Aceita** (revisada 2026-09-15) |
 | 0006 | Modelo de dados evolutivo (PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR) | **Aceita** |
-| 0007 | Arquitetura de interface do SISAN (SSR × REST+SPA × híbrido) | **Proposta — bloqueia o piloto** |
+| 0007 | Arquitetura de interface do OpenGSAN (SSR × REST+SPA × híbrido) | **Proposta — bloqueia o piloto** |
 
 ## DÍVIDAS TÉCNICAS IDENTIFICADAS (legado — inalterado)
 
@@ -133,4 +135,4 @@ Todos — ordem preliminar em [`docs/modernizacao/modulos/README.md`](docs/moder
 
 ## MIGRATIONS EXECUTADAS
 
-Nenhuma. O schema do SISAN nascerá versionado por Flyway desde `V1` (sem baseline copiada do `gsan_comercial`). Histórico legado: MyBatis Migrations em `gsan-migracoes` (301 scripts `comercial`, últimos de 2024-06; 5 `gerencial`) mantido como referência de evolução do GSAN.
+Nenhuma. O schema do OpenGSAN nascerá versionado por Flyway desde `V1` (sem baseline copiada do `gsan_comercial`). Histórico legado: MyBatis Migrations em `gsan-migracoes` (301 scripts `comercial`, últimos de 2024-06; 5 `gerencial`) mantido como referência de evolução do GSAN.

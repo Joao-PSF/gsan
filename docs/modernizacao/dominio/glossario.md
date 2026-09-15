@@ -1,4 +1,4 @@
-# Glossário de Domínio — GSAN/SISAN
+# Glossário de Domínio — GSAN/OpenGSAN
 
 Elaborado em 2026-08-14 (Fase 0). Objetivo: linguagem comum para as próximas análises. Cada termo foi definido a partir de **evidências** (classe Java, mapeamento Hibernate → tabela, FKs, constantes e comentários de coluna do banco) — nenhuma definição foi inventada a partir do nome. Conforme a ADR-0005, os termos consolidados do GSAN são preservados; observações apontam problemas sem decidir mudanças (decisões ficam para a etapa de modelagem).
 
@@ -254,7 +254,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   Mapeamento:  Conta.hbm.xml → faturamento.conta (cnta_amreferenciaconta, cnta_dtvencimentoconta, cnta_vlagua, cnta_vlesgoto, cnta_vldebitos, cnta_vlcreditos, parc_id, ftgr_id, dcst_idatual/anterior, cnta_idorigem)
   Banco:       comentários 'Ano/Mes Referencia Conta', 'Valor Agua', 'Valor Esgoto', 'Data Vencimento Conta'
   ```
-- **Observações de modernização**: mecanismo compreendido (2026-08-14): `ContaGeral` é a entidade física fonte do id estável (`seq_conta_geral` + `indicadorHistorico`), 1:1 com a conta corrente, a histórica e a impressão — a identidade é estável **na passagem corrente↔histórico**, não ao longo da cadeia de retificações; retificação cria **nova** conta (nova identidade) encadeada por `origem`; cancelamento é transição de estado com motivo; arquivamento nos batches de encerramento mensal. Semântica a preservar no SISAN (identidade estável do documento + versionamento + linhagem entre retificações) — ver [modulos/faturamento.md §13–15](../modulos/faturamento.md).
+- **Observações de modernização**: mecanismo compreendido (2026-08-14): `ContaGeral` é a entidade física fonte do id estável (`seq_conta_geral` + `indicadorHistorico`), 1:1 com a conta corrente, a histórica e a impressão — a identidade é estável **na passagem corrente↔histórico**, não ao longo da cadeia de retificações; retificação cria **nova** conta (nova identidade) encadeada por `origem`; cancelamento é transição de estado com motivo; arquivamento nos batches de encerramento mensal. Semântica a preservar no OpenGSAN (identidade estável do documento + versionamento + linhagem entre retificações) — ver [modulos/faturamento.md §13–15](../modulos/faturamento.md).
 
 ## 15. Débito
 
@@ -272,7 +272,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   ```text
   Mapeamento:  DebitoACobrar.hbm.xml → faturamento.debito_a_cobrar (dbtp_id, parc_id, orse_id, rgat_id, lict_id, dcst_id*); DebitoCobrado.hbm.xml → faturamento.debito_cobrado
   ```
-- **Observações de modernização**: no uso corrente "débito" também significa "dívida do imóvel" (contas em aberto). Manter os dois planos distintos no SISAN: débito-lançamento (este conceito) × débito-em-aberto (estado da dívida).
+- **Observações de modernização**: no uso corrente "débito" também significa "dívida do imóvel" (contas em aberto). Manter os dois planos distintos no OpenGSAN: débito-lançamento (este conceito) × débito-em-aberto (estado da dívida).
 
 ## 16. Crédito
 
@@ -372,7 +372,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
   ```text
   Mapeamento:  Pagamento.hbm.xml → arrecadacao.pagamento (pgmt_vlpagamento, pgmt_dtpagamento, pgmt_amreferenciaarrecadacao, pgst_idatual/anterior + FKs acima)
   ```
-- **Observações de modernização** (precisões de 2026-08-14): o pagamento tem **identidade própria** (`seq_pagamento`) e **não** segue o padrão `*Geral` — ao ser arquivado em `PagamentoHistorico` recebe **novo id**, assimetria em relação aos documentos de dívida. O resultado da tentativa de apropriação é registrado numa **situação** (classificado, duplicidade, documento inexistente, valor em excesso/a baixar/não confere, conta cancelada/parcelada/prescrita...), com situação anterior preservada: nenhum pagamento é descartado. Cinco alvos possíveis de apropriação sugerem formalizar no SISAN a abstração "documento cobrável"; "Fatura" (`faturamento.fatura`) segue exigindo aprofundamento. Ver [modulos/arrecadacao.md](../modulos/arrecadacao.md).
+- **Observações de modernização** (precisões de 2026-08-14): o pagamento tem **identidade própria** (`seq_pagamento`) e **não** segue o padrão `*Geral` — ao ser arquivado em `PagamentoHistorico` recebe **novo id**, assimetria em relação aos documentos de dívida. O resultado da tentativa de apropriação é registrado numa **situação** (classificado, duplicidade, documento inexistente, valor em excesso/a baixar/não confere, conta cancelada/parcelada/prescrita...), com situação anterior preservada: nenhum pagamento é descartado. Cinco alvos possíveis de apropriação sugerem formalizar no OpenGSAN a abstração "documento cobrável"; "Fatura" (`faturamento.fatura`) segue exigindo aprofundamento. Ver [modulos/arrecadacao.md](../modulos/arrecadacao.md).
 
 ## 22. Registro de Atendimento (RA)
 
@@ -429,7 +429,7 @@ Aos 20 termos estruturantes foram acrescentados 5 conceitos indispensáveis para
 
 - **Definição**: competência no formato inteiro `AAAAMM` que indexa todo o ciclo comercial: leitura/medição, consumo (`cshi_amfaturamento`), conta (`cnta_amreferenciaconta`), contabilidade (`cnta_amreferenciacontabil`), pagamento (`pgmt_amreferenciapagamento`) e arrecadação (`pgmt_amreferenciaarrecadacao`).
 - **Papel no sistema**: chave temporal dos processos, comparações financeiras e resumos; o banco possui funções utilitárias próprias (`anomesref`, `admindb.fc_calcula_ano_mes`).
-- **Observações de modernização**: preservar a semântica AAAAMM na migração e nos comparativos; se o SISAN adotar tipos mais expressivos internamente, o mapeamento é trivial, mas deve ser explícito.
+- **Observações de modernização**: preservar a semântica AAAAMM na migração e nos comparativos; se o OpenGSAN adotar tipos mais expressivos internamente, o mapeamento é trivial, mas deve ser explícito.
 
 ---
 
@@ -476,6 +476,6 @@ OS/RA → podem gerar Débito, Crédito, Guia, Parcelamento
 4. ~~Mecanismo `*_geral`/`*_historico`~~ **Resolvida (2026-08-14)**: a entidade `*_geral` é física e é a **fonte da identidade** (sequence própria + `indicadorHistorico`), com 1:1 para o documento corrente e o histórico (mesmo id); referências externas (pagamento, cobrança) apontam essa identidade, que **permanece válida quando o documento é arquivado** nos batches de **encerramento mensal**. **A retificação é mecanismo distinto**: cria um **novo documento com nova identidade**, encadeado ao anterior por `origem` — o que garante a continuidade é a **linhagem**, não um id único atravessando a cadeia. Ver [modulos/faturamento.md §13–15](../modulos/faturamento.md). A caracterização numérica continua prevista na Fase 2.
 5. **"Fatura" (`faturamento.fatura`)** como quinto alvo de pagamento — aparenta ser agrupamento de contas (ex.: cliente responsável); semântica exata a confirmar.
 6. ~~Multiplicidade de rotas no imóvel~~ **Resolvida (2026-08-14)**: rota via quadra = processos territoriais/de campo; rota de entrega = distribuição de contas/2ª via; rota alternativa = **override** — quando definida no imóvel, sobrepõe a rota da quadra nos processos de leitura/análise (evidência: dois ramos de consulta em `RepositorioMicromedicaoHBM.pesquisarImovelExcecoesLeituras`). Ver [modulos/cadastro.md §3.8](../modulos/cadastro.md) e [modulos/micromedicao.md §3.10](../modulos/micromedicao.md).
-7. **RA sem imóvel** (por endereço/local de ocorrência) — dimensionar o quanto do fluxo de atendimento independe de matrícula (afeta o modelo do SISAN).
+7. **RA sem imóvel** (por endereço/local de ocorrência) — dimensionar o quanto do fluxo de atendimento independe de matrícula (afeta o modelo do OpenGSAN).
 8. **Nomenclaturas de companhia no núcleo** — parcialmente mapeada no cadastro (2026-08-14): `numeroCelpe`, DV específico CAERN (`Util.obterDigitoVerificadorModuloCAERN`), campos sociais (`imov_classe_social`, `imov_qtd_economias_social`), programas especiais e recadastramento. Consolidar a separação núcleo × extensão na análise de compatibilidade ([modulos/cadastro.md §8](../modulos/cadastro.md)).
 9. ~~Regra do valor de esgoto~~ **Resolvida (2026-08-14)**: percentuais por imóvel na Ligação de Esgoto (`lesg_pcesgoto`, `lesg_pccoleta`, percentual alternativo acima de limite), volume derivado da água (+poço via medição tipo 2), fotografados na conta. Ver [modulos/faturamento.md §10](../modulos/faturamento.md).

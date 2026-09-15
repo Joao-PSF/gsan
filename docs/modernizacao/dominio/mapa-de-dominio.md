@@ -2,7 +2,7 @@
 
 > **Procedência**: consolidação dos dez mapas funcionais e do [glossário](glossario.md), sem reanálise de código. Base: `HEAD = 2031c4ca` (mapas) + `d38003e` (integrações e correções). Convenção de certeza e método em [`procedencia.md`](../procedencia.md): 🟢 fato · 🔵 interpretação sustentada · 🟡 hipótese · ❔ não compreendido.
 >
-> **Este documento não projeta o SISAN.** Não há tabelas, entidades JPA, schemas, APIs nem classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR` — isso é a próxima atividade. Aqui consolida-se **como o domínio do GSAN funciona e se relaciona**.
+> **Este documento não projeta o OpenGSAN.** Não há tabelas, entidades JPA, schemas, APIs nem classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR` — isso é a próxima atividade. Aqui consolida-se **como o domínio do GSAN funciona e se relaciona**.
 
 ---
 
@@ -88,7 +88,7 @@ flowchart TD
 
 ## 3. Grandes áreas funcionais — e o que cada uma realmente é
 
-⚠️ As dez áreas herdadas do GSAN **não são dez bounded contexts equivalentes**. Classificá-las assim seria o primeiro erro de desenho do SISAN. A natureza de cada uma:
+⚠️ As dez áreas herdadas do GSAN **não são dez bounded contexts equivalentes**. Classificá-las assim seria o primeiro erro de desenho do OpenGSAN. A natureza de cada uma:
 
 | Área | Natureza | Justificativa (dos mapas) |
 | ---- | -------- | ------------------------- |
@@ -310,7 +310,7 @@ flowchart TB
 
 ## 6. Estado atual, histórico e snapshot
 
-🔵 O GSAN usa **quatro mecanismos distintos** para lidar com tempo. Confundi-los no SISAN é um risco real, porque parecem a mesma coisa e não são.
+🔵 O GSAN usa **quatro mecanismos distintos** para lidar com tempo. Confundi-los no OpenGSAN é um risco real, porque parecem a mesma coisa e não são.
 
 | Mecanismo | O que faz | Exemplos comprovados |
 | --------- | --------- | -------------------- |
@@ -346,7 +346,7 @@ flowchart TB
 
 ## 7. Ownership dos conceitos
 
-🔵 Esta tabela é o insumo direto para as fronteiras de módulo do SISAN (ADR-0001).
+🔵 Esta tabela é o insumo direto para as fronteiras de módulo do OpenGSAN (ADR-0001).
 
 | Conceito | **Dono** | Consumidores | Observação de fronteira |
 | -------- | -------- | ------------ | ----------------------- |
@@ -544,7 +544,7 @@ flowchart LR
     style ATE fill:#fff4e6,stroke:#c77d00,stroke-width:3px
 ```
 
-🔵 **Observação integrada**: o Atendimento participa de **três dos sete ciclos** — é o nó mais conectado do sistema depois do Imóvel. Isso confirma sua natureza de **ponte**, e significa que isolá-lo completamente no SISAN não é possível sem repensar como os efeitos chegam aos domínios donos.
+🔵 **Observação integrada**: o Atendimento participa de **três dos sete ciclos** — é o nó mais conectado do sistema depois do Imóvel. Isso confirma sua natureza de **ponte**, e significa que isolá-lo completamente no OpenGSAN não é possível sem repensar como os efeitos chegam aos domínios donos.
 
 ---
 
@@ -615,7 +615,7 @@ NÃO É: "encerrar a OS dispara automaticamente a atualização"
               = registro de que o efeito JÁ FOI APLICADO (controle/idempotência)
 ```
 
-🔵 Consequência integrada: **o Atendimento nunca é dono do dado que altera** — ele origina e registra o evento; o domínio dono aplica. Esse é exatamente o contrato que o SISAN precisa formalizar, e é a diferença entre um sistema com fronteiras e um sistema onde qualquer módulo escreve em qualquer lugar.
+🔵 Consequência integrada: **o Atendimento nunca é dono do dado que altera** — ele origina e registra o evento; o domínio dono aplica. Esse é exatamente o contrato que o OpenGSAN precisa formalizar, e é a diferença entre um sistema com fronteiras e um sistema onde qualquer módulo escreve em qualquer lugar.
 
 🟢 **Duas assimetrias mapping × banco** que permanecem abertas e afetam o modelo: `registro_atendimento.imov_id` e `ordem_servico.rgat_id` são `NULL` no DDL mas `not-null` no mapping Hibernate. A necessidade de negócio (ocorrência de rede sem matrícula; OS nascida de processo sistêmico) está comprovada; a **forma de persistência**, não.
 
@@ -661,7 +661,7 @@ NÃO É: "encerrar a OS dispara automaticamente a atualização"
 | Cálculo de dias úteis do prazo | Atendimento | Utilitários + funções no banco |
 | Atualização cadastral pela execução | Atendimento | Actions "Efetuar…" |
 
-🔵 **Leitura integrada**: o GSAN parametriza **o quê** e **quando**; deixa em código **como se calcula**. É uma divisão coerente — e o SISAN precisa saber que está herdando exatamente essa divisão, não outra.
+🔵 **Leitura integrada**: o GSAN parametriza **o quê** e **quando**; deixa em código **como se calcula**. É uma divisão coerente — e o OpenGSAN precisa saber que está herdando exatamente essa divisão, não outra.
 
 ---
 
@@ -775,7 +775,7 @@ Concentra: identidade + dados de cálculo + **fotografia do contexto** + resulta
 
 ## 18. Conceitos implícitos
 
-> Existem funcionalmente, mas não têm entidade própria. **Registrados como candidatos a formalização futura** — nenhuma entidade SISAN é criada aqui.
+> Existem funcionalmente, mas não têm entidade própria. **Registrados como candidatos a formalização futura** — nenhuma entidade OpenGSAN é criada aqui.
 
 | Conceito implícito | Como existe hoje | Por que importa |
 | ------------------ | ---------------- | --------------- |
@@ -805,7 +805,7 @@ Concentra: identidade + dados de cálculo + **fotografia do contexto** + resulta
 | 6 | **Escrita direta de consumo na retificação** | Ignorar o caso (achar que a fronteira é limpa) deixa a retificação sem efeito na Micromedição | 🔊 Visível, mas só em retificação |
 | 7 | **Associação pagamento ↔ documento por identidade estável** | Apontar para a versão em vez da identidade quebra pagamento de conta arquivada/retificada | 🔇 Silenciosa |
 | 8 | **Situações paramétricas de ligação** | Virar `enum` transforma regra configurável em deploy | 🔊 Visível na operação, mas tarde |
-| 9 | **Permissões + abrangência** | Abrangência aplicada manualmente hoje; se o SISAN não a sistematizar, herda vazamento por omissão | 🔇 **Silenciosa e grave** (LGPD) |
+| 9 | **Permissões + abrangência** | Abrangência aplicada manualmente hoje; se o OpenGSAN não a sistematizar, herda vazamento por omissão | 🔇 **Silenciosa e grave** (LGPD) |
 | 10 | **Retomada por unidade no batch** | Quebrar a retomada faz reprocessamento refazer trabalho já concluído | 🔊 Visível — duplicação de efeito financeiro |
 
 ⚠️ **Dois pontos adicionais que não cabem na lista mas não podem ser esquecidos**: a **identidade perdida do pagamento no arquivamento** (única anomalia do padrão de identidade do sistema) e a **memória financeira do parcelamento** (sem ela, desfazer deixa de ser exato).
@@ -892,4 +892,4 @@ Esta consolidação **não gerou evidência nova de código**. Cada afirmação 
 
 **Análise de Compatibilidade das Estruturas Centrais** — classificar os conceitos consolidados aqui como `PRESERVAR / MODERNIZAR / REESTRUTURAR / NÃO TRANSPORTAR`, considerando benefício, custo, impacto, dificuldade de migração, dependências e compatibilidade semântica.
 
-Depois dela: **Visão Conceitual Alvo do SISAN** — ainda sem modelo físico.
+Depois dela: **Visão Conceitual Alvo do OpenGSAN** — ainda sem modelo físico.

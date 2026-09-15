@@ -8,7 +8,7 @@ Elaborado em 2026-08-14 (Fase 0). Fontes: código GSAN (`gcom.arrecadacao` e sub
 
 A Arrecadação **reconhece, classifica e aplica o recebimento**. Recebe movimentos dos arrecadadores (bancos/conveniados), transforma cada registro em Pagamento, descobre a qual obrigação o dinheiro corresponde (classificação), registra o resultado dessa tentativa numa **situação** do próprio pagamento, concilia o total com o aviso bancário, trata devoluções e encerra a competência mensal consolidando totais contábeis.
 
-🔵 A divisão conceitual do prompt **se confirma com uma correção importante**: Faturamento gera a obrigação; Cobrança atua sobre a não paga; Arrecadação reconhece e classifica o recebimento — mas **a Arrecadação não "baixa" a obrigação alterando um campo de quitação nos documentos**. 🟢 O que existe é o vínculo pagamento→documento (`Pagamento` aponta ContaGeral, GuiaPagamentoGeral, DébitoACobrarGeral, Fatura, CobrançaDocumento) e a **situação do pagamento**; quem consulta dívida (Cobrança, §22 daquele mapa) deduz o pagamento do estoque. Essa é uma diferença estrutural relevante para o SISAN.
+🔵 A divisão conceitual do prompt **se confirma com uma correção importante**: Faturamento gera a obrigação; Cobrança atua sobre a não paga; Arrecadação reconhece e classifica o recebimento — mas **a Arrecadação não "baixa" a obrigação alterando um campo de quitação nos documentos**. 🟢 O que existe é o vínculo pagamento→documento (`Pagamento` aponta ContaGeral, GuiaPagamentoGeral, DébitoACobrarGeral, Fatura, CobrançaDocumento) e a **situação do pagamento**; quem consulta dívida (Cobrança, §22 daquele mapa) deduz o pagamento do estoque. Essa é uma diferença estrutural relevante para o OpenGSAN.
 
 ## 2. Pagamento
 
@@ -203,7 +203,7 @@ DÉBITO AUTOMÁTICO
 9. 🟢 **O encerramento mensal é fechamento financeiro/contábil** (inclui retenções tributárias e a consolidação do não classificado), distinto do arquivamento.
 10. 🟢 **O pagamento não tem identidade transversal ao arquivamento** (`PagamentoHistorico` com sequence própria) — assimetria em relação aos documentos de dívida.
 
-## 20. Compatibilidade GSAN → SISAN
+## 20. Compatibilidade GSAN → OpenGSAN
 
 | Conceito | Classificação | Motivo |
 | -------- | ------------- | ------ |
@@ -216,7 +216,7 @@ DÉBITO AUTOMÁTICO
 | Devolução com guia, situações e competência | PRESERVAR CONCEITO | Saída de dinheiro rastreada |
 | Encerramento como fechamento contábil (retenções + não classificado) | PRESERVAR CONCEITO | Números oficiais do mês |
 | Débito automático em três níveis (opção / envio por conta / pagamento) | PRESERVAR CONCEITO | Distinção correta e necessária |
-| Identidade do pagamento perdida no arquivamento (novo id no histórico) | **REESTRUTURAR** | Assimetria injustificada: o SISAN deve manter identidade estável do recebimento como faz com os documentos (impacto direto em auditoria e migração) |
+| Identidade do pagamento perdida no arquivamento (novo id no histórico) | **REESTRUTURAR** | Assimetria injustificada: o OpenGSAN deve manter identidade estável do recebimento como faz com os documentos (impacto direto em auditoria e migração) |
 | Situações fixas em constantes de código | POSSÍVEL MODERNIZAÇÃO | Semântica preservada; forma pode virar catálogo governado |
 | Parsers de layout embutidos no controlador | POSSÍVEL MODERNIZAÇÃO | Adapters por layout/versão, mantendo comportamento |
 | Rateio/baixa de itens em pagamento de Documento de Cobrança | EXIGE APROFUNDAMENTO | Comportamento não comprovado (§21) |

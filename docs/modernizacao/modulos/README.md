@@ -22,5 +22,5 @@ Ordem recomendada (refinamento previsto no item 6 do backlog da Fase 0, com base
 ## Regras
 
 1. Nenhum módulo entra em implementação sem documento próprio em `docs/modernizacao/modulos/<modulo>.md` descrevendo comportamento atual, dependências, tabelas, regras de negócio e resultado esperado (sequência de trabalho: analisar → documentar → dependências → resultado esperado → testes → implementar → comparar → validar segurança → validar performance → documentar).
-2. Módulo só é considerado concluído no SISAN após: equivalência comprovada com o GSAN de referência (testes de caracterização, comparação semântica via mapeamento) e validação em ambiente de homologação (VPS). Critérios adicionais de produção (validação por usuários reais, logs estáveis, rollback operacional) aplicam-se quando existir companhia operando o SISAN.
+2. Módulo só é considerado concluído no OpenGSAN após: equivalência comprovada com o GSAN de referência (testes de caracterização, comparação semântica via mapeamento) e validação em ambiente de homologação (VPS). Critérios adicionais de produção (validação por usuários reais, logs estáveis, rollback operacional) aplicam-se quando existir companhia operando o OpenGSAN.
 3. Este arquivo é atualizado a cada mudança de status.
