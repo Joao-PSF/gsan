@@ -4,7 +4,9 @@
 
 ⚠️ Mapa concluído **não é** especificação pronta para implementar: cada um lista dúvidas abertas, e a especificação dos cenários críticos é item do fechamento da Fase 0 (ver [`estrategia-testes.md`](../testes/estrategia-testes.md)).
 
-Ordem recomendada (refinamento previsto no item 6 do backlog da Fase 0, com base nos mapas funcionais; mudanças de ordem devem registrar o motivo aqui). Critério: começar por risco moderado e dependências simples; faturamento e arrecadação por último entre os críticos (risco financeiro); batch crítico ao final.
+**Além dos dez mapas**, esta pasta contém o [catálogo de funcionalidades futuras](funcionalidades-futuras.md) (2026-09-15) — 26 capacidades descobertas no legado que **não são módulos** e não estão na tabela abaixo. ⚠️ Ele levanta uma pergunta que a ordem atual não responde: o **portal de autoatendimento** (47 classes, sem dono em nenhum módulo) é candidato a capacidade própria e depende da ADR-0007.
+
+Ordem recomendada (refinamento é a **próxima atividade** do backlog da Fase 0, com base nos mapas funcionais, no mapa de domínio e no catálogo de funcionalidades futuras; mudanças de ordem devem registrar o motivo aqui). Critério: começar por risco moderado e dependências simples; faturamento e arrecadação por último entre os críticos (risco financeiro); batch crítico ao final.
 
 | # | Módulo | Justificativa | Status |
 | - | ------ | ------------- | ------ |

@@ -12,9 +12,11 @@ Fase 0 em andamento. 1ª execução (2026-08-13): diagnóstico técnico do legad
 
 16ª execução (2026-09-15): **mudança de identidade e de escopo**, por diretriz do responsável. (a) O sistema passa a chamar-se **OpenGSAN** — evolução **aberta** e moderna do GSAN, não projeto novo; (b) ⚠️ **a migração de instalações GSAN saiu do escopo deste projeto** e terá projeto próprio — facilidade de migração deixa de ser critério de desenho e **não pode mais justificar preservar estrutura inadequada**; (c) **software livre** passa a ser princípio orientador (neutralidade institucional, configuração antes de fork). ADRs 0003, 0005 e 0006 revisadas; 31 documentos de estado corrente renomeados; registros históricos preservam o nome SISAN. **Visão Conceitual Alvo do OpenGSAN produzida** — [dominio/visao-conceitual-opengsan.md](docs/modernizacao/dominio/visao-conceitual-opengsan.md).
 
+17ª execução (2026-09-15): **catálogo de funcionalidades futuras concluído** — [modulos/funcionalidades-futuras.md](docs/modernizacao/modulos/funcionalidades-futuras.md): **26 capacidades** descobertas no legado e classificadas por natureza (11 CORE FUTURO · 7 MÓDULO OPCIONAL · 5 INTEGRAÇÃO · 2 EXIGE APROFUNDAMENTO · 1 EXTENSÃO DE COMPANHIA), maturidade da evidência (11 comprovada · 10 parcial · 5 **apenas evidência**) e horizonte preliminar (9 H1 · 11 H2 · 5 H3 · 1 específica), sob a regra **"existe no `gsan_comercial` ≠ deve existir no OpenGSAN"**. Três achados dominam: o **portal de autoatendimento** (47 classes em `gcom.gui.portal`) é a capacidade mais substancial do legado e **não tem dono em nenhum módulo** — nenhum dos dez mapas funcionais a cobriu; o **fiscal** tem schema de 14 tabelas e **nenhuma classe Java nesta branch** (e o SPED está implementado *no banco*), sendo o maior desconhecido do catálogo; e **PIX** é o item mais urgente e menos pronto (só um gerador de QR Code estático com chave em código). Registrados ainda 6 padrões transversais (T1–T6), 4 candidatos a novos módulos (Fiscal, Analytics, GIS, Canal digital), 8 especificidades de companhia remapeadas para capacidade genérica e 6 não candidatos. **Nada modelado, nada priorizado com data.**
+
 **Leitura honesta do estado (calibrada em 2026-09-14).** Os dez mapas funcionais cobrem o fluxo principal Cadastro → Micromedição → Faturamento → Conta → Cobrança → Arrecadação, o ciclo de demanda/execução do Atendimento, identidade/autorização/abrangência/auditoria, processamento em lote, relatórios e integrações. **Isso não significa que a Fase 0 esteja pronta para orientar implementação**, por duas razões diferentes que não devem ser confundidas:
 
-- **Incompletude normal da descoberta**: faltam o mapa de domínio, a análise de compatibilidade das estruturas centrais, o catálogo de funcionalidades futuras, o refinamento de dependências e a **especificação dos cenários críticos** (itens 3–8 do backlog). Permanecem dúvidas abertas registradas em cada mapa.
+- **Incompletude normal da descoberta**: o mapa de domínio, a análise de compatibilidade das estruturas centrais, a visão conceitual alvo e o catálogo de funcionalidades futuras já foram concluídos; faltam o refinamento de dependências, a compatibilidade conceitual GSAN → OpenGSAN e a **especificação dos cenários críticos** (itens 1–3 do backlog). Permanecem dúvidas abertas registradas em cada mapa.
 - **Defeitos corrigidos em artefatos antes dados por concluídos**: a revisão de 2026-09-14 encontrou afirmações publicadas erradas (fronteira de consumo, política de arredondamento, atribuição de método, inconsistência MD5/SHA-1, arquivo obsoleto citado como evidência) e um furo conceitual (critério de equivalência que obrigaria o SISAN a reproduzir falhas de segurança do legado). Todas corrigidas nesta execução e registradas em [`procedencia.md §4`](docs/modernizacao/procedencia.md).
 
 Nenhuma implementação iniciada.
@@ -45,15 +47,19 @@ Fase 0 — Descoberta, compatibilidade e arquitetura do **OpenGSAN**. Objetivo: 
 
 - Análise de compatibilidade das estruturas centrais (15ª execução): [compatibilidade/estruturas-centrais.md](docs/modernizacao/compatibilidade/estruturas-centrais.md) — **o GSAN acertou mais do que errou**: quase 6 em cada 10 decisões são `PRESERVAR`, e o **Faturamento é o mais preservado em proporção (7 de 10)** — apesar de ser o módulo de maior risco financeiro. Onde há dinheiro, o modelo do legado é bom. As reestruturações concentram-se em Segurança (implementação inadequada) e Cadastro (o Imóvel acumulou estado de outros domínios). **Cinco decisões dominam o risco**: identidade estável de documento (semântica inegociável, estrutura a reestruturar), **precisão financeira PRESERVADA** (as 5 políticas de arredondamento são comportamento, não dívida técnica), **snapshots da Conta PRESERVADOS** (parecem desnormalização, são auditoria retroativa), abrangência territorial (conceito preservado, aplicação reestruturada) e **regra como dado** (nenhuma das 16 famílias paramétricas é descartada).
 
+- Visão Conceitual Alvo do OpenGSAN (16ª execução): [dominio/visao-conceitual-opengsan.md](docs/modernizacao/dominio/visao-conceitual-opengsan.md) — **core × plataforma**: as dez áreas não são dez módulos equivalentes (Segurança, Processamento, Relatórios e Integrações são plataforma); **só o dono altera o estado do seu conceito** (três propriedades corrigidas); identidade ≠ versão ≠ linhagem formalizados; **seis mecanismos de histórico deliberadamente não unificados**; auditoria ≠ histórico de negócio; parametrização tipada e versionada; **extensibilidade em cinco níveis, com fork como exceção**; precisão financeira preservada como comportamento; 22 conceitos na matriz de ownership, 30 temas na tabela GSAN × OpenGSAN e 12 decisões pendentes (5 bloqueantes). *(Entrada acrescentada retroativamente em 2026-09-15 — omitida na 16ª execução.)*
+
+- Catálogo de funcionalidades futuras (17ª execução): [modulos/funcionalidades-futuras.md](docs/modernizacao/modulos/funcionalidades-futuras.md) — **26 capacidades** classificadas por natureza, maturidade da evidência e horizonte, sem modelagem e sem roadmap datado. O achado que mais muda o desenho é o **portal de autoatendimento**: 47 classes em `gcom.gui.portal` (2ª via, extrato, parcelamento online, certidões, solicitação de serviços, conta em braile) que **nenhum dos dez mapas funcionais cobriu, porque nenhum módulo é seu dono** — e que depende da identidade do **cliente final**, modelo distinto do usuário interno. ⚠️ Duas áreas têm **schema sem comportamento observável nesta branch**: fiscal (14 tabelas, zero classes Java) e SPED (implementado em função de banco) — ambas ficam `APENAS EVIDÊNCIA`, não viram módulo por dedução. 🔵 Quase toda "customização" encontrada é **instância de algo genérico que o GSAN já tinha**: o erro não foi criar a necessidade, foi nomeá-la no núcleo.
+
 ## EM EXECUÇÃO
 
 - Nada em execução no momento; próxima atividade definida abaixo.
 
 ## PRÓXIMAS ATIVIDADES (backlog restante da Fase 0, em ordem)
 
-**Concluídos**: ✅ glossário de domínio (2026-08-14) · ✅ dez mapas funcionais, cadastro → integrações (2026-08-14 a 2026-09-14) · ✅ mapa de domínio consolidado (2026-09-14) · ✅ **análise de compatibilidade das estruturas centrais** (2026-09-14) · ✅ ADRs 0001 e 0002 formalizadas.
+**Concluídos**: ✅ glossário de domínio (2026-08-14) · ✅ dez mapas funcionais, cadastro → integrações (2026-08-14 a 2026-09-14) · ✅ mapa de domínio consolidado (2026-09-14) · ✅ **análise de compatibilidade das estruturas centrais** (2026-09-14) · ✅ **Visão Conceitual Alvo do OpenGSAN** (2026-09-15) · ✅ **catálogo de funcionalidades futuras** (2026-09-15) · ✅ ADRs 0001 e 0002 formalizadas.
 
-Sequência estabelecida (não remover a Visão Conceitual Alvo):
+Sequência estabelecida:
 
 ```text
 Mapa de domínio atual  ✅
@@ -62,30 +68,35 @@ Compatibilidade das estruturas centrais  ✅
         ↓
 Visão conceitual alvo do OpenGSAN  ✅
         ↓
-Documento de compatibilidade / migração
+Catálogo de funcionalidades futuras  ✅
+        ↓
+Refinamento das dependências / ordem de implementação  ← próxima
+        ↓
+Compatibilidade conceitual GSAN → OpenGSAN
 ```
 
 | # | Atividade | Observação |
 | - | --------- | ---------- |
 | — | ~~**Visão Conceitual Alvo do OpenGSAN**~~ ✅ **concluída em 2026-09-15** | Ainda **sem** modelo físico: conceitos, fronteiras, identidades e contratos do sistema alvo. Consome as 37 decisões `PRESERVAR` como restrições de desenho, as 15 que tocam `REESTRUTURAR` como problemas a resolver (com a semântica a preservar já explicitada) e as 14 hipóteses de [`estruturas-centrais.md §21`](docs/modernizacao/compatibilidade/estruturas-centrais.md) |
-| 1 | **Catálogo de funcionalidades futuras** | Descobertas do `gsan_comercial` (PIX, fiscal/NF, SPED, mobile/campo, recadastramento, tarifa social, SPC/Serasa, APIs, BI, boleto registrado): funcionalidade, problema resolvido, módulo, dependências, prioridade preliminar. Sem modelagem de banco |
-| 2 | **Refinamento das dependências / ordem de implementação** | O mapa de domínio já forneceu a evidência (ownership, fronteiras e **7 ciclos**); falta a decisão de ordem, registrando o motivo de qualquer mudança em `modulos/README.md` |
-| 3 | **Documento de compatibilidade conceitual GSAN → OpenGSAN** | ⚠️ **Escopo reduzido em 2026-09-15**: trata de **continuidade conceitual, diferenças e correspondências** — a estratégia operacional de migração pertence a **outro projeto** |
-| 4 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md) |
-| 5 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ **Bloqueia o piloto (Fase 6)**. Proposta registrada, decisão pendente |
-| 6 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–5 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
+| — | ~~**Catálogo de funcionalidades futuras**~~ ✅ **concluído em 2026-09-15** | [`modulos/funcionalidades-futuras.md`](docs/modernizacao/modulos/funcionalidades-futuras.md) — 26 capacidades com natureza, maturidade e horizonte; 6 padrões transversais; 4 candidatos a módulo; 8 especificidades remapeadas para capacidade genérica; 6 não candidatos. **Sem modelagem de banco e sem roadmap datado** |
+| 1 | **Refinamento das dependências / ordem de implementação** | O mapa de domínio já forneceu a evidência (ownership, fronteiras e **7 ciclos**); o catálogo acrescentou as dependências conceituais das capacidades futuras (⚠️ SPED → Fiscal → documento comercial; Analytics → todos). Falta a decisão de ordem, registrando o motivo de qualquer mudança em `modulos/README.md` |
+| 2 | **Documento de compatibilidade conceitual GSAN → OpenGSAN** | ⚠️ **Escopo reduzido em 2026-09-15**: trata de **continuidade conceitual, diferenças e correspondências** — a estratégia operacional de migração pertence a **outro projeto** |
+| 3 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md) |
+| 4 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ **Bloqueia o piloto (Fase 6)**. Proposta registrada, decisão pendente. O catálogo acrescentou entrada nova: o **canal digital do cliente** (47 classes sem dono) depende desta decisão |
+| 5 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–4 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
 
 ## RISCOS
 
 1. Ausência de rede de testes/caracterização do legado (19 testes / 2,39M LOC) — maior risco para a equivalência funcional.
 2. Perda ou deturpação de regras de negócio na reimplementação (~830 SQLs concatenados, 116 funções de banco, regras embutidas em Actions/EJBs).
-3. Variabilidade de schemas entre instalações GSAN (drift comprovado no `gsan_comercial`, ex.: PIX fora das migrations) — inviabiliza migração futura se a compatibilidade não for requisito desde o início (ADR-0005).
-4. Recriar a roda ou redesenhar por estética, quebrando o caminho de migração (mitigado pela ADR-0006).
+3. Variabilidade de schemas entre instalações GSAN (drift comprovado no `gsan_comercial`, ex.: PIX e tabelas de QR Code fora das migrations) — ⚠️ **reinterpretado em 2026-09-15**: com a migração fora do escopo, deixa de ser risco de transporte de dados e passa a ser **risco de evidência**: o que se observa em *uma* instalação pode não ser o GSAN, e sim a customização dela. Mitigação: declarar a origem da evidência (ver [`procedencia.md`](docs/modernizacao/procedencia.md)).
+4. Recriar a roda ou redesenhar por estética, descartando regra de negócio comprovada (mitigado pela ADR-0006 — ⚠️ o critério deixou de ser "facilidade de migração" e passou a ser **continuidade conceitual**).
 5. Dificuldade de levantar o ambiente de referência do legado (JBoss 4/Java 5 em SO moderno) para caracterização.
 6. OpenGSAN herdar padrões fracos de segurança do legado — **mitigado pelo [registro de divergências aprovadas](docs/modernizacao/compatibilidade/divergencias-aprovadas.md)**, criado em 2026-09-14 porque o critério `A = B`, sozinho, *obrigaria* a herança.
 8. ⚠️ **Precisão financeira**: 5 políticas semânticas de arredondamento convivendo no núcleo de faturamento (21 usos de `RoundingMode.UP`; truncamento em base de imposto). Unificar sem caracterizar ponto a ponto produz divergência de centavos em massa.
 9. ⚠️ **Segredo comprometido em circulação**: chave de API de SMS versionada em código e em properties (achado 11) — rotação obrigatória em qualquer instalação que use este código.
-7. Inflação de escopo pelo catálogo de funcionalidades futuras antes do núcleo estar migrado.
+7. ⚠️ **Inflação de escopo pelo catálogo de funcionalidades futuras** — risco **concretizado como possibilidade real em 2026-09-15**: o catálogo encontrou 26 capacidades, das quais 9 ficaram em H1 (próximas do núcleo). Mitigação registrada no próprio catálogo: **"existe no `gsan_comercial` ≠ deve existir no OpenGSAN"**, maturidade da evidência declarada por capacidade (4 são `APENAS EVIDÊNCIA`), lista explícita de **não candidatos** e nenhum roadmap datado. 🔴 O horizonte **não é ordem de implementação**.
+10. ⚠️ **Deduzir comportamento a partir de estrutura** — o catálogo isolou dois casos (schema `fiscal` com 14 tabelas e zero classes Java; SPED implementado em função de banco). Tratar schema como prova de funcionalidade produziria módulos inteiros baseados em nada observável.
 
 Lista original de 10 riscos no plano de trabalho, com reinterpretação registrada na [revisão de premissas](docs/modernizacao/alteracoes/2026-08-13-revisao-premissas-fase0.md).
 
