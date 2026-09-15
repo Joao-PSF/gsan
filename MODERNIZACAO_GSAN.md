@@ -14,9 +14,11 @@ Fase 0 em andamento. 1ª execução (2026-08-13): diagnóstico técnico do legad
 
 17ª execução (2026-09-15): **catálogo de funcionalidades futuras concluído** — [modulos/funcionalidades-futuras.md](docs/modernizacao/modulos/funcionalidades-futuras.md): **26 capacidades** descobertas no legado e classificadas por natureza (11 CORE FUTURO · 7 MÓDULO OPCIONAL · 5 INTEGRAÇÃO · 2 EXIGE APROFUNDAMENTO · 1 EXTENSÃO DE COMPANHIA), maturidade da evidência (11 comprovada · 10 parcial · 5 **apenas evidência**) e horizonte preliminar (9 H1 · 11 H2 · 5 H3 · 1 específica), sob a regra **"existe no `gsan_comercial` ≠ deve existir no OpenGSAN"**. Três achados dominam: o **portal de autoatendimento** (47 classes em `gcom.gui.portal`) é a capacidade mais substancial do legado e **não tem dono em nenhum módulo** — nenhum dos dez mapas funcionais a cobriu; o **fiscal** tem schema de 14 tabelas e **nenhuma classe Java nesta branch** (e o SPED está implementado *no banco*), sendo o maior desconhecido do catálogo; e **PIX** é o item mais urgente e menos pronto (só um gerador de QR Code estático com chave em código). Registrados ainda 6 padrões transversais (T1–T6), 4 candidatos a novos módulos (Fiscal, Analytics, GIS, Canal digital), 8 especificidades de companhia remapeadas para capacidade genérica e 6 não candidatos. **Nada modelado, nada priorizado com data.**
 
+18ª execução (2026-09-15): **refinamento das dependências e ordem de implementação concluído** — [modulos/dependencias-e-ordem-implementacao.md](docs/modernizacao/modulos/dependencias-e-ordem-implementacao.md): 26 relações classificadas, **8 ciclos** (um novo: Cadastro ↔ Segurança pelo escopo territorial), fundação mínima com 13 itens de dia 1, **primeira fatia vertical recomendada** (autenticar → consultar imóvel/cliente → abrir e tramitar RA) e **9 etapas por capacidade implementável**, cada uma com resultado observável e gate de prova. 🔴 **A ordem financeira anterior estava invertida**: `cobrança → arrecadação → faturamento` passa a **`faturamento → recebimento → cobrança`**, porque o Faturamento cria a Conta e a ordem antiga exigiria simular o objeto financeiro mais sensível do sistema. Outras correções: Segurança deixa de ser "Fase 5" e vira três blocos (o escopo territorial **depende do Cadastro** — impossível antes dele); auditoria vai para o dia 1; o motor de conta individual vai para o meio da sequência (Etapa 4), com o lote na 7; Arrecadação e Micromedição deixam de ser blocos únicos. As **5 decisões "bloqueantes"** foram delimitadas: só uma bloqueia o dia 1 (negação na autorização), a ADR-0007 bloqueia **superfície de entrega**, não o sistema, e o nome do repositório é bloqueio de **partida**, não de projeto. **Nenhum código, banco, cronograma ou sprint.**
+
 **Leitura honesta do estado (calibrada em 2026-09-14).** Os dez mapas funcionais cobrem o fluxo principal Cadastro → Micromedição → Faturamento → Conta → Cobrança → Arrecadação, o ciclo de demanda/execução do Atendimento, identidade/autorização/abrangência/auditoria, processamento em lote, relatórios e integrações. **Isso não significa que a Fase 0 esteja pronta para orientar implementação**, por duas razões diferentes que não devem ser confundidas:
 
-- **Incompletude normal da descoberta**: o mapa de domínio, a análise de compatibilidade das estruturas centrais, a visão conceitual alvo e o catálogo de funcionalidades futuras já foram concluídos; faltam o refinamento de dependências, a compatibilidade conceitual GSAN → OpenGSAN e a **especificação dos cenários críticos** (itens 1–3 do backlog). Permanecem dúvidas abertas registradas em cada mapa.
+- **Incompletude normal da descoberta**: o mapa de domínio, a análise de compatibilidade das estruturas centrais, a visão conceitual alvo, o catálogo de funcionalidades futuras e a **ordem de implementação** já foram concluídos; faltam a compatibilidade conceitual GSAN → OpenGSAN e a **especificação dos cenários críticos** (itens 1–2 do backlog). Permanecem dúvidas abertas registradas em cada mapa.
 - **Defeitos corrigidos em artefatos antes dados por concluídos**: a revisão de 2026-09-14 encontrou afirmações publicadas erradas (fronteira de consumo, política de arredondamento, atribuição de método, inconsistência MD5/SHA-1, arquivo obsoleto citado como evidência) e um furo conceitual (critério de equivalência que obrigaria o SISAN a reproduzir falhas de segurança do legado). Todas corrigidas nesta execução e registradas em [`procedencia.md §4`](docs/modernizacao/procedencia.md).
 
 Nenhuma implementação iniciada.
@@ -51,13 +53,15 @@ Fase 0 — Descoberta, compatibilidade e arquitetura do **OpenGSAN**. Objetivo: 
 
 - Catálogo de funcionalidades futuras (17ª execução): [modulos/funcionalidades-futuras.md](docs/modernizacao/modulos/funcionalidades-futuras.md) — **26 capacidades** classificadas por natureza, maturidade da evidência e horizonte, sem modelagem e sem roadmap datado. O achado que mais muda o desenho é o **portal de autoatendimento**: 47 classes em `gcom.gui.portal` (2ª via, extrato, parcelamento online, certidões, solicitação de serviços, conta em braile) que **nenhum dos dez mapas funcionais cobriu, porque nenhum módulo é seu dono** — e que depende da identidade do **cliente final**, modelo distinto do usuário interno. ⚠️ Duas áreas têm **schema sem comportamento observável nesta branch**: fiscal (14 tabelas, zero classes Java) e SPED (implementado em função de banco) — ambas ficam `APENAS EVIDÊNCIA`, não viram módulo por dedução. 🔵 Quase toda "customização" encontrada é **instância de algo genérico que o GSAN já tinha**: o erro não foi criar a necessidade, foi nomeá-la no núcleo.
 
+- Dependências e ordem de implementação (18ª execução): [modulos/dependencias-e-ordem-implementacao.md](docs/modernizacao/modulos/dependencias-e-ordem-implementacao.md) — responde **"o que programamos primeiro"** com sequência derivada de ownership, dependências, risco, valor, testabilidade e fronteiras. A conclusão que mais muda o plano: 🔴 **a cadeia financeira tem direção única — documento → recebimento → dívida — e a ordem anterior a percorria ao contrário**. Duas distinções sustentam o resto: dependência de **domínio** ≠ de **implementação** ≠ **ordem de entrega**; e o que pode ser satisfeito por contrato temporário (consumo, efeito de OS, notificação) ≠ o que **não pode ser simulado** (a Conta, o recebimento, a identidade do documento, a política de arredondamento). 🔵 Nenhum dos 8 ciclos impede construção sequencial, porque em todos o acoplamento está concentrado na **capacidade de efeito**, posterior ao núcleo de cada lado. A ordem é por **capacidade**, não por módulo: `fundação → fatia vertical → operacional → medição → financeiro individual → recebimento → cobrança → escala → canais`.
+
 ## EM EXECUÇÃO
 
 - Nada em execução no momento; próxima atividade definida abaixo.
 
 ## PRÓXIMAS ATIVIDADES (backlog restante da Fase 0, em ordem)
 
-**Concluídos**: ✅ glossário de domínio (2026-08-14) · ✅ dez mapas funcionais, cadastro → integrações (2026-08-14 a 2026-09-14) · ✅ mapa de domínio consolidado (2026-09-14) · ✅ **análise de compatibilidade das estruturas centrais** (2026-09-14) · ✅ **Visão Conceitual Alvo do OpenGSAN** (2026-09-15) · ✅ **catálogo de funcionalidades futuras** (2026-09-15) · ✅ ADRs 0001 e 0002 formalizadas.
+**Concluídos**: ✅ glossário de domínio (2026-08-14) · ✅ dez mapas funcionais, cadastro → integrações (2026-08-14 a 2026-09-14) · ✅ mapa de domínio consolidado (2026-09-14) · ✅ **análise de compatibilidade das estruturas centrais** (2026-09-14) · ✅ **Visão Conceitual Alvo do OpenGSAN** (2026-09-15) · ✅ **catálogo de funcionalidades futuras** (2026-09-15) · ✅ **dependências e ordem de implementação** (2026-09-15) · ✅ ADRs 0001 e 0002 formalizadas.
 
 Sequência estabelecida:
 
@@ -70,20 +74,22 @@ Visão conceitual alvo do OpenGSAN  ✅
         ↓
 Catálogo de funcionalidades futuras  ✅
         ↓
-Refinamento das dependências / ordem de implementação  ← próxima
+Dependências e ordem de implementação  ✅
         ↓
-Compatibilidade conceitual GSAN → OpenGSAN
+Compatibilidade conceitual GSAN → OpenGSAN  ← próxima
+        ↓
+Especificação dos cenários críticos
 ```
 
 | # | Atividade | Observação |
 | - | --------- | ---------- |
 | — | ~~**Visão Conceitual Alvo do OpenGSAN**~~ ✅ **concluída em 2026-09-15** | Ainda **sem** modelo físico: conceitos, fronteiras, identidades e contratos do sistema alvo. Consome as 37 decisões `PRESERVAR` como restrições de desenho, as 15 que tocam `REESTRUTURAR` como problemas a resolver (com a semântica a preservar já explicitada) e as 14 hipóteses de [`estruturas-centrais.md §21`](docs/modernizacao/compatibilidade/estruturas-centrais.md) |
 | — | ~~**Catálogo de funcionalidades futuras**~~ ✅ **concluído em 2026-09-15** | [`modulos/funcionalidades-futuras.md`](docs/modernizacao/modulos/funcionalidades-futuras.md) — 26 capacidades com natureza, maturidade e horizonte; 6 padrões transversais; 4 candidatos a módulo; 8 especificidades remapeadas para capacidade genérica; 6 não candidatos. **Sem modelagem de banco e sem roadmap datado** |
-| 1 | **Refinamento das dependências / ordem de implementação** | O mapa de domínio já forneceu a evidência (ownership, fronteiras e **7 ciclos**); o catálogo acrescentou as dependências conceituais das capacidades futuras (⚠️ SPED → Fiscal → documento comercial; Analytics → todos). Falta a decisão de ordem, registrando o motivo de qualquer mudança em `modulos/README.md` |
-| 2 | **Documento de compatibilidade conceitual GSAN → OpenGSAN** | ⚠️ **Escopo reduzido em 2026-09-15**: trata de **continuidade conceitual, diferenças e correspondências** — a estratégia operacional de migração pertence a **outro projeto** |
-| 3 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md) |
-| 4 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ **Bloqueia o piloto (Fase 6)**. Proposta registrada, decisão pendente. O catálogo acrescentou entrada nova: o **canal digital do cliente** (47 classes sem dono) depende desta decisão |
-| 5 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–4 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
+| — | ~~**Refinamento das dependências / ordem de implementação**~~ ✅ **concluído em 2026-09-15** | [`modulos/dependencias-e-ordem-implementacao.md`](docs/modernizacao/modulos/dependencias-e-ordem-implementacao.md) — 26 relações, 8 ciclos, fundação mínima, primeira fatia vertical, 9 etapas com gates. Resumo em [`modulos/README.md`](docs/modernizacao/modulos/README.md) |
+| 1 | **Documento de compatibilidade conceitual GSAN → OpenGSAN** | ⚠️ **Escopo reduzido em 2026-09-15**: trata de **continuidade conceitual, diferenças e correspondências** — a estratégia operacional de migração pertence a **outro projeto** |
+| 2 | **Especificação dos cenários críticos** | Os ~110 cenários dos mapas são *inventário*, não especificação. **DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Modelo obrigatório em [`testes/estrategia-testes.md`](docs/modernizacao/testes/estrategia-testes.md). 🔵 A ordem de implementação já indicou **quais cenários são gate de qual etapa** |
+| 3 | **Decisão da ADR-0007 — arquitetura de interface** | ⚠️ Escopo do bloqueio **delimitado em 2026-09-15**: bloqueia a **superfície de entrega** da primeira fatia, a entrega de relatório e o canal digital — **não** bloqueia fundação, domínio, persistência, testes nem o motor financeiro |
+| 4 | **Auditoria final e encerramento da Fase 0** | Critério de saída: itens 1–3 concluídos, dúvidas de alta prioridade endereçadas ou explicitamente aceitas como risco |
 
 ## RISCOS
 
@@ -128,21 +134,31 @@ Registradas em [`docs/modernizacao/decisoes/`](docs/modernizacao/decisoes/README
 
 ## DEPENDÊNCIAS BLOQUEADORAS
 
-**Bloqueia o piloto (Fase 6)**: ADR-0007 — arquitetura de interface. Não bloqueia a Fase 0, mas precisa ser decidida antes de o piloto ser especificado, porque muda o desenho interno do módulo e o modelo de autorização.
+⚠️ **Delimitadas em 2026-09-15** ([ordem de implementação §27](docs/modernizacao/modulos/dependencias-e-ordem-implementacao.md)): as cinco decisões que a Visão Conceitual registrou como "bloqueiam a implementação inicial" **não bloqueiam a mesma coisa**.
 
-Pendências **não bloqueadoras**: definição da infraestrutura da VPS (antes do primeiro deploy); obtenção (ou construção sintética) de uma base GSAN de referência para a caracterização (Fases 1–2).
+| Decisão | Bloqueia de fato | **Não** bloqueia | Prazo real |
+| ------- | ---------------- | ---------------- | ---------- |
+| 🔴 **Existe negação na autorização?** (allow-only × deny) | O modelo de avaliação da concessão | Nada além | 🔴 **Único bloqueio de dia 1** — antes da Etapa 0 |
+| **Nome do repositório e governança** | A **partida física** do código (ADR-0003) | Todo o trabalho conceitual | Antes da Etapa 0. ⚠️ Exige **decisão**, não investigação — não tem o mesmo peso dos outros |
+| **ADR-0007 — interface** | Superfície de entrega da primeira fatia; unidade de autorização (rota × caso de uso); entrega de relatório; canal digital | 🔵 Fundação, domínio, persistência, testes, fronteiras, auditoria, **motor de faturamento individual** | Antes da **superfície** da Etapa 1 |
+| **Divergência D-17** (escopo territorial sistemático) | O bloco S2 (escopo territorial) | Etapas 0 e 1 | Antes da Etapa 2 |
+| **Variantes por companhia** | Desenho do ponto de extensão tarifário | Etapas 0–3 | Antes da Etapa 4 |
+
+Pendências **não bloqueadoras**: definição da infraestrutura da VPS (antes do primeiro deploy); obtenção (ou construção sintética) de uma base GSAN de referência para a caracterização (Fases 1–2). ⚠️ **Esclarecimento do fiscal/SPED** exigido antes da Etapa 4 — não antes do início.
 
 ## TESTES DISPONÍVEIS
 
 19 classes JUnit no legado (`test/`), sem cobertura relevante. Baseline funcional automatizada: inexistente (objetivo da Fase 2, sobre ambiente de referência do legado + massa controlada).
 
-## MÓDULOS MIGRADOS
+## MÓDULOS IMPLEMENTADOS
 
 Nenhum (implementação ainda não iniciada — Fase 0).
 
 ## MÓDULOS PENDENTES
 
-Todos — ordem preliminar em [`docs/modernizacao/modulos/README.md`](docs/modernizacao/modulos/README.md) (refinamento é o item 6 do backlog).
+Todos. ⚠️ A ordem **deixou de ser por módulo**: é por **capacidade implementável**, em 9 etapas — resumo em [`docs/modernizacao/modulos/README.md`](docs/modernizacao/modulos/README.md), análise em [`dependencias-e-ordem-implementacao.md`](docs/modernizacao/modulos/dependencias-e-ordem-implementacao.md) (2026-09-15).
+
+**O que se implementa primeiro, quando a Fase 0 terminar**: a **fundação** (projeto modular com fronteira verificada, Flyway `V1`, Testcontainers, identidade/autenticação/concessão por caso de uso, auditoria mínima, convenção monetária). **Primeira funcionalidade real**: autenticar → consultar imóvel/cliente → abrir e tramitar um RA.
 
 ## MIGRATIONS EXECUTADAS
 
