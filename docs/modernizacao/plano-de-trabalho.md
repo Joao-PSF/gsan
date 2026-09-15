@@ -56,30 +56,49 @@ Versões reconfirmadas a cada fase (em 2026-08: Spring Boot 4.1.0 estável; Post
 | 2 — Rede de segurança | Baseline funcional automatizada | Massa congelada; *harness*; captura dos golden masters (preenche o "resultado esperado" das especificações da Fase 0); baseline de performance | Fase 1 | Suíte de caracterização executável | Rodadas repetidas produzem resultados idênticos; cobre os comportamentos priorizados |
 | 3 — Build | Compilação moderna do legado de referência | Ant→Maven mantendo o Java alvo; CI compilando | Fase 1 | Build reproduzível | EAR gerado por Maven equivalente ao gerado por Ant |
 | 4 — Fundação OpenGSAN | Núcleo moderno funcionando | Projeto Maven multi-módulo; **banco próprio UTF-8 versionado por Flyway desde `V1`**; profiles; logging; exception handling; Actuator; esqueleto de segurança | Fases 0–2 | Aplicação Spring Boot com schema próprio | Health checks OK; `V1` aplicada em banco limpo produz o schema esperado |
-| 5 — Segurança | Modelo equivalente **ou superior** | Autenticação com BCrypt/Argon2 (compatibilidade com hash legado apenas no caminho de migração); RBAC completo (grupos, funcionalidades, permissões especiais, abrangência); auditoria; secrets por ambiente; TLS; contas de banco segregadas | Fase 4 | Login + autorização no OpenGSAN | Concessões legítimas preservadas; **divergências do registro aplicadas e testadas**; nenhum controle atual reduzido |
-| 6 — Piloto | Validar arquitetura ponta a ponta | Cadastros auxiliares + consulta + 1 fluxo de atendimento com 1 relatório | Fases 4–5 + **ADR-0007** | Módulo completo na nova stack | Equivalência sob o oráculo 1; divergências do oráculo 2 registradas; fronteiras de módulo verificadas |
-| 7 — Módulos | Construção progressiva | Ordem da §5; por módulo: mapa → especificação → implementação → comparação → segurança → performance | Fase 6 | Módulos entregues incrementalmente | Cada módulo cumpre o ciclo completo antes de o próximo crítico começar |
+| 5 — Segurança | Modelo equivalente **ou superior** | ⚠️ **Não é etapa única** (revisão 2026-09-15): **S1** — identidade, autenticação BCrypt/Argon2, concessão por caso de uso e auditoria mínima — pertence à **Fundação**; **S2** — abrangência territorial — só é possível **depois da estrutura territorial do Cadastro** e depende da aprovação de **D-17**; **S3** — administração completa (grupos, permissões especiais, delegação, fluxo de solicitação, políticas de expiração/bloqueio) — evolui progressivamente. Secrets por ambiente, TLS e contas de banco segregadas ficam em S1 | Fase 4 (S1) · Cadastro territorial (S2) | Login + autorização no OpenGSAN, por blocos | Concessões legítimas preservadas; **divergências do registro aplicadas e testadas**; nenhum controle atual reduzido |
+| 6 — Piloto | Validar arquitetura ponta a ponta | ⚠️ **Redefinido em 2026-09-15**: o piloto é a **primeira fatia vertical** — autenticar → consultar imóvel/cliente → abrir e tramitar um RA —, não "cadastros auxiliares + consulta". Deve provar persistência, autorização com negação, auditoria, regra como dado e fronteira entre dois módulos | Fase 4 + S1 + **ADR-0007** (apenas a superfície de entrega) | Fatia vertical completa na nova stack | Equivalência sob o oráculo 1; divergências do oráculo 2 registradas; fronteiras de módulo verificadas |
+| 7 — Módulos | Construção progressiva | 🔴 Ordem **por capacidade**, definida em [`modulos/dependencias-e-ordem-implementacao.md`](modulos/dependencias-e-ordem-implementacao.md); por capacidade: mapa → especificação → implementação → comparação → segurança → performance | Fase 6 | Capacidades entregues incrementalmente | Cada capacidade cumpre o **gate da sua etapa** antes de a seguinte começar |
 | ~~8 — Playbook de migração~~ | ⚠️ **REMOVIDA do escopo em 2026-09-15** — migrar instalações GSAN é **projeto separado** (ADR-0005). O conhecimento levantado (encoding de origem, contribs pré-extensão, correspondência conceitual) fica registrado na documentação e serve de insumo a esse projeto | — | — | — | — |
 | 9 — Interface | Concluir a decisão da ADR-0007 | Implementar a arquitetura decidida; telas acompanham os módulos | Fase 6 | Telas na stack decidida | Usuários validam as telas críticas |
 | 10 — Observabilidade | Operação visível | Logs estruturados com ID de transação, métricas, alertas para financeiro e batch, auditoria centralizada | Fase 4+ | Monitoramento | Erros de batch/financeiro detectados por alerta |
 | 11 — CI/CD | Pipeline completo | build → testes → análise estática → SCA/SAST → SBOM → *secret scan* → deploy controlado | Fases 3–4 | Pipeline nos repositórios | Nenhum deploy manual; pipeline bloqueia vulnerabilidade crítica e segredo commitado |
 | 12 — Adoção | Companhia operando o OpenGSAN | Instalação nova do OpenGSAN, com validação por usuários reais. ⚠️ A **migração de uma base GSAN existente** não faz parte desta fase — depende do projeto de migração | Fase 7 | Companhia em operação | Critérios acordados com a companhia |
 
-## 5. Ordem dos módulos
+## 5. Ordem de implementação
+
+> ⚠️ **Substituída em 2026-09-15** (18ª execução). A lista anterior — `cadastros auxiliares → consultas → atendimento → OS → micromedição → cobrança → arrecadação → faturamento → batch` — era **hipótese preliminar** e ordenava o financeiro por *risco crescente* em vez de por **dependência**. Documento definitivo, com a matriz de dependências, os ciclos e os gates: [`modulos/dependencias-e-ordem-implementacao.md`](modulos/dependencias-e-ordem-implementacao.md).
+
+Ordem por **capacidade implementável**, não por módulo inteiro:
 
 ```text
-1. cadastros auxiliares   → CRUD simples, valida a stack com risco baixo (parte do piloto)
-2. consultas              → somente leitura; mede performance
-3. atendimento (RA)       → risco moderado, alto valor; completa o piloto
-4. ordens de serviço      → encadeia com atendimento; toca integração de campo
-5. micromedição           → leituras/consumo/média alimentam o faturamento
-6. cobrança               → financeiro com janelas de correção maiores (inclui parcelamento)
-7. arrecadação            → crítico: baixas e retornos bancários
-8. faturamento            → núcleo financeiro de maior risco
-9. batch críticos         → por último, comparados por competência
+ETAPA 0  fundação            → projeto modular com fronteira verificada, Flyway V1,
+                               Testcontainers, S1, auditoria mínima, convenção monetária
+ETAPA 1  fatia vertical      → autenticar + consultar imóvel/cliente + abrir e tramitar RA
+ETAPA 2  núcleo operacional  → território, ligação e situação, OS, contrato "solicita × aplica", S2
+ETAPA 3  medição             → hidrômetro → instalação → leitura → consumo; integração de campo
+ETAPA 4  financeiro individual → tarifa versionada, motor de conta individual, identidade documental
+ETAPA 5  recebimento         → recepção → classificação → aplicação → conciliação
+ETAPA 6  cobrança            → posição de dívida → política → ação → parcelamento
+ETAPA 7  escala              → faturamento em lote, arrecadação mensal, encerramentos
+ETAPA 8  canais e evoluções  → identidade do cliente final, canal digital, PIX, boleto registrado
 ```
 
-Transversais: `seguranca` na Fase 5; `relatorios` e `integracoes` acompanham o módulo dono; `fiscal`/SPED junto de faturamento/financeiro. Justificativa: risco crescente, dependências respeitadas (micromedição antes de faturamento), financeiro por último com a plataforma madura.
+🔴 **A cadeia financeira tem direção única**, e é a principal correção em relação à ordem anterior:
+
+```text
+documento financeiro emitido        (Faturamento cria a obrigação)
+        ↓
+recebimentos aplicados              (Arrecadação)
+        ↓
+posição em aberto, derivada         (o que depende dos recebimentos)
+        ↓
+Cobrança atua sobre essa posição
+```
+
+⚠️ **A obrigação financeira nasce com o documento, não com a cobrança.** O que depende dos recebimentos é a **posição em aberto**, não a existência da dívida.
+
+Transversais: `seguranca` em **três blocos** (S1 na fundação, S2 após o Cadastro territorial, S3 progressivo); `relatorios` acompanham o módulo dono, com o motor no primeiro caso real; `integracoes` como convenção desde a fundação, camada implementada no primeiro adapter real, adapters com o módulo dono; `batch` ao final, porque a dependência é **inversa** — orquestrador exige operação individual comprovada. ⚠️ `fiscal`/SPED **saem do pacote do faturamento**: permanecem `EXIGE APROFUNDAMENTO` e não bloqueiam o início. **Observabilidade (Fase 10) e CI/CD (Fase 11) deixam de ser fases finais** e passam a atividades transversais contínuas.
 
 ## 6. Estratégia PostgreSQL
 
