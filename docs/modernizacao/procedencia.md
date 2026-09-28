@@ -71,6 +71,10 @@ Registro das afirmações que foram publicadas erradas e depois corrigidas, para
 | 2026-09-14 | Acesso ao artefato de relatório como "dúvida prioritária" | `relatorios.md`, `seguranca.md` | **Achado confirmado** — cadeia completa de filtros verificada |
 | 2026-09-14 | `api/GsanApi.java` (raiz) citado como evidência | `integracoes-identificadas.md` | Cópia obsoleta; a viva é `src/gcom/api/GsanApi.java` |
 | 2026-09-14 | Codificação do banco "LATIN1 confirmado" | `banco/estrutura-atual.md` | Rebaixado a **indício forte** (🔵), não fato |
+| 2026-09-28 | "~110 cenários" inventariados nos mapas funcionais | `MODERNIZACAO_GSAN.md`, `mapa-de-dominio.md`, `estrategia-testes.md`, `dependencias-e-ordem-implementacao.md` (2×), `gsan-opengsan.md` | **166**, contados por script sobre as seções de cenários dos nove mapas que as têm. A cifra **nunca tinha sido contada** — viola a regra 2 deste documento |
+| 2026-09-28 | *"Enquanto o resultado esperado estiver 🟡, o cenário não está especificado"* | `testes/estrategia-testes.md` | Criava **dependência circular** Fase 0 ↔ Fase 2. Especificação (Fase 0) e baseline (Fase 2) passaram a ser **campos distintos** |
+| 2026-09-28 | Resumos `sp*_gerar_res_*` como baseline financeira prioritária | `testes/estrategia-testes.md` | São **customização da instalação de referência** (`banco/estrutura-atual.md`); substituídos pelos relatórios do código público `RelatorioResumoFaturamento` e `RelatorioResumoArrecadacao` |
+| 2026-09-28 | *"Conceito em C5 não tem cenário especificável"* | `compatibilidade/gsan-opengsan.md` §4.3, §5.1, §22, §23, §26 | **Forte demais**: só 3 dos 7 C5 bloqueiam cenário — os de comportamento. Os de representação são especificáveis quando o oráculo já está fixado por outra regra. A §26 ainda dizia "nove" depois da correção para sete |
 
 ---
 

@@ -287,7 +287,7 @@ Divisão derivada — **três**, não duas:
 
 ### 9.3 Testes
 
-Sem fase própria. O que a ordem usa dos ~110 cenários inventariados é **risco**, para posicionar gates (§25). ⚠️ A especificação formal dos cenários é **atividade pendente da Fase 0** e não é feita aqui.
+Sem fase própria. O que a ordem usa dos **166** cenários inventariados (⚠️ "~110" nesta redação original — cifra nunca contada, corrigida em 2026-09-28) é **risco**, para posicionar gates (§25). ⚠️ A especificação formal dos cenários é **atividade pendente da Fase 0** e não é feita aqui.
 
 ---
 
@@ -1060,7 +1060,7 @@ Capacidade pronta quando:
 ### 31.3 Pendências da Fase 0, na ordem
 
 1. **Compatibilidade conceitual GSAN → OpenGSAN** — próxima atividade.
-2. **Especificação dos cenários críticos** — os ~110 cenários inventariados viram especificação com resultado esperado.
+2. ~~**Especificação dos cenários críticos**~~ ✅ **concluída em 2026-09-28** — os **166** itens inventariados resultaram em **71 especificações** ([`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md)), com os gates por etapa desta ordem.
 3. **Decisão da ADR-0007** — agora com o escopo do bloqueio delimitado (§27.1).
 4. **Auditoria final e encerramento da Fase 0.**
 

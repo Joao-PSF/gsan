@@ -3,8 +3,8 @@
 Situação atual: 19 classes de teste para ~2,39M linhas — na prática, **não há rede de segurança**. A Fase 2 cria a baseline; a regra central de toda a modernização é:
 
 ```text
-MESMA ENTRADA → GSAN ANTIGO → RESULTADO A
-MESMA ENTRADA → GSAN NOVO   → RESULTADO B
+MESMA ENTRADA → GSAN (referência) → RESULTADO A
+MESMA ENTRADA → OpenGSAN          → RESULTADO B
 REGRA: RESULTADO A = RESULTADO B
 ```
 
@@ -27,33 +27,64 @@ Toda divergência intencional é registrada **antes** de a implementação come�
 
 > Revisão 2026-08-13: **não há produção neste projeto**. "GSAN antigo" = instância de referência do legado levantada a partir do repositório (Fase 1) com massa de dados controlada. Como os schemas GSAN e OpenGSAN podem divergir (ADR-0006), a comparação de resultados é **semântica, via mapeamento GSAN→OpenGSAN**, não byte a byte de tabelas.
 
-## Especificação de cenário — entregável do fechamento da Fase 0
+## Especificação de cenário × baseline — duas entregas, duas fases
 
-⚠️ **Correção de 2026-09-14.** Os ~110 cenários levantados nos mapas funcionais são **inventário**, não especificação. A sequência de trabalho do projeto é:
+⚠️ **Correção de 2026-09-28 — dependência circular eliminada.** A versão anterior desta seção exigia, ao mesmo tempo, que (a) os cenários críticos estivessem **especificados na Fase 0**; (b) o campo `Resultado esperado` separasse cenário de especificação; (c) enquanto esse campo estivesse 🟡 "a capturar", o cenário **não** estivesse especificado; e (d) os resultados reais fossem **capturados na Fase 2**. Juntas, as quatro regras formavam um ciclo sem saída:
 
 ```text
-ANALISAR → COMPREENDER → DOCUMENTAR → IDENTIFICAR FRONTEIRAS
-        → IDENTIFICAR COMPATIBILIDADE → LEVANTAR HIPÓTESES → DEFINIR TESTES → PARAR
+Fase 0 exige resultado capturado  →  a captura é da Fase 2  →  a Fase 2 depende da Fase 0
 ```
 
-**DEFINIR TESTES está dentro da Fase 0**, antes do PARAR. Especificar o que observar não é programar — programar é construir massa, *harness* e automação, que são da Fase 2. A ausência dessas especificações é lacuna da Fase 0, não escopo adiado.
+🔵 **Causa**: a regra (c) confundia duas coisas diferentes — *saber o que observar e como decidir* com *saber o valor que será observado*. A primeira é trabalho de análise; a segunda só existe depois de executar o legado.
+
+### A distinção que resolve
+
+| | **Especificação do cenário** | **Baseline / golden master** |
+| - | ---------------------------- | ---------------------------- |
+| **Fase** | **0** | **2** |
+| **Responde** | O que executar, em que estado, o que observar, qual semântica esperar, qual diferença é permitida, qual oráculo decide | Qual valor, registro, arquivo, total ou saída o GSAN de referência **efetivamente produz** |
+| **Fonte** | Mapas funcionais, compatibilidade, divergências, código lido | Execução do GSAN de referência sobre massa congelada |
+| **Pode conter** | Regras e invariantes **comprovados** | Valores concretos **observados** |
+| 🔴 **Não pode conter** | Valor inventado | Valor deduzido de leitura de código |
+
+### Quando um cenário está especificado
+
+Um cenário está **ESPECIFICADO NA FASE 0** quando estão fechados: **o que executar** · **em qual estado** · **o que observar** · **qual comportamento caracteriza sucesso** · **qual oráculo decide** · **quais diferenças são permitidas** — mesmo que os valores concretos ainda devam ser capturados na Fase 2.
+
+🔴 **Regra absoluta**: *não observado ≠ resultado esperado conhecido*. Quando a documentação comprova só que uma operação existe, não se inventa valor. Quando comprova uma regra, registra-se a regra. Quando o valor real é necessário, a baseline fica `A CAPTURAR NA FASE 2`.
 
 ### Modelo obrigatório de especificação
 
 ```markdown
-## CEN-<módulo>-<n> — <título>
-- **Objetivo**: que regra este cenário caracteriza
-- **Pré-condições**: estado exigido da massa (entidades, situações, referência)
-- **Entrada**: dados e operação exatos
-- **Operação**: o que é executado (método/endpoint/rotina batch)
-- **Campos observados**: lista fechada do que é comparado (tabela.coluna, valor, arquivo)
-- **Resultado esperado**: 🟢 comprovado no legado | 🟡 a capturar na Fase 2
-- **Normalizações**: o que se ignora na comparação (timestamps, ids sequenciais, ordem)
-- **Divergência permitida**: referência ao registro de divergências, se houver
-- **Oráculo**: 1 (funcional/financeiro) ou 2 (técnico/segurança)
+## CEN-<ÁREA>-<NNN> — <título>
+
+- **Criticidade**: P0 / P1 / P2
+- **Etapa OpenGSAN**: etapa da ordem de implementação
+- **Conceitos relacionados**: conceitos e classe de compatibilidade (C1…C5)
+- **Objetivo**: regra caracterizada
+- **Pré-condições**: estado exigido da massa (perfis, situações, referência)
+- **Entrada**: dados e variações exercitadas
+- **Operação GSAN**: o que é executado no legado
+- **Operação conceitual OpenGSAN**: a operação equivalente, sem localizador físico
+- **Observações semânticas**: lista FECHADA do que é comparado
+- **Localizadores GSAN**: tabela.coluna / saída / arquivo, quando conhecidos
+- **Resultado semântico esperado**: regra ou invariante comprovado — testável
+- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 | 🟢 JÁ COMPROVADA
+- **Normalizações**: o que se ignora — nunca dinheiro, referência, situação,
+                     identidade funcional, ordem com semântica ou arredondamento
+- **Divergência permitida**: D-xx | nenhuma
+- **Oráculo**: 1 | 2 | 1+2 (por observável) | PENDENTE DE CARACTERIZAÇÃO
+- **Gate que este cenário protege**: transição de etapa
+- **Evidência**: documentos e código que sustentam a especificação
 ```
 
-⚠️ **`Resultado esperado` é o campo que separa cenário de especificação.** Enquanto ele estiver 🟡, o cenário está identificado mas não especificado. Marcá-lo 🟢 sem captura no legado seria inventar o resultado — o erro que a regra mestra do projeto existe para impedir.
+⚠️ **`JÁ COMPROVADA` só vale quando o próprio observável é um artefato estático** — por exemplo, um segredo presente em arquivo versionado: ler o arquivo *é* observar. Para comportamento em execução, leitura de código **nunca** conta como baseline capturada.
+
+🔴 **Localizador físico só do lado do GSAN.** O OpenGSAN ainda não tem modelo físico; suas observações são semânticas.
+
+### Onde estão os cenários
+
+[`cenarios-criticos.md`](cenarios-criticos.md) — índice, matriz mestre de cobertura, gates por etapa, requisitos de massa, cenários bloqueados e rastreabilidade do inventário. As especificações estão em [`cenarios/`](cenarios/), por área.
 
 ### Comparação de relatórios — não é byte a byte
 
@@ -86,14 +117,16 @@ A comparação de relatórios é **semântica**, em ordem de preferência:
 
 | Ordem | Comportamento | Motivo |
 | ----- | ------------- | ------ |
-| 1 | Autenticação + autorização (matriz de acesso) | Porta de entrada de tudo; pré-requisito da Fase 5 |
+| 1 | Autenticação + autorização (matriz de acesso) | Porta de entrada de tudo; pré-requisito da **fundação de segurança (S1)** — ⚠️ a antiga "Fase 5 — Segurança" foi desdobrada em S1/S2/S3 em 2026-09-15 |
 | 2 | Cálculo de conta individual (faturar um imóvel) | Núcleo financeiro; base para faturamento em lote |
 | 3 | Baixa de pagamento (retorno bancário) | Núcleo da arrecadação |
 | 4 | Parcelamento (criar/desfazer) | Regras financeiras complexas |
 | 5 | Consumo/média de micromedição | Alimenta o faturamento |
 | 6 | Abertura/encerramento de OS | Alto volume operacional |
-| 7 | Relatórios financeiros críticos (resumos `sp*_gerar_res_*`) | Conferência gerencial/regulatória |
+| 7 | Resumos financeiros de conferência — `RelatorioResumoFaturamento` e `RelatorioResumoArrecadacao` | Conferência gerencial/regulatória. ⚠️ **Corrigido em 2026-09-28**: a versão anterior citava os resumos `sp*_gerar_res_*`, que o inventário do banco classifica como **customizações permanentes da instalação de referência** ([`banco/estrutura-atual.md`](../banco/estrutura-atual.md)) — não GSAN público. Baseline de caracterização se faz sobre o núcleo |
 
-## Performance (baseline antes de migrar qualquer módulo)
+🔵 A ordem acima é da **captura** na Fase 2. A relação de cada cenário com as etapas de implementação e seus gates está em [`cenarios-criticos.md`](cenarios-criticos.md).
+
+## Performance (baseline antes de substituir qualquer comportamento)
 
 Registrar: tempo de inicialização, autenticação, telas principais, consultas críticas, faturamento/arrecadação de um grupo, geração de relatórios, batch, CPU/memória/conexões, queries lentas (`pg_stat_statements` em homolog). O novo sistema não pode degradar significativamente sem justificativa.

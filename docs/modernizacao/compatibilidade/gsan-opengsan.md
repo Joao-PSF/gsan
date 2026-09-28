@@ -94,9 +94,17 @@ ainda que a representação técnica seja diferente.
 
 ⚠️ C4-i é raro e merece marcação própria: tratá-lo como C2 afirmaria uma semântica preservada que **nunca existiu**.
 
-### 4.3 C5 é o que a próxima atividade não pode especificar
+### 4.3 C5 bloqueia cenário **só quando a decisão muda o que se espera**
 
-🔵 Consequência direta e acionável: **conceito em C5 não tem cenário de teste especificável** — não porque falte esforço, mas porque falta decisão. A lista de C5 (§23) é, literalmente, a lista do que bloqueia a especificação de cenários.
+⚠️ **Refinado em 2026-09-28**, ao especificar os cenários críticos. A versão anterior afirmava que *todo* conceito em C5 "não tem cenário de teste especificável". Ao especificar, isso se mostrou **forte demais** — e bloquearia caracterizações financeiras sem motivo.
+
+| O C5 é… | Consequência | Casos |
+| ------- | ------------ | ----- |
+| 🔴 **De comportamento** — o que o OpenGSAN deve fazer depende da decisão | **Bloqueia** o cenário | Semântica de "Fatura" · mecanismo de negação · aplicação da abrangência (D-17) |
+| 🟢 **De representação** — parametrizar ou não, cardinalidade física, política de guarda — e o oráculo já está fixado por outra regra explícita | **Não bloqueia**: o cenário é especificável, e muitas vezes **é ele que produz a evidência** para decidir | Fórmulas de acréscimo (resultado financeiro → oráculo 1) · cardinalidade física RA ↔ OS · retenção de artefatos |
+| ⚠️ **De comportamento ainda desconhecido no próprio legado** | Especificável; **oráculo pendente de caracterização** | Atomicidade dentro da unidade |
+
+Detalhe e cenários correspondentes em [`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md) §12.
 
 ---
 
@@ -145,7 +153,7 @@ ainda que a representação técnica seja diferente.
 | **C3 — Divergência deliberada** | 17 | ⚠️ **Todas com `D-xx` registrada** — 16 divergências distintas, porque **D-03 aparece em duas áreas** (Segurança e Relatórios). Nenhuma inventada aqui |
 | **C4 — Sem equivalente** | 5 | Mecanismos que não vão adiante |
 | **C4-i — Sem antecedente no GSAN** | 1 | A camada de integração |
-| **C5 — Pendente** | 7 | 🔴 O que bloqueia a especificação de cenários |
+| **C5 — Pendente** | 7 | 🔴 3 bloqueiam cenário; 4 são especificáveis — ver §4.3 (refinado em 2026-09-28) |
 | **Total** | **145** | — |
 
 🔵 **A leitura que responde à pergunta central**: **115 dos 145 conceitos (C1 + C2) mantêm a semântica** — 90 deles sem qualquer mudança. As 16 divergências distintas concentram-se em **segurança (11)**, fronteira e mecanismo (4) e **um defeito funcional** (D-13) — nenhuma em regra de negócio. 🔴 **Nenhuma divergência deliberada atinge cálculo financeiro**, e isso é decisão, não acaso (§9.4).
@@ -724,6 +732,13 @@ COMPATIBILIDADE PENDENTE DE DECISÃO
 | **CAND-01** | **Valores denormalizados no Imóvel** (total de economias, categoria principal) | 🔵 O OpenGSAN os calcula por derivação. A validação prevista é *"total derivado = total legado, imóvel a imóvel"* | ⚠️ …que existem valores **defasados** no legado, o derivado **divergirá**. Isso precisa virar divergência **registrada e aprovada** — não pode ser aceito em silêncio nem "corrigido" sem decisão |
 | **CAND-02** | **Atomicidade dentro da unidade de processamento** | 🟢 O framework garante estado **por unidade**, **não** atomicidade do trabalho dentro dela — ⚠️ **não comprovado** | ⚠️ …que efeitos parciais ocorrem no legado, garanti-los no OpenGSAN é **mudança de comportamento observável** e exige divergência registrada |
 
+**Acrescentados em 2026-09-28**, ao especificar os cenários críticos:
+
+| # | Conceito | Situação | Encaminhamento |
+| - | -------- | -------- | -------------- |
+| **CAND-03** | **Contador de tentativas de login** | 🟢 Vive na **sessão HTTP** (`numeroTentativas`), logo tentativas distribuídas em sessões diferentes não somam. O mapa de segurança o classifica `REESTRUTURAR` e a visão conceitual (§26, linha 25) o descreve como "persistente" **atribuindo-o a D-01** — ⚠️ mas **o texto de D-01 cobre apenas o hash** | 🔴 **Lacuna de registro**, não só de caracterização: ampliar D-01 ou criar divergência própria. Até lá, a variação entre sessões fica **pendente de decisão** — CEN-SEG-002 V3 |
+| **CAND-04** | **Exceção de autorização por substring** `pesquisar`/`relatorio` | 🟢 Qualquer Action cujo nome contenha os termos **sai do bloco de autorização funcional** do filtro. Para `relatorio` no download, o acesso indevido já é **achado confirmado** (D-03). Para `pesquisar`, ❔ **depende de cada Action** | Condicional à caracterização — CEN-SEG-005. Se uma Action excepcionada retornar dado sem concessão, protegê-la exige divergência aprovada |
+
 🔵 **Por que registrar candidatos importa**: sem isso, a primeira comparação que acusar diferença terá duas leituras possíveis — defeito ou melhoria — e a escolha será feita sob pressão de prazo, não por decisão.
 
 ---
@@ -772,7 +787,7 @@ canal digital  ──consome──►  Faturamento · Cobrança · Atendimento �
 | **C2** | **1** | Igualdade de resultado, por **mapeamento semântico** — nunca comparação estrutural | **Defeito** |
 | **C3** | **2** | 🔴 **Diferença exigida**, conforme o `D-xx` | ⚠️ **Igualdade é defeito** |
 | **C4** | — | Nada a comparar | ⚠️ Afirmar equivalência é **erro de categoria** |
-| **C5** | — | 🔴 Cenário **não especificável** ainda | — |
+| **C5** | — ou pendente | 🔴 **Bloqueado** quando a decisão muda o comportamento esperado; **especificável** quando a pendência é de representação e o oráculo já está fixado (§4.3) | — |
 
 ### 22.1 Oráculo 1 — onde a igualdade é exigida
 
@@ -810,7 +825,7 @@ Segurança corrigida (D-01…D-11, D-16) · fronteiras corrigidas (D-14) · defe
 
 🔵 **Leitura para a próxima atividade**, com a distinção que a contagem obriga a fazer:
 
-- **Sete são conceitos `C5`** (1, 2, 3, 6, 7, 8, 9) — ⚠️ o conceito inteiro está indeciso, e **nenhum cenário seu pode ser especificado** agora.
+- **Sete são conceitos `C5`** (1, 2, 3, 6, 7, 8, 9). ⚠️ **Refinado em 2026-09-28**: só **três** (1, 2, 3) bloqueiam cenário — nelas a decisão muda o comportamento esperado. Nas outras quatro a pendência é de representação ou de caracterização, e o cenário é especificável (§4.3).
 - **Duas (4 e 5) não são `C5`**: os conceitos que elas afetam — Economia e variação por companhia — já estão **decididos como `C2`**. O que falta é **granularidade** (a economia é individualizável?) e **inventário** (quais são as variantes reais). 🔵 Seus cenários **podem** ser especificados no nível já decidido; o que não se pode é especificar o nível mais fino.
 
 ---
@@ -846,12 +861,10 @@ Em **três lugares, todos registrados** — 16 divergências, nenhuma em regra d
 2. **Fronteira e mecanismo** — **4** (D-12, D-14, D-15, D-16): escrita cruzada entre módulos, escrita no banco do parceiro, constante mágica em caminho financeiro, credencial de banco trivial.
 3. **Um defeito funcional** — **D-13**, o SMS que envia sempre a mensagem errada. O legado está errado; isso não é regra de negócio a preservar.
 
-⚠️ **E em sete conceitos ainda não escolhemos**, mais duas pendências de refinamento (§23) — registrados como pendência, não disfarçados de decisão. Somam-se a eles **dois candidatos a divergência** (§20.3), que dependem da caracterização para virar decisão.
+⚠️ **E em sete conceitos ainda não escolhemos**, mais duas pendências de refinamento (§23) — registrados como pendência, não disfarçados de decisão. Somam-se a eles **quatro candidatos a divergência** (§20.3 — dois acrescentados em 2026-09-28), que dependem de caracterização ou de ajuste do registro para virar decisão.
 
 ---
 
 ## 26. Próxima atividade
 
-**Especificação dos Cenários Críticos** — transformar o inventário de ~110 cenários em casos documentados, com resultado esperado, conforme o modelo obrigatório de [`testes/estrategia-testes.md`](../testes/estrategia-testes.md).
-
-🔵 **Este documento é o insumo direto**: cada cenário herda o **oráculo** da classe de compatibilidade do conceito que exercita (§22) — e os nove conceitos **C5** são os que ainda **não podem** ser especificados. ⚠️ **Não executada aqui.**
+✅ **Executada em 2026-09-28** — [`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md): o inventário tinha **166** itens (não "~110", como aqui constava sem contagem) e resultou em **71** especificações. Cada cenário herdou o **oráculo** da classe de compatibilidade do conceito que exercita (§22). ⚠️ A redação anterior desta seção dizia "os **nove** conceitos C5" — resíduo da correção para sete feita na mesma execução, e ambas as formas superestimavam o bloqueio (§4.3).

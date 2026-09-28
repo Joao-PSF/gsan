@@ -810,7 +810,7 @@ Concentra: identidade + dados de cálculo + **fotografia do contexto** + resulta
 
 ⚠️ **Dois pontos adicionais que não cabem na lista mas não podem ser esquecidos**: a **identidade perdida do pagamento no arquivamento** (única anomalia do padrão de identidade do sistema) e a **memória financeira do parcelamento** (sem ela, desfazer deixa de ser exato).
 
-🔵 Os cenários de caracterização já identificados que cobrem estes pontos estão nos mapas de origem — ~110 no total, **não reproduzidos aqui**. A especificação formal permanece atividade posterior.
+🔵 Os cenários de caracterização já identificados que cobrem estes pontos estão nos mapas de origem — **166** no total (⚠️ contagem por script em 2026-09-28; a cifra "~110" que constava aqui nunca tinha sido contada), **não reproduzidos aqui**. A especificação formal permanece atividade posterior.
 
 ---
 
