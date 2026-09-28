@@ -185,7 +185,7 @@
 ## CEN-SEG-007 — Abrangência territorial onde o legado a verifica
 
 - **Criticidade**: P0
-- **Etapa OpenGSAN**: 2 — Núcleo operacional (S2)
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução (S2)
 - **Conceitos relacionados**: escopo territorial — conceito (C1)
 - **Objetivo**: caracterizar a restrição por território **nas superfícies em que o GSAN chama a verificação** — a garantia que o OpenGSAN não pode perder
 - **Pré-condições**: território com duas gerências regionais, unidades de negócio, elos/polos e localidades (L1, L2); USR-08 com abrangência restrita, **uma variação por nível**; objetos (imóvel, RA) em L1 e em L2; lista de superfícies que **comprovadamente** chamam `verificarAcessoAbrangencia`
@@ -209,7 +209,7 @@
 ## CEN-SEG-008 — Permissão especial nomeada
 
 - **Criticidade**: P1
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: permissões especiais (C1)
 - **Objetivo**: caracterizar exceções nomeadas **dentro** de uma funcionalidade concedida
 - **Pré-condições**: USR-09 com a funcionalidade **e** a permissão especial; USR-01 com a funcionalidade e **sem** a permissão
@@ -282,12 +282,12 @@
 - **Entrada**: varredura dos artefatos versionados
 - **Operação GSAN**: não se executa o sistema — ⚠️ **o observável é o próprio artefato**
 - **Operação conceitual OpenGSAN**: verificação automatizada no pipeline (*secret scan*) e revisão de configuração
-- **Observações semânticas**: presença de chave de API em código-fonte · presença de chave em properties versionado · presença de credencial de banco com senha igual ao login
-- **Localizadores GSAN**: `ServicoSMS.java:17`; `src/gcom/properties/sms.properties`; `gsan-migracoes/.../20160118183208_create_roles.sql`
-- **Resultado semântico esperado**: GSAN — credenciais **presentes** nos três artefatos. OpenGSAN — **nenhuma** credencial em artefato versionado; o pipeline **reprova** um commit que a introduza
+- **Observações semânticas**: presença de chave de API em código-fonte · presença de chave em properties versionado · presença de credencial de banco com senha igual ao login · 🆕 presença de usuário e senha em strings de conexão `dblink` dentro de funções armazenadas de dumps versionados
+- **Localizadores GSAN**: `ServicoSMS.java:17`; `src/gcom/properties/sms.properties`; `gsan-migracoes/.../20160118183208_create_roles.sql`; 🆕 `gsan-migracoes/comercial/scripts/20160118183224_dump.sql` (5 strings, entre elas a da função `operacao.geraindicador`), `gsan-migracoes/comercial/dump.sql` (as mesmas 5), `gsan-migracoes/gerencial/scripts/20160118183224_dump.sql` (81)
+- **Resultado semântico esperado**: GSAN — credenciais **presentes** em todos os artefatos listados. OpenGSAN — **nenhuma** credencial em artefato versionado; o pipeline **reprova** um commit que a introduza
 - **Baseline concreta do legado**: 🟢 **JÁ COMPROVADA** — ⚠️ justificativa: aqui o observável é o artefato versionado, e lê-lo **é** observá-lo; não há comportamento em execução a inferir. 🔴 O **valor** do segredo **nunca é transcrito** — está considerado comprometido e marcado para rotação
 - **Normalizações**: não aplicável
 - **Divergência permitida**: **D-08**, **D-16**
 - **Oráculo**: **2**
 - **Gate que este cenário protege**: 0 → 1 — *CI reprova segredo commitado*
-- **Evidência**: achados 2 e 11 de [`riscos-identificados.md`](../../seguranca/riscos-identificados.md); [D-08, D-16](../../compatibilidade/divergencias-aprovadas.md)
+- **Evidência**: achados 2, 11 e 20 de [`riscos-identificados.md`](../../seguranca/riscos-identificados.md); [D-08, D-16](../../compatibilidade/divergencias-aprovadas.md); achado 20 localizado em [`modulos/operacional.md §6.3`](../../modulos/operacional.md)

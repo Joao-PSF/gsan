@@ -535,6 +535,7 @@ Separação pedida, resolvida por dependência:
 | PSP / PIX · boleto registrado | Arrecadação + Faturamento maduros | 8 |
 | Notificação (e-mail/SMS) | Primeiro evento real a notificar | 6 |
 | GIS · telemetria · analytics | Posterior | 8+ |
+| 🆕 Exportação contábil ao ERP | Contabilização | 7 |
 
 🔴 **Por que a camada nasce na Etapa 3 e não depois**: o primeiro adapter é a **coleta de leitura**, cujo dado **alimenta cálculo financeiro**. A divergência **D-05** exige autenticação de dispositivo **antes de qualquer escrita** — no legado a leitura é gravada sem identificar a origem. Um dado financeiro de origem não identificada é problema de integridade, não de conveniência.
 
@@ -616,7 +617,7 @@ PIX é a capacidade mais urgente do catálogo e a menos pronta. Mas depende de d
 | ---- | ------- | ----- |
 | **Fiscal / SPED** | 🔴 **Fora da ordem** | Permanecem `EXIGE APROFUNDAMENTO`. ⚠️ **Não podem bloquear o início** sem evidência de que são necessários ao primeiro núcleo. Devem ser esclarecidos **antes da Etapa 4** — se o documento fiscal decorrer da conta emitida (hipótese 🟡), o evento que o origina nasce lá |
 | **Analytics** | Etapa 8+ | 🔴 **Não bloqueia o núcleo**, mas impõe **uma restrição desde a Etapa 0**: o desenho não pode tornar impossível a análise futura. Concretamente — evento de negócio legível, competência explícita, e nenhuma destruição de identidade no arquivamento (o legado destrói a do pagamento) |
-| **GIS** | Etapa 8+ | 🔴 **Não é dependência do core comercial.** 🟢 O que existe no legado é só integração; não há domínio GIS a preservar. Coordenada no RA é atributo, não capacidade |
+| **GIS** | Etapa 8+ | 🔴 **Não é dependência do core comercial.** 🟢 O que existe no legado é só integração; não há domínio GIS a preservar. Coordenada no RA é atributo, não capacidade. 🆕 Redes/GIS e Gestão de Ativos seguem a **trilha estrutural** (§24.2) — [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md) |
 
 ---
 
@@ -742,9 +743,11 @@ ETAPA 1 — PRIMEIRA FATIA VERTICAL
 ├── Atendimento: RA com especificação paramétrica, tramitação, estado
 └── plataforma: autorização aplicada, auditoria na escrita, teste de negação
         ↓
-ETAPA 2 — NÚCLEO OPERACIONAL
+ETAPA 2 — NÚCLEO DE ATENDIMENTO E EXECUÇÃO
 ├── Cadastro: estrutura territorial · ligação e situação (dono correto) · economias · categorias
 ├── Atendimento: OS, prazos, espera/reiteração, encerramento
+├── 🆕 Gestão Operacional mínima: distrito · bacia · divisão de esgoto com unidade responsável
+│      + correspondência com o território comercial + calendário operacional consultável
 ├── 🔴 CONTRATO "solicita × aplica" — primeiro efeito real (situação da ligação)
 ├── S2 — escopo territorial por construção (requer D-17)
 └── Relatórios: motor comum + controle de acesso ao artefato
@@ -761,7 +764,8 @@ ETAPA 4 — FINANCEIRO INDIVIDUAL
 ├── 🔴 MOTOR DE CONTA INDIVIDUAL
 ├── Conta + contexto congelado + identidade estável do documento
 ├── débito · crédito · guia · retificação (via operação da Micromedição) · cancelamento
-└── efeitos financeiros da OS
+├── efeitos financeiros da OS
+└── 🆕 qualidade da água projetada no documento emitido (dona: Gestão Operacional)
         ↓
 ETAPA 5 — RECEBIMENTO
 ├── recepção (movimento, registro bruto, conferência)
@@ -780,6 +784,8 @@ ETAPA 6 — COBRANÇA
 ETAPA 7 — ESCALA
 ├── faturamento em lote (unidade = rota do cronograma)
 ├── arrecadação mensal · encerramento contábil · encerramento do faturamento
+├── 🆕 Contabilização subsidiária: lançamentos por competência × localidade × origem,
+│      devedores duvidosos, regeração, exportação ao ERP por adaptador
 ├── três níveis (processo/etapa/unidade), retomada por unidade, reprocessamento por etapa
 └── relatórios financeiros de conferência
         ↓
@@ -796,13 +802,27 @@ ETAPA 8 — CANAIS E EVOLUÇÕES
 | ----- | ------------------------ | --------------------- | -------- |
 | **0** | Aplicação sobe, migra banco limpo, autentica, audita, testes rodam | Ator, identidade, concessão, auditoria | Todo o resto |
 | **1** | Consultar imóvel e abrir RA, com autorização e auditoria | Imóvel, cliente, RA, especificação | Etapa 2 |
-| **2** | Ciclo operacional completo, com efeito aplicado pelo dono e escopo territorial | Ligação, situação, OS, território, escopo | Etapas 3 e 4 |
+| **2** | Ciclo de atendimento e execução completo, com efeito aplicado pelo dono e escopo territorial | Ligação, situação, OS, território, escopo, estrutura operacional mínima | Etapas 3 e 4; trilha estrutural |
 | **3** | Medir: hidrômetro instalado, leitura coletada, consumo determinado | Instalação, leitura, consumo com origem | Etapa 4 |
 | **4** | 🔴 **Gerar uma conta correta ao centavo** | Tarifa, Conta, snapshot, identidade do documento, débito/crédito | Etapas 5 e 7 |
 | **5** | Receber, classificar e baixar pagamento; posição de dívida correta | Recebimento, situação do pagamento, conciliação, posição de dívida | Etapas 6 e 7 |
 | **6** | Cobrar, negociar e parcelar | Política, ação, documento de cobrança, parcelamento | Etapa 8 |
-| **7** | Faturar e arrecadar **em volume**, com retomada | Execução em três níveis, competência encerrada | Operação real |
+| **7** | Faturar, arrecadar e **contabilizar** em volume, com retomada | Execução em três níveis, competência encerrada, lançamento contábil | Operação real |
 | **8** | Cliente se atende sozinho e paga por meio moderno | Identidade do cliente, canal, PSP | Evoluções |
+
+
+### 24.2 🆕 Trilha estrutural — Gestão de Ativos, Redes/GIS e Engenharia
+
+Revisão controlada de escopo (2026-09-28) · [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md). ⚠️ **Não é uma décima etapa e não move a primeira fatia vertical.**
+
+| Capacidade | Pode começar depois de | Por quê | Não bloqueia |
+| ---------- | ---------------------- | ------- | ------------ |
+| **Gestão de Ativos** | **Etapa 2** | A manutenção executa-se por **OS** (Atendimento e Execução) e a localização funcional pertence a uma unidade da **Gestão Operacional mínima** — ambas nascem na Etapa 2 | Nenhum gate do núcleo comercial |
+| **Redes/GIS** (Giswater opcional) | Identidade corporativa do ativo | O vínculo é **pela identidade** emitida por Ativos; sem ela, integrar seria "copiar e sincronizar" | Nenhum gate do núcleo comercial |
+| **Engenharia/Simulação** (EPANET/SWMM via Giswater) | Redes/GIS + consumo da Micromedição (Etapa 3) | A demanda dos nós vem do consumo — precedente GeoSan | Nenhum gate |
+| Telemetria · perdas · energia · laboratório | Posterior | Fora do escopo desta revisão | — |
+
+🔵 A trilha corre **em paralelo ou depois** das Etapas 3–7, conforme prioridade; o que a torna possível já está na Etapa 2. **Ativos e Redes/GIS não têm oráculo GSAN**: sua correção é provada por especificação própria.
 
 ---
 
@@ -866,6 +886,7 @@ ETAPA 8 — CANAIS E EVOLUÇÕES
 - Retomada por unidade comprovada: unidade concluída **não** reexecuta.
 - Reprocessamento por etapa comprovado.
 - Encerramento de competência confere com os resumos financeiros.
+- 🆕 Lançamentos contábeis da competência conferem com os resumos de faturamento e arrecadação; regerar não duplica (CEN-FIN-001, CEN-FIN-003).
 
 ### Gate de golden master — forma geral
 
@@ -957,12 +978,12 @@ As sete "decidíveis ao implementar o módulo" da visão conceitual, posicionada
 ```text
 ETAPA 0   Fundação                      ── sem dependência de domínio
 ETAPA 1   Primeira fatia vertical       ── auth + consulta + RA
-ETAPA 2   Núcleo operacional            ── ligação, OS, contrato de efeito, escopo territorial
+ETAPA 2   Atendimento e execução        ── ligação, OS, contrato de efeito, escopo territorial
 ETAPA 3   Medição                       ── hidrômetro → consumo + integração de campo
 ETAPA 4   Financeiro individual         ── tarifa + motor de conta + identidade do documento
 ETAPA 5   Recebimento                   ── recepção → classificação → aplicação → conciliação
 ETAPA 6   Cobrança                      ── posição de dívida → política → parcelamento
-ETAPA 7   Escala                        ── lote de faturamento e arrecadação
+ETAPA 7   Escala                        ── lote de faturamento e arrecadação + contabilização
 ETAPA 8   Canais e evoluções            ── identidade do cliente, canal digital, PIX, boleto
 ```
 
@@ -1060,7 +1081,7 @@ Capacidade pronta quando:
 ### 31.3 Pendências da Fase 0, na ordem
 
 1. **Compatibilidade conceitual GSAN → OpenGSAN** — próxima atividade.
-2. ~~**Especificação dos cenários críticos**~~ ✅ **concluída em 2026-09-28** — os **166** itens inventariados resultaram em **71 especificações** ([`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md)), com os gates por etapa desta ordem.
+2. ~~**Especificação dos cenários críticos**~~ ✅ **concluída em 2026-09-28** — os **166** itens inventariados resultaram em **71 especificações** ([`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md)), com os gates por etapa desta ordem. 🆕 Revisão controlada de escopo (2026-09-28): **184 itens → 79 especificações**, com Contabilização e Gestão Operacional.
 3. **Decisão da ADR-0007** — agora com o escopo do bloqueio delimitado (§27.1).
 4. **Auditoria final e encerramento da Fase 0.**
 

@@ -134,7 +134,7 @@
 ## CEN-REL-001 — Acesso ao artefato de relatório
 
 - **Criticidade**: P0
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: artefato (C1) · acesso ao artefato (C3)
 - **Objetivo**: caracterizar quem consegue recuperar um relatório gerado — e corrigir o acesso indevido confirmado
 - **Pré-condições**: relatório gerado **em lote** por USR-01 e persistido; USR-03 autenticado; requisição **sem usuário autenticado**

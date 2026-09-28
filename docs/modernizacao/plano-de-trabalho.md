@@ -75,7 +75,7 @@ Ordem por **capacidade implementável**, não por módulo inteiro:
 ETAPA 0  fundação            → projeto modular com fronteira verificada, Flyway V1,
                                Testcontainers, S1, auditoria mínima, convenção monetária
 ETAPA 1  fatia vertical      → autenticar + consultar imóvel/cliente + abrir e tramitar RA
-ETAPA 2  núcleo operacional  → território, ligação e situação, OS, contrato "solicita × aplica", S2
+ETAPA 2  atendimento e execução  → território, ligação e situação, OS, contrato "solicita × aplica", S2
 ETAPA 3  medição             → hidrômetro → instalação → leitura → consumo; integração de campo
 ETAPA 4  financeiro individual → tarifa versionada, motor de conta individual, identidade documental
 ETAPA 5  recebimento         → recepção → classificação → aplicação → conciliação

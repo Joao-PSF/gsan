@@ -84,17 +84,17 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 
 | Natureza | Qtd | Leitura |
 | -------- | --: | ------- |
-| **CORE FUTURO** | 11 | Genéricas para saneamento; complementam o núcleo comercial |
-| **MÓDULO OPCIONAL** | 7 | Úteis a várias companhias, dispensáveis ao núcleo |
+| **CORE FUTURO** | 12 | Genéricas para saneamento; complementam o núcleo comercial |
+| **MÓDULO OPCIONAL** | 6 | Úteis a várias companhias, dispensáveis ao núcleo |
 | **INTEGRAÇÃO** | 5 | Dependem de sistema ou serviço externo |
 | **EXIGE APROFUNDAMENTO** | 2 | ⚠️ Fiscal e SPED — a natureza **não pode ser atribuída** sem conhecer o comportamento |
 | **EXTENSÃO DE COMPANHIA** | 1 | ⚠️ **Não deve contaminar o núcleo** |
 
 | Maturidade | Qtd |
 | ---------- | --: |
-| **COMPROVADA** | 11 |
+| **COMPROVADA** | 12 |
 | **PARCIALMENTE COMPREENDIDA** | 10 |
-| **APENAS EVIDÊNCIA** | 5 |
+| **APENAS EVIDÊNCIA** | 4 |
 
 | Horizonte | Qtd |
 | --------- | --: |
@@ -103,7 +103,7 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 | **H3** — plataforma ampliada | 5 |
 | **ESPECÍFICA** | 1 |
 
-⚠️ **Os totais acima foram conferidos por script contra a tabela do §4** — não são estimativas de leitura. Cada eixo soma 26. As oito especificidades de companhia do §21 **não entram nesta contagem**: são *instâncias* de capacidades genéricas já catalogadas, não capacidades adicionais.
+⚠️ **Os totais acima foram conferidos por script contra a tabela do §4** — não são estimativas de leitura. 🆕 **Recontados em 2026-09-28** depois da correção da capacidade 10 (integração contábil: *módulo opcional / apenas evidência* → **core futuro / comprovada** — ver [`procedencia.md §4`](../procedencia.md)). Cada eixo soma 26. As oito especificidades de companhia do §21 **não entram nesta contagem**: são *instâncias* de capacidades genéricas já catalogadas, não capacidades adicionais.
 
 🔵 **Três leituras do conjunto:**
 
@@ -126,7 +126,7 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 | 07 | **Acessibilidade da conta (braile)** | Atender cliente com deficiência visual | Faturamento (emissão) | MÓDULO OPCIONAL | Comprovada | H2 |
 | 08 | **Documento fiscal eletrônico** | Emitir nota fiscal do serviço prestado | ⚠️ **Candidato a módulo Fiscal** | ⚠️ **EXIGE APROFUNDAMENTO** | ⚠️ **Apenas evidência** | H2 |
 | 09 | **Obrigação acessória fiscal (SPED)** | Entregar escrituração digital ao fisco | Fiscal | ⚠️ **EXIGE APROFUNDAMENTO** | ⚠️ **Apenas evidência** | H2 |
-| 10 | **Integração contábil** | Gerar lançamentos contábeis a partir do movimento comercial | Financeiro/Integrações | MÓDULO OPCIONAL | ⚠️ **Apenas evidência** | H2 |
+| 10 | **Integração contábil** | Gerar lançamentos contábeis a partir do movimento comercial | 🆕 **Contabilização** (domínio) + Integrações (exportação por adaptador) | **CORE FUTURO** | Comprovada | H2 |
 | 11 | **Benefício social tarifário** | Conceder tarifa reduzida por critério socioeconômico | Cadastro + Faturamento | **CORE FUTURO** | Parcial | **H1** |
 | 12 | **Programas de subsídio nomeados** | Programa institucional específico de uma companhia/governo | Extensão sobre (11) | **EXTENSÃO DE COMPANHIA** | Parcial | ESPECÍFICA |
 | 13 | **Campanha de recadastramento** | Atualizar cadastro em massa, com coleta em campo e validação | Cadastro + Campo | **CORE FUTURO** | Comprovada | H2 |
@@ -135,7 +135,7 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 | 16 | **Evidência de campo (fotos/anexos)** | Comprovar o que foi encontrado e executado | ⚠️ **Capacidade transversal** | **CORE FUTURO** | Parcial | H2 |
 | 17 | **Telemetria / leitura remota** | Medir sem visita, em frequência maior | Micromedição + Integrações | MÓDULO OPCIONAL | Parcial | H2 |
 | 18 | **Correção de medição por idade do medidor** | Compensar submedição de hidrômetro envelhecido | Micromedição | MÓDULO OPCIONAL | ⚠️ Apenas evidência | H3 |
-| 19 | **Gestão de contrato de empresa de campo** | Medir e pagar serviço de terceiro por produção | Atendimento/Operacional | MÓDULO OPCIONAL | Parcial | H3 |
+| 19 | **Gestão de contrato de empresa de campo** | Medir e pagar serviço de terceiro por produção | Atendimento e Execução | MÓDULO OPCIONAL | Parcial | H3 |
 | 20 | **Bureau de crédito** | Negativar e reabilitar devedor | Cobrança + Integrações | **INTEGRAÇÃO** | Comprovada | H2 |
 | 21 | **Cobrança terceirizada por resultado** | Entregar carteira a empresa e remunerar por recuperação | Cobrança | MÓDULO OPCIONAL | Comprovada | H2 |
 | 22 | **Prestação de contas regulatória** | Responder à agência reguladora sobre atendimento | Atendimento | **INTEGRAÇÃO** | Parcial | H2 |
@@ -498,6 +498,8 @@ DOMÍNIO GIS NATIVO FUTURO     visão estratégica do OpenGSAN (rede, ativos, tr
                               → NÃO é tratado aqui; não projetar
 ```
 
+🆕 **Direção formal (2026-09-28)** — [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md) e [`gis-redes-ativos.md`](../arquitetura/gis-redes-ativos.md): **Gestão de Ativos nativa**; **Redes/GIS** como domínio realizado preferencialmente pelo **Giswater, opcional**; GIS como **capacidade transversal**; identidade corporativa única do ativo. Esta seção continua tratando apenas a integração existente.
+
 🟢 **O que existe**: três classes de integração, views geográficas, coordenadas no registro de atendimento (com indicador de ocorrência sem logradouro), recortes territoriais operacionais na quadra.
 
 🔵 **Leitura**: o legado **já demonstra a necessidade de localizar o que não é imóvel** — uma ocorrência de rede em via pública tem coordenada, não matrícula. Isso é insumo para a expansão futura, mas **a integração atual é só integração**.
@@ -535,7 +537,7 @@ DOMÍNIO GIS NATIVO FUTURO     visão estratégica do OpenGSAN (rede, ativos, tr
 | **Pagamento por cartão** | Rotinas de movimento de cartão com validação de cabeçalho/rodapé; parcelamento por cartão de crédito na Cobrança | MÓDULO OPCIONAL | 🔵 Entra como mais um meio de recebimento; o parcelamento por cartão é da Cobrança |
 | **Correção por idade do medidor** | Tabelas de fator de correção e faixa de idade do hidrômetro | MÓDULO OPCIONAL | ⚠️ **Apenas evidência.** 🔵 Compensa submedição de medidor envelhecido — tem impacto **financeiro direto**, portanto exige caracterização antes de qualquer implementação |
 | **Armazenamento de documentos** | Estruturas de armazenamento em bucket e mapeamento de tabelas que o usam | **INTEGRAÇÃO** | ⚠️ Apenas evidência. 🔵 Indica movimento para tirar binário do banco transacional — coerente com a dúvida aberta sobre artefatos de relatório |
-| **Contabilização** | Funções de geração de conta a receber contábil; schema financeiro | MÓDULO OPCIONAL | ⚠️ Apenas evidência. 🔵 Ponte entre o comercial e o sistema contábil da companhia |
+| **Contabilização** | 🆕 `gcom.financeiro` (60 classes): lançamentos por origem, parametrização contábil como dado, devedores duvidosos com recuperação, exportação com variantes por companhia — [mapa próprio](financeiro-contabilizacao.md) | **CORE FUTURO** | 🆕 **Comprovada** (2026-09-28). ⚠️ A classificação anterior — *Apenas evidência*, *módulo opcional* — **estava errada**: a evidência existia no código público e não foi lida. 🔵 Contabilização **subsidiária**, não ERP; a exportação é adaptador |
 
 ---
 
@@ -564,7 +566,8 @@ DOMÍNIO GIS NATIVO FUTURO     visão estratégica do OpenGSAN (rede, ativos, tr
 | --------- | ------------- | ---------------- | -------- |
 | **Fiscal** | 🟢 Schema próprio de 14 tabelas; ciclo próprio (documento fiscal tem numeração, cancelamento e prazo legais distintos do documento comercial); depende de legislação que varia; e o SPED depende dele | ⚠️ Comportamento **não observável** nesta branch — pode ser menor do que o schema sugere | **CANDIDATO** — decisão depende de esclarecer o comportamento |
 | **Analytics** | 🟢 O GSAN já separou de fato (base gerencial, papel dedicado); pergunta analítica difere da transacional; consumidores diretos do banco restringem mudanças | ⚠️ Pode ser capacidade de plataforma em vez de módulo de domínio | **CANDIDATO** |
-| **GIS** | Visão estratégica já estabelecida; o legado demonstra necessidade de localizar o que não é imóvel | 🔴 O que existe hoje é **só integração** — não há domínio GIS no legado a preservar | **CANDIDATO FUTURO** — não por evidência atual, mas por visão |
+| **GIS** | Visão estratégica já estabelecida; o legado demonstra necessidade de localizar o que não é imóvel | 🔴 O que existe hoje é **só integração** — não há domínio GIS no legado a preservar | **CANDIDATO FUTURO** — não por evidência atual, mas por visão. 🆕 Direção: Redes/GIS como domínio, GIS como capacidade ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
+| 🆕 **Gestão de Ativos** | Decisão do responsável do projeto; o satélite do GSAN já precisava de identidade e aferição de instrumentos | Sem oráculo GSAN | **DECIDIDO** — domínio nativo, trilha estrutural ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
 | **Canal digital do cliente** | 🟢 47 classes sem dono; atravessa quatro módulos; identidade do cliente é modelo distinto do usuário interno | 🔵 Pode ser camada de apresentação sobre capacidades existentes, não domínio | **CANDIDATO** — ⚠️ depende da ADR-0007 |
 
 ---
@@ -678,19 +681,20 @@ Programas de subsídio nomeados (§12 do catálogo).
 | Eixo | Capacidades |
 | ---- | ----------- |
 | **Comercial** | PIX · boleto registrado · cartão · portal · identidade do cliente · benefício social · recadastramento · bureau · cobrança terceirizada · acessibilidade |
-| **Operacional** | Coleta móvel · execução móvel de OS · evidência de campo · contrato de empresa de campo · prestação de contas regulatória |
+| **Campo e execução** | Coleta móvel · execução móvel de OS · evidência de campo · contrato de empresa de campo · prestação de contas regulatória |
+| 🆕 **Financeiro / Contabilização** | Contabilização subsidiária |
 | **Técnico** | Telemetria · correção por idade do medidor |
 | **GIS** | Georreferenciamento (hoje integração) |
 | **Analytics** | Análise gerencial |
-| **Plataforma** | Notificação · APIs · armazenamento de documentos · documento fiscal · SPED · contabilização |
+| **Plataforma** | Notificação · APIs · armazenamento de documentos · documento fiscal · SPED |
 
 ### 24.2 Necessidade para o núcleo moderno
 
 | Classificação | Capacidades |
 | ------------- | ----------- |
 | **NECESSÁRIA PARA O CORE MODERNO** | PIX · boleto registrado · benefício social · notificação · APIs |
-| **IMPORTANTE APÓS O CORE** | Portal · identidade do cliente · coleta móvel · execução móvel de OS · recadastramento |
-| **EVOLUÇÃO FUTURA** | Fiscal · SPED · contabilização · telemetria · analytics · GIS · armazenamento · contrato de campo |
+| **IMPORTANTE APÓS O CORE** | Portal · identidade do cliente · coleta móvel · execução móvel de OS · recadastramento · 🆕 contabilização (Etapa 7) |
+| **EVOLUÇÃO FUTURA** | Fiscal · SPED · telemetria · analytics · GIS · armazenamento · contrato de campo |
 | **ESPECÍFICA/OPCIONAL** | Cartão · acessibilidade · bureau · cobrança terceirizada · regulatória · correção por idade · programas nomeados |
 
 ---
@@ -704,7 +708,7 @@ Programas de subsídio nomeados (§12 do catálogo).
 | 3 | **Fluxo real de PIX na instalação de referência** | Define o que já existe × o que é novo | Estrutura e uso das tabelas PIX |
 | 4 | **Critérios reais de elegibilidade social** | A capacidade é H1 e afeta cálculo | Regras de concessão, manutenção e perda por companhia |
 | 5 | **Uso efetivo de telemetria e cartão** | Define se é opcional ou raro | Volume e companhias que usam |
-| 6 | **Escopo da contabilização** | Define se é integração ou módulo | Funções de geração contábil |
+| 6 | ~~**Escopo da contabilização**~~ ✅ **Resolvida (2026-09-28)** | Contabilização subsidiária é **domínio**; a exportação é **integração** por adaptador | [`financeiro-contabilizacao.md`](financeiro-contabilizacao.md) |
 | 7 | **Consumidores reais das APIs** | Já registrado como dúvida nas Integrações | Inventário de consumidores |
 | 8 | **Correção por idade do medidor** | 🔴 Tem impacto financeiro direto | Fórmula e uso real |
 | 9 | ❔ **Simulação hidráulica** | — | 🟢 **Nenhuma evidência encontrada** no legado. Permanece **visão futura já estabelecida**, fora deste catálogo baseado em evidência (§37 do roteiro) |
@@ -726,7 +730,7 @@ Programas de subsídio nomeados (§12 do catálogo).
 | Acessibilidade | `InserirCadastroContaBraileAction` e variante do portal |
 | Fiscal | Schema `fiscal` (14 tabelas) — ⚠️ **sem classe Java correspondente nesta branch** |
 | SPED | `integracao.sped_documento`, `sp1_gerar_integracao_sped`, tabelas `ti_*` — ⚠️ **implementado no banco** |
-| Contabilização | Schema `financeiro`; funções de geração de conta a receber contábil |
+| Contabilização | Schema `financeiro` (27 tabelas); 🆕 `gcom.financeiro` — `ControladorFinanceiro` (`:335`, `:515`, `:5645`), `RepositorioFinanceiroHBM` (`:1008`, `:1116`, `:2059`), variantes por companhia |
 | Benefício social | 291 classes relacionadas a tarifa social; `imov_classe_social`, `imov_qtd_economias_social`; `ltan_icperdatarifasocial`; schema `atualizacaocadastral` |
 | Recadastramento | 267 classes; schema `atualizacaocadastral` (29 tabelas); Action de dispositivo móvel; geração de arquivo para campo |
 | Coleta móvel | Tipo de leitura por rota; `movimento_roteiro_empr`; `releitura_mobile`; `situacao_transm_leitura`; faixa esperada |

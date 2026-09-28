@@ -2,6 +2,8 @@
 
 > **Procedência**: consolidação dos dez mapas funcionais e do [glossário](glossario.md), sem reanálise de código. Base: `HEAD = 2031c4ca` (mapas) + `d38003e` (integrações e correções). Convenção de certeza e método em [`procedencia.md`](../procedencia.md): 🟢 fato · 🔵 interpretação sustentada · 🟡 hipótese · ❔ não compreendido.
 >
+> 🆕 **Revisão controlada de escopo (2026-09-28)**: dois módulos do GSAN que não tinham mapa — [Financeiro/Contabilização](../modulos/financeiro-contabilizacao.md) e [Operacional](../modulos/operacional.md) — foram mapeados depois desta consolidação. As inserções pontuais estão marcadas 🆕; o "domínio operacional" deste documento passou a chamar-se **atendimento e execução** (§13).
+>
 > **Este documento não projeta o OpenGSAN.** Não há tabelas, entidades JPA, schemas, APIs nem classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR` — isso é a próxima atividade. Aqui consolida-se **como o domínio do GSAN funciona e se relaciona**.
 
 ---
@@ -23,7 +25,7 @@ EIXO 1 — O NÚCLEO COMERCIAL (cadeia de valor)
    Cadastro → Micromedição → Faturamento → Cobrança → Arrecadação
    "quem/o quê/onde"  →  "quanto consumiu"  →  "quanto deve"  →  "como recuperar"  →  "recebeu"
 
-EIXO 2 — O DOMÍNIO OPERACIONAL (ponte entre demanda e mudança)
+EIXO 2 — ATENDIMENTO E EXECUÇÃO (ponte entre demanda e mudança)
    Atendimento: demanda → RA → OS → execução → EFEITO nos domínios do Eixo 1
 
 EIXO 3 — OS TRANSVERSAIS (não são domínios de negócio equivalentes)
@@ -98,6 +100,8 @@ flowchart TD
 | **Cobrança** | 🔵 **Domínio próprio** | Ciclo de vida da obrigação **após** o faturamento; não cria a dívida original, cria a derivada |
 | **Arrecadação** | 🔵 **Domínio próprio** | Reconhece, classifica e concilia o recebimento; tem competência e fechamento próprios |
 | **Atendimento** | 🔵 **Domínio próprio + papel de ponte** | Tem entidades e ciclo próprios (RA, OS), **e** é o canal por onde mudanças entram nos outros domínios (§13) |
+| 🆕 **Financeiro** | 🔵 **Domínio próprio — contabilização subsidiária** | Gera lançamentos de partida dobrada a partir dos fatos do faturamento, da arrecadação e da baixa de devedores duvidosos, por parametrização; **não mantém razão** — [mapa](../modulos/financeiro-contabilizacao.md) |
+| 🆕 **Operacional** | 🔵 **Cadastro de referência + calendário**; a gestão operacional com medições viveu num **satélite** fora do núcleo | Valor nas **pontes** (distrito na quadra, divisão de esgoto → destino do RA, programação × falta de água, qualidade na conta) — [mapa](../modulos/operacional.md) |
 | **Segurança** | 🔵 **Transversal + domínio próprio pequeno** | Usuário/grupo/funcionalidade são entidades reais; mas a função é atravessar tudo |
 | **Batch** | 🔵 **Infraestrutura de orquestração** | 🟢 "Não identifiquei regra de negócio de domínio dentro do `ControladorBatchSEJB`" — ele controla estado, não calcula |
 | **Relatórios** | 🔵 **Infraestrutura de leitura/apresentação** | Motor comum; a consulta/regra pertence ao módulo dono |
@@ -586,6 +590,8 @@ Consumo ──► Faturamento ──► CONTA ──► obrigação ──► Co
 | **Onde ocorre conciliação?** | 🟢 No **Aviso Bancário**: `valorArrecadacaoCalculado × valorArrecadacaoInformado`, com **acertos** e **deduções** como instrumentos de ajuste |
 | **Onde fecha a competência?** | 🟢 No **encerramento mensal** — e são **dois** distintos: faturamento (arquiva documentos, fecha referência contábil) e arrecadação (consolida totais, **retenções tributárias IR/CSLL/COFINS/PIS** e o não classificado por situação) |
 
+🆕 **A cadeia não termina na Arrecadação**: os fatos do Faturamento, da Arrecadação e da baixa de devedores duvidosos são **contabilizados** por parametrização e exportados ao sistema contábil da companhia — o GSAN é gerador **subsidiário** de fatos contábeis, não razão ([`financeiro-contabilizacao.md`](../modulos/financeiro-contabilizacao.md) §2, §11).
+
 ### 12.1 Três propriedades financeiras estruturais
 
 1. 🟢 **Nada é apagado.** Cancelar é estado com motivo; retificar cria documento novo; prescrever é situação; pagamento não apropriável vira **situação**, não descarte.
@@ -594,7 +600,9 @@ Consumo ──► Faturamento ──► CONTA ──► obrigação ──► Co
 
 ---
 
-## 13. Domínio operacional
+## 13. Domínio de atendimento e execução
+
+> ⚠️ **Nomenclatura (2026-09-28)**: esta seção chamava-se *"Domínio operacional"*. Renomeada para não colidir com o **módulo Operacional** do GSAN — estrutura operacional, calendário e medições —, que é outra coisa e tem mapa próprio ([`operacional.md §10`](../modulos/operacional.md)).
 
 ```text
 Demanda ──► RA ──► [classificação · prazo · responsabilidade · tramitação] ──► OS ──► Execução ──► EFEITO

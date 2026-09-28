@@ -4,11 +4,13 @@
 >
 > ⚠️ **A tabela de ordem que ocupava este arquivo era hipótese preliminar** e **foi substituída** em 2026-09-15 pela análise de dependências. Ver §"Mudanças" abaixo e o [registro da execução](../alteracoes/2026-09-15-dependencias-e-ordem-implementacao.md).
 
-**Mapas funcionais concluídos (Fase 0 — todos)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md) · [arrecadacao](arrecadacao.md) · [atendimento](atendimento.md) · [seguranca](seguranca.md) · [batch](batch.md) · [relatorios](relatorios.md) · [integracoes](integracoes.md).
+**Mapas funcionais concluídos (Fase 0 — todos)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md) · [arrecadacao](arrecadacao.md) · [atendimento](atendimento.md) · [seguranca](seguranca.md) · [batch](batch.md) · [relatorios](relatorios.md) · [integracoes](integracoes.md) · 🆕 [financeiro-contabilizacao](financeiro-contabilizacao.md) · 🆕 [operacional](operacional.md).
+
+🆕 **Revisão controlada de escopo (2026-09-28)**: os módulos Financeiro e Operacional do GSAN **não tinham mapa** — lacuna da Fase 0 corrigida. Conclusões: o Financeiro é **contabilização subsidiária**, não ERP; o Operacional do núcleo é **cadastro de referência + calendário**, e a gestão operacional com medições viveu num satélite fora do núcleo. A visão de [Gestão de Ativos](../dominio/gestao-de-ativos.md) e a [arquitetura Redes/GIS/Ativos](../arquitetura/gis-redes-ativos.md) seguem a [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md).
 
 ⚠️ Mapa concluído **não é** especificação pronta para implementar: cada um lista dúvidas abertas, e a especificação dos cenários críticos é item do fechamento da Fase 0 (ver [`estrategia-testes.md`](../testes/estrategia-testes.md)).
 
-**Além dos dez mapas**, esta pasta contém:
+**Além dos doze mapas**, esta pasta contém:
 
 - [Catálogo de funcionalidades futuras](funcionalidades-futuras.md) — 26 capacidades do legado que **não são módulos**.
 - 🔴 [**Dependências e ordem de implementação**](dependencias-e-ordem-implementacao.md) — **o documento detalhado**: matriz de dependências, os 8 ciclos, fundação mínima, primeira fatia vertical, 9 etapas, gates de avanço e decisões bloqueantes.
@@ -23,13 +25,15 @@
 | ----- | ---- | ---------------------- | ------ |
 | **0** | **Fundação** | Projeto modular com **fronteira verificada** · Flyway `V1` · Testcontainers · **S1** (identidade, autenticação, concessão por caso de uso) · **auditoria mínima** · convenção monetária e de arredondamento · configuração externa sem hard-code institucional · CI com *secret scan* | Pendente |
 | **1** | **Primeira fatia vertical** | Autenticar → consultar imóvel/cliente → **abrir e tramitar RA** (especificação paramétrica) | Pendente |
-| **2** | **Núcleo operacional** | Estrutura territorial · **ligação e sua situação** · OS · 🔴 **contrato "solicita × aplica"** · **S2** (escopo territorial) · motor de relatório | Pendente |
+| **2** | **Núcleo de atendimento e execução** | Estrutura territorial · **ligação e sua situação** · OS · 🔴 **contrato "solicita × aplica"** · **S2** (escopo territorial) · motor de relatório · 🆕 **Gestão Operacional mínima** (distrito, bacia, divisão de esgoto, calendário) | Pendente |
 | **3** | **Medição** | Hidrômetro → instalação → leitura → **consumo com origem** · anormalidades · camada de integração + coleta móvel | Pendente |
-| **4** | **Financeiro individual** | Estrutura tarifária versionada · **motor de conta individual** · Conta e snapshots · identidade estável do documento · débito/crédito/guia | Pendente |
+| **4** | **Financeiro individual** | Estrutura tarifária versionada · **motor de conta individual** · Conta e snapshots · identidade estável do documento · débito/crédito/guia · 🆕 qualidade da água no documento emitido | Pendente |
 | **5** | **Recebimento** | Recepção → classificação → aplicação → conciliação · **posição de dívida como consulta derivada** · assíncrono genérico | Pendente |
 | **6** | **Cobrança** | Política · ação · documento · **parcelamento** · negativação · terceirização · notificação | Pendente |
-| **7** | **Escala** | **Faturamento em lote** (unidade = rota) · arrecadação mensal · encerramentos · resumos financeiros | Pendente |
+| **7** | **Escala** | **Faturamento em lote** (unidade = rota) · arrecadação mensal · encerramentos · resumos financeiros · 🆕 **Contabilização** (lançamentos, devedores duvidosos, exportação por adaptador) | Pendente |
 | **8** | **Canais e evoluções** | **Identidade do cliente final** · canal digital · PIX · boleto registrado · bureau, telemetria, analytics, GIS | Pendente |
+
+🆕 **Trilha estrutural** — Gestão de Ativos, Redes/GIS (Giswater opcional), Engenharia/Simulação: **pode começar depois da Etapa 2**, em paralelo ou depois das Etapas 3–7; **não é décima etapa** e **não bloqueia** nenhum gate do núcleo comercial ([§24.2](dependencias-e-ordem-implementacao.md)).
 
 **Transversais desde a Etapa 0** (⚠️ não são fases finais): testes · auditoria · S1 · log com correlação · configuração externa · neutralidade institucional · convenção monetária · verificação de fronteira · revisão desta matriz ao fim de cada etapa.
 

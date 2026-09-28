@@ -53,6 +53,8 @@ OpenGSAN
 
 Construir o OpenGSAN como sistema moderno e funcional de **gestão comercial de saneamento**: cadastro, micromedição, faturamento, cobrança, arrecadação, atendimento e ordens de serviço, sustentados por segurança, processamento em lote, relatórios e integrações.
 
+🆕 **Revisão controlada de escopo (2026-09-28)**: entram também, como **domínio GSAN a recuperar**, a **contabilização subsidiária** — o GSAN já gerava lançamentos contábeis — e a **gestão operacional mínima** — estrutura operacional, calendário, qualidade distribuída. Ver §27.1.
+
 ### 3.2 ⚠️ Fora do escopo — migração de instalações GSAN
 
 🔴 **Decisão de 2026-09-15 (ADR-0005 revisada)**: migração gradual, coexistência GSAN + OpenGSAN, sincronização, migração módulo a módulo, ETL operacional, cutover, replicação e compatibilidade entre bancos em execução **serão tratados em projeto separado**.
@@ -65,7 +67,7 @@ Construir o OpenGSAN como sistema moderno e funcional de **gestão comercial de 
 
 ### 3.4 Fora desta execução
 
-Funcionalidades futuras (PIX, NF, SPED, telemetria, BI, boleto registrado, GIS avançado, novas integrações móveis) **não** entram no núcleo agora — terão catálogo próprio na próxima atividade. Domínios futuros (operacional, técnico, ativos, perdas, simulação de redes) não são modelados aqui (§27).
+Funcionalidades futuras (PIX, NF, SPED, telemetria, BI, boleto registrado, GIS avançado, novas integrações móveis) **não** entram no núcleo agora — terão catálogo próprio na próxima atividade. Domínios futuros (operacional, técnico, ativos, perdas, simulação de redes) não são modelados aqui (§27). 🆕 Desde 2026-09-28: a **Gestão Operacional mínima** é domínio GSAN a recuperar; a **Gestão de Ativos** foi decidida como **nativa** ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) e tem [visão alvo própria](gestao-de-ativos.md); técnico, perdas e simulação continuam fora (§27.1).
 
 ---
 
@@ -140,6 +142,8 @@ flowchart TB
     style ATE fill:#fff4e6,stroke:#c77d00,stroke-width:2px
     style PLAT fill:#f0f0f0,stroke:#777,stroke-width:2px
 ```
+
+🆕 **Refinamento de 2026-09-28**: o diagrama acima continua válido para o **núcleo inicial**; a arquitetura macro completa — com Contabilização, Gestão Operacional, Gestão de Ativos e Redes/GIS — está no §27.1.
 
 🔵 **A distinção que o diagrama carrega**: o **core** resolve o negócio; a **plataforma** oferece capacidades ao core. ⚠️ Não são dez módulos equivalentes — Segurança, Processamento, Relatórios e Integrações têm natureza diferente de Faturamento, e tratá-los como iguais foi diagnosticado como erro potencial de desenho no mapa de domínio.
 
@@ -565,6 +569,10 @@ PROCESSO    o que se executa                   (definição catalogada)
 | Execução em lote | **Processamento** | Todos | Processamento |
 | Definição/solicitação/artefato de relatório | **Relatórios** | Todos | Relatórios |
 | Contratos de fronteira externa | **Integrações** | Módulos donos do efeito | 🔵 Integrações detém o **contrato**; o efeito é do dono |
+| 🆕 Lançamento contábil · parametrização contábil · baixa contábil | **Contabilização** | ERP (exportação por adaptador), Cobrança e Arrecadação (consulta) | Contabilização — [mapa](../modulos/financeiro-contabilizacao.md) |
+| 🆕 Estrutura operacional · calendário operacional · qualidade distribuída | **Gestão Operacional** | Atendimento (roteamento, falta de água), Emissão (qualidade), Analytics | Gestão Operacional — [mapa](../modulos/operacional.md) |
+| 🆕 Ativo — identidade, classe, ciclo de vida, condição, manutenção | **Gestão de Ativos** | Redes/GIS, Telemetria, Analytics; Atendimento executa a OS | Gestão de Ativos — [visão](gestao-de-ativos.md) |
+| 🆕 Geometria · topologia · zonas derivadas da rede | **Redes/GIS** | Ativos, Gestão Operacional, Analytics | Redes/GIS — matriz **por atributo** em [`gis-redes-ativos.md §6`](../arquitetura/gis-redes-ativos.md) |
 
 🔵 **Três mudanças de propriedade** em relação ao GSAN, todas para corrigir estado guardado no lugar errado: situação da ligação, situação de cobrança e escrita de consumo na retificação.
 
@@ -811,30 +819,58 @@ Toda particularidade real é classificada antes de entrar:
 
 ## 27. Expansão futura
 
+> 🆕 **Refinado em 2026-09-28** (revisão controlada de escopo). O diagrama anterior mostrava sete domínios futuros sem distinção; a evidência dos mapas de [Financeiro/Contabilização](../modulos/financeiro-contabilizacao.md) e [Operacional](../modulos/operacional.md) e a [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md) permitem separar três categorias.
+
 ```mermaid
-flowchart TD
+flowchart TB
     OG(["<b>OpenGSAN</b><br/>plataforma aberta de gestão de saneamento"])
-    COM["<b>Gestão Comercial</b><br/><i>núcleo inicial — este projeto</i>"]
-    OPE["Gestão Operacional"]
-    TEC["Gestão Técnica"]
-    GIS["GIS"]
-    ATV["Gestão de Ativos"]
-    PER["Perdas"]
-    TEL["Telemetria"]
-    SIM["Simulação de Redes"]
 
-    OG --> COM
-    OG -.-> OPE
-    OG -.-> TEC
-    OG -.-> GIS
-    OG -.-> ATV
-    OG -.-> PER
-    OG -.-> TEL
-    OG -.-> SIM
+    subgraph NI["NÚCLEO INICIAL"]
+        COM["<b>Gestão Comercial</b><br/><i>Cadastro · Micromedição · Faturamento<br/>Cobrança · Arrecadação</i>"]
+        ATE["<b>Atendimento e Execução</b><br/><i>RA · OS · execução</i>"]
+    end
 
-    style COM fill:#d4edda,stroke:#28a745,stroke-width:2px
-    style OG fill:#e8f4f8,stroke:#2c7a9e,stroke-width:2px
+    subgraph REC["DOMÍNIO GSAN A RECUPERAR"]
+        CTB["<b>Contabilização</b><br/><i>subsidiária — não é ERP</i>"]
+        OPE["<b>Gestão Operacional</b><br/><i>estrutura · calendário · qualidade</i>"]
+    end
+
+    subgraph EXP["EXPANSÃO ESTRUTURAL"]
+        ATV["<b>Gestão de Ativos</b><br/><i>nativa — ADR-0008</i>"]
+        RED["<b>Redes</b><br/><i>Giswater, opcional</i>"]
+        ENG["Engenharia / Simulação<br/><i>EPANET · SWMM via Giswater</i>"]
+        CAM["Campo"]
+        TEL["Telemetria"]
+        ANA["Analytics"]
+    end
+
+    PLAT["<b>PLATAFORMA</b> — Segurança · Processamento · Relatórios · Integrações · GIS como capacidade"]
+
+    OG --> NI
+    OG --> REC
+    OG -.-> EXP
+    PLAT -.->|serve| NI
+    PLAT -.->|serve| REC
+    PLAT -.->|serve| EXP
+
+    style NI fill:#d4edda,stroke:#28a745,stroke-width:2px
+    style REC fill:#e8f4f8,stroke:#2c7a9e,stroke-width:2px
+    style EXP fill:#fff4e6,stroke:#c77d00
+    style OG fill:#f0f0f0,stroke:#777
 ```
+
+### 27.1 🆕 Três categorias — e o que fica de fora
+
+| Categoria | Domínios | Por que está aqui | Oráculo GSAN |
+| --------- | -------- | ----------------- | ------------ |
+| **Núcleo inicial** | Gestão Comercial · Atendimento e Execução · plataforma | Etapas 0–8 da [ordem de implementação](../modulos/dependencias-e-ordem-implementacao.md) | Sim |
+| **Domínio GSAN a recuperar** | **Contabilização** subsidiária (Etapa 7) · **Gestão Operacional** mínima (Etapas 2 e 4) | 🟢 **Existiam no GSAN** e não tinham mapa — lacuna da Fase 0 | Sim — `CEN-FIN`, `CEN-OPE` |
+| **Expansão estrutural** | **Gestão de Ativos** (decidida nativa) · Redes · Engenharia/Simulação · Campo · Telemetria · Analytics | Visão estratégica; trilha estrutural depois da Etapa 2 | ❌ **Não** — especificação própria, sem equivalência fabricada |
+| **Fora desta revisão** | Perdas · SCADA · laboratório · energia · compras · estoque corporativo · ERP · BIM | Regra de **não abrir escopo infinito** | — |
+
+🔵 **GIS não é módulo de negócio**: guardar, exibir e publicar geometria é **capacidade** de plataforma; **Redes** — topologia, zonas derivadas, engenharia — é domínio, realizável pelo Giswater quando a instalação o usar ([`gis-redes-ativos.md §9`](../arquitetura/gis-redes-ativos.md)).
+
+🔴 **Regra da revisão**: *preservar a semântica válida; generalizar customizações; reposicionar responsabilidades; descartar acoplamentos e mecanismos ruins* — e **posição no menu não decide dono** ([`gis-redes-ativos.md §11`](../arquitetura/gis-redes-ativos.md)).
 
 ⚠️ **Nenhum domínio futuro é modelado aqui.** O compromisso é apenas **não tomar decisões que inviabilizem a expansão**:
 
@@ -873,6 +909,11 @@ flowchart TD
 | 10 | Cardinalidade física RA ↔ OS e RA ↔ Imóvel | Atendimento |
 | 11 | Retenção e armazenamento dos artefatos de relatório | Relatórios |
 | 12 | Granularidade de commit dentro de uma unidade de processamento | Processamento |
+| 13 🆕 | "Dívida ativa" e "baixa contábil" são o mesmo conceito? | Contabilização / Cobrança |
+| 14 🆕 | O OpenGSAN calcula PECLD ou só fornece o envelhecimento ao ERP? | Contabilização |
+| 15 🆕 | Correspondência território comercial ↔ unidade operacional: mantida ou derivada de geometria? | Gestão Operacional / Redes-GIS |
+| 16 🆕 | Mínimo nativo de Redes/GIS numa instalação sem Giswater | Redes/GIS |
+| 17 🆕 | Taxonomia inicial de classes de ativos e atributos mínimos | Gestão de Ativos |
 
 ### 28.3 🟡 Obrigação financeira — **PROPOSTO**, não decidido
 
@@ -908,6 +949,8 @@ flowchart TD
 | 11 | **Decidir a interface por inércia** no piloto | 🔊 Visível | ADR-0007 declarada bloqueante |
 | 12 | **Perder capacidade funcional ao descartar implementação de integração** | 🔊 Visível na operação de campo | §18.3 separa capacidade de implementação |
 | 13 | ⚠️ **Projeto aberto sem governança definida** | 🔊 Visível | Licença, organização e mantenedores registrados como pendência |
+| 14 🆕 | **OS ou identidade de ativo duplicadas** entre ferramentas (Giswater, QField, EAM) | 🔴 Silencioso — dois registros divergem aos poucos | [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md): OS só no Atendimento; identidade emitida por Ativos; forma de consumo declarada por atributo |
+| 15 🆕 | **Tratar indicador herdado como requisito numérico** | 🔊 Visível tarde | Os índices de perda e de macromedição do satélite do GSAN são **degenerados** ([`operacional.md §6.3`](../modulos/operacional.md)) — nenhuma equivalência exigida |
 
 ---
 
@@ -942,10 +985,15 @@ GSAN UsuarioAbrangencia                        →  OpenGSAN escopo territorial 
 GSAN Processo/Etapa/Unidade/Execução           →  OpenGSAN mesmo modelo, sem o transporte legado
 GSAN Relatorio/TarefaRelatorio/RelatorioGerado →  OpenGSAN definição · solicitação · artefato
 GSAN sete padrões de integração                →  OpenGSAN camada única de fronteira externa
+🆕 GSAN LancamentoContabil + parâmetros contábeis →  OpenGSAN lançamento derivado por política versionada
+🆕 GSAN Conta.referenciaBaixaContabil           →  OpenGSAN registro de baixa da Contabilização
+🆕 GSAN distrito/bacia como colunas da quadra   →  OpenGSAN correspondência território ↔ unidade operacional
+🆕 GSAN QualidadeAgua (no Faturamento)          →  OpenGSAN qualidade distribuída (Gestão Operacional), projetada na emissão
+🆕 satélite: macromedidor + instalação por tipo →  OpenGSAN ativo × localização funcional
 ```
 
 ---
 
 ## 31. Próxima atividade
 
-**Catálogo de Funcionalidades Futuras** — consolidar o que foi descoberto no `gsan_comercial` (PIX, fiscal/NF, SPED, mobile/campo, recadastramento, tarifa social, birô de crédito, APIs, BI, boleto registrado): funcionalidade, problema que resolve, módulo, dependências e prioridade preliminar. ⚠️ **Sem modelagem** e sem incorporar ao núcleo.
+~~**Catálogo de Funcionalidades Futuras**~~ — concluído em 2026-09-15; depois vieram a ordem de implementação, a compatibilidade conceitual, a especificação dos cenários e a revisão controlada de escopo (2026-09-28). 🆕 **Próxima**: decisão da **ADR-0007** e **auditoria final** da Fase 0 — backlog em [`MODERNIZACAO_GSAN.md`](../../../MODERNIZACAO_GSAN.md).

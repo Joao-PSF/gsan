@@ -1,6 +1,6 @@
 # Cenários Críticos do OpenGSAN — Índice e Matriz de Cobertura
 
-> **Fase 0 — 20ª execução (2026-09-28).** Especifica **o que testar, em que estado, com qual entrada, o que observar, qual semântica esperar, qual diferença é permitida, qual oráculo decide e qual gate o teste protege**.
+> **Fase 0 — 20ª execução (2026-09-28); ampliado na 21ª (revisão controlada de escopo)** com os mapas de Financeiro/Contabilização e Operacional: **+8 especificações** e **+18 itens** de inventário. Especifica **o que testar, em que estado, com qual entrada, o que observar, qual semântica esperar, qual diferença é permitida, qual oráculo decide e qual gate o teste protege**.
 >
 > 🔴 **Nada aqui foi executado.** Nenhum teste rodou, nenhum golden master foi capturado, nenhuma massa foi criada, nenhum *harness* foi escrito. Os **valores concretos** do GSAN são preenchidos na **Fase 2**.
 
@@ -23,7 +23,8 @@ As especificações estão em [`cenarios/`](cenarios/), por área. Este índice 
 | Arrecadação | [`cenarios/arrecadacao.md`](cenarios/arrecadacao.md) | 10 |
 | Cobrança | [`cenarios/cobranca.md`](cenarios/cobranca.md) | 7 |
 | Processamento, Relatórios e Integrações | [`cenarios/batch-relatorios-integracoes.md`](cenarios/batch-relatorios-integracoes.md) | 14 |
-| **Total** | | **71** |
+| Contabilização e Gestão Operacional | [`cenarios/financeiro-operacional.md`](cenarios/financeiro-operacional.md) | 8 |
+| **Total** | | **79** |
 
 ---
 
@@ -72,7 +73,7 @@ Agrupou-se quando **a mesma operação** é exercitada com **os mesmos observáv
 
 ## 4. Do inventário à especificação
 
-### 4.1 🔴 Correção: o inventário tem 166 itens, não "~110"
+### 4.1 🔴 Correção: o inventário tinha 166 itens, não "~110" — hoje 184
 
 A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execução — e **nunca foi contada**. Contagem por script sobre as seções de cenários dos mapas funcionais:
 
@@ -88,22 +89,26 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 | Batch | 20 |
 | Relatórios | 19 |
 | Integrações | 22 |
-| **Total** | **166** |
+| Financeiro/Contabilização 🆕 | 11 |
+| Operacional 🆕 | 7 |
+| **Total** | **184** |
 
 ⚠️ **O mapa do Cadastro não tem seção de cenários.** Os cinco cenários `CEN-CAD` foram derivados das regras e estados do próprio mapa.
+
+🆕 **Revisão controlada de escopo (21ª execução)**: os dois módulos do GSAN que não tinham mapa — [Financeiro/Contabilização](../modulos/financeiro-contabilizacao.md) e [Operacional](../modulos/operacional.md) — acrescentaram **18 itens** ao inventário (166 → **184**). O item 22 de Integrações (*integração contábil padrão × variante*), antes `A COMPLEMENTAR`, passou a ser absorvido por **CEN-FIN-005** — só a variante de companhia continua a complementar.
 
 ### 4.2 Destino de cada item
 
 | Destino | Itens |
 | ------- | ----: |
-| Absorvido em especificação | 135 |
+| Absorvido em especificação | 150 |
 | Bloqueado por decisão | 3 |
 | Sem equivalência (C4) | 3 |
-| A complementar — variante por companhia | 2 |
-| P2 — mantido no inventário | 23 |
-| **Total** | **166** |
+| A complementar — variante por companhia | 1 |
+| P2 — mantido no inventário | 27 |
+| **Total** | **184** |
 
-🔵 **135 itens** foram absorvidos em **59 especificações**; outras **12** foram **derivadas** (§4.3). Total: **71 especificações**.
+🔵 **150 itens** foram absorvidos em **67 especificações**; outras **12** foram **derivadas** (§4.3). Total: **79 especificações**.
 
 ### 4.3 Especificações derivadas — sem origem no inventário
 
@@ -126,7 +131,7 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 
 ### 4.4 Sobre a quantidade
 
-O roteiro sugeriu **35–60** especificações "somente se a evidência justificar". 🔵 A faixa foi calibrada para um inventário de ~110; com **166** itens reais, a mesma proporção (32 %–55 %) daria **53–91**. O resultado fica dentro dela — ⚠️ e não foi forçado: a contagem saiu da deduplicação, não o contrário.
+O roteiro sugeriu **35–60** especificações "somente se a evidência justificar". 🔵 A faixa foi calibrada para um inventário de ~110; com **166** itens reais, a mesma proporção (32 %–55 %) daria **53–91**. O resultado fica dentro dela — ⚠️ e não foi forçado: a contagem saiu da deduplicação, não o contrário. Com **184** itens (21ª execução), a mesma proporção daria **59–101**; são **79** especificações.
 
 ---
 
@@ -207,6 +212,14 @@ O roteiro sugeriu **35–60** especificações "somente se a evidência justific
 | [CEN-INT-005](cenarios/batch-relatorios-integracoes.md) | Integrações | API de pagamento: autenticação do chamador | P0 | 5 | C3 | 2 | ⬜ a capturar | 5 → 6 |
 | [CEN-INT-006](cenarios/batch-relatorios-integracoes.md) | Integrações | SMS por tipo de mensagem | P1 | 6 | C1/C3 | 2 | ⬜ a capturar | 6 → 7 |
 | [CEN-INT-007](cenarios/batch-relatorios-integracoes.md) | Integrações | Requisição GIS assinada | P1 | 8 | C3 | 1+2 | ⬜ a capturar | etapa 8 |
+| [CEN-FIN-001](cenarios/financeiro-operacional.md) | Contabilização | Lançamentos contábeis da competência por origem | P0 | 7 | C1/C2 | 1 | ⬜ a capturar | 7 → operação |
+| [CEN-FIN-002](cenarios/financeiro-operacional.md) | Contabilização | Baixa contábil de devedores duvidosos e recuperação | P0 | 7 | C1/C2 | 1 | ⬜ a capturar | 7 → operação |
+| [CEN-FIN-003](cenarios/financeiro-operacional.md) | Contabilização | Regeração da contabilização de uma competência | P1 | 7 | C1 | 1 | ⬜ a capturar | 7 → operação |
+| [CEN-FIN-004](cenarios/financeiro-operacional.md) | Contabilização | Volumes consumidos e não faturados da competência | P1 | 7 | C1 | 1 | ⬜ a capturar | 7 → operação |
+| [CEN-FIN-005](cenarios/financeiro-operacional.md) | Contabilização | Exportação dos lançamentos para o sistema contábil | P1 | 7 | C1/C2 | 1 | ⬜ a capturar | 7 → operação |
+| [CEN-OPE-001](cenarios/financeiro-operacional.md) | Gestão Operacional | Localização operacional da demanda | P1 | 2 | C1/C2 | 1 | ⬜ a capturar | 2 → 3 |
+| [CEN-OPE-002](cenarios/financeiro-operacional.md) | Gestão Operacional | RA de falta de água confrontado com a programação | P1 | 2 | C1 | 1 | ⬜ a capturar | 2 → 3 |
+| [CEN-OPE-003](cenarios/financeiro-operacional.md) | Gestão Operacional | Qualidade da água no documento emitido | P1 | 4 | C1/C2 | 1 | ⬜ a capturar | 4 → 5 |
 
 ---
 
@@ -224,40 +237,42 @@ O roteiro sugeriu **35–60** especificações "somente se a evidência justific
 | Processamento | 5 |
 | Relatórios | 2 |
 | Integrações | 7 |
-| **Total** | **71** |
+| Contabilização | 5 |
+| Gestão Operacional | 3 |
+| **Total** | **79** |
 
 | Criticidade | Qtd |
 | --- | --: |
-| P0 | 43 |
-| P1 | 28 |
-| **Total** | **71** |
+| P0 | 45 |
+| P1 | 34 |
+| **Total** | **79** |
 
 | Oráculo | Qtd |
 | --- | --: |
-| 1 — igualdade | 54 |
+| 1 — igualdade | 62 |
 | 1+2 — por observável | 8 |
 | 2 — divergência exigida | 6 |
 | Pendente de caracterização | 3 |
-| **Total** | **71** |
+| **Total** | **79** |
 
 | Etapa | Qtd |
 | --- | --: |
 | 0 — Fundação | 7 |
 | 1 — Fatia vertical | 8 |
-| 2 — Operacional | 9 |
+| 2 — Atendimento e execução | 11 |
 | 3 — Medição | 9 |
-| 4 — Financeiro individual | 12 |
+| 4 — Financeiro individual | 13 |
 | 5 — Recebimento | 9 |
 | 6 — Cobrança | 9 |
-| 7 — Escala | 7 |
+| 7 — Escala | 12 |
 | 8 — Canais | 1 |
-| **Total** | **71** |
+| **Total** | **79** |
 
 | Baseline | Qtd |
 | --- | --: |
-| ⬜ A capturar na Fase 2 | 70 |
+| ⬜ A capturar na Fase 2 | 78 |
 | 🟢 Já comprovada | 1 |
-| **Total** | **71** |
+| **Total** | **79** |
 
 🔵 **Leituras**:
 
@@ -326,7 +341,7 @@ Dos P0, os que mais protegem — escolhidos pelo dano que a falha causaria e pel
 | **4 → 5** | FAT-001 · FAT-002 · FAT-003 · FAT-005 · FAT-006 · FAT-007 | **Ao centavo** · as cinco políticas caracterizadas · retificação pela operação da Micromedição |
 | **5 → 6** | ARR-002 · ARR-003 · ARR-005 · ARR-006 · COB-001 | Baixa · **nada descartado** · identidade documental · identidade do pagamento · posição derivada |
 | **6 → 7** | COB-002 · COB-004 · COB-005 | Ação e documento · parcelamento **criar e desfazer** |
-| **7 → operação** | BAT-002 · BAT-005 · ARR-010 | Retomada sem refazer · **lote = soma dos individuais** · encerramento |
+| **7 → operação** | BAT-002 · BAT-005 · ARR-010 · FIN-001 | Retomada sem refazer · **lote = soma dos individuais** · encerramento · **lançamentos contábeis conferem com os resumos** |
 | **Etapa 8** | INT-007 | ⚠️ GIS é evolução — não gate do núcleo |
 
 ⚠️ **Três cenários de gate têm oráculo pendente** e só fecham depois da caracterização: SEG-005 (1 → 2), BAT-003 e BAT-004 (7 → operação). Eles **não** estão na coluna de obrigatórios acima, mas bloqueiam a transição se a baseline revelar comportamento que exija divergência.
@@ -356,6 +371,7 @@ Especificados e prontos para a Fase 2 — o que falta é **decidir o oráculo de
 | **CEN-SEG-002 V3** | Bloqueio por tentativas em sessões diferentes — **CAND-03** |
 | **CEN-BAT-003** | Atomicidade dentro da unidade — **CAND-02**. 🔴 Não se constrói oráculo 2 como se a divergência existisse |
 | **CEN-BAT-004** | Execução duplicada — se houver faturamento em dobro, protegê-lo exige divergência |
+| **CEN-OPE-003 V5** 🆕 | O passo 2 da cascata de qualidade da água não limpa o filtro do passo 1 — se o legado deixar de encontrar o registro por isso, não reproduzir exige divergência |
 
 ### 10.3 A COMPLEMENTAR — variantes por companhia
 
@@ -368,7 +384,7 @@ Especificados e prontos para a Fase 2 — o que falta é **decidir o oráculo de
 | Crédito de programa social nomeado (`calcularValorCreditoBolsaAguaAtualizado`) | cobertura HALF_UP |
 | Consumo médio diário em controladores de companhia (`obterConsumoFaturadoConsumoMedioDiario`) | cobertura UP |
 | Confirmação de recebimento com variação por código de empresa | INT#4 |
-| Integração contábil padrão × variante | INT#22 |
+| Formatos de exportação contábil por companhia (CAEMA, CAERN, COSAMA, COSANPA) | CEN-FIN-005 V3 — o formato base de INT#22 foi absorvido |
 
 ### 10.4 Sem equivalência — `C4`
 
@@ -385,6 +401,8 @@ Registrados para a auditoria, com o motivo:
 | COB#14, ARR#20 | Cobrança terceirizada — módulo opcional |
 | SEG#24 | Solicitação de acesso — administração progressiva (S3) |
 | INT#5, #19 | Teste de conexão; e-mail com falha de SMTP |
+| FIN#8, #11 🆕 | Resumos contábeis derivados — contas a receber, documentos por faixa de vencimento, receita por banco. Regeráveis e sem efeito sobre documento; o envelhecimento volta a importar se a PECLD entrar no escopo |
+| OPE#6, #7 🆕 | Mecânica de cadastro — manutenção da programação e filtro de fontes na tela de qualidade |
 
 ---
 
@@ -497,6 +515,13 @@ Território: duas gerências regionais, unidades de negócio, elos/polos, locali
 | **ESP-03** | Especificação com **encerramento automático** |
 | **ESP-04** | Especificação que admite RA **sem imóvel** |
 | **SRV-01** / **SRV-02** / **SRV-03** | Serviço cobrado em N parcelas / não cobrado / com valor alterável |
+| **ESP-05** 🆕 | Especificação de tipo de solicitação **relativo a esgoto** (exige divisão de esgoto no local de ocorrência) |
+| **ESP-06** 🆕 | Especificação de **falta de água** |
+| **CTB-01** 🆕 | Parametrização contábil das origens faturamento, arrecadação (dois tipos de recebimento) e avisos bancários, sobre plano de contas **sintético** |
+| **CTB-02** 🆕 | Critérios de devedores duvidosos por situação de cobrança — valor-limite × número de meses |
+| **OPR-01** 🆕 | Estrutura operacional mínima em L1: distritos D1 e D2, bacia, divisões DV1 e DV2 com **unidades distintas**, cadeia distrito → setor → sistema de abastecimento; uma quadra com **faces em distritos diferentes** |
+| **OPR-02** 🆕 | Programação de abastecimento e de manutenção para uma área de bairro, em dias distintos |
+| **QLD-01** 🆕 | Registros de qualidade da água na mesma competência em **quatro níveis**: sistema de abastecimento, localidade + setor, localidade, geral |
 
 Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfil de parcelamento com faixas, juros, entrada mínima e descontos; comando de negativação; processo com indicador de autorização.
 
@@ -506,9 +531,9 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 
 | Perfil | Cenários |
 | ------ | -------- |
-| IMV-01 | CEN-ARR-009 · CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-007 · CEN-CAD-002 · CEN-CAD-003 · CEN-CAD-005 · CEN-COB-001 · CEN-COB-002 · CEN-COB-003 · CEN-COB-004 · CEN-COB-006 · CEN-COB-007 · CEN-FAT-001 · CEN-FAT-003 · CEN-FAT-004 · CEN-FAT-007 · CEN-FAT-009 · CEN-FAT-010 · CEN-MIC-001 · CEN-MIC-005 |
+| IMV-01 | CEN-ARR-009 · CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-007 · CEN-CAD-002 · CEN-CAD-003 · CEN-CAD-005 · CEN-COB-001 · CEN-COB-002 · CEN-COB-003 · CEN-COB-004 · CEN-COB-006 · CEN-COB-007 · CEN-FAT-001 · CEN-FAT-003 · CEN-FAT-004 · CEN-FAT-007 · CEN-FAT-009 · CEN-FAT-010 · CEN-FIN-004 · CEN-MIC-001 · CEN-MIC-005 · CEN-OPE-003 |
 | IMV-02 | CEN-CAD-003 · CEN-FAT-001 · CEN-FAT-009 |
-| IMV-03 | CEN-ATE-001 · CEN-CAD-003 · CEN-FAT-001 · CEN-MIC-002 |
+| IMV-03 | CEN-ATE-001 · CEN-CAD-003 · CEN-FAT-001 · CEN-FIN-004 · CEN-MIC-002 |
 | IMV-04 | CEN-MIC-002 |
 | IMV-05 | CEN-MIC-001 |
 | IMV-06 | CEN-MIC-001 |
@@ -528,7 +553,7 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 | IMV-18 | CEN-FAT-002 |
 | DOC-01 | CEN-ARR-002 · CEN-ARR-004 · CEN-ARR-006 · CEN-FAT-007 |
 | DOC-01P | CEN-FAT-007 |
-| DOC-02 | CEN-FAT-008 |
+| DOC-02 | CEN-FAT-008 · CEN-FIN-002 |
 | DOC-03 | CEN-ARR-005 |
 | DOC-04 | CEN-ARR-003 |
 | DOC-05 | CEN-ARR-003 |
@@ -552,12 +577,19 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 | UNI-02 | CEN-ATE-004 |
 | TAR-01 | CEN-FAT-001 · CEN-FAT-002 |
 | ESP-01 | CEN-ATE-002 · CEN-ATE-003 |
-| ESP-02 | CEN-ATE-002 |
+| ESP-02 | CEN-ATE-002 · CEN-OPE-001 |
 | ESP-03 | CEN-ATE-003 |
 | ESP-04 | CEN-ATE-002 |
+| ESP-05 | CEN-OPE-001 |
+| ESP-06 | CEN-OPE-002 |
 | SRV-01 | CEN-ATE-006 · CEN-ATE-008 |
 | SRV-02 | CEN-ATE-008 |
 | SRV-03 | CEN-ATE-008 |
+| CTB-01 | CEN-FIN-001 · CEN-FIN-004 |
+| CTB-02 | CEN-FIN-002 |
+| OPR-01 | CEN-OPE-001 · CEN-OPE-003 |
+| OPR-02 | CEN-OPE-002 |
+| QLD-01 | CEN-OPE-003 |
 
 ### 13.7 Contra a explosão combinatória
 
@@ -580,10 +612,10 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 
 ## 15. O que a Fase 2 recebe
 
-1. **71 especificações fechadas**, cada uma com a lista de observáveis, o oráculo e o gate.
+1. **79 especificações fechadas**, cada uma com a lista de observáveis, o oráculo e o gate.
 2. Os **perfis de massa** e o mapa perfil → cenário.
 3. A lista do que **não** comparar (C4) e do que está **bloqueado** (BLQ-01 a 04).
-4. Quatro cenários cuja decisão de oráculo **depende da própria baseline**.
+4. Cinco casos — três cenários e duas variações — cuja decisão de oráculo **depende da própria baseline** (§10.2).
 5. 🔴 A **ordem de captura** continua a de [`estrategia-testes.md`](estrategia-testes.md) — autenticação, conta individual, baixa, parcelamento, consumo, OS, resumos.
 
 ⚠️ **O que a Fase 2 precisa fixar antes de capturar**, porque a baseline depende disso: a **variante de companhia** ativa na instância de referência; o **limite de tentativas** e os parâmetros da política de senha; os **parâmetros de faixa** das tarifas; se a **taxa de emissão** está ativa.
@@ -803,7 +835,35 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 | 19 | E-mail com anexo e falha SMTP | P2 — inventário |
 | 20 | SMS por tipo | CEN-INT-006 |
 | 21 | Consulta SPC | CEN-COB-006 |
-| 22 | Integração contábil padrão × variante | A COMPLEMENTAR |
+| 22 | Integração contábil padrão × variante | CEN-FIN-005 |
+
+**Financeiro/Contabilização 🆕** (11)
+
+| # | Item inventariado | Destino |
+| - | ----------------- | ------- |
+| 1 | Lançamentos do faturamento a partir do resumo | CEN-FIN-001 |
+| 2 | Lançamentos da arrecadação com tipo de recebimento | CEN-FIN-001 |
+| 3 | Lançamentos dos avisos bancários | CEN-FIN-001 |
+| 4 | Lançamentos dos devedores duvidosos | CEN-FIN-002 |
+| 5 | Seleção e marcação por critério, com resumo | CEN-FIN-002 |
+| 6 | Pagamento de conta baixada — recuperação | CEN-FIN-002 |
+| 7 | Remoção e regeração por competência, localidade e origem | CEN-FIN-003 |
+| 8 | Contas a receber contábil e documentos a receber por faixa | P2 — inventário |
+| 9 | Volumes consumidos e não faturados | CEN-FIN-004 |
+| 10 | Exportação — formato base e variante | CEN-FIN-005 |
+| 11 | Resumo de receita por banco e arrecadador | P2 — inventário |
+
+**Operacional 🆕** (7)
+
+| # | Item inventariado | Destino |
+| - | ----------------- | ------- |
+| 1 | Distrito pela quadra ou pela face na programação de OS | CEN-OPE-001 |
+| 2 | Divisão de esgoto define o destino do RA | CEN-OPE-001 |
+| 3 | Falta de água × programação | CEN-OPE-002 |
+| 4 | Qualidade da água na emissão — cascata | CEN-OPE-003 |
+| 5 | Divisão de esgoto do imóvel pela quadra | CEN-OPE-001 |
+| 6 | Manutenção da programação com concorrência | P2 — inventário |
+| 7 | Fontes por setor comercial ao informar a qualidade | P2 — inventário |
 
 ---
 
@@ -817,6 +877,9 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 | 4 | **Inventário das variantes por companhia** | §10.3 |
 | 5 | Decisões de BLQ-01 a BLQ-04 | §10.1 |
 | 6 | Origem dos dados dos resumos financeiros (pré-calculado × consulta) | CEN-REL-002 |
+| 7 🆕 | "Dívida ativa" e "baixa contábil" são o mesmo conceito? — hoje, o mesmo campo | CEN-FIN-002 · Cobrança |
+| 8 🆕 | Quem produz a estimativa de consumo não faturado | CEN-FIN-004 |
+| 9 🆕 | Chave de área da programação (bairro × unidade operacional) no OpenGSAN | CEN-OPE-002 |
 
 ---
 

@@ -160,6 +160,22 @@ Detalhe e cenários correspondentes em [`testes/cenarios-criticos.md`](../testes
 
 ⚠️ **As 16 divergências estão todas cobertas**: D-01…D-16, sem lacuna. D-17 não entra na contagem por ser **proposta**, não aprovada (§20.2).
 
+### 5.2 🆕 Conceitos classificados fora dos 145 (revisão controlada de escopo, 2026-09-28)
+
+Os módulos **Financeiro** e **Operacional** do GSAN não tinham mapa quando os 145 conceitos foram classificados. Seus conceitos foram classificados **nos próprios mapas** — [`financeiro-contabilizacao.md`](../modulos/financeiro-contabilizacao.md) e [`operacional.md`](../modulos/operacional.md), pela escala A–F de escopo — e recebem aqui a classe de compatibilidade usada nas especificações `CEN-FIN` e `CEN-OPE`. ⚠️ **A contagem de 145 não muda**: são conceitos adicionais, não reclassificação.
+
+| Conceito | Classe | Semântica GSAN → OpenGSAN |
+| -------- | ------ | ------------------------- |
+| Lançamento contábil por competência × localidade × origem | **C1** | Idem |
+| Parametrização contábil | **C2** | Regra como dado preservada; versionada; atributos de apresentação saem da taxonomia |
+| Baixa contábil de devedores duvidosos | **C2** | Campo escrito na Conta → **registro da Contabilização** que referencia o documento |
+| Exportação contábil | **C2** | Formato por herança de controlador → **adaptador** de Integrações; conteúdo preservado |
+| Volumes consumidos não faturados · recuperação de perdas | **C1** | Idem |
+| Distrito, bacia e divisão de esgoto como pontes do território comercial | **C2** | Colunas da quadra → **relação com dono** (Gestão Operacional) |
+| Programação de abastecimento e de manutenção | **C1** | Idem — a troca da chave de área exigiria divergência registrada |
+| Qualidade da água no documento | **C2** | Dono passa do Faturamento à **Gestão Operacional**; a emissão congela o que imprimiu |
+| Ativo físico · geometria · topologia | **C4-i** | **Sem antecedente no núcleo do GSAN** — Gestão de Ativos e Redes/GIS ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
+
 ---
 
 ## 6. Cadastro

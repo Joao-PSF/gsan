@@ -61,7 +61,7 @@
 ## CEN-CAD-003 — Composição de economias por categoria e subcategoria
 
 - **Criticidade**: P0
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: Economia (C2) · Categoria/Subcategoria (C1)
 - **Objetivo**: caracterizar a quantidade de economias por categoria que governa tarifa e mínimo
 - **Pré-condições**: IMV-01 (1 economia), IMV-02 (várias economias, mesma categoria), IMV-03 (várias categorias e subcategorias)
@@ -83,7 +83,7 @@
 ## CEN-CAD-004 — Situações da ligação: faturabilidade e situação derivada do imóvel
 
 - **Criticidade**: P0
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: situação da ligação (C2 — passa a ser da Ligação) · situação derivada (C1)
 - **Objetivo**: caracterizar como as situações das ligações determinam **se e como se fatura** e **quais solicitações o atendimento habilita**
 - **Pré-condições**: imóveis cobrindo as situações de água (potencial, factível, ligado, cortado, suprimido e ⚠️ o valor 4) × situações de esgoto; imóveis em cada situação especial de faturamento (NORMAL, PARALISAR_EMISSAO_CONTAS, PARALISAR_LEITURA_FATURAR_MEDIA, PARALISAR_LEITURA_FATURAR_TAXA_MINIMA, FATURAR_NORMAL)
@@ -105,7 +105,7 @@
 ## CEN-CAD-005 — Rotas por finalidade
 
 - **Criticidade**: P1
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: Rota (C2 — três colunas passam a vínculo por finalidade)
 - **Objetivo**: caracterizar as três finalidades de rota e a precedência da rota alternativa
 - **Pré-condições**: IMV-01 só com rota de leitura via quadra; IMV-17 com rota alternativa definida; imóvel com rota de entrega distinta
@@ -225,7 +225,7 @@
 ## CEN-ATE-005 — Prazo, espera e reiteração
 
 - **Criticidade**: P1
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: prazo original × atual (C1) · espera e reiteração (C2 — campos que sobrescrevem → histórico)
 - **Objetivo**: caracterizar o efeito da espera sobre o prazo e o registro da reiteração
 - **Pré-condições**: RA aberto com prazo conhecido
@@ -247,7 +247,7 @@
 ## CEN-ATE-006 — Ciclo de vida da OS: executada e não executada
 
 - **Criticidade**: P1
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: OS (C1)
 - **Objetivo**: caracterizar os marcos e estados da OS até os dois desfechos possíveis
 - **Pré-condições**: OS gerada por CEN-ATE-002 V2; tipo de serviço SRV-01 (cobrado)
@@ -269,7 +269,7 @@
 ## CEN-ATE-007 — Efeito cadastral da OS aplicado pelo dono
 
 - **Criticidade**: P0
-- **Etapa OpenGSAN**: 2 — Núcleo operacional
+- **Etapa OpenGSAN**: 2 — Núcleo de atendimento e execução
 - **Conceitos relacionados**: efeito da OS (C2 — o dono aplica) · situação da ligação (C2)
 - **Objetivo**: caracterizar o efeito da execução sobre a ligação — **o contrato central do OpenGSAN**
 - **Pré-condições**: IMV-01 com água **factível**; IMV-15 com água **cortada** e débito quitado

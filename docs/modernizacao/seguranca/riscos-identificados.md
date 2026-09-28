@@ -33,6 +33,14 @@ Todos verificados por leitura de código em `HEAD = 2031c4ca`. **Nenhuma execuç
 | 18 | Dado pessoal versionado | `ServicoSMS:67` — número de telefone real em `main()` | LGPD; dado pessoal no histórico do Git | P1: remover; massas de teste sempre anonimizadas |
 | 19 | Integração UPA/SAM: falha silenciosa e escrita direta em banco de terceiro | `RepositorioIntegracaoHBM:88-108` (segunda `SessionFactory` via `HibernateUtil.getStatelessSessionIntegracaoSAM`, `session.insert`, `ConstraintViolationException` engolida) e `ControladorIntegracaoSEJB:238-248` (`continue` + `System.out` quando o login não resolve — OS **não** encerrada, sem registro durável) | Trabalho perdido sem rastro; acoplamento máximo ao schema alheio | P1: **REESTRUTURAR** — contrato explícito, erro durável e observável — ver [`modulos/integracoes.md §6`](../modulos/integracoes.md) |
 
+## Achado de 2026-09-28 (revisão controlada de escopo)
+
+Localizado ao ler o schema `operacao` do dump versionado para o mapa do [Operacional](../modulos/operacional.md) (§6.3). **Nenhum valor de segredo, usuário real de pessoa ou endereço é transcrito.**
+
+| # | Achado | Evidência | Risco | Prioridade / ação |
+| - | ------ | --------- | ----- | ----------------- |
+| 20 | **Credenciais de banco em strings de conexão `dblink` dentro de funções armazenadas versionadas** | Contagem por script de strings `dblink('…password=…')`: `gsan-migracoes/comercial/scripts/20160118183224_dump.sql` — **5** (4 usuários de banco distintos; uma delas, na função `operacao.geraindicador`, com **endereço de rede interno**); `gsan-migracoes/comercial/dump.sql` — as mesmas **5**; `gsan-migracoes/gerencial/scripts/20160118183224_dump.sql` — **81** (3 usuários) | Segredo **comprometido por definição** (está em repositório versionado); acesso cruzado entre bases por credencial embutida — o mesmo padrão de integração por banco compartilhado já registrado para UPA/SAM | **P0 — rotação obrigatória** de todas as credenciais citadas, em qualquer instalação que as use. No OpenGSAN: `dblink` **não entra** ([`banco/migracao-postgresql.md`](../banco/migracao-postgresql.md)); integração entre bases é explícita na aplicação; contas distintas por finalidade e menor privilégio; o *secret scan* do pipeline cobre também dumps e scripts SQL — cenário [CEN-SEG-011](../testes/cenarios/seguranca.md) |
+
 ### Defeito funcional correlato (não é segurança, registrado aqui por proximidade)
 
 🟢 `ServicoSMS.getJson:41-58` **ignora o parâmetro `tipoMensagem`** e sempre monta o texto de confirmação de cadastro no Portal. `ControladorFaturamento:15268` solicita aviso de vencimento e o cliente recebe a mensagem errada. `ControladorCobranca:62373` tem o SMS de corte comentado (inativo). Registrado em [`modulos/integracoes.md §8.2`](../modulos/integracoes.md).
