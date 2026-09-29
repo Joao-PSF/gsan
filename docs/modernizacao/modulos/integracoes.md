@@ -365,3 +365,5 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 🔵 Para o OpenGSAN, a conclusão não é "portar as integrações": é **preservar todas as capacidades funcionais** (coleta em campo, OS móvel, troca com executante terceirizado, consulta a birô, arquivos bancários, notificação) sob **uma** camada com política única — autenticação real da origem, identidade rastreável atravessando a fronteira, erro durável e observável, segredo fora do código e transporte cifrado.
 
 🔵 O `GsanApi` prova que esse padrão já era conhecido dentro do próprio código. A camada de integração do OpenGSAN é a generalização dele, não uma invenção.
+
+🆕 **Decidido na [ADR-0007](../decisoes/0007-arquitetura-de-interface.md) (2026-09-29)**: integrações, campo e ferramentas GIS consomem **contratos explícitos** — autenticados por identidade de sistema ou de dispositivo, documentados e versionados —, **nunca endpoints de tela** nem o banco interno; a autorização é a do **caso de uso**, a mesma de qualquer canal.

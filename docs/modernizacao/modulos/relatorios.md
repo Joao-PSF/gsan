@@ -273,16 +273,16 @@ FiltroRelatorioGerado por FUNCIONALIDADE_INICIADA_ID
 | **Armazenamento do arquivo no banco** (`rege_pdf`) | **NÃO TRANSPORTAR automaticamente** | Requisito real: *resultado assíncrono recuperável*; **onde** armazenar é decisão futura |
 | **Serialização Java da tarefa** (parâmetros e entrega) | **REESTRUTURAR** | Frágil e amarra a migração; a necessidade (preservar a solicitação) permanece |
 | Struts/EJB/Quartz/JMS no caminho de relatórios | **NÃO TRANSPORTAR** | Tecnologia |
-| Segurança do **download** do artefato | **EXIGE APROFUNDAMENTO** | Verificação por usuário não localizada (§16) — decidir só após rastrear |
+| Segurança do **download** do artefato | ✅ **Decidido** — [ADR-0007 §11](../decisoes/0007-arquitetura-de-interface.md) (2026-09-29) | Rastreado depois (achado 13, D-03); o download passa a ser **caso de uso autorizado** — usuário, propriedade ou permissão e escopo verificados a cada acesso |
 | **Retenção/expiração** de relatórios gerados | **EXIGE APROFUNDAMENTO** | Política não comprovada; afeta volume e privacidade |
 | Uso de **unidades de processamento** em relatórios batch | EXIGE APROFUNDAMENTO | Não verificado (§12) |
 | **Serviço externo** de relatórios | EXIGE APROFUNDAMENTO | Existência sugerida, papel não comprovado (§22) |
 
 ## 28. Hipóteses para avaliação futura (não são decisões; nenhuma tecnologia escolhida)
 
-1. **Solicitação de relatório como recurso de primeira classe** (com solicitante, parâmetros, estado e resultado), unificando online e assíncrono sob o mesmo modelo.
+1. **Solicitação de relatório como recurso de primeira classe** (com solicitante, parâmetros, estado e resultado), unificando online e assíncrono sob o mesmo modelo. ✅ *Adotada pela ADR-0007 §11.*
 2. **Critério de execução baseado em custo estimado**, evoluindo o limite atual sem herdar o acoplamento ao nome da classe.
-3. **Artefato com metadados explícitos** (formato, MIME, nome, tamanho, expiração) e **controle de acesso próprio**, em vez de vínculo apenas indireto.
+3. **Artefato com metadados explícitos** (formato, MIME, nome, tamanho, expiração) e **controle de acesso próprio**, em vez de vínculo apenas indireto. ✅ *Adotada pela ADR-0007 §11.*
 4. **Contexto da solicitação em formato estável** (não serialização Java), preservando a reconstrução da solicitação.
 5. **Política de retenção explícita** para artefatos gerados.
 

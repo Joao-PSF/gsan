@@ -443,7 +443,7 @@ OS registra que o efeito foi aplicado
 
 ### 15.2 Concessão desacoplada da apresentação
 
-🟢 **Problema herdado**: a concessão é ancorada no caminho HTTP da tela. O OpenGSAN não terá esses caminhos, e a decisão de interface (ADR-0007) ainda está pendente.
+🟢 **Problema herdado**: a concessão é ancorada no caminho HTTP da tela. O OpenGSAN não terá esses caminhos. ✅ A decisão de interface ([ADR-0007](../decisoes/0007-arquitetura-de-interface.md)) foi **aceita em 2026-09-29**: a autorização é aplicada **no caso de uso**, sob uma política, para **todo** canal.
 
 **No OpenGSAN**: funcionalidade e operação têm **identificador estável de domínio**, independente da tecnologia de apresentação. 🔵 Efeito colateral valioso: a decisão da ADR-0007 deixa de afetar o modelo de segurança.
 
@@ -892,7 +892,7 @@ flowchart TB
 
 | # | Decisão | Por quê bloqueia |
 | - | ------- | ---------------- |
-| 1 | **ADR-0007 — arquitetura de interface** | Muda o desenho interno do módulo, não só a apresentação. Pré-requisito do piloto |
+| 1 | ~~**ADR-0007 — arquitetura de interface**~~ ✅ **Aceita em 2026-09-29** | Canais sobre casos de uso; backoffice server-driven com aprimoramento progressivo; contratos explícitos para canais externos |
 | 2 | **Diferenças reais entre as variantes por companhia** | Sem o inventário, o ponto de extensão (§24) pode não cobrir os casos reais |
 | 3 | **Existe mecanismo de negação na autorização?** | Define se o modelo é *allow-only* ou tem *deny*. Muda o desenho da autorização inteira |
 | 4 | **Nome físico do repositório e governança do projeto aberto** | O código não pode começar sem repositório; licença e organização são decisão de governança |
@@ -910,7 +910,7 @@ flowchart TB
 | 11 | Retenção e armazenamento dos artefatos de relatório | Relatórios |
 | 12 | Granularidade de commit dentro de uma unidade de processamento | Processamento |
 | 13 🆕 | "Dívida ativa" e "baixa contábil" são o mesmo conceito? | Contabilização / Cobrança |
-| 14 🆕 | O OpenGSAN calcula PECLD ou só fornece o envelhecimento ao ERP? | Contabilização |
+| 14 🆕 | Reconhecimento de perdas esperadas em créditos (PECLD): que políticas suportar — variáveis por companhia, norma, período e carteira; sem fórmula nesta fase. ⚠️ Capacidade **posterior** no ecossistema GSAN, não comportamento universal do GSAN público | Contabilização |
 | 15 🆕 | Correspondência território comercial ↔ unidade operacional: mantida ou derivada de geometria? | Gestão Operacional / Redes-GIS |
 | 16 🆕 | Mínimo nativo de Redes/GIS numa instalação sem Giswater | Redes/GIS |
 | 17 🆕 | Taxonomia inicial de classes de ativos e atributos mínimos | Gestão de Ativos |
@@ -946,7 +946,7 @@ flowchart TB
 | 8 | **Ponto de extensão que não cobre os casos reais** | 🔊 Visível ao migrar companhia | ⚠️ Inventário das variantes é **pré-requisito** (§28.1) |
 | 9 | **`shared` virar depósito** e dissolver o ownership | 🔊 Visível na evolução | §25.3 |
 | 10 | **Abstração prematura de "obrigação financeira"** | 🔊 Visível, custoso de desfazer | §28.3 — marcado `PROPOSTO` |
-| 11 | **Decidir a interface por inércia** no piloto | 🔊 Visível | ADR-0007 declarada bloqueante |
+| 11 | **Decidir a interface por inércia** no piloto | 🔊 Visível | ✅ **Mitigado**: ADR-0007 decidida antes do piloto (2026-09-29) |
 | 12 | **Perder capacidade funcional ao descartar implementação de integração** | 🔊 Visível na operação de campo | §18.3 separa capacidade de implementação |
 | 13 | ⚠️ **Projeto aberto sem governança definida** | 🔊 Visível | Licença, organização e mantenedores registrados como pendência |
 | 14 🆕 | **OS ou identidade de ativo duplicadas** entre ferramentas (Giswater, QField, EAM) | 🔴 Silencioso — dois registros divergem aos poucos | [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md): OS só no Atendimento; identidade emitida por Ativos; forma de consumo declarada por atributo |
@@ -996,4 +996,4 @@ GSAN sete padrões de integração                →  OpenGSAN camada única de
 
 ## 31. Próxima atividade
 
-~~**Catálogo de Funcionalidades Futuras**~~ — concluído em 2026-09-15; depois vieram a ordem de implementação, a compatibilidade conceitual, a especificação dos cenários e a revisão controlada de escopo (2026-09-28). 🆕 **Próxima**: decisão da **ADR-0007** e **auditoria final** da Fase 0 — backlog em [`MODERNIZACAO_GSAN.md`](../../../MODERNIZACAO_GSAN.md).
+~~**Catálogo de Funcionalidades Futuras**~~ — concluído em 2026-09-15; depois vieram a ordem de implementação, a compatibilidade conceitual, a especificação dos cenários e a revisão controlada de escopo (2026-09-28). ✅ ADR-0007 aceita em 2026-09-29. 🆕 **Próxima**: **auditoria final** da Fase 0 — backlog em [`MODERNIZACAO_GSAN.md`](../../../MODERNIZACAO_GSAN.md).

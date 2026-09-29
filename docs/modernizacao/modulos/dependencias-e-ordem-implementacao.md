@@ -117,6 +117,8 @@ Aplicado às quatro capacidades de plataforma:
 
 🔵 **Consequência para a fundação**: se a concessão nascer amarrada a rota, ela terá de ser refeita caso a ADR-0007 decida por API. Expressa em **caso de uso/operação**, sobrevive a qualquer das três opções. Isso torna a fundação **independente da ADR-0007** (§27).
 
+✅ **Decidido em 2026-09-29** ([ADR-0007 §9.3](../decisoes/0007-arquitetura-de-interface.md)): a autorização é aplicada **no caso de uso**, sob uma política, para **todo** canal.
+
 ### 4.4 🔴 Segurança depende de Cadastro — uma dependência que faltava
 
 ⚠️ **Achado desta execução.** A abrangência territorial é definida sobre gerência regional, unidade de negócio, elo/polo e localidade — e 🟢 **a estrutura territorial pertence ao Cadastro** ([mapa de domínio §7](../dominio/mapa-de-dominio.md)).
@@ -512,7 +514,7 @@ processamento em lote
 
 🔴 **Por que o controle de acesso é convenção de dia 1**: o achado 13 (confirmado) mostra o artefato do legado recuperável **por identificador, sem verificação de propriedade e sem usuário autenticado**. A divergência **D-03** obriga o OpenGSAN a divergir. Se o motor nascer sem essa verificação, ela é retrofit sobre todo relatório já existente.
 
-⚠️ A **forma de entrega** (bytes na resposta × artefato por URL assinada) depende da **ADR-0007** — registrado, não decidido.
+✅ **Forma de entrega decidida** ([ADR-0007 §11](../decisoes/0007-arquitetura-de-interface.md)): síncrono na resposta do caso de uso; assíncrono como **artefato com dono, escopo e expiração**, recuperado por caso de uso autorizado — **nunca só pelo identificador** (D-03).
 
 ---
 
@@ -561,7 +563,7 @@ Separação pedida, resolvida por dependência:
 | -------- | -------- |
 | Entra no primeiro core? | 🔴 **Não.** Depende de Cadastro, Faturamento, Cobrança e Atendimento (#20) |
 | Depois dos serviços internos? | **Sim** — consome o que eles expõem |
-| Depende da ADR-0007? | 🔴 **Sim, diretamente.** É a superfície pública do sistema |
+| Depende da ADR-0007? | ✅ **Decidido (2026-09-29)**: canal próprio; padrão por omissão server-driven; frontend independente só por critério registrado na Etapa 8 ([ADR-0007 §12](../decisoes/0007-arquitetura-de-interface.md)) |
 | Exige identidade distinta? | 🔴 **Sim** — ver §19.3 |
 
 **Posição: Etapa 8**, como primeira capacidade de canal.
@@ -936,11 +938,13 @@ aceitação sob os DOIS oráculos
 | - | ------- | ---------------- | ---------------- | ---------- |
 | 3 | 🔴 **Existe negação na autorização?** | **S1 — o modelo de avaliação da concessão** | Nada além | 🔴 **Antes da Etapa 0.** É o único bloqueio de dia 1 |
 | 4 | **Nome do repositório e governança** | A **partida física** do código | Todo o trabalho conceitual | Antes da Etapa 0 — ver §27.2 |
-| 1 | **ADR-0007 — interface** | **Superfície de entrega** da Etapa 1; entrega de relatório; canal digital | 🔵 Fundação, domínio, persistência, testes, motor financeiro | Antes da **superfície** da Etapa 1 |
+| 1 | ~~**ADR-0007 — interface**~~ ✅ **aceita em 2026-09-29** | Superfície de entrega da Etapa 1; entrega de relatório; canal digital | 🔵 Fundação, domínio, persistência, testes, motor financeiro | — resolvida |
 | 5 | **Divergência D-17** (escopo sistemático) | **S2** | Etapas 0 e 1 | Antes da Etapa 2 |
 | 2 | **Variantes por companhia** | Desenho do **ponto de extensão** tarifário | Etapas 0–3 | Antes da Etapa 4 |
 
 ### 27.1 🔴 ADR-0007 — exatamente o que ela bloqueia
+
+✅ **Resolvido em 2026-09-29**: superfície da Etapa 1 = backoffice server-driven com aprimoramento progressivo; autorização no caso de uso; relatório por caso de uso autorizado; canal digital como canal próprio; sessão com CSRF nos canais de navegador e credencial de sistema ou de dispositivo nos demais ([ADR-0007](../decisoes/0007-arquitetura-de-interface.md)). A análise abaixo permanece como registro.
 
 Pedido explícito do roteiro (§47). Resposta:
 
@@ -1045,7 +1049,7 @@ Registrado por honestidade, e porque três acertos permanecem:
 | 1 | 🔴 **Convenção monetária ou de arredondamento errada na fundação** contamina tudo depois da Etapa 4 | Item de **dia 1** (§4.1-5); as 5 políticas caracterizadas **antes** do motor, não durante |
 | 2 | **Parcelamento tarde** — a regra financeira mais complexa fica na Etapa 6 | A **posição de dívida** é validada na Etapa 5, uma etapa antes do módulo; memória integral já é `PRESERVAR` |
 | 3 | **Contrato de efeito moldado só por casos operacionais** (Atendimento antes do financeiro) | O contrato da Etapa 2 é **revisado contra a lista de efeitos financeiros** antes de ser considerado estável (§11.1) |
-| 4 | **ADR-0007 decidida depois da fatia 1** obriga reescrever a superfície | Domínio e aplicação livres de conceito de entrega; concessão em caso de uso (§4.3); decidir antes da **superfície** da Etapa 1 |
+| 4 | ✅ *Mitigado — ADR-0007 decidida antes da fatia 1 (2026-09-29).* **ADR-0007 decidida depois da fatia 1** obriga reescrever a superfície | Domínio e aplicação livres de conceito de entrega; concessão em caso de uso (§4.3); decidir antes da **superfície** da Etapa 1 |
 | 5 | **Problema de escala descoberto na Etapa 7**, com o núcleo inteiro construído | Baseline de performance conhecida antes de substituir comportamento; medição **por imóvel** desde a Etapa 4 |
 | 6 | **Ordem por capacidade** produz módulos permanentemente incompletos | Gates por etapa (§25) + critério de pronto por capacidade (§31.1) |
 | 7 | **Fiscal obrigatório** descoberto tarde, já com a conta construída | Esclarecimento exigido **antes da Etapa 4**: se o documento fiscal decorre da conta, o evento nasce lá (§20.3) |
@@ -1080,12 +1084,12 @@ Capacidade pronta quando:
 
 ### 31.3 Pendências da Fase 0, na ordem
 
-1. **Compatibilidade conceitual GSAN → OpenGSAN** — próxima atividade.
+1. ~~**Compatibilidade conceitual GSAN → OpenGSAN**~~ ✅ concluída em 2026-09-15.
 2. ~~**Especificação dos cenários críticos**~~ ✅ **concluída em 2026-09-28** — os **166** itens inventariados resultaram em **71 especificações** ([`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md)), com os gates por etapa desta ordem. 🆕 Revisão controlada de escopo (2026-09-28): **184 itens → 79 especificações**, com Contabilização e Gestão Operacional.
-3. **Decisão da ADR-0007** — agora com o escopo do bloqueio delimitado (§27.1).
+3. ~~**Decisão da ADR-0007**~~ ✅ **aceita em 2026-09-29** — [ADR-0007](../decisoes/0007-arquitetura-de-interface.md).
 4. **Auditoria final e encerramento da Fase 0.**
 
-🔴 **Três respostas que devem existir antes da Etapa 0 começar**: negação na autorização (bloqueio de dia 1), nome/governança do repositório (bloqueio de partida) e a decisão da ADR-0007 antes da superfície da Etapa 1.
+🔴 **Três respostas que devem existir antes da Etapa 0 começar**: negação na autorização (bloqueio de dia 1), nome/governança do repositório (bloqueio de partida) e a decisão da ADR-0007 antes da superfície da Etapa 1 — ✅ **esta última resolvida em 2026-09-29**.
 
 ### 31.4 Relação com as fases do plano de trabalho
 

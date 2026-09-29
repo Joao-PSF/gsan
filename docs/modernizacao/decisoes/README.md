@@ -12,7 +12,7 @@ Uma decisão por arquivo, numerada. Status: Proposta → Aceita → (Substituíd
 | [0004](0004-encoding-latin1-na-primeira-migracao.md) | UTF-8 no OpenGSAN; encoding de origem tratado pela migração (substitui proposta "manter LATIN1") | **Aceita** | 2026-08-13 |
 | [0005](0005-sisan-modernizacao-evolutiva-do-gsan.md) | **OpenGSAN é a evolução aberta e moderna do GSAN**; migração de instalações **fora do escopo** | **Aceita** | 2026-08-13 (revisada 2026-09-15) |
 | [0006](0006-modelo-de-dados-evolutivo.md) | Modelo de dados evolutivo (`PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`) | **Aceita** | 2026-08-13 (calibrada 2026-09-15) |
-| [0007](0007-arquitetura-de-interface.md) | Arquitetura de interface do OpenGSAN (SSR × REST+SPA × híbrido) | **Proposta — bloqueia o piloto** | 2026-09-14 |
+| [0007](0007-arquitetura-de-interface.md) | **Arquitetura de interface: canais sobre casos de uso** — backoffice server-driven com aprimoramento progressivo; portal como canal próprio; contratos explícitos para integrações, campo e GIS; autorização no caso de uso; relatórios por caso de uso autorizado | **Aceita** | 2026-09-14 (decidida 2026-09-29) |
 | [0008](0008-gestao-de-ativos-nativa.md) | **Gestão de Ativos nativa**; Giswater para redes, GIS e engenharia (não EAM, não obrigatório); OS não duplicada; identidade corporativa única do ativo; ownership explícito por atributo | **Aceita** | 2026-09-28 |
 
 Obs.: os arquivos das ADRs 0004 e 0005 mantêm os nomes originais (`0004-encoding-latin1-...`, `0005-sisan-...`) para preservar links; o conteúdo registra a decisão vigente e o histórico da substituição.

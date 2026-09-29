@@ -8,7 +8,7 @@
 
 ⚠️ **Os conceitos destas especificações estão fora dos 145** da compatibilidade conceitual. A classe `C1`–`C5` declarada em *Conceitos relacionados* foi atribuída nesta revisão — ver [`gsan-opengsan.md §5.2`](../../compatibilidade/gsan-opengsan.md).
 
-⚠️ **Gestão de Ativos e Redes/GIS não têm cenário de equivalência**: o núcleo do GSAN não tem ativo físico, geometria nem topologia — não há oráculo a comparar ([ADR-0008](../../decisoes/0008-gestao-de-ativos-nativa.md)).
+⚠️ **Gestão de Ativos e Redes/GIS não têm cenário de equivalência**: o núcleo do GSAN não tem modelo corporativo unificado de gestão de ativos, nem geometria, nem topologia — não há oráculo a comparar ([ADR-0008](../../decisoes/0008-gestao-de-ativos-nativa.md)).
 
 ---
 

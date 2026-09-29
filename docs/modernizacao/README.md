@@ -32,7 +32,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [modulos/dependencias-e-ordem-implementacao.md](modulos/dependencias-e-ordem-implementacao.md) | **Dependências e ordem de implementação do OpenGSAN**: 26 relações classificadas (dura/parcial/transversal/operacional/consulta/futura), os **8 ciclos** e como cada um é rompido sem stub, fundação mínima (dia 1 × depois), primeira fatia vertical recomendada, **9 etapas por capacidade**, gates de avanço por prova, decisões bloqueantes delimitadas e diferenças em relação à ordem anterior. ⚠️ Sequência e gates, **sem cronograma** |
 | [arquitetura/arquitetura-legada.md](arquitetura/arquitetura-legada.md) | Mapa técnico do GSAN legado: runtime, build, frameworks, camadas, batch, relatórios |
 | 🆕 [arquitetura/gis-redes-ativos.md](arquitetura/gis-redes-ativos.md) | **Redes, GIS e Ativos**: ativo ≠ geometria ≠ topologia ≠ simulação; papéis de Giswater, QGIS, QGIS Server, QField e EPANET/SWMM; identidade corporativa única; **matriz de ownership por atributo**; proibição de "copiar e sincronizar"; respostas às perguntas do critério de saída da revisão de escopo |
-| [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e princípios de compatibilidade GSAN→OpenGSAN (banco próprio UTF-8; coexistência **não** é premissa deste projeto — é cenário do playbook de migração futura) |
+| [arquitetura/arquitetura-alvo.md](arquitetura/arquitetura-alvo.md) | Stack alvo, organização modular e princípios de compatibilidade GSAN→OpenGSAN (banco próprio UTF-8; coexistência **não** é premissa deste projeto — é cenário do playbook de migração futura) · 🆕 **canais de interface** conforme a ADR-0007 (backoffice server-driven com aprimoramento progressivo; contratos explícitos só para canais externos; autorização no caso de uso) |
 | [banco/estrutura-atual.md](banco/estrutura-atual.md) | Inventário do banco `gsan_comercial`: schemas, objetos, classificação, drift |
 | [banco/migracao-postgresql.md](banco/migracao-postgresql.md) | Estratégia de atualização do PostgreSQL e versionamento do banco |
 | [seguranca/modelo-legado.md](seguranca/modelo-legado.md) | Modelo de autenticação/autorização atual (RBAC próprio) |
@@ -45,7 +45,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 | [compatibilidade/divergencias-aprovadas.md](compatibilidade/divergencias-aprovadas.md) | **Registro de divergências aprovadas**: onde o OpenGSAN deve divergir do GSAN de propósito, para que o teste não trate correção de segurança como falha |
 | [integracoes/integracoes-identificadas.md](integracoes/integracoes-identificadas.md) | Integrações externas identificadas no código e no banco |
 | [modulos/README.md](modulos/README.md) | **Ordem de implementação** do OpenGSAN (resumo das 9 etapas) e status |
-| [decisoes/README.md](decisoes/README.md) | Registro de decisões arquiteturais (ADRs) |
+| [decisoes/README.md](decisoes/README.md) | Registro de decisões arquiteturais (ADRs) — **oito, todas aceitas**; a última pendência estrutural, a [ADR-0007 — arquitetura de interface](decisoes/0007-arquitetura-de-interface.md), foi decidida em 2026-09-29 |
 | [alteracoes/README.md](alteracoes/README.md) | Registro de alterações realizadas pela modernização |
 
 ## Convenções

@@ -304,11 +304,11 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 ## 26. Hipóteses para avaliação futura (não são decisões)
 
 1. **RBAC com escopo territorial de primeira classe** — motivado pelo fato de a abrangência existir como conceito, mas depender de chamadas manuais.
-2. **Camada de política de autorização** que resolva funcionalidade/operação por **identificador estável** (não por URL), preservando o mapeamento das concessões atuais para migração.
+2. **Camada de política de autorização** que resolva funcionalidade/operação por **identificador estável** (não por URL), preservando o mapeamento das concessões atuais para migração. ✅ *Adotada — autorização no caso de uso para todo canal ([ADR-0007 §9.3](../decisoes/0007-arquitetura-de-interface.md)).*
 3. **Capacidades nomeadas com validade** para as permissões especiais (o legado já as nomeia; falta ciclo de vida explícito).
 4. **Auditoria estruturada por evento** mantendo a granularidade linha/coluna, sem depender de anotar cada campo.
 5. **Autenticação moderna com migração progressiva do hash legado** (validar contra SHA-1 no primeiro acesso e re-hashear) — preserva a base de usuários sem transportar o algoritmo.
-6. **Contas de serviço para batch e APIs**, separando identidade interativa de identidade de sistema.
+6. **Contas de serviço para batch e APIs**, separando identidade interativa de identidade de sistema. ✅ *Adotada — autenticação por classe de canal ([ADR-0007 §9.2](../decisoes/0007-arquitetura-de-interface.md)).*
 7. **Governança de acesso** (solicitação/aprovação/revogação com validade) como parte do produto, não como cadastro paralelo.
 
 ## 27. Cenários de caracterização identificados (sustentados por evidência)

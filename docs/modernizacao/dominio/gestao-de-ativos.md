@@ -12,7 +12,7 @@ Marcas: **[GSAN]** · **[REF]** · **[INF]** · **[PROP]** · **[DEC]** · **[PE
 
 | Fonte | Papel | Limite |
 | ----- | ----- | ------ |
-| **Código público do GSAN** | 🔴 **Não há ativo físico no núcleo**: busca por bomba, válvula, elevatória, adutora, tubulação, patrimônio, imobilizado e depreciação em `src/gcom` (`*.java`) retorna **0 arquivos** para cada termo ([`operacional.md §8`](../modulos/operacional.md)) | **Não existe oráculo GSAN** para Ativos — nenhuma equivalência será fabricada |
+| **Código público do GSAN** | 🔴 O GSAN tem **objetos físicos** — o **hidrômetro**, com ciclo de vida completo na Micromedição (aquisição, nota fiscal, garantia, armazenagem, movimentação, instalação, revisão, baixa com motivo), e os elementos da estrutura operacional —, mas **não possui um modelo corporativo unificado de gestão de ativos**: busca por bomba, válvula, elevatória, adutora, tubulação, patrimônio, imobilizado e depreciação em `src/gcom` (`*.java`) retorna **0 arquivos** para cada termo ([`operacional.md §8`](../modulos/operacional.md)) | **Não existe oráculo GSAN** para a gestão corporativa de ativos — nenhuma equivalência será fabricada. O hidrômetro é **referência de requisitos**, e continua da Micromedição (§9) |
 | **Banco público versionado** — schema `operacao` do satélite `gsan-operacional` | **Fonte de requisitos**: o ecossistema GSAN já precisou de identidade patrimonial, instalação e aferição de instrumentos (§2.2) | Satélite sem código público; nada ali é oráculo |
 | **openMAINT / CMDBuild** | [REF] benchmark de CMMS/EAM aberto | Fontes oficiais localizadas por busca; ⚠️ leitura direta **bloqueada** pela política de rede desta sessão |
 | **Giswater** | [REF] gestão de ativos **orientada à rede** | Idem |
@@ -29,12 +29,13 @@ Marcas: **[GSAN]** · **[REF]** · **[INF]** · **[PROP]** · **[DEC]** · **[PE
 | **openMAINT / EAM externo** | [REF] É CMMS completo, com **suas próprias ordens de trabalho**, estoque e contratos ([openMAINT](https://www.openmaint.org/en/product/features)). Adotá-lo como dono **duplicaria a OS** e a identidade — as duas coisas que esta decisão proíbe |
 | **Não ter o domínio** | Manutenção de bombas, válvulas e instrumentos ficaria sem dono e reapareceria como **solução ad hoc** — exatamente o que o satélite do GSAN fez (§2.2) |
 
-### 2.2 [GSAN] A necessidade já existia — e foi resolvida fora do núcleo
+### 2.2 [GSAN] A necessidade já existia — resolvida para uma classe no núcleo e, para as demais, fora dele
 
 | Evidência (schema `operacao`, dump versionado) | O que mostra | Classe |
 | ---------------------------------------------- | ------------ | ------ |
 | `macro_medidor` com fabricante, modelo, **nº de série**, **tombamento**, princípio, faixa, sinal; `macro_medidor_afericao` | Instrumento com **identidade patrimonial** e **histórico de aferição** | **A** — necessidade geral |
 | `eta_medidor`, `eeab_medidor`, `eeat_medidor` com **data de instalação e TAG** | **Equipamento × posição de instalação** — o mesmo padrão de *hidrômetro × instalação* da Micromedição | **A** conceito · **D** forma: **uma tabela por tipo de unidade** — e, na reservação, colunas da própria unidade |
+| 🆕 `Hidrometro` com data de aquisição, nota fiscal, garantia, situação, **local de armazenagem**, **movimentação** com motivo, revisão e **baixa com motivo** (núcleo público, Micromedição) | 🟢 O GSAN **já gere o ciclo de vida de um ativo físico** — mas de **uma só classe**, dentro de um módulo comercial | **A** — o padrão a generalizar |
 | Conjunto motor-bomba como **colunas da estação** (`*_cmb`, `*_cmbpotencia`, `*_cmbvazao`…) e **horas de operação** por estação | 🔴 A bomba **não tem identidade**: não é possível saber qual bomba parou, qual foi trocada, qual acumula horas | **D** — representação inadequada |
 
 🔵 [INF] **O padrão estrutural "equipamento × instalação", que o GSAN aplica ao hidrômetro, é o mesmo que a gestão de ativos precisa** — generalizado para *ativo × localização funcional* (§6).

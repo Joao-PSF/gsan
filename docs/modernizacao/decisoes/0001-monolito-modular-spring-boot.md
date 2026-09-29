@@ -45,4 +45,4 @@ Decisão estrutural: o rollback real é a reversão do repositório do OpenGSAN 
 
 ## Pendência ligada
 
-A **arquitetura de interface** (JSP/Thymeleaf servido pelo próprio Spring Boot × API + SPA) **não** está decidida aqui e é pré-requisito do piloto — ver **ADR-0007**.
+A **arquitetura de interface** não é decidida aqui. ✅ Resolvida pela [ADR-0007](0007-arquitetura-de-interface.md) (aceita em 2026-09-29), **compatível** com este monólito modular: canais são adaptadores dentro dos módulos; casos de uso sem HTTP; nenhum HTTP entre módulos; sem microfrontends nem microserviços.

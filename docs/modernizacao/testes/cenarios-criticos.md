@@ -597,17 +597,18 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 
 ---
 
-## 14. Dependência da ADR-0007
+## 14. ADR-0007 — decidida em 2026-09-29
 
-As especificações são **neutras à interface**: nenhuma descreve tela, rota ou recurso REST. O que muda com a decisão:
+As especificações são **neutras à interface**: nenhuma descreve tela, rota ou recurso REST. ✅ **Verificado depois da decisão** ([ADR-0007 §15](../decisoes/0007-arquitetura-de-interface.md)): ela **não acrescenta observável de equivalência** — nenhuma especificação foi reescrita.
 
-| Depende da ADR-0007 | Não depende |
-| ------------------- | ----------- |
-| A **superfície** pela qual a fatia vertical (CEN-SEG-004, CAD-001/002, ATE-001 a 004) será exercida no OpenGSAN | O que se observa e como se decide |
-| A **unidade de autorização** em CEN-SEG-004 — comparada pela funcionalidade, não pelo caminho | Todos os cenários financeiros, de medição e de lote |
-| A **forma de entrega** do artefato em CEN-REL-001 | A exigência de propriedade e escopo no acesso |
-| O canal digital (Etapa 8) — nenhum cenário especificado | — |
+| O que dependia da ADR-0007 | Como ficou |
+| -------------------------- | ---------- |
+| A **superfície** pela qual a fatia vertical (CEN-SEG-004, CAD-001/002, ATE-001 a 004) será exercida | **Backoffice server-driven com aprimoramento progressivo**; os observáveis não mudam |
+| A **unidade de autorização** em CEN-SEG-004 | **Caso de uso**, para todo canal — já era comparada pela funcionalidade, não pelo caminho |
+| A **forma de entrega** do artefato em CEN-REL-001 | **Caso de uso de obtenção do artefato** com verificação de usuário, propriedade e escopo — V2 e V3 continuam negadas (D-03) |
+| O canal digital (Etapa 8) | **Canal próprio**; nenhum cenário especificado — continua sem baseline a comparar |
 
+⚠️ **Controles novos, sem antecedente no GSAN** — sessão com cookie `HttpOnly`/`Secure`/`SameSite`, CSRF inclusive em requisições parciais, fixação de sessão: são **testes próprios da fundação (S1)**, não cenários de equivalência. O achado 6, que os motiva, **não tem `D-xx` registrado** — pendência para a auditoria final.
 ---
 
 ## 15. O que a Fase 2 recebe
@@ -887,7 +888,7 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 
 Restam para fechar a Fase 0:
 
-1. **ADR-0007 — arquitetura de interface.** Esta especificação delimitou o que ela afeta (§14).
+1. ~~**ADR-0007 — arquitetura de interface.**~~ ✅ **Aceita em 2026-09-29** — sem efeito sobre os observáveis (§14).
 2. **Auditoria final e encerramento da Fase 0.** Esta documentação foi escrita para permitir verificar cobertura, oráculo, rastreabilidade, pendências, gates e **ausência de resultado inventado**.
 
 ⚠️ **Não executadas aqui.**

@@ -218,7 +218,7 @@ PONTES NO TERRITÓRIO COMERCIAL
 | "Reservatório" | `src/gcom`, `*.java` | Só `ReservatorioVolumeFaixa` — **reservatório do imóvel** (cadastro comercial) |
 | Geometria nas entidades operacionais | `gcom.operacional` | Nenhuma — só descrição, indicador de uso e referências |
 
-🔵 **O núcleo público do GSAN não tem ativo físico, nem geometria, nem topologia.** Ativos e Redes/GIS **não têm oráculo GSAN** — e nenhuma equivalência será fabricada.
+🔵 **O núcleo público do GSAN tem objetos físicos** — o hidrômetro, com ciclo de vida completo na Micromedição, e os elementos da estrutura operacional —, **mas não um modelo corporativo unificado de gestão de ativos, nem geometria, nem topologia.** A gestão corporativa de ativos e Redes/GIS **não têm oráculo GSAN** — e nenhuma equivalência será fabricada.
 
 ---
 

@@ -568,7 +568,7 @@ DOMÍNIO GIS NATIVO FUTURO     visão estratégica do OpenGSAN (rede, ativos, tr
 | **Analytics** | 🟢 O GSAN já separou de fato (base gerencial, papel dedicado); pergunta analítica difere da transacional; consumidores diretos do banco restringem mudanças | ⚠️ Pode ser capacidade de plataforma em vez de módulo de domínio | **CANDIDATO** |
 | **GIS** | Visão estratégica já estabelecida; o legado demonstra necessidade de localizar o que não é imóvel | 🔴 O que existe hoje é **só integração** — não há domínio GIS no legado a preservar | **CANDIDATO FUTURO** — não por evidência atual, mas por visão. 🆕 Direção: Redes/GIS como domínio, GIS como capacidade ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
 | 🆕 **Gestão de Ativos** | Decisão do responsável do projeto; o satélite do GSAN já precisava de identidade e aferição de instrumentos | Sem oráculo GSAN | **DECIDIDO** — domínio nativo, trilha estrutural ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
-| **Canal digital do cliente** | 🟢 47 classes sem dono; atravessa quatro módulos; identidade do cliente é modelo distinto do usuário interno | 🔵 Pode ser camada de apresentação sobre capacidades existentes, não domínio | **CANDIDATO** — ⚠️ depende da ADR-0007 |
+| **Canal digital do cliente** | 🟢 47 classes sem dono; atravessa quatro módulos; identidade do cliente é modelo distinto do usuário interno | 🔵 Pode ser camada de apresentação sobre capacidades existentes, não domínio | **CANDIDATO** — ✅ posição de interface decidida: **canal próprio** sobre os mesmos casos de uso, padrão por omissão server-driven ([ADR-0007 §12](../decisoes/0007-arquitetura-de-interface.md)) |
 
 ---
 

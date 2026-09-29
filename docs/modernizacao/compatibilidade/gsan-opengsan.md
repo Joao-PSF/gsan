@@ -174,7 +174,7 @@ Os módulos **Financeiro** e **Operacional** do GSAN não tinham mapa quando os 
 | Distrito, bacia e divisão de esgoto como pontes do território comercial | **C2** | Colunas da quadra → **relação com dono** (Gestão Operacional) |
 | Programação de abastecimento e de manutenção | **C1** | Idem — a troca da chave de área exigiria divergência registrada |
 | Qualidade da água no documento | **C2** | Dono passa do Faturamento à **Gestão Operacional**; a emissão congela o que imprimiu |
-| Ativo físico · geometria · topologia | **C4-i** | **Sem antecedente no núcleo do GSAN** — Gestão de Ativos e Redes/GIS ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
+| Modelo corporativo de gestão de ativos · geometria · topologia | **C4-i** | **Sem antecedente no núcleo do GSAN** — que tem objetos físicos (hidrômetro com ciclo de vida, estrutura operacional), mas não o modelo corporativo — Gestão de Ativos e Redes/GIS ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
 
 ---
 
@@ -789,7 +789,7 @@ canal digital  ──consome──►  Faturamento · Cobrança · Atendimento �
                ✗ não é dono de nenhum
 ```
 
-⚠️ Depende da decisão de interface (**ADR-0007**) e da identidade externa. 🔵 O único conceito que ele **cria** é o login do cliente — e isso é identidade, não domínio comercial.
+✅ Interface decidida ([ADR-0007 §12](../decisoes/0007-arquitetura-de-interface.md), 2026-09-29): o portal é **canal próprio** sobre os mesmos casos de uso, com identidade do cliente final separada. 🔵 O único conceito que ele **cria** é o login do cliente — e isso é identidade, não domínio comercial.
 
 ---
 

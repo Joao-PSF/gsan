@@ -2,6 +2,8 @@
 
 Versões confirmadas como estáveis/suportadas em 2026-08 — reconfirmar no início de cada fase.
 
+> **Revisão 2026-09-29 (ADR-0007 aceita)**: a interface deixa de ser pendência — **canais sobre casos de uso**, backoffice **server-driven com aprimoramento progressivo**, contratos explícitos só para canais externos, autorização no caso de uso. A ADR-0007 é a **fonte autoritativa**; o texto abaixo que tratava a interface foi alinhado a ela.
+>
 > **Revisão 2026-09-15 (16ª execução)**: o sistema passa a chamar-se **OpenGSAN** — evolução aberta e moderna do GSAN (ADR-0005 revisada). A **migração de instalações GSAN saiu do escopo deste projeto** e terá projeto próprio.
 >
 > Revisão 2026-08-13 (2ª execução): banco próprio em UTF-8 e modelo de dados evoluído (ADR-0006). A coexistência com um GSAN em produção deixou de ser premissa de desenvolvimento — ver [revisão de premissas](../alteracoes/2026-08-13-revisao-premissas-fase0.md).
@@ -12,10 +14,10 @@ Versões confirmadas como estáveis/suportadas em 2026-08 — reconfirmar no in�
 | ------ | ---------- |
 | Linguagem | Java 25 LTS |
 | Framework | Spring Boot 4.1.x (Spring Framework 7, Jakarta EE) |
-| Web | Spring MVC; REST onde houver consumidor real; server-side rendering para telas internas (decisão da Fase 9) |
+| Web / canais | Spring MVC como adaptador de canal ([ADR-0007](../decisoes/0007-arquitetura-de-interface.md)): **backoffice server-driven com aprimoramento progressivo** — HTML no servidor, atualização parcial por fragmentos, JavaScript só em ilhas justificadas, sem SPA e sem *build* de frontend obrigatório; **API HTTP explícita só para canais externos** (integrações, campo, GIS, portal independente); portal como canal próprio. Biblioteca de templates e de atualização parcial escolhida na Etapa 0, dentro do padrão |
 | Persistência | Spring Data JPA/Hibernate para CRUD; `JdbcTemplate`/SQL nativo para consultas complexas, relatórios e batch (não converter SQL funcional para ORM por estética) |
 | Transações | Spring Transaction (`@Transactional`), substituindo CMT do EJB |
-| Segurança | Spring Security (RBAC evoluído do modelo conceitual `seguranca.*` do GSAN — perfis, grupos, funcionalidades, permissões especiais, abrangência) |
+| Segurança | Spring Security (RBAC evoluído do modelo conceitual `seguranca.*` do GSAN — perfis, grupos, funcionalidades, permissões especiais, abrangência). 🔴 **Autorização no caso de uso**, sob uma política, para todo canal — nunca por rota. Credencial por classe de canal: sessão + cookie seguro + CSRF nos canais de navegador; identidade de sistema nas integrações; dispositivo + usuário no campo; cliente final separado do usuário interno (ADR-0007 §9) |
 | Banco | PostgreSQL 18.x (18.6+), UTF-8 (ADR-0004); modelo de dados próprio do OpenGSAN, evoluído dos conceitos GSAN (ADRs 0005/0006) |
 | Migrations | Flyway (ADR-0002); schema do OpenGSAN versionado desde `V1` — sem baseline copiada do legado |
 | Build | Maven (convenção dominante no ecossistema Spring; multi-módulo) |
@@ -43,6 +45,10 @@ opengsan (repositório próprio — nome físico PENDENTE, ADR-0003)
 
 Cada módulo com separação `domain / application / infrastructure / web` **quando trouxer benefício real**; módulos simples (cadastros auxiliares) podem usar estrutura mais direta. Sem microserviços, mensageria ou Kubernetes sem necessidade técnica demonstrada.
 
+🆕 **Canais (ADR-0007)**: `web` e `api` são **adaptadores de canal** do módulo; os casos de uso (`application`) existem **sem HTTP** e concentram autorização, validação e auditoria. Módulos conversam por **contratos internos em Java** — nunca por HTTP. Uma tela que compõe dados de vários módulos chama os contratos de cada um, nunca o repositório alheio.
+
+🆕 **Módulos acrescentados pela revisão de escopo (2026-09-28)**: `contabilizacao` e `operacional` (Gestão Operacional) — domínio GSAN a recuperar; Gestão de Ativos e Redes seguem a **trilha estrutural** ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)).
+
 ## Modelo de dados evolutivo e continuidade conceitual GSAN → OpenGSAN (ADRs 0005/0006)
 
 1. O OpenGSAN é a **evolução aberta e moderna do GSAN**, não sistema do zero: conceitos, módulos, regras de negócio, fluxos, nomenclaturas relevantes e relacionamentos conceituais são preservados sempre que adequados — **porque valem por si**, não para facilitar transporte de dados. Regra geral: *preservar quando adequado, modernizar quando necessário, redesenhar somente com justificativa*.
@@ -53,4 +59,5 @@ Cada módulo com separação `domain / application / infrastructure / web` **qua
 
 ## O que não faremos
 
+- 🆕 Interface (ADR-0007): SPA no backoffice; microfrontends; BFF obrigatório; HTTP entre módulos do monólito; integração consumindo endpoint de tela; autorização por rota; regra de negócio ou autorização no cliente; "API = domínio".
 - Reescrita indiscriminada ou "recriar a roda" — ignorar o conhecimento consolidado no GSAN; microserviços por padrão; troca de SQL funcional por ORM por estética; redesenho de estruturas sem justificativa (ou preservação de estruturas ruins por apego ao legado); exposição de entidades JPA como contrato de API; cópia automática de tabelas/colunas/schemas do `gsan_comercial` para o OpenGSAN.

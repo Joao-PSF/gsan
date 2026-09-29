@@ -26,6 +26,8 @@
 | 1 | **Código público** — `gcom.financeiro` (60 classes), `gcom.gui.financeiro` (13), controlador de ~17,5 mil linhas, 7 variantes por companhia | Base de todas as afirmações [GSAN] |
 | 2 | **Catálogo de funcionalidades versionado** — `gsan-migracoes/comercial/scripts/20160118183244_popula_tabela_de_funcionalidades.sql` (o menu do GSAN é esse catálogo) | Menu de 2016 — módulo 12: **14 funcionalidades, 2 pontos de entrada** (`fncd_icpontoentrada = 1`), contados por script |
 | 3–4 | **Wiki do GSAN** (`gsan.com.br`) | ⚠️ **Não consultada diretamente**: o host está **bloqueado pela política de rede desta sessão**. Duas páginas foram identificadas por mecanismo de busca (R0487 e integração contábil), sem acesso ao conteúdo integral — [PEND] |
+| 2 | 🆕 **Dump versionado** `gsan-migracoes/comercial/scripts/20160118183224_dump.sql` | Tabela `financeiro.param_perdas_societarias` — parâmetros de "geração das **perdas societárias**" (§7.3); **nenhuma classe Java** do código público a usa |
+| 3–4 | 🆕 **Documentação GSAN posterior** — informada pelo responsável do projeto (2026-09-29) | Registra **PECLD**, "Provisão de Perdas Societárias", contas em aberto marcadas com perdas estimadas e casos de uso posteriores de PECLD, parte deles associada a **bases específicas**. Por busca, localizada também a página *"Manter Parâmetros de Perdas Fiscais"*. ⚠️ Conteúdo **não lido diretamente** — host bloqueado |
 | 5 | Inventário do `gsan_comercial` — schema `financeiro`, 27 tabelas | Consistência |
 
 ⚠️ **Contagem, não impressão**: todas as buscas negativas declaram escopo e comando (regra 3 de [`procedencia.md`](../procedencia.md)).
@@ -117,7 +119,7 @@ EXPORTAÇÃO — arquivo para o sistema contábil da companhia
 
 ## 7. Devedores duvidosos — o que o GSAN realmente faz
 
-⚠️ **Não é o que o nome sugere à primeira leitura.** O GSAN **não estima uma provisão**; ele **baixa contabilmente** créditos que atendem a critérios, e depois reconhece a **recuperação** quando algum deles é pago.
+⚠️ **Não é o que o nome sugere à primeira leitura.** No **código público**, o mecanismo de devedores duvidosos **não estima uma provisão**: ele **baixa contabilmente** créditos que atendem a critérios, e depois reconhece a **recuperação** quando algum deles é pago. A provisão (PECLD) aparece em **evoluções posteriores** — §7.3.
 
 ### 7.1 O mecanismo [GSAN]
 
@@ -142,15 +144,29 @@ EXPORTAÇÃO — arquivo para o sistema contábil da companhia
 
 ⚠️ [PEND] **Se "dívida ativa" e "baixa contábil" são o mesmo conceito na prática das companhias não está comprovado.** Dívida ativa é também categoria jurídica de cobrança; baixa contábil é decisão de política contábil. O GSAN as une num campo — o OpenGSAN **não deve unir sem decisão**.
 
-### 7.3 PECLD
+### 7.3 PECLD — calibrado em 2026-09-29
 
-🟢 [GSAN — busca negativa em `src/gcom`, `*.java`, padrões `pecld|provisao.*perda|perdaEstimada|perdas estimadas|creditoLiquidacaoDuvidosa`: **0 arquivos**] **Não há estimativa de perda** (provisão) no código público. O que existe é **baixa** por critério e **recuperação**.
+| Plano de evidência | O que se sabe |
+| ------------------ | ------------- |
+| **Baseline público analisado** — código Java | 🟢 [GSAN — busca negativa em `src/gcom`, `*.java`, padrões `pecld\|provisao.*perda\|perdaEstimada\|perdas estimadas\|creditoLiquidacaoDuvidosa`: **0 arquivos**; `societari`: 1 arquivo, sem relação — `InsumoQuadroSocietario` no *stub* do webservice SPC] **Não foi encontrada implementação de cálculo de PECLD.** O que o código comprova é **baixa contábil + recuperação** (§7.1) |
+| **Banco versionado** (nível 2) | 🟢 [GSAN] `financeiro.param_perdas_societarias`: competência contábil, faixa de referências das contas para baixa, meses para seleção de imóveis com contas anteriores **com baixa fiscal**, geração **real ou simulada**, filtros por categoria e esfera de poder — **estrutura sem código público correspondente** (`APENAS EVIDÊNCIA`) |
+| **Documentação posterior / instalações** (nível 3–4) | [GSAN — documentação, informada pelo responsável; não lida diretamente] PECLD, "Provisão de Perdas Societárias", contas em aberto marcadas com perdas estimadas em créditos de liquidação duvidosa e casos de uso posteriores de PECLD — **parte associada a bases específicas** |
 
-🔵 [INF] O GSAN tem, porém, o **insumo** que uma estimativa exigiria: o **envelhecimento da carteira** por dias vencidos (`DocumentosAReceberResumo`).
+🔵 **Conclusão**: **PECLD é capacidade posterior comprovada documentalmente**, mas **não pode ser tratada como comportamento universal do GSAN público**.
 
-⚠️ [PEND] **Se o OpenGSAN calcula a PECLD** ou apenas fornece o envelhecimento para o ERP calcular — decisão de política contábil, não de arquitetura. Ver §11.
+🔴 **Três coisas que o OpenGSAN não funde**, mesmo que apareçam juntas sob "devedores duvidosos":
 
-🟡 [INF — não comprovada] Critérios de **valor-limite × meses** são compatíveis com regras de reconhecimento de perda em créditos; a regra aplicável é **política da companhia**, não do sistema — razão a mais para mantê-la **parametrizada**.
+```text
+BAIXA CONTÁBIL               ≠   PROVISÃO / PERDA ESPERADA (PECLD)   ≠   EXTINÇÃO COMERCIAL DA DÍVIDA
+crédito sai do ativo pela        estimativa de perda sobre créditos       a obrigação deixa de existir
+política; a conta continua       que continuam no ativo                   (pagamento, cancelamento,
+devida e pode ser recuperada                                              prescrição — donos comerciais)
+código público: 🟢               código público: não encontrado           Faturamento / Cobrança / Arrecadação
+```
+
+🟡 [INF — não comprovada] Os critérios **valor-limite × número de meses** da baixa são compatíveis com regras **fiscais** de dedutibilidade de perdas no recebimento de créditos; a existência de parâmetros de perdas **societárias** (com "baixa fiscal" no comentário da tabela) e de uma página de *"parâmetros de perdas fiscais"* sugere que o ecossistema GSAN distinguia **perda fiscal** de **perda societária**. A confirmar — e, em qualquer caso, **política da companhia**, não regra do sistema.
+
+🔵 [PROP] **Classificação no OpenGSAN**: capacidade de **reconhecimento e estimativa de perdas esperadas em créditos**, pertencente à **Contabilização**. A política precisa poder variar por **companhia, norma, período, classificação da carteira e critérios contábeis ou regulatórios**. ⚠️ **Nenhuma fórmula é definida aqui** — ponto de aprofundamento posterior. O insumo que o GSAN já tem é o **envelhecimento da carteira** por dias vencidos (`DocumentosAReceberResumo`).
 
 ---
 
@@ -210,7 +226,7 @@ Evolução e saldo de contas a receber contábil · volumes consumidos não fatu
 | Campos de layout dentro de `LancamentoOrigem` e `ContaContabil` | **C** embutida → **D** | Mover para o adaptador |
 | Variantes vazias (CAER, COMPESA, JUAZEIRO) | **E** | Não transportar |
 | Tela de companhia publicada no menu com nome genérico | **D** | Não transportar |
-| Estimativa de perdas (PECLD) | **F** | Inexistente no código público — [PEND] |
+| Estimativa de perdas esperadas (PECLD) | **B** no ecossistema · **F** no baseline público | Capacidade **posterior**, documentada, parte por base específica; no código público, nenhum cálculo — no banco, só a estrutura `param_perdas_societarias`. Capacidade da Contabilização com **política variável** — aprofundamento posterior (§7.3) |
 | Páginas da wiki não lidas (R0487 e integração contábil) | **F** | [PEND] — host bloqueado nesta sessão |
 
 ---
@@ -240,7 +256,7 @@ lançamento derivado por política  ───► recebe e integra
 | **exporta** para o sistema contábil? | ✅ **Sim, por adaptador** | [GSAN] + [PROP] |
 | **mantém razão, balancete, exercício, lançamento manual**? | ❌ **Não** | [GSAN] busca negativa — nunca manteve |
 | **cuida de imobilizado e depreciação** de ativos? | ❌ **Não** | [PROP] — ERP; ver [`gestao-de-ativos.md`](../dominio/gestao-de-ativos.md) §12 |
-| **calcula PECLD**? | ⚠️ **Pendente** | [PEND] §7.3 |
+| **reconhece perdas esperadas (PECLD)**? | ⚠️ **Capacidade prevista, política pendente** — sem fórmula, variável por companhia, norma, período e carteira | [PEND] §7.3 — não é comportamento universal do GSAN público |
 
 🔵 **Conclusão** [PROP, sustentada pela evidência]: **Financeiro/Contabilização no OpenGSAN é um domínio de contabilização subsidiária** — dono dos **fatos contábeis originados no saneamento**, da **política de contabilização** e dos **lançamentos derivados**. **Não é um ERP contábil.** O razão corporativo fica no sistema que recebe a exportação.
 
@@ -288,7 +304,7 @@ lançamento derivado por política  ───► recebe e integra
 | # | Pendência | Afeta |
 | - | --------- | ----- |
 | 1 | 🔴 **"Dívida ativa" e "baixa contábil" são o mesmo conceito?** | Cobrança × Contabilização |
-| 2 | **O OpenGSAN calcula PECLD?** | Escopo da Contabilização |
+| 2 | **Reconhecimento de perdas esperadas (PECLD)**: que políticas suportar, com que insumos — sem fórmula nesta fase | Contabilização — aprofundamento posterior |
 | 3 | **Quem produz a estimativa de consumo não faturado** — Micromedição ou Contabilização | Fronteira |
 | 4 | **Conteúdo das páginas da wiki** sobre o módulo | Completude — host bloqueado |
 | 5 | Semântica exata dos critérios de baixa (`valorLimite × numeroMeses` por situação de cobrança) | Caracterização |
@@ -308,6 +324,7 @@ Baixa:         Conta.referenciaBaixaContabil · RepositorioFinanceiroHBM :415–
 Recuperação:   RepositorioArrecadacaoHBM :7173+
 Dívida ativa:  RepositorioCobrancaHBM :341–343 (indicadorDividaAtiva)
 Batch:         Funcionalidade 681 (faturamento) · 700 (arrecadação) · 755 (devedores) · 1103 (resumo)
+Perdas soc.:   financeiro.param_perdas_societarias (dump versionado 2016) — sem classe Java
 Menu (2016):   gsan-migracoes/.../20160118183244_popula_tabela_de_funcionalidades.sql — módulo 12:
                14 funcionalidades, 2 pontos de entrada (684 genérica · 752 CAERN) — contagem por script
 Banco:         schema financeiro, 27 tabelas
