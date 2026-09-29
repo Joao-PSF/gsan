@@ -137,6 +137,8 @@ Todo atributo que atravessa ferramentas tem **um** dono e **uma** forma de consu
 
 ## 9. GIS é capacidade; Redes é domínio
 
+🆕 **Segundo adendo pós-Fase 0 (ADR-0010)**: GIS continua **capacidade**, não domínio de negócio — mas é empacotada no módulo instalável **Networks**, não na Platform: um perfil sem mapas, como o SINISA isolado, não carrega infraestrutura espacial. Coordenada como atributo continua com o dono; **mapa** exige o Networks. Operations sem Networks registra paradas com impacto **declarado** ([`modulos-e-perfis-de-implantacao.md §11`](modulos-e-perfis-de-implantacao.md#11-networks--gis)).
+
 🔵 [PROP] **"GIS" não precisa ser módulo de negócio.** Guardar, exibir e publicar geometria é **capacidade transversal** — como Relatórios é para extração. **Redes** — modelo da rede, topologia, zonas derivadas, engenharia — é **domínio**, e pode ser **realizado pelo Giswater** quando a instalação o usar.
 
 ---

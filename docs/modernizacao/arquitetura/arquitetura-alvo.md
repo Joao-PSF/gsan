@@ -2,6 +2,8 @@
 
 Versões confirmadas como estáveis/suportadas em 2026-08 — reconfirmar no início de cada fase.
 
+> 🆕 **Revisão 2026-09-29 — segundo adendo pós-Fase 0 (ADR-0010)**: o monólito modular passa a ser implantado como **suíte modular** — nove módulos instaláveis, perfis de implantação sobre o mesmo código, sem microserviços nem HTTP interno ([`modulos-e-perfis-de-implantacao.md`](modulos-e-perfis-de-implantacao.md)).
+>
 > **Revisão 2026-09-29 (ADR-0007 aceita)**: a interface deixa de ser pendência — **canais sobre casos de uso**, backoffice **server-driven com aprimoramento progressivo**, contratos explícitos só para canais externos, autorização no caso de uso. A ADR-0007 é a **fonte autoritativa**; o texto abaixo que tratava a interface foi alinhado a ela.
 >
 > **Revisão 2026-09-15 (16ª execução)**: o sistema passa a chamar-se **OpenGSAN** — evolução aberta e moderna do GSAN (ADR-0005 revisada). A **migração de instalações GSAN saiu do escopo deste projeto** e terá projeto próprio.
@@ -49,13 +51,15 @@ Cada módulo com separação `domain / application / infrastructure / web` **qua
 
 🆕 **Módulos acrescentados pela revisão de escopo (2026-09-28)**: `contabilizacao` e `operacional` (Gestão Operacional) — domínio GSAN a recuperar; Gestão de Ativos e Redes seguem a **trilha estrutural** ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)). 🆕 **Auditoria final (2026-09-29)**: `fiscal` — documento fiscal de água e saneamento (NFAg), requisito nativo com ciclo próprio; **Conta ≠ NFAg**; o adapter do ambiente autorizador fica em `integracoes` ([`modulos/fiscal.md`](../modulos/fiscal.md)). Nenhum módulo `regulacao`, `pagamentos` ou `tarifasocial`: são regra, parâmetro regulado, integração ou capacidade transversal.
 
+🆕 **Suíte modular (ADR-0010, especializa a ADR-0001)**: os módulos de domínio acima são **agrupados** em módulos instaláveis — **Platform · Commercial · Metering · Services · Assets · Operations · Networks · SINISA · Analytics** — habilitados por **perfil de implantação**. Um código, uma versão, um processo por instalação. Dependência entre módulos instaláveis opcionais só por **contrato do consumidor** — nunca *import* direto, nunca HTTP. Módulo desligado não registra nada; atualização de versão não ativa módulo. Estrutura Maven e de pacotes, mecanismo de ativação e migrations de módulo desabilitado: **Etapa 0**. ⚠️ Módulo Maven ≠ microserviço.
+
 ## Modelo de dados evolutivo e continuidade conceitual GSAN → OpenGSAN (ADRs 0005/0006)
 
 1. O OpenGSAN é a **evolução aberta e moderna do GSAN**, não sistema do zero: conceitos, módulos, regras de negócio, fluxos, nomenclaturas relevantes e relacionamentos conceituais são preservados sempre que adequados — **porque valem por si**, não para facilitar transporte de dados. Regra geral: *preservar quando adequado, modernizar quando necessário, redesenhar somente com justificativa*.
 2. Banco próprio do OpenGSAN (PostgreSQL 18.x, UTF-8), com schema versionado por Flyway desde `V1`. Estruturas importantes do GSAN são classificadas como `PRESERVAR`, `MODERNIZAR`, `REESTRUTURAR` ou `NÃO TRANSPORTAR` — sem redesenho por estética e sem manter estrutura ruim apenas para ficar idêntico ao legado.
 3. ⚠️ **Facilidade de migração NÃO é requisito deste projeto** (revisão 2026-09-15, ADR-0005): a migração de instalações GSAN existentes é **projeto separado**. O que permanece requisito é a **continuidade conceitual** — registrar a correspondência entre conceitos GSAN e OpenGSAN, sem detalhar transformação de dados. ⚠️ Facilidade de migração não justifica preservar estrutura inadequada.
 4. O OpenGSAN não assume que toda companhia possui o mesmo schema GSAN: instalações reais divergem por versão, migrations, customizações e DDL manual (comprovado no `gsan_comercial`) — fato relevante para o futuro projeto de migração, registrado aqui.
-5. ⚠️ Coexistência, sincronização, ETL, cutover e replicação **não pertencem a este projeto** — são objeto do **projeto de migração GSAN → OpenGSAN**, separado e posterior.
+5. ⚠️ Coexistência, sincronização, ETL, cutover e replicação **não pertencem a este projeto** — são objeto do **projeto de migração GSAN → OpenGSAN**, separado e posterior. 🆕 *Coexistência* aqui é **dois sistemas com o mesmo dado durante uma transição**; a coexistência da ADR-0010 é outra coisa — **integração operacional por contrato** entre um módulo OpenGSAN e um sistema vivo, sem sincronização de bancos nem *cutover*.
 
 ## O que não faremos
 

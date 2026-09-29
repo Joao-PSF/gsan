@@ -499,6 +499,17 @@ OS/RA → podem gerar Débito, Crédito, Guia, Parcelamento
 | **Declaração SINISA** | Valor **informado pelo usuário**, com fonte e evidência, aprovado e submetido | Prestação de Informações | Valor calculado |
 | **Métrica** | Definição interna versionada de uma medida, com fórmula e *owner* ([catálogo](../analytics/catalogo-de-metricas.md)) | Gerencial & Analytics · *owner* de negócio | Informação SINISA — **métrica ≠ informação SINISA** |
 | **Referência auxiliar** | Dado interno exibido **ao lado** do campo SINISA, rotulado `REFERÊNCIA — NÃO É VALOR SINISA` | Gerencial (fonte) · Workspace (exibição) | Sugestão de valor — não existe na V1 |
+
+### 🆕 Terminologia do segundo adendo pós-Fase 0 (2026-09-29)
+
+| Termo no OpenGSAN | O que é | Dono | ⚠️ Não confundir com |
+| ----------------- | ------- | ---- | -------------------- |
+| **Módulo de domínio** | Fronteira conceitual e de código com dono do estado — Cadastro, Faturamento, Atendimento e Execução… | O próprio módulo | Módulo instalável |
+| **Módulo instalável** | Grupo de módulos de domínio habilitado junto — Platform, Commercial, Metering, Services, Assets, Operations, Networks, SINISA, Analytics ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md)) | Registro de módulos (Platform) | **Microserviço** — não existe no OpenGSAN; **módulo Maven** — unidade de build |
+| **Perfil de implantação** | Módulos habilitados numa instalação + provedores externos declarados | A instalação | Edição do produto, *fork* ou *branch* |
+| **Contrato externalizável** | Necessidade de um módulo atendida por outro módulo OpenGSAN **ou** por sistema externo, sem que o consumidor saiba qual | Definido pelo **consumidor** | *Import* direto de outro módulo — proibido para dependência opcional |
+| **Referência externa** | Sistema de origem, tipo, identificador e snapshot mínimo de algo que vive fora do OpenGSAN | O registro que a toma | Cadastro mestre — **snapshot não é cadastro** |
+| **Coexistência** | Integração operacional por contrato entre um módulo OpenGSAN e um sistema vivo | — | Migração, sincronização de bancos, *cutover* — fora do projeto |
 6. ~~Multiplicidade de rotas no imóvel~~ **Resolvida (2026-08-14)**: rota via quadra = processos territoriais/de campo; rota de entrega = distribuição de contas/2ª via; rota alternativa = **override** — quando definida no imóvel, sobrepõe a rota da quadra nos processos de leitura/análise (evidência: dois ramos de consulta em `RepositorioMicromedicaoHBM.pesquisarImovelExcecoesLeituras`). Ver [modulos/cadastro.md §3.8](../modulos/cadastro.md) e [modulos/micromedicao.md §3.10](../modulos/micromedicao.md).
 7. **RA sem imóvel** (por endereço/local de ocorrência) — dimensionar o quanto do fluxo de atendimento independe de matrícula (afeta o modelo do OpenGSAN).
 8. **Nomenclaturas de companhia no núcleo** — parcialmente mapeada no cadastro (2026-08-14): `numeroCelpe`, DV específico CAERN (`Util.obterDigitoVerificadorModuloCAERN`), campos sociais (`imov_classe_social`, `imov_qtd_economias_social`), programas especiais e recadastramento. Consolidar a separação núcleo × extensão na análise de compatibilidade ([modulos/cadastro.md §8](../modulos/cadastro.md)).

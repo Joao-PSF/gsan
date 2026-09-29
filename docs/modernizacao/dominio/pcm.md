@@ -141,6 +141,8 @@ PCM ──programa──► OS ──► Atendimento e Execução ──► resu
 
 Mesmo contrato da [visão conceitual §14.3](visao-conceitual-opengsan.md) — *solicita × aplica* — já fixado na [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md).
 
+🆕 **Perfis (ADR-0010)**: a execução é **contrato**. Com o módulo *Services*, a OS é a do OpenGSAN — caminho preferencial. Sem ele, a solicitação vai a um **sistema externo de OS ou CMMS**; o estado da necessidade deriva do estado externo por **mapeamento declarado no adapter**, e o resultado volta para o Assets aplicar. Continua valendo: nenhuma ordem de trabalho paralela ([`modulos-e-perfis-de-implantacao.md §9`](../arquitetura/modulos-e-perfis-de-implantacao.md#9-assets--pcm); CEN-MOD-004).
+
 ---
 
 ## 8. Controle e aprendizado

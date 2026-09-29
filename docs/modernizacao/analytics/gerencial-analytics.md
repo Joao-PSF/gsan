@@ -10,7 +10,7 @@
 
 ## 1. O que é — e para que existe
 
-**[DEC] Capacidade transversal, consumidora dos fatos dos módulos.** Não é domínio transacional e não é dona de fato algum.
+**[DEC] Capacidade transversal, consumidora dos fatos dos módulos.** Não é domínio transacional e não é dona de fato algum. 🆕 **Módulo instalável *Analytics*** (ADR-0010): opera **isolado**, com fontes corporativas externas — ERP, SCADA, sistema comercial ou de manutenção próprio —, sem exigir nenhum outro módulo OpenGSAN ([`modulos-e-perfis-de-implantacao.md §13`](../arquitetura/modulos-e-perfis-de-implantacao.md#13-analytics)).
 
 | Existe para | **Não** existe para |
 | ----------- | ------------------- |
@@ -101,7 +101,7 @@ companhia → regional → município → localidade → sistema → unidade →
 
 ## 7. Mapa gerencial
 
-Consome a capacidade GIS para **paradas · perdas · OS · ativos · cobertura · atendimento**. 🔴 **A geometria continua de Redes/GIS**; o mapa mostra agregados por área e o recorte respeita o escopo territorial do usuário. Mesmo padrão do [mapa de paradas](../dominio/paradas-interrupcoes.md#13-mapa-de-paradas--interface-conceitual): ilha no canal hospedeiro, sobre a camada de publicação espacial.
+Consome a capacidade GIS — 🆕 que vem do módulo **Networks**; sem ele, não há mapa gerencial — para **paradas · perdas · OS · ativos · cobertura · atendimento**. 🔴 **A geometria continua de Redes/GIS**; o mapa mostra agregados por área e o recorte respeita o escopo territorial do usuário. Mesmo padrão do [mapa de paradas](../dominio/paradas-interrupcoes.md#13-mapa-de-paradas--interface-conceitual): ilha no canal hospedeiro, sobre a camada de publicação espacial.
 
 ---
 

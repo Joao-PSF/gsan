@@ -5,6 +5,8 @@
 > Fontes: [mapa de domínio](../dominio/mapa-de-dominio.md) (ownership, 14 fronteiras, 7 ciclos) · [visão conceitual](../dominio/visao-conceitual-opengsan.md) (core × plataforma, fronteiras, decisões pendentes) · [compatibilidade](../compatibilidade/estruturas-centrais.md) (64 decisões) · [funcionalidades futuras](funcionalidades-futuras.md) (26 capacidades) · [estratégia de testes](../testes/estrategia-testes.md) · [arquitetura alvo](../arquitetura/arquitetura-alvo.md) · ADRs [0001](../decisoes/0001-monolito-modular-spring-boot.md), [0002](../decisoes/0002-flyway-para-migrations.md), [0007](../decisoes/0007-arquitetura-de-interface.md). **Nenhum módulo foi reanalisado.**
 >
 > 🆕 **Adendo pós-Fase 0 (2026-09-29)** — sem reabrir a Fase 0: PCM e Parada na trilha estrutural (§24.2), **trilha regulatória** do Workspace SINISA (§24.3), Gerencial & Analytics **incremental** (§24.4), matriz #30–#33, gates de trilha (§25) — [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md).
+>
+> 🆕 **Segundo adendo pós-Fase 0 (2026-09-29)** — as etapas **não mudam**; entra uma restrição transversal: *cada módulo nasce respeitando sua fronteira de implantação* — item 14 do dia 1 (§4.1), decisões técnicas da Etapa 0 (§24), gates 0 → 1, 2 → 3 e 4 → 5 (§25), risco 13 (§30) — [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md). A matriz entre **módulos instaláveis** está em [`modulos-e-perfis-de-implantacao.md §15`](../arquitetura/modulos-e-perfis-de-implantacao.md#15-matriz-de-dependências).
 
 ---
 
@@ -100,6 +102,7 @@ Aplicado às quatro capacidades de plataforma:
 | 11 | **Configuração externalizada, sem hard-code institucional** | 🟢 O GSAN falha em três pontos (nome de empresa, URL fixa, campo institucional). Requisito de software livre — §26 |
 | 12 | **CI: build + testes + `V1` em banco limpo + *secret scan*** | 🔴 O *secret scan* é dia 1 por evidência própria: o legado versionou chave de API em código-fonte (achado 11 / D-08) |
 | 13 | **Ambiente reproduzível (compose) + massa sintética** | Requisito de software livre e de teste; massa real exigiria anonimização (LGPD) |
+| 🆕 14 | **Módulos instaláveis: registro, ativação, validação e inventário do perfil** — com módulos-fixture e testes de perfil | ADR-0010: tornar um módulo opcional **depois** que o vizinho já o importa é refatoração transversal — o mesmo argumento da auditoria no item 6. Mecanismo, estrutura Maven e de pacotes e migrations de módulo desabilitado: **decisões desta etapa** |
 
 ### 4.2 PODE EVOLUIR DEPOIS
 
@@ -767,7 +770,8 @@ ETAPA 0 — FUNDAÇÃO
 ├── S1 — identidade, autenticação, concessão por caso de uso
 ├── auditoria mínima · erro · log com correlação
 ├── configuração externa sem hard-code institucional · CI com secret scan
-└── convenções de integração e de artefato de relatório
+├── convenções de integração e de artefato de relatório
+└── 🆕 módulos instaláveis: ativação · validação de perfil · inventário · testes arquiteturais e de perfil (ADR-0010)
         ↓
 ETAPA 1 — PRIMEIRA FATIA VERTICAL
 ├── Cadastro: imóvel, cliente, cliente×imóvel (leitura) + auxiliares necessários
@@ -893,6 +897,8 @@ Sem etapa própria ([`gerencial-analytics.md §12`](../analytics/gerencial-analy
 - Uma escrita qualquer produz registro de auditoria legível.
 - CI reprova segredo commitado (lição do achado 11).
 - Nenhum nome de empresa, URL fixa ou campo institucional no núcleo.
+- 🆕 **Módulo-fixture desligado não registra** menu, permissão, endpoint, job nem adapter; **perfil inválido não inicia**; atualização de versão **não ativa** módulo (CEN-MOD-006).
+- 🆕 A verificação **reprova** *import* de dependência opcional e HTTP interno (CEN-MOD-007).
 
 ### 1 → 2
 
@@ -906,6 +912,7 @@ Sem etapa própria ([`gerencial-analytics.md §12`](../analytics/gerencial-analy
 - 🔴 **Efeito aplicado pelo dono**, com a tentativa de escrita cruzada **reprovada pela verificação de fronteira**.
 - Escopo territorial aplicado **por construção**: uma consulta nova sem tratamento explícito **não** vaza dados fora do escopo (é o que D-17 propõe e o que o legado falha).
 - Artefato de relatório inacessível a quem não é dono (D-03).
+- 🆕 O **Services sobe sem o Commercial**, com referência externa e snapshot (CEN-MOD-002).
 
 ### 3 → 4
 
@@ -923,6 +930,7 @@ Sem etapa própria ([`gerencial-analytics.md §12`](../analytics/gerencial-analy
 - Desempenho por imóvel medido contra a baseline.
 - 🆕 Conta emitida produz **documento fiscal autorizado em homologação ou rejeição rastreável**, sem regra fiscal no motor tarifário (CEN-FIS-001).
 - 🆕 Tarifa Social aplicada pela regra vigente, com origem normativa registrada (CEN-FAT-012).
+- 🆕 O **Commercial fatura com medição externa**, com origem declarada e sem gravar consumo (CEN-MOD-003).
 
 ### 5 → 6
 
@@ -1056,6 +1064,7 @@ ETAPA 8   Canais e evoluções            ── identidade do cliente, canal di
 TRILHA ESTRUTURAL (depois da 2)         ── Gestão de Ativos → 🆕 PCM · Redes/GIS · 🆕 Parada (o GIS agrega o impacto calculado)
 🆕 TRILHA REGULATÓRIA                   ── Workspace SINISA manual, quando os glossários estiverem definidos — sem Analytics
 🆕 GERENCIAL & ANALYTICS                ── incremental, à medida que os fatos existem
+🆕 TRANSVERSAL (ADR-0010)               ── cada módulo nasce respeitando sua fronteira de implantação
 ```
 
 ### 28.1 A resposta direta
@@ -1128,6 +1137,7 @@ Registrado por honestidade, e porque três acertos permanecem:
 | 10 | **A ordem ser tratada como imutável** | §26: a matriz é revisada ao fim de cada etapa; dependência descoberta **muda a ordem**, com motivo registrado |
 | 11 🆕 | **Equivalência semântica presumida** — métrica interna tomada por informação SINISA | ADR-0009: V1 manual; mapeamento só da companhia, desligado por padrão, revalidado a cada glossário (CEN-REG-003, CEN-REG-004) |
 | 12 🆕 | **OS paralela** criada pelo PCM, ou **Giswater dono da parada** | Sem ordem de trabalho além da OS (CEN-PCM-001); estado da análise ≠ estado da Parada (CEN-PAR-001 V4) |
+| 13 🆕 | **Acoplamento acidental entre módulos instaláveis** — perfil parcial impossível de instalar | Contrato do consumidor para toda dependência opcional; teste arquitetural e de perfil desde a Etapa 0 (item 14 do §4.1; CEN-MOD-001 a 007) — [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md) |
 
 ---
 
@@ -1152,7 +1162,7 @@ Capacidade pronta quando:
 
 ### 31.2 O que esta execução **não** decidiu
 
-⚠️ ADR-0007 · mecanismo de comunicação entre módulos · aprovação de D-17 · nome do repositório · qualquer modelagem de banco · qualquer cronograma, sprint ou data.
+⚠️ ADR-0007 · mecanismo de comunicação entre módulos · aprovação de D-17 · nome do repositório · qualquer modelagem de banco · qualquer cronograma, sprint ou data. 🆕 E, do segundo adendo, fica para a **Etapa 0**: mecanismo de ativação · estrutura Maven e de pacotes · testes de fronteira · migrations de módulo desabilitado · registro condicional de interface, jobs e adapters ([`modulos-e-perfis-de-implantacao.md §22`](../arquitetura/modulos-e-perfis-de-implantacao.md#22-impacto-na-ordem-e-na-etapa-0)).
 
 ### 31.3 Pendências da Fase 0, na ordem
 

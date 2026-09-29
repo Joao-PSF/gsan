@@ -100,6 +100,8 @@ O sistema **pode** mostrar **dados auxiliares**, sempre rotulados `REFERÊNCIA �
 
 **[DEC] Onde vive.** Com a declaração guardada — e não mais derivada —, a *Prestação de Informações Regulatórias* passa no critério que a auditoria fixou para uma obrigação virar módulo: **ciclo próprio e obrigatório** ([visão §27.2](../dominio/visao-conceitual-opengsan.md#272--estrutura-conceitual-consolidada-auditoria-final-2026-09-29)). Passa a **módulo** *Prestação de Informações*, no grupo Financeiro / Regulatório, com o **Workspace SINISA** como primeiro conteúdo. ❌ Continua **não** existindo módulo *Regulação*: matriz normativa, parâmetro regulado e obrigações de norma seguem nos donos. ⚠️ SISAGUA e regulador local seguem como estavam; estender a eles o princípio da ADR-0009 é pendência (§21).
 
+🆕 **Módulo instalável *SINISA*** (ADR-0010): REQUIRED **só a Platform** — usuários, contexto institucional, documentos e evidências. Opera **sem nenhum outro módulo OpenGSAN**; os demais, quando existem, só oferecem **referência** ([`modulos-e-perfis-de-implantacao.md §12`](../arquitetura/modulos-e-perfis-de-implantacao.md#12-sinisa); CEN-MOD-001).
+
 **Contexto institucional**: a declaração é **do prestador** ([visão §27.3](../dominio/visao-conceitual-opengsan.md#273--contexto-institucional--sem-decidir-multi-tenancy)); um prestador regional declara por vários municípios.
 
 ---

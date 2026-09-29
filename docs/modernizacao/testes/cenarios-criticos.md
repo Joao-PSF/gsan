@@ -1,6 +1,6 @@
 # Cenários Críticos do OpenGSAN — Índice e Matriz de Cobertura
 
-> **Fase 0 — 20ª execução (2026-09-28); ampliado na 21ª (revisão controlada de escopo)** com os mapas de Financeiro/Contabilização e Operacional: **+8 especificações** e **+18 itens** de inventário. 🆕 **Ampliado na auditoria final (2026-09-29)**: **+8 especificações** — seis **requisitos nativos** (NFAg, Pix, Tarifa Social — oráculo **N**), o antigo **BLQ-04** e a divergência **D-18** —, inventário inalterado. 🆕 **Adendo pós-Fase 0 (2026-09-29)**: **+9 especificações**, todas **requisitos nativos** — PCM, Paradas e Prestação de Informações (SINISA) —, inventário inalterado. Especifica **o que testar, em que estado, com qual entrada, o que observar, qual semântica esperar, qual diferença é permitida, qual oráculo decide e qual gate o teste protege**.
+> **Fase 0 — 20ª execução (2026-09-28); ampliado na 21ª (revisão controlada de escopo)** com os mapas de Financeiro/Contabilização e Operacional: **+8 especificações** e **+18 itens** de inventário. 🆕 **Ampliado na auditoria final (2026-09-29)**: **+8 especificações** — seis **requisitos nativos** (NFAg, Pix, Tarifa Social — oráculo **N**), o antigo **BLQ-04** e a divergência **D-18** —, inventário inalterado. 🆕 **Adendo pós-Fase 0 (2026-09-29)**: **+9 especificações**, todas **requisitos nativos** — PCM, Paradas e Prestação de Informações (SINISA) —, inventário inalterado. 🆕 **Segundo adendo pós-Fase 0 (2026-09-29)**: **+7 especificações** arquiteturais — modularidade e perfis de implantação ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md)) —, inventário inalterado. Especifica **o que testar, em que estado, com qual entrada, o que observar, qual semântica esperar, qual diferença é permitida, qual oráculo decide e qual gate o teste protege**.
 >
 > 🔴 **Nada aqui foi executado.** Nenhum teste rodou, nenhum golden master foi capturado, nenhuma massa foi criada, nenhum *harness* foi escrito. Os **valores concretos** do GSAN são preenchidos na **Fase 2**.
 
@@ -27,7 +27,8 @@ As especificações estão em [`cenarios/`](cenarios/), por área. Este índice 
 | Fiscal 🆕 | [`cenarios/fiscal.md`](cenarios/fiscal.md) | 3 |
 | PCM e Paradas 🆕 | [`cenarios/pcm-paradas.md`](cenarios/pcm-paradas.md) | 4 |
 | Prestação de Informações — SINISA 🆕 | [`cenarios/regulatorio.md`](cenarios/regulatorio.md) | 5 |
-| **Total** | | **96** |
+| Modularidade e perfis de implantação 🆕 | [`cenarios/modularidade.md`](cenarios/modularidade.md) | 7 |
+| **Total** | | **103** |
 
 ---
 
@@ -40,7 +41,7 @@ A regra normativa está em [`estrategia-testes.md`](estrategia-testes.md) — �
 | Fecha | operação, estado, entrada, observáveis, semântica comprovada, normalizações, divergência permitida, oráculo, gate | valores, registros, arquivos, totais, saídas efetivamente produzidos pelo GSAN de referência |
 | 🔴 Não pode | inventar valor | deduzir valor de leitura de código |
 
-🟢 **Estado desta entrega**: todas as especificações estão **fechadas**; **uma** baseline é `JÁ COMPROVADA` — a de um artefato estático (§6); 🆕 **quinze** são `➖ NÃO APLICÁVEL` — requisitos nativos, sem legado a observar (§4.5); as demais estão `⬜ A CAPTURAR NA FASE 2`.
+🟢 **Estado desta entrega**: todas as especificações estão **fechadas**; **uma** baseline é `JÁ COMPROVADA` — a de um artefato estático (§6); 🆕 **vinte e duas** são `➖ NÃO APLICÁVEL` — requisitos nativos, sem legado a observar (§4.5); as demais estão `⬜ A CAPTURAR NA FASE 2`.
 
 ---
 
@@ -114,7 +115,7 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 | P2 — mantido no inventário | 27 |
 | **Total** | **184** |
 
-🔵 **151 itens** foram absorvidos em **67 especificações**; outras **29** foram **derivadas** (§4.3). Total: **96 especificações**.
+🔵 **151 itens** foram absorvidos em **67 especificações**; outras **36** foram **derivadas** (§4.3). Total: **103 especificações**.
 
 ### 4.3 Especificações derivadas — sem origem no inventário
 
@@ -136,6 +137,13 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 | [CEN-FIS-001](cenarios/fiscal.md) — Emissão da NFAg a partir da conta: autorização e rejeição | 🆕 Auditoria final — **requisito nativo**: NFAg, emissão, autorização e rejeição |
 | [CEN-FIS-002](cenarios/fiscal.md) — Contingência e transmissão posterior | 🆕 Auditoria final — **requisito nativo**: NFAg, contingência |
 | [CEN-FIS-003](cenarios/fiscal.md) — Retificação e cancelamento de conta com NFAg autorizada | 🆕 Auditoria final — **requisito nativo**: NFAg × retificação e cancelamento |
+| [CEN-MOD-001](cenarios/modularidade.md) — SINISA inicia somente com a Platform | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: SINISA só com a Platform (ADR-0010) |
+| [CEN-MOD-002](cenarios/modularidade.md) — Services opera sem Commercial, com referência externa e snapshot | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Services sem Commercial, com referência externa |
+| [CEN-MOD-003](cenarios/modularidade.md) — Commercial fatura com medição externa | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Commercial com medição externa |
+| [CEN-MOD-004](cenarios/modularidade.md) — Assets fecha o ciclo de manutenção com OS externa | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Assets com OS externa |
+| [CEN-MOD-005](cenarios/modularidade.md) — Operations opera sem Networks | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Operations sem Networks |
+| [CEN-MOD-006](cenarios/modularidade.md) — Ativação: módulo desligado não registra nada, atualização não ativa módulo, perfil inválido falha cedo | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: ativação, atualização e perfil inválido |
+| [CEN-MOD-007](cenarios/modularidade.md) — Dependência opcional ausente não é importada nem acessada | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: dependência opcional sem import nem HTTP |
 | [CEN-PAR-001](cenarios/pcm-paradas.md) — Parada programada: impacto registrado e comunicação prévia | 🆕 Adendo pós-Fase 0 — **requisito nativo**: parada programada com impacto calculado ou declarado |
 | [CEN-PAR-002](cenarios/pcm-paradas.md) — Parada emergencial até a normalização | 🆕 Adendo pós-Fase 0 — **requisito nativo**: parada emergencial sem planejamento prévio |
 | [CEN-PAR-003](cenarios/pcm-paradas.md) — Normalização: previsões revisadas e realizado | 🆕 Adendo pós-Fase 0 — **requisito nativo**: normalização e previsto × realizado |
@@ -150,15 +158,15 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 | [CEN-SEG-011](cenarios/seguranca.md) — Nenhuma credencial em artefato versionado | Divergências **D-08** e **D-16** sem cenário |
 | [CEN-SEG-012](cenarios/seguranca.md) — Sessão e requisição forjada | 🆕 Auditoria final — divergência **D-18** (achado 6) sem cenário |
 
-🔵 **Por que existem**: o inventário listava o que cada mapa **observou**; ele não tinha como listar o que nenhum mapa cobria. As derivadas vêm de três fontes: a **fatia vertical** (consulta de imóvel), o **registro de divergências** (D-07, D-08, D-15, D-16 sem cenário próprio), e a **leitura dirigida de código** feita nesta execução para localizar as políticas de arredondamento — que revelou o cálculo proporcional entre vigências, **ausente de todo o inventário** e dono da maior concentração de HALF_UP do controlador. 🆕 **Na auditoria final**, mais três: a **varredura regulatória** (seis requisitos nativos), a **resolução do BLQ-04** (semântica de "Fatura") e a **D-18** sem cenário. 🆕 **No adendo pós-Fase 0**, uma: os **requisitos nativos críticos** de PCM, Paradas e SINISA — nove, um por invariante pedido.
+🔵 **Por que existem**: o inventário listava o que cada mapa **observou**; ele não tinha como listar o que nenhum mapa cobria. As derivadas vêm de três fontes: a **fatia vertical** (consulta de imóvel), o **registro de divergências** (D-07, D-08, D-15, D-16 sem cenário próprio), e a **leitura dirigida de código** feita nesta execução para localizar as políticas de arredondamento — que revelou o cálculo proporcional entre vigências, **ausente de todo o inventário** e dono da maior concentração de HALF_UP do controlador. 🆕 **Na auditoria final**, mais três: a **varredura regulatória** (seis requisitos nativos), a **resolução do BLQ-04** (semântica de "Fatura") e a **D-18** sem cenário. 🆕 **No adendo pós-Fase 0**, uma: os **requisitos nativos críticos** de PCM, Paradas e SINISA — nove, um por invariante pedido. 🆕 **No segundo adendo**, uma: a **modularidade** — sete cenários que provam ativação, fronteira e módulos que sobem sem o vizinho.
 
 ### 4.4 Sobre a quantidade
 
-O roteiro sugeriu **35–60** especificações "somente se a evidência justificar". 🔵 A faixa foi calibrada para um inventário de ~110; com **166** itens reais, a mesma proporção (32 %–55 %) daria **53–91**. O resultado fica dentro dela — ⚠️ e não foi forçado: a contagem saiu da deduplicação, não o contrário. Com **184** itens (21ª execução), a mesma proporção daria **59–101**; eram **79** especificações. 🆕 A auditoria final levou a **87** — oito acréscimos, cada um justificado no §4.3, **seis deles fora do inventário por natureza** (requisitos nativos não têm item de mapa do GSAN). 🆕 O adendo pós-Fase 0 levou a **96** — nove requisitos nativos, **todos** fora do inventário; a proporção sobre o inventário deixou de ser a medida certa para eles.
+O roteiro sugeriu **35–60** especificações "somente se a evidência justificar". 🔵 A faixa foi calibrada para um inventário de ~110; com **166** itens reais, a mesma proporção (32 %–55 %) daria **53–91**. O resultado fica dentro dela — ⚠️ e não foi forçado: a contagem saiu da deduplicação, não o contrário. Com **184** itens (21ª execução), a mesma proporção daria **59–101**; eram **79** especificações. 🆕 A auditoria final levou a **87** — oito acréscimos, cada um justificado no §4.3, **seis deles fora do inventário por natureza** (requisitos nativos não têm item de mapa do GSAN). 🆕 O adendo pós-Fase 0 levou a **96** — nove requisitos nativos, **todos** fora do inventário; a proporção sobre o inventário deixou de ser a medida certa para eles. 🆕 O segundo adendo levou a **103** — sete requisitos arquiteturais.
 
 ### 4.5 🆕 Requisitos nativos — oráculo N
 
-NFAg (CEN-FIS-001 a 003), Pix Cobrança (CEN-ARR-012), Pix Automático (CEN-ARR-013) e Tarifa Social nacional (CEN-FAT-012) **não existem no GSAN público** — 🆕 nem o PCM (CEN-PCM-001), a Parada (CEN-PAR-001 a 003) e a prestação ao SINISA (CEN-REG-001 a 005), acrescentados no adendo pós-Fase 0. O resultado esperado vem da **norma ou da decisão registrada**; a baseline do legado é `➖ NÃO APLICÁVEL`; e onde a regra ainda depende de confirmação, o cenário registra `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` e **não fecha** antes da resposta ([`estrategia-testes.md`](estrategia-testes.md)). ⚠️ Nenhum deles entra na matriz de compatibilidade GSAN → OpenGSAN. 🆕 **CEN-REG-004 e 005 são condicionados**: protegem a automação futura do SINISA, que não está na ordem inicial — não se aplicam à V1 e são **pré-requisito** para habilitar qualquer mapeamento ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)).
+NFAg (CEN-FIS-001 a 003), Pix Cobrança (CEN-ARR-012), Pix Automático (CEN-ARR-013) e Tarifa Social nacional (CEN-FAT-012) **não existem no GSAN público** — 🆕 nem o PCM (CEN-PCM-001), a Parada (CEN-PAR-001 a 003) e a prestação ao SINISA (CEN-REG-001 a 005), acrescentados no adendo pós-Fase 0, nem os perfis de implantação (CEN-MOD-001 a 007), do segundo adendo. O resultado esperado vem da **norma ou da decisão registrada**; a baseline do legado é `➖ NÃO APLICÁVEL`; e onde a regra ainda depende de confirmação, o cenário registra `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` e **não fecha** antes da resposta ([`estrategia-testes.md`](estrategia-testes.md)). ⚠️ Nenhum deles entra na matriz de compatibilidade GSAN → OpenGSAN. 🆕 **CEN-REG-004 e 005 são condicionados**: protegem a automação futura do SINISA, que não está na ordem inicial — não se aplicam à V1 e são **pré-requisito** para habilitar qualquer mapeamento ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)).
 
 ---
 
@@ -264,6 +272,13 @@ NFAg (CEN-FIS-001 a 003), Pix Cobrança (CEN-ARR-012), Pix Automático (CEN-ARR-
 | [CEN-REG-003](cenarios/regulatorio.md) | Prestação de Informações | Métrica interna não vira valor SINISA implicitamente | P0 | R | nativo | N | ➖ não aplicável | 1º ciclo SINISA |
 | [CEN-REG-004](cenarios/regulatorio.md) | Prestação de Informações | Mapeamento futuro nunca ativado automaticamente | P0 | R | nativo | N | ➖ não aplicável | automação SINISA |
 | [CEN-REG-005](cenarios/regulatorio.md) | Prestação de Informações | Override futuro auditado | P1 | R | nativo | N | ➖ não aplicável | automação SINISA |
+| [CEN-MOD-001](cenarios/modularidade.md) | Modularidade | SINISA inicia somente com a Platform | P1 | R | nativo | N | ➖ não aplicável | 1º ciclo SINISA |
+| [CEN-MOD-002](cenarios/modularidade.md) | Modularidade | Services opera sem Commercial, com referência externa e snapshot | P1 | 2 | nativo/C1 | N | ➖ não aplicável | 2 → 3 |
+| [CEN-MOD-003](cenarios/modularidade.md) | Modularidade | Commercial fatura com medição externa | P0 | 4 | nativo/C1 | N | ➖ não aplicável | 4 → 5 |
+| [CEN-MOD-004](cenarios/modularidade.md) | Modularidade | Assets fecha o ciclo de manutenção com OS externa | P1 | T | nativo | N | ➖ não aplicável | trilha estrutural |
+| [CEN-MOD-005](cenarios/modularidade.md) | Modularidade | Operations opera sem Networks | P1 | T | nativo | N | ➖ não aplicável | trilha estrutural |
+| [CEN-MOD-006](cenarios/modularidade.md) | Modularidade | Ativação: módulo desligado não registra nada, atualização não ativa módulo, perfil inválido falha cedo | P0 | 0 | nativo | N | ➖ não aplicável | 0 → 1 |
+| [CEN-MOD-007](cenarios/modularidade.md) | Modularidade | Dependência opcional ausente não é importada nem acessada | P1 | 0 | nativo | N | ➖ não aplicável | 0 → 1 |
 
 ---
 
@@ -287,44 +302,45 @@ NFAg (CEN-FIS-001 a 003), Pix Cobrança (CEN-ARR-012), Pix Automático (CEN-ARR-
 | PCM | 1 |
 | Paradas | 3 |
 | Prestação de Informações | 5 |
-| **Total** | **96** |
+| Modularidade | 7 |
+| **Total** | **103** |
 
 | Criticidade | Qtd |
 | --- | --: |
-| P0 | 53 |
-| P1 | 43 |
-| **Total** | **96** |
+| P0 | 55 |
+| P1 | 48 |
+| **Total** | **103** |
 
 | Oráculo | Qtd |
 | --- | --: |
 | 1 — igualdade | 63 |
 | 1+2 — por observável | 8 |
 | 2 — divergência exigida | 7 |
-| N — requisito nativo 🆕 | 15 |
+| N — requisito nativo 🆕 | 22 |
 | Pendente de caracterização | 3 |
-| **Total** | **96** |
+| **Total** | **103** |
 
 | Etapa | Qtd |
 | --- | --: |
-| 0 — Fundação | 7 |
+| 0 — Fundação | 9 |
 | 1 — Fatia vertical | 9 |
-| 2 — Atendimento e execução | 11 |
+| 2 — Atendimento e execução | 12 |
 | 3 — Medição | 9 |
-| 4 — Financeiro individual | 15 |
+| 4 — Financeiro individual | 16 |
 | 5 — Recebimento | 11 |
 | 6 — Cobrança | 10 |
 | 7 — Escala | 14 |
 | 8 — Canais | 1 |
-| T — trilha estrutural 🆕 | 4 |
-| R — trilha regulatória 🆕 | 5 |
-| **Total** | **96** |
+| T — trilha estrutural 🆕 | 6 |
+| R — trilha regulatória 🆕 | 6 |
+| **Total** | **103** |
 
 | Baseline | Qtd |
 | --- | --: |
 | ⬜ A capturar na Fase 2 | 80 |
 | 🟢 Já comprovada | 1 |
-| ➖ Não aplicável — requisito nativo 🆕 | 15 |
-| **Total** | **96** |
+| ➖ Não aplicável — requisito nativo 🆕 | 22 |
+| **Total** | **103** |
 
 🔵 **Leituras**:
 
@@ -332,7 +348,7 @@ NFAg (CEN-FIS-001 a 003), Pix Cobrança (CEN-ARR-012), Pix Automático (CEN-ARR-
 - **A Etapa 4 concentra o maior número de cenários**: é onde o GSAN mais acertou e onde a equivalência é mais estrita.
 - **A única baseline já comprovada** é a de CEN-SEG-011: ali o observável é o **próprio artefato versionado** — ler o arquivo *é* observá-lo. Para qualquer comportamento em execução, leitura de código **não** vale como baseline.
 - **Todos os `D-xx` aprovados têm cenário** — 🆕 **17** desde a auditoria final, que registrou a aprovação de D-01…D-16 e criou a D-18: D-01 SEG-001 · D-02 SEG-009 · D-03 REL-001 · D-04 INT-003 · D-05 INT-001, INT-002 · D-06 INT-005 · D-07 SEG-010 · D-08 SEG-011 · D-09 INT-005, INT-006 · D-10 INT-003 · D-11 INT-007 · D-12 INT-004 · D-13 INT-006 · D-14 FAT-007 · D-15 FAT-011 · D-16 SEG-011 · 🆕 D-18 SEG-012.
-- 🆕 **Quinze cenários não têm baseline do legado** — são requisitos nativos (§4.5). Não é lacuna: não há comportamento GSAN a observar.
+- 🆕 **Vinte e dois cenários não têm baseline do legado** — são requisitos nativos (§4.5). Não é lacuna: não há comportamento GSAN a observar.
 - 🆕 **Etapas T e R** não são etapas numeradas: **T** é a trilha estrutural (PCM e Paradas, depois de Ativos e da OS da Etapa 2); **R**, a trilha regulatória (Workspace SINISA, quando os glossários estiverem definidos, sem depender do Analytics) — [`dependencias-e-ordem-implementacao.md §24.2–§24.3`](../modulos/dependencias-e-ordem-implementacao.md#242--trilha-estrutural--gestão-de-ativos-redesgis-e-engenharia).
 
 ---
@@ -382,6 +398,7 @@ Dos P0, os que mais protegem — escolhidos pelo dano que a falha causaria e pel
 | 🆕 **CEN-FIS-001** — emissão da NFAg | Obrigação que acompanha **toda** conta; *Conta ≠ NFAg* verificado desde a Etapa 4 |
 | 🆕 **CEN-FAT-012** — Tarifa Social | Obrigação legal que **altera o valor** da conta; concessão automática |
 | 🆕 **CEN-REG-003** — métrica interna ≠ valor SINISA | Erro **silencioso** numa declaração a um sistema federal; guarda a ADR-0009 desde a V1 |
+| 🆕 **CEN-MOD-006** — ativação de módulo | Módulo desligado que registra endpoint é **acesso indevido**; provado com módulos-fixture antes do primeiro módulo real |
 
 ---
 
@@ -391,17 +408,17 @@ Dos P0, os que mais protegem — escolhidos pelo dano que a falha causaria e pel
 
 | Transição | Cenários obrigatórios | O que precisam provar |
 | --------- | --------------------- | --------------------- |
-| **0 → 1** | SEG-001 · SEG-002 · SEG-006 · SEG-010 · SEG-011 | Autenticação contra hash moderno · bloqueio por tentativas · escrita auditada · cada filtro barra · CI reprova segredo |
+| **0 → 1** | SEG-001 · SEG-002 · SEG-006 · SEG-010 · SEG-011 · 🆕 MOD-006 · MOD-007 | Autenticação contra hash moderno · bloqueio por tentativas · escrita auditada · cada filtro barra · CI reprova segredo · 🆕 módulo desligado não registra nada · fronteira de implantação verificável |
 | **1 → 2** | SEG-004 · ATE-001 · ATE-002 · ATE-003 · ATE-004 · CAD-002 · 🆕 SEG-012 | **Negação provada** (🆕 inclusive a restrição por usuário) · consulta autorizada · RA governado por dado · encerramento · tramitação · cliente por papel · 🆕 requisição forjada recusada |
-| **2 → 3** | ATE-007 · SEG-007 · CAD-003 · CAD-004 · REL-001 | **Efeito aplicado pelo dono** · escopo territorial · economias · faturabilidade · artefato protegido |
+| **2 → 3** | ATE-007 · SEG-007 · CAD-003 · CAD-004 · REL-001 · 🆕 MOD-002 | **Efeito aplicado pelo dono** · escopo territorial · economias · faturabilidade · artefato protegido · 🆕 Services sobe sem Commercial |
 | **3 → 4** | MIC-001 · MIC-002 · MIC-003 · INT-001 | Consumo com **origem declarada** · mínimo · troca · leitura rejeitada sem dispositivo identificado |
-| **4 → 5** | FAT-001 · FAT-002 · FAT-003 · FAT-005 · FAT-006 · FAT-007 · 🆕 FIS-001 · FAT-012 | **Ao centavo** · as cinco políticas caracterizadas · retificação pela operação da Micromedição · 🆕 documento fiscal autorizado ou rejeição rastreável · Tarifa Social pela regra vigente |
+| **4 → 5** | FAT-001 · FAT-002 · FAT-003 · FAT-005 · FAT-006 · FAT-007 · 🆕 FIS-001 · FAT-012 · 🆕 MOD-003 | **Ao centavo** · as cinco políticas caracterizadas · retificação pela operação da Micromedição · 🆕 documento fiscal autorizado ou rejeição rastreável · Tarifa Social pela regra vigente · 🆕 medição externa com origem, sem gravar consumo |
 | **5 → 6** | ARR-002 · ARR-003 · ARR-005 · ARR-006 · COB-001 · 🆕 ARR-012 | Baixa · **nada descartado** · identidade documental · identidade do pagamento · posição derivada · 🆕 confirmação Pix idempotente |
 | **6 → 7** | COB-002 · COB-004 · COB-005 | Ação e documento · parcelamento **criar e desfazer** |
 | **7 → operação** | BAT-002 · BAT-005 · ARR-010 · FIN-001 · 🆕 FIS-002 · FIS-003 | Retomada sem refazer · **lote = soma dos individuais** · encerramento · **lançamentos contábeis conferem com os resumos** · 🆕 nenhuma conta sem documento fiscal · retificação e cancelamento com o tratamento fiscal vigente |
 | **Etapa 8** | INT-007 | ⚠️ GIS é evolução — não gate do núcleo |
-| 🆕 **Trilha estrutural** | PCM-001 · PAR-001 · PAR-002 · PAR-003 | OS não duplicada · parada **com ou sem** GIS · impacto comunicado imutável · previsto × realizado |
-| 🆕 **1º ciclo SINISA** | REG-001 · REG-002 · REG-003 | Declaração manual rastreável · glossário versionado · **nenhum valor nascido de dado interno** |
+| 🆕 **Trilha estrutural** | PCM-001 · PAR-001 · PAR-002 · PAR-003 · 🆕 MOD-004 · MOD-005 | OS não duplicada · parada **com ou sem** GIS · impacto comunicado imutável · previsto × realizado · 🆕 Assets com OS externa · Operations sem Networks |
+| 🆕 **1º ciclo SINISA** | REG-001 · REG-002 · REG-003 · 🆕 MOD-001 | Declaração manual rastreável · glossário versionado · **nenhum valor nascido de dado interno** · 🆕 perfil SINISA isolado |
 | 🆕 **Automação SINISA** — condicionado | REG-004 · REG-005 | Nada se ativa sozinho · override auditado — ⚠️ só quando a automação for especificada |
 
 ⚠️ **Três cenários de gate têm oráculo pendente** e só fecham depois da caracterização: SEG-005 (1 → 2), BAT-003 e BAT-004 (7 → operação). Eles **não** estão na coluna de obrigatórios acima, mas bloqueiam a transição se a baseline revelar comportamento que exija divergência. 🆕 E **CEN-FIS-003** só fecha quando a regra fiscal da retificação e do cancelamento for confirmada (`VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` — [`fiscal.md §12`](../modulos/fiscal.md)).
@@ -591,6 +608,9 @@ Território: duas gerências regionais, unidades de negócio, elos/polos, locali
 | **RED-01** 🆕 | Rede sintética em L1: uma área com **topologia íntegra**, válvulas classificadas (uma **inacessível**), entradas de água configuradas e ligações vinculadas a unidades usuárias; outra área **sem topologia** |
 | **SIN-01** 🆕 | Dois ciclos SINISA **fictícios** — N e N+1, glossários vN e vN+1: campo X com definição alterada **sob o mesmo código**, Y inalterado, Z removido, W novo; campos numéricos e de escolha |
 | **MET-01** 🆕 | Métrica interna com nome **idêntico** ao de um campo de SIN-01 e valor calculado no período |
+| **PRF-01** 🆕 | Perfis de referência para teste — FULL, SINISA, SERVICES, COMMERCIAL com medição externa, ASSETS com OS externa, OPERATIONS sem Networks —, cada um com os módulos habilitados e os provedores declarados |
+| **EXT-01** 🆕 | Sistemas externos **sintéticos**, por contrato: comercial (cliente, unidade usuária, ligação), leitura/AMI (consumo com origem) e OS/CMMS (execução e resultado) — sem credencial real |
+| **FXM-01** 🆕 | Módulos-fixture da fundação: A (REQUIRED Platform), B (REQUIRED A) e C (OPTIONAL de A, por contrato) |
 
 Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfil de parcelamento com faixas, juros, entrada mínima e descontos; comando de negativação; processo com indicador de autorização.
 
@@ -600,10 +620,10 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 
 | Perfil | Cenários |
 | ------ | -------- |
-| IMV-01 | CEN-ARR-009 · CEN-ARR-013 · CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-007 · CEN-CAD-002 · CEN-CAD-003 · CEN-CAD-005 · CEN-COB-001 · CEN-COB-002 · CEN-COB-003 · CEN-COB-004 · CEN-COB-006 · CEN-COB-007 · CEN-FAT-001 · CEN-FAT-003 · CEN-FAT-004 · CEN-FAT-007 · CEN-FAT-009 · CEN-FAT-010 · CEN-FIN-004 · CEN-MIC-001 · CEN-MIC-005 · CEN-OPE-003 · CEN-PAR-001 · CEN-PAR-002 |
+| IMV-01 | CEN-ARR-009 · CEN-ARR-013 · CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-007 · CEN-CAD-002 · CEN-CAD-003 · CEN-CAD-005 · CEN-COB-001 · CEN-COB-002 · CEN-COB-003 · CEN-COB-004 · CEN-COB-006 · CEN-COB-007 · CEN-FAT-001 · CEN-FAT-003 · CEN-FAT-004 · CEN-FAT-007 · CEN-FAT-009 · CEN-FAT-010 · CEN-FIN-004 · CEN-MIC-001 · CEN-MIC-005 · CEN-MOD-003 · CEN-OPE-003 · CEN-PAR-001 · CEN-PAR-002 |
 | IMV-02 | CEN-CAD-003 · CEN-FAT-001 · CEN-FAT-009 · CEN-PAR-001 · CEN-PAR-002 |
 | IMV-03 | CEN-ATE-001 · CEN-CAD-003 · CEN-FAT-001 · CEN-FIN-004 · CEN-MIC-002 |
-| IMV-04 | CEN-MIC-002 |
+| IMV-04 | CEN-MIC-002 · CEN-MOD-003 |
 | IMV-05 | CEN-MIC-001 |
 | IMV-06 | CEN-MIC-001 |
 | IMV-07 | CEN-MIC-001 |
@@ -631,7 +651,7 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 | DOC-10 | CEN-ARR-008 · CEN-COB-005 |
 | DOC-11 | CEN-COB-005 |
 | DOC-12 | CEN-ARR-011 |
-| USR-01 | CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-004 · CEN-BAT-001 · CEN-REL-001 · CEN-SEG-001 · CEN-SEG-002 · CEN-SEG-004 · CEN-SEG-006 · CEN-SEG-008 · CEN-SEG-009 · CEN-SEG-012 |
+| USR-01 | CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-004 · CEN-BAT-001 · CEN-MOD-006 · CEN-REL-001 · CEN-SEG-001 · CEN-SEG-002 · CEN-SEG-004 · CEN-SEG-006 · CEN-SEG-008 · CEN-SEG-009 · CEN-SEG-012 |
 | USR-01B | CEN-SEG-001 |
 | USR-02 | CEN-SEG-004 |
 | USR-03 | CEN-REL-001 · CEN-SEG-004 · CEN-SEG-005 |
@@ -644,12 +664,12 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 | USR-09 | CEN-SEG-008 |
 | USR-10 | CEN-ATE-004 |
 | USR-11 | CEN-BAT-001 |
-| USR-12 | CEN-REG-001 · CEN-REG-004 |
+| USR-12 | CEN-MOD-001 · CEN-REG-001 · CEN-REG-004 |
 | UNI-01 | CEN-ATE-004 |
 | UNI-02 | CEN-ATE-004 |
-| TAR-01 | CEN-FAT-001 · CEN-FAT-002 |
+| TAR-01 | CEN-FAT-001 · CEN-FAT-002 · CEN-MOD-003 |
 | ESP-01 | CEN-ATE-002 · CEN-ATE-003 |
-| ESP-02 | CEN-ATE-002 · CEN-OPE-001 |
+| ESP-02 | CEN-ATE-002 · CEN-MOD-002 · CEN-OPE-001 |
 | ESP-03 | CEN-ATE-003 |
 | ESP-04 | CEN-ATE-002 |
 | ESP-05 | CEN-OPE-001 |
@@ -659,13 +679,16 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 | SRV-03 | CEN-ATE-008 |
 | CTB-01 | CEN-FIN-001 · CEN-FIN-004 |
 | CTB-02 | CEN-FIN-002 |
-| OPR-01 | CEN-OPE-001 · CEN-OPE-003 · CEN-PAR-001 · CEN-PAR-002 · CEN-PCM-001 |
+| OPR-01 | CEN-MOD-005 · CEN-OPE-001 · CEN-OPE-003 · CEN-PAR-001 · CEN-PAR-002 · CEN-PCM-001 |
 | OPR-02 | CEN-OPE-002 |
 | QLD-01 | CEN-OPE-003 |
-| ATV-01 | CEN-PAR-001 · CEN-PAR-002 · CEN-PCM-001 |
+| ATV-01 | CEN-MOD-004 · CEN-PAR-001 · CEN-PAR-002 · CEN-PCM-001 |
 | RED-01 | CEN-PAR-001 · CEN-PAR-002 |
-| SIN-01 | CEN-REG-001 · CEN-REG-002 · CEN-REG-003 · CEN-REG-004 |
+| SIN-01 | CEN-MOD-001 · CEN-REG-001 · CEN-REG-002 · CEN-REG-003 · CEN-REG-004 |
 | MET-01 | CEN-REG-003 · CEN-REG-004 |
+| PRF-01 | CEN-MOD-001 · CEN-MOD-002 · CEN-MOD-003 · CEN-MOD-004 · CEN-MOD-005 |
+| EXT-01 | CEN-MOD-002 · CEN-MOD-003 · CEN-MOD-004 |
+| FXM-01 | CEN-MOD-006 · CEN-MOD-007 |
 
 ### 13.7 Contra a explosão combinatória
 
@@ -690,7 +713,7 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 
 ## 15. O que a Fase 2 recebe
 
-1. **96 especificações fechadas** (79 até a auditoria final; 87 até o adendo pós-Fase 0), cada uma com a lista de observáveis, o oráculo e o gate — ⚠️ **81 com baseline a capturar ou já comprovada**; as **15** de requisito nativo não têm baseline do legado e são testadas contra a norma ou a decisão registrada.
+1. **103 especificações fechadas** (79 até a auditoria final; 87 até o adendo pós-Fase 0; 96 até o segundo), cada uma com a lista de observáveis, o oráculo e o gate — ⚠️ **81 com baseline a capturar ou já comprovada**; as **22** de requisito nativo não têm baseline do legado e são testadas contra a norma ou a decisão registrada.
 2. Os **perfis de massa** e o mapa perfil → cenário.
 3. A lista do que **não** comparar (C4) e do que está **bloqueado** — 🆕 **BLQ-01 e BLQ-03**, ambos pela D-17; BLQ-02 e BLQ-04 foram desbloqueados na auditoria final.
 4. Seis casos — três cenários e três variações (🆕 CEN-SEG-004 V7(c)) — cuja decisão de oráculo **depende da própria baseline** (§10.2).
@@ -964,6 +987,8 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 | 13 🆕 | Protocolo de integração com o Giswater — nada decidido; V1 e V4 exercitam a **separação de estados**, não o protocolo | CEN-PAR-001 |
 | 14 🆕 | Segregação de funções como padrão da declaração regulatória — proposta a confirmar | CEN-REG-001 V3 |
 | 15 🆕 | Revisão e aprovação humanas mesmo no modo AUTOMÁTICO — proposta | CEN-REG-005 V4 |
+| 16 🆕 | Estratégia de migrations dos módulos desabilitados — decisão da Etapa 0 | CEN-MOD-006 |
+| 17 🆕 | Rota de leitura × agrupamento do ciclo de faturamento (CAD-10) — Etapa 3 | CEN-MOD-003 · CEN-CAD-005 |
 
 ---
 
@@ -974,4 +999,4 @@ Restam para fechar a Fase 0:
 1. ~~**ADR-0007 — arquitetura de interface.**~~ ✅ **Aceita em 2026-09-29** — sem efeito sobre os observáveis (§14).
 2. ~~**Auditoria final e encerramento da Fase 0.**~~ ✅ **Concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md): oito especificações acrescentadas (§4.3), dois bloqueios resolvidos (§10.1), a D-18 com cenário e o oráculo N para requisitos nativos.
 
-🆕 **Depois do encerramento — adendo pós-Fase 0 (2026-09-29)**: nove requisitos nativos de PCM, Paradas e SINISA (§4.5), sem reabrir a Fase 0 ([registro](../alteracoes/2026-09-29-adendo-pos-fase0.md)). Próximo estágio: **Fase 1**.
+🆕 **Depois do encerramento — adendo pós-Fase 0 (2026-09-29)**: nove requisitos nativos de PCM, Paradas e SINISA (§4.5), sem reabrir a Fase 0 ([registro](../alteracoes/2026-09-29-adendo-pos-fase0.md)). 🆕 **Segundo adendo (2026-09-29)**: sete cenários de modularidade e perfis de implantação ([registro](../alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md)). Próximo estágio: **Fase 1**.

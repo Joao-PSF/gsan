@@ -28,6 +28,8 @@
 
 24ª execução (2026-09-29): **ADENDO PÓS-FASE 0 — refinamento arquitetural antes da Fase 1**, sem reabrir a Fase 0 ([§ADENDO PÓS-FASE 0](#adendo-pós-fase-0--refinamento-arquitetural-antes-da-fase-1)). **PCM** como capacidade da Gestão de Ativos, sem ordem de trabalho além da OS; **Parada / interrupção operacional** nativa da Gestão Operacional — *Parada ≠ polígono ≠ mincut*, o Giswater calcula o impacto sem ser dono; 🔴 **premissa do SINISA corrigida**: preenchimento **manual por padrão** — e só manual na V1 —, Workspace dono da declaração, automação futura só por mapeamento da companhia e **desligada por padrão** ([ADR-0009](docs/modernizacao/decisoes/0009-sinisa-preenchimento-manual.md)); **Gerencial & Analytics** com catálogo de métricas, que não existe para preencher o SINISA. Cenários 87 → **96**; trilha regulatória e Gerencial incremental na ordem. Registro em [alteracoes/2026-09-29-adendo-pos-fase0.md](docs/modernizacao/alteracoes/2026-09-29-adendo-pos-fase0.md).
 
+25ª execução (2026-09-29): **SEGUNDO ADENDO PÓS-FASE 0 — monólito modular e suíte modular**, sem reabrir a Fase 0 ([§SEGUNDO ADENDO](#segundo-adendo-pós-fase-0--monólito-modular-e-suíte-modular)). O OpenGSAN **continua monólito modular** — um código, uma versão, um processo por instalação — e passa a ser implantado como **suíte**: *módulo de domínio ≠ módulo instalável ≠ microserviço*; nove módulos instaláveis (Platform, Commercial, Metering, Services, Assets, Operations, Networks, SINISA, Analytics); dependências REQUIRED/OPTIONAL/EXTERNALIZABLE, a opcional **só por contrato**; **Commercial coeso**; 🟢 **OS não exige RA** — comprovado no caminho da cobrança; capacidade GIS no Networks; treze perfis de referência; módulo desligado não registra nada, perfil inválido falha cedo, atualização não ativa módulo ([ADR-0010](docs/modernizacao/decisoes/0010-monolito-modular-perfis-de-implantacao.md), que especializa a ADR-0001). Cenários 96 → **103**. Registro em [alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md](docs/modernizacao/alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md).
+
 **Leitura honesta do estado (calibrada em 2026-09-14; atualizada em 2026-09-28; 🆕 encerrada em 2026-09-29).** 🆕 *Com a auditoria final, a Fase 0 está concluída: a incompletude descrita abaixo foi endereçada ou aceita explicitamente como pendência com dono e prazo ([§FASE 0 — CONCLUÍDA](#fase-0--concluída)). O parágrafo segue como registro.* Os doze mapas funcionais — os dez originais mais Financeiro/Contabilização e Operacional — cobrem o fluxo principal Cadastro → Micromedição → Faturamento → Conta → Cobrança → Arrecadação, o ciclo de demanda/execução do Atendimento, identidade/autorização/abrangência/auditoria, processamento em lote, relatórios e integrações. **Isso não significa que a Fase 0 esteja pronta para orientar implementação**, por duas razões diferentes que não devem ser confundidas:
 
 - **Incompletude normal da descoberta**: o mapa de domínio, a análise de compatibilidade das estruturas centrais, a visão conceitual alvo, o catálogo de funcionalidades futuras, a **ordem de implementação** e a **compatibilidade conceitual** e a **especificação dos cenários críticos** já foram concluídos, assim como a **revisão controlada de escopo** (2026-09-28); a **ADR-0007 foi decidida** (2026-09-29); falta a **auditoria final**. Permanecem dúvidas abertas registradas em cada mapa, **4 cenários bloqueados por decisão** e **5 casos com oráculo pendente de caracterização** (3 cenários e 2 variações).
@@ -39,7 +41,7 @@ Nenhuma implementação iniciada.
 
 ✅ **Fase 0 concluída (2026-09-29).** Próximo estágio conforme o [plano vigente](docs/modernizacao/plano-de-trabalho.md): **Fase 1 — Ambiente de referência** do legado — **não iniciada**.
 
-🆕 **Adendo pós-Fase 0 registrado (2026-09-29)** — refinamento arquitetural antes da Fase 1; a Fase 0 **não** foi reaberta ([§ADENDO PÓS-FASE 0](#adendo-pós-fase-0--refinamento-arquitetural-antes-da-fase-1)).
+🆕 **Adendo pós-Fase 0 registrado (2026-09-29)** — refinamento arquitetural antes da Fase 1; a Fase 0 **não** foi reaberta ([§ADENDO PÓS-FASE 0](#adendo-pós-fase-0--refinamento-arquitetural-antes-da-fase-1)). 🆕 **Segundo adendo registrado no mesmo dia** — suíte modular sobre o monólito modular ([§SEGUNDO ADENDO](#segundo-adendo-pós-fase-0--monólito-modular-e-suíte-modular)).
 
 *Registro do escopo da Fase 0*: Fase 0 — Descoberta, compatibilidade e arquitetura do **OpenGSAN**. Objetivo: compreender o domínio e as regras do GSAN (mapa funcional, glossário, mapa de domínio), classificar as estruturas centrais (`PRESERVAR / MODERNIZAR / REESTRUTURAR / NÃO TRANSPORTAR`), catalogar funcionalidades futuras descobertas no `gsan_comercial` e estabelecer os princípios de compatibilidade GSAN→SISAN. Sem implementação.
 
@@ -94,6 +96,26 @@ Conforme o [plano vigente](docs/modernizacao/plano-de-trabalho.md): **Fase 1 —
 
 **Próximo estágio — inalterado**: Fase 1 → Fase 2 → Fase 3 → Fase 4 = Etapa 0.
 
+## SEGUNDO ADENDO PÓS-FASE 0 — monólito modular e suíte modular
+
+⚠️ **A Fase 0 continua encerrada.** O segundo adendo não refaz PCM, Paradas, SINISA nem Analytics, **não altera a ADR-0001** — a ADR-0010 a especializa — e não mexe no registro *FASE 0 — CONCLUÍDA*.
+
+| Item | Registro |
+| ---- | -------- |
+| **Data** | 2026-09-29 — estado de entrada `fbef914` |
+| **Commit** | O que introduz o [registro da execução](docs/modernizacao/alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md) — `git log -- docs/modernizacao/alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md` |
+| **Decisão** | **Monólito modular no código, suíte modular na implantação**: um código, uma versão, um processo por instalação; ❌ microserviço, HTTP interno, banco por serviço, fila obrigatória, fork ou edição por perfil — [ADR-0010](docs/modernizacao/decisoes/0010-monolito-modular-perfis-de-implantacao.md) |
+| **Módulos instaláveis** | Platform · Commercial (coeso: cadastro, faturamento, cobrança, arrecadação, pagamentos, contabilização, Fiscal) · Metering · Services (RA, OS, campo) · Assets (+ PCM) · Operations (+ Paradas) · Networks (+ capacidade GIS) · SINISA · Analytics — [modulos-e-perfis-de-implantacao.md](docs/modernizacao/arquitetura/modulos-e-perfis-de-implantacao.md) |
+| **Dependências** | REQUIRED dos funcionais: **só a Platform**. OPTIONAL e EXTERNALIZABLE **só por contrato do consumidor**; provedores obrigatórios marcados — consumo e qualidade da água para o Commercial, ponto de consumo para o Metering, execução para o Assets |
+| **Achado** | 🟢 **OS não exige RA**: a cobrança gera OS sem RA (`ControladorCobranca:24135–24142` → `ControladorOrdemServicoSEJB:1032–1086`) — o Services opera sem o Commercial |
+| **Perfis** | Treze de referência — FULL, PEQUENO PRESTADOR (com Operations), COMMERCIAL, COMMERCIAL + METERING, METERING, SERVICES, ASSETS, ASSETS + SERVICES, ASSETS + OPERATIONS + NETWORKS, OPERATIONS, NETWORKS, SINISA, ANALYTICS; outra combinação só se a validação passar |
+| **Regras** | Módulo desligado não registra nada · ativação ≠ autorização · perfil inválido falha cedo · **atualização não ativa módulo** · coexistência por contrato ≠ migração |
+| **Números** | **10 ADRs** · **103 especificações** (55 P0 · 48 P1; 22 com oráculo N) · 9 módulos · 13 perfis · 13 contratos — por script |
+
+**Etapa 0 passa a decidir** (antes da primeira funcionalidade): mecanismo de ativação · estrutura Maven e de pacotes · testes de fronteira e de perfil · migrations de módulo desabilitado · registro condicional de interface, jobs e adapters. **Pendências novas**: rota de leitura × agrupamento do ciclo (CAD-10, Etapa 3) · identificadores técnicos dos módulos · conteúdo dos contratos de consumo, execução e efeito · portal sem Commercial.
+
+**Próximo estágio — inalterado**: Fase 1 → Fase 2 → Fase 3 → Fase 4 = Etapa 0.
+
 ## CONCLUÍDO
 
 - Diagnóstico de runtime, build, frameworks, segurança e banco — [arquitetura legada](docs/modernizacao/arquitetura/arquitetura-legada.md).
@@ -130,13 +152,15 @@ Conforme o [plano vigente](docs/modernizacao/plano-de-trabalho.md): **Fase 1 —
 
 - 🆕 **Auditoria final e encerramento da Fase 0** (23ª execução): [auditoria/auditoria-final-fase0.md](docs/modernizacao/auditoria/auditoria-final-fase0.md) — veredito **SIM**; módulo **Fiscal** (NFAg); Tarifa Social nacional; PIX na Arrecadação; negação na autorização comprovada; D-18; 87 especificações; [matriz de completude](docs/modernizacao/auditoria/completude-funcional-regulatoria.md) com 50 temas, 15 normas e a conformidade com a NR ANA 11/2024.
 
+- 🆕 **Segundo adendo pós-Fase 0** (25ª execução): [módulos instaláveis e perfis de implantação](docs/modernizacao/arquitetura/modulos-e-perfis-de-implantacao.md), [ADR-0010](docs/modernizacao/decisoes/0010-monolito-modular-perfis-de-implantacao.md), [cenários de modularidade](docs/modernizacao/testes/cenarios/modularidade.md); 103 especificações — [registro](docs/modernizacao/alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md).
+
 - 🆕 **Adendo pós-Fase 0** (24ª execução): [PCM](docs/modernizacao/dominio/pcm.md), [Paradas](docs/modernizacao/dominio/paradas-interrupcoes.md), [SINISA manual](docs/modernizacao/regulatorio/sinisa.md) com a [ADR-0009](docs/modernizacao/decisoes/0009-sinisa-preenchimento-manual.md), [Gerencial & Analytics](docs/modernizacao/analytics/gerencial-analytics.md) e [catálogo de métricas](docs/modernizacao/analytics/catalogo-de-metricas.md); 96 especificações; trilhas estrutural e regulatória — [registro](docs/modernizacao/alteracoes/2026-09-29-adendo-pos-fase0.md).
 
 - Decisão da ADR-0007 (22ª execução): [decisoes/0007-arquitetura-de-interface.md](docs/modernizacao/decisoes/0007-arquitetura-de-interface.md) — canais sobre casos de uso; backoffice server-driven com aprimoramento progressivo; portal como canal próprio; contratos explícitos para integrações, campo e GIS; autorização no caso de uso; relatório por caso de uso autorizado. Responde **qual padrão de interface a Etapa 1 usa**, o bloqueio que a ADR existia para resolver.
 
 ## EM EXECUÇÃO
 
-- Nada em execução. ✅ Fase 0 concluída em 2026-09-29; 🆕 adendo pós-Fase 0 registrado no mesmo dia; a Fase 1 **não** foi iniciada.
+- Nada em execução. ✅ Fase 0 concluída em 2026-09-29; 🆕 dois adendos pós-Fase 0 registrados no mesmo dia; a Fase 1 **não** foi iniciada.
 
 ## PRÓXIMAS ATIVIDADES (backlog da Fase 0 — ✅ concluído em 2026-09-29)
 
@@ -197,6 +221,7 @@ FASE 0 — CONCLUÍDA  →  Fase 1 — Ambiente de referência (não iniciada)
 12. ⚠️ **Inflação de escopo pela expansão estrutural** — Ativos, Redes/GIS, Engenharia, Campo, Telemetria, Analytics. Mitigação: **trilha estrutural sem etapa própria**, ADR-0008 **sem decisão de schema, PostGIS, sincronização, eventos ou REST**, e lista explícita do que ficou **fora da revisão** (perdas, SCADA, laboratório, energia, compras, estoque corporativo, ERP, BIM).
 13. 🆕 ⚠️ **Obrigação regulatória descoberta tarde** — o caso NFAg (2026-09-29). Mitigado pela auditoria final: varredura por **fonte oficial**, módulo Fiscal com fronteira própria, requisito nativo com oráculo N e **parâmetro regulado** para regra de regulador. Resíduo: portais oficiais lidos por **resumo de busca** (rede bloqueada) — reler MOC da NFAg e Regulamento Pix antes de implementar.
 14. 🆕 ⚠️ **Equivalência semântica presumida** (adendo pós-Fase 0) — métrica interna declarada como informação SINISA por ter o mesmo nome; o erro é silencioso e vira declaração a sistema federal. Mitigação: [ADR-0009](docs/modernizacao/decisoes/0009-sinisa-preenchimento-manual.md) — V1 manual, nenhum mapeamento por nome, automação só da companhia, desligada por padrão e revalidada a cada glossário; regra permanente 9 de [`procedencia.md`](docs/modernizacao/procedencia.md).
+15. 🆕 ⚠️ **Acoplamento acidental entre módulos instaláveis** (segundo adendo) — um núcleo que importa o vizinho torna o perfil parcial impossível, e isso só aparece quando alguém tenta instalá-lo. Mitigação: [ADR-0010](docs/modernizacao/decisoes/0010-monolito-modular-perfis-de-implantacao.md) — contrato do consumidor, teste arquitetural e de perfil **desde a Etapa 0** (CEN-MOD-006 e 007).
 
 Lista original de 10 riscos no plano de trabalho, com reinterpretação registrada na [revisão de premissas](docs/modernizacao/alteracoes/2026-08-13-revisao-premissas-fase0.md).
 
@@ -215,6 +240,7 @@ Registradas em [`docs/modernizacao/decisoes/`](docs/modernizacao/decisoes/README
 | 0007 | **Arquitetura de interface: canais sobre casos de uso** — backoffice server-driven com aprimoramento progressivo; portal como canal próprio; contratos explícitos para canais externos; autorização no caso de uso | **Aceita** (2026-09-29) |
 | 0008 | **Gestão de Ativos nativa**; Giswater para redes/GIS/engenharia (não EAM, não obrigatório); OS não duplicada; identidade corporativa única do ativo; ownership por atributo | **Aceita** (2026-09-28) |
 | 0009 | 🆕 **SINISA manual por padrão** — só manual na V1; sem mapeamento universal; métrica interna ≠ informação SINISA; automação futura só por mapeamento da companhia, desligada por padrão; glossário novo exige revalidação | **Aceita** (2026-09-29, adendo pós-Fase 0) |
+| 0010 | 🆕 **Monólito modular com perfis de implantação** — especializa a 0001: módulo de domínio ≠ módulo instalável ≠ microserviço; dependência opcional só por contrato; Commercial coeso; Platform pequena; módulo desligado não registra nada; perfil inválido falha cedo; atualização não ativa módulo | **Aceita** (2026-09-29, 2º adendo pós-Fase 0) |
 
 ## DÍVIDAS TÉCNICAS IDENTIFICADAS (legado — inalterado)
 
@@ -244,7 +270,7 @@ Pendências **não bloqueadoras**: definição da infraestrutura da VPS (antes d
 
 ## TESTES DISPONÍVEIS
 
-19 classes JUnit no legado (`test/`), sem cobertura relevante. **Especificações de caracterização: 96** (79 até a auditoria final; 87 no encerramento da Fase 0; 🆕 nove do adendo pós-Fase 0 — **quinze** são requisitos nativos, sem baseline do legado), fechadas na Fase 0 ([`cenarios-criticos.md`](docs/modernizacao/testes/cenarios-criticos.md)). **Baseline funcional automatizada: inexistente** — objetivo da Fase 2, sobre ambiente de referência do legado + massa controlada. ⚠️ Especificação existir **não é** teste existir.
+19 classes JUnit no legado (`test/`), sem cobertura relevante. **Especificações de caracterização: 103** (79 até a auditoria final; 87 no encerramento da Fase 0; 96 no primeiro adendo; 🆕 sete do segundo — **vinte e dois** são requisitos nativos, sem baseline do legado), fechadas na Fase 0 ([`cenarios-criticos.md`](docs/modernizacao/testes/cenarios-criticos.md)). **Baseline funcional automatizada: inexistente** — objetivo da Fase 2, sobre ambiente de referência do legado + massa controlada. ⚠️ Especificação existir **não é** teste existir.
 
 ## MÓDULOS IMPLEMENTADOS
 

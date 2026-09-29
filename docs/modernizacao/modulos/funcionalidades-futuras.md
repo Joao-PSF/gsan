@@ -6,6 +6,8 @@
 >
 > 🆕 **Auditoria final da Fase 0 (2026-09-29)**: a varredura por **fonte oficial** reclassificou o documento fiscal (**NFAg**) e a **Tarifa Social** como **capacidades regulatórias necessárias**, reclassificou o SPED do legado como integração, reposicionou o PIX na **Arrecadação/Pagamentos** e acrescentou três capacidades sem origem no legado (§28). Detalhe na [matriz de completude](../auditoria/completude-funcional-regulatoria.md).
 >
+> 🆕 **Segundo adendo pós-Fase 0 (2026-09-29)**: capacidade ≠ **módulo instalável**. As capacidades deste catálogo caem nos nove módulos instaláveis da [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md) — telemetria de consumo no Metering, contrato de empresa de campo no Services, BI no Analytics — e nenhuma vira produto próprio ([`modulos-e-perfis-de-implantacao.md`](../arquitetura/modulos-e-perfis-de-implantacao.md)).
+>
 > 🆕 **Adendo pós-Fase 0 (2026-09-29)**: N2 passa a **Parada / interrupção operacional**; entram **N4 — PCM** e **N5 — Workspace SINISA** (§28); a capacidade 22 perde o SINISA para N5 ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)); a 23 passa a **Gerencial & Analytics** ([`gerencial-analytics.md`](../analytics/gerencial-analytics.md)). Nenhum eixo do §4 muda — conferido por script.
 
 ---

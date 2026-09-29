@@ -4,6 +4,8 @@
 >
 > 🆕 **Adendo pós-Fase 0 (2026-09-29)** — PCM, Parada, Prestação de Informações (SINISA) e Gerencial & Analytics: §19, §27.2, §27.4 e §29; [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md). A Fase 0 continua encerrada; nada aqui a reabre.
 >
+> 🆕 **Segundo adendo pós-Fase 0 (2026-09-29)** — suíte modular: módulos instaláveis e perfis de implantação sobre o mesmo monólito modular — §8, §19, §27.2, §27.5 e §29; [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md).
+>
 > ⚠️ **Este documento é conceitual.** Não contém — e não pode conter — tabelas, colunas, tipos, chaves, índices, schemas, migrations, entidades JPA, DTOs, APIs, mensageria, eventos ou layouts de tela. Onde uma decisão exigiria escolher mecanismo, o documento define **responsabilidade** e para.
 
 ---
@@ -179,6 +181,8 @@ Arrecadação   FATO FINANCEIRO  "entrou R$ 187,43 em 14/03, aplicado a esta con
 | **Integrações** | Fronteira com o mundo externo: contrato, autenticação, validação, idempotência, transformação, erro, observabilidade | 🔴 **Uma integração não é dona do domínio.** Ela traduz e entrega; quem aplica o efeito é o módulo dono |
 
 🔵 **Por que plataforma e não módulo de negócio**: as quatro são **usadas por todos** e **não possuem conceitos de negócio próprios** além dos seus instrumentos. Um relatório de faturamento pertence ao Faturamento; o motor que o executa pertence à plataforma.
+
+🆕 **Segundo adendo pós-Fase 0**: o mesmo critério — *todo perfil usa, sem conceito de negócio próprio, sem depender de módulo funcional* — define o módulo instalável **Platform**, que reúne também notificação, documentos e evidências, contexto institucional, estrutura organizacional e o registro de módulos. A **capacidade GIS** não passa no critério — um perfil só SINISA não a usa — e vai para o módulo **Networks** ([`modulos-e-perfis-de-implantacao.md §14`](../arquitetura/modulos-e-perfis-de-implantacao.md#14-platform--pequena-e-transversal)).
 
 ---
 
@@ -583,7 +587,8 @@ PROCESSO    o que se executa                   (definição catalogada)
 | 🆕 **Evento operacional** (interrupção programada/emergencial, racionamento, área afetada) — 🆕 **Parada / interrupção operacional** | **Gestão Operacional** | Atendimento, Notificação, Gerencial; Redes/GIS **calcula** o impacto sem ser dono | Gestão Operacional — [`paradas-interrupcoes.md`](paradas-interrupcoes.md). 🔴 Parada ≠ polígono ≠ *mincut* |
 | 🆕 **Declaração regulatória** (SINISA) — ciclo, glossário, valor declarado, aprovação, submissão, retificação | **Prestação de Informações** | Gerencial (só progresso) | Prestação de Informações — [`sinisa.md`](../regulatorio/sinisa.md). 🔴 Valor **informado pelo usuário**, nunca derivado de métrica (ADR-0009) |
 | 🆕 **Métrica** — definição, fórmula, versão, metas e alertas | **Gerencial & Analytics** (cálculo) · *owner* de negócio (definição) | Painéis, relatórios gerenciais, Workspace SINISA (**só referência**) | [Catálogo de métricas](../analytics/catalogo-de-metricas.md). 🔴 Métrica ≠ informação SINISA |
-| 🆕 **Contexto institucional** — prestador, titular, instrumento de delegação, área de prestação, regulador, vigência | **Cadastro** (área de prestação como recorte territorial) + configuração da instalação | Todos os parâmetros regulados | Ver §27.3 — **não** é decisão de multi-tenancy |
+| 🆕 **Registro de módulos instaláveis e perfil de implantação** — ativação, validação, inventário | **Platform** | Todos os módulos | [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md) — ativar módulo **não** concede autorização |
+| 🆕 **Contexto institucional** — prestador, titular, instrumento de delegação, área de prestação, regulador, vigência | **Cadastro** (área de prestação como recorte territorial) + configuração da instalação — 🆕 esta, na **Platform** (2º adendo) | Todos os parâmetros regulados | Ver §27.3 — **não** é decisão de multi-tenancy |
 
 🔵 **Três mudanças de propriedade** em relação ao GSAN, todas para corrigir estado guardado no lugar errado: situação da ligação, situação de cobrança e escrita de consumo na retificação.
 
@@ -917,7 +922,7 @@ GESTÃO COMERCIAL                          FINANCEIRO / REGULATÓRIO
 │     débito automático · cartão           └─ Redes/GIS           Giswater opcional — ADR-0008
 └─ Atendimento e Execução (RA · OS)
 
-PLATAFORMA — Segurança · Processamento · Relatórios · Integrações · GIS como capacidade
+PLATAFORMA — Segurança · Processamento · Relatórios · Integrações   (GIS como capacidade → Networks, 2º adendo)
 CAPACIDADES TRANSVERSAIS (sem módulo) — Notificação · Documentos e evidências ·
                                         🆕 Gerencial & Analytics (consumidor de fatos)
 CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
@@ -945,6 +950,8 @@ CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
 | **Área de prestação** | Recorte territorial coberto por um instrumento | **Cadastro** — é recorte do território |
 | **Entidade reguladora** | Quem regula aquela área | Referência institucional |
 | **Vigência e origem normativa** | Quando e por qual ato uma regra vale | Em cada **parâmetro regulado** (§23.2) |
+
+🆕 **Segundo adendo pós-Fase 0**: *configuração da instalação* e *referência institucional* — prestador, titular, instrumento, regulador, vigência — vivem na **Platform**, porque todo perfil as usa, inclusive o SINISA isolado; a **área de prestação** continua do Cadastro, no Commercial ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md)).
 
 🔴 **Regra**: tarifa, benefício, prazo de atendimento, aviso prévio, prestação de informações e tributação podem variar **por área de prestação e por regulador sem fork e sem `if`**. ⚠️ **Não é decisão de multi-tenancy** — uma instalação com várias áreas e um SaaS com várias companhias são perguntas diferentes, e a segunda continua aberta. O mínimo que a fundação precisa é **não impedir** o contexto: o parâmetro regulado nasce com ele (Etapa 0 — convenção; Etapa 4 — tarifa).
 
@@ -976,6 +983,36 @@ GERENCIAL acompanha
 | **Gerencial & Analytics** | Consumidor de fatos; níveis operacional, tático e estratégico; **não existe para preencher o SINISA** | [`gerencial-analytics.md`](../analytics/gerencial-analytics.md) · [catálogo de métricas](../analytics/catalogo-de-metricas.md) |
 
 🔴 **A semântica prevalece sobre o nome.**
+
+### 27.5 🆕 Suíte OpenGSAN — módulos instaláveis sobre um único monólito modular (2026-09-29)
+
+Segundo adendo pós-Fase 0 — [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md), que **especializa** a ADR-0001. *Módulo de domínio ≠ módulo instalável ≠ microserviço.*
+
+```text
+OpenGSAN Suite                                   ── internamente: UM monólito modular,
+│                                                   uma versão, um processo por instalação
+├─ Platform     identidade · autorização · auditoria · contexto institucional · estrutura organizacional ·
+│               documentos · notificação · processamento · relatórios · integrações · registro de módulos
+│
+├─ Commercial   Cadastro · Faturamento · Cobrança · Arrecadação (Pagamentos) · Contabilização · Fiscal — coeso
+├─ Metering     Micromedição (+ telemedição/AMI)
+├─ Services     Atendimento e Execução — RA · OS · campo
+├─ Assets       Gestão de Ativos (+ PCM)
+├─ Operations   Gestão Operacional (+ Paradas)
+├─ Networks     Redes/GIS (+ capacidade GIS)
+├─ SINISA       Prestação de Informações — Workspace SINISA
+└─ Analytics    Gerencial & Analytics
+```
+
+| Regra | Consequência |
+| ----- | ------------ |
+| **Perfil de implantação** = módulos habilitados + provedores externos declarados | Adoção total, incremental ou em coexistência — **mesmo código**, sem fork nem edição |
+| REQUIRED dos módulos funcionais: **só a Platform** | O resto é OPTIONAL ou EXTERNALIZABLE — por **contrato do consumidor**, nunca por *import* direto nem HTTP |
+| **Commercial não se fragmenta** | Faturamento, Cobrança, Arrecadação, Pix e Fiscal dependem demais uns dos outros |
+| **OS não exige RA** — comportamento do próprio GSAN | O Services opera sem o Commercial, com referência externa e snapshot |
+| Módulo desligado não registra nada; perfil inválido falha cedo; atualização não ativa módulo | Verificado por teste arquitetural e de perfil desde a Etapa 0 |
+
+Matriz de dependências, contratos e perfis: [`modulos-e-perfis-de-implantacao.md`](../arquitetura/modulos-e-perfis-de-implantacao.md). 🔵 **Agrupar não é criar domínio**: os módulos instaláveis reúnem os módulos de domínio que já existiam; nenhum bounded context foi inventado.
 
 ---
 
@@ -1048,6 +1085,7 @@ GERENCIAL acompanha
 | 15 🆕 | **Tratar indicador herdado como requisito numérico** | 🔊 Visível tarde | Os índices de perda e de macromedição do satélite do GSAN são **degenerados** ([`operacional.md §6.3`](../modulos/operacional.md)) — nenhuma equivalência exigida |
 | 18 🆕 | **Equivalência semântica presumida** — métrica interna declarada como informação SINISA | 🔴 Silencioso — o número *parece* certo e vira declaração a sistema federal | [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md): V1 manual; nenhum mapeamento por nome; automação só da companhia, desligada por padrão, revalidada a cada glossário |
 | 19 🆕 | **Ferramenta dona do fato** — o estado do *mincut* tomado como estado da parada | 🔴 Silencioso | Parada da Gestão Operacional; a análise tem ciclo próprio e é só referenciada ([`paradas-interrupcoes.md §7`](paradas-interrupcoes.md#7-giswater--o-que-o-mincut-faz)) |
+| 20 🆕 | **Acoplamento acidental entre módulos instaláveis** — um núcleo que importa o vizinho torna "opcional" impossível | 🔊 Visível só quando alguém instala um perfil parcial | [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md): contrato do consumidor, teste arquitetural e de perfil **desde a Etapa 0** (CEN-MOD-006, 007) |
 
 ---
 

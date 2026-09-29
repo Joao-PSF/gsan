@@ -93,6 +93,8 @@ A parada pode relacionar, conforme o dado disponível: **rede · sistema · subs
 | **Declarado** | Sem topologia, ou emergência sem tempo para calcular | Recortes territoriais e operacionais escolhidos pelo operador, com responsável |
 | **Misto** | Cálculo ajustado pela operação | Os dois, com a justificativa do ajuste |
 
+🆕 Sem o módulo **Networks**, o impacto é sempre **declarado**, e os recortes são escolhidos em lista — não há desenho de área sem capacidade GIS ([`modulos-e-perfis-de-implantacao.md §10`](../arquitetura/modulos-e-perfis-de-implantacao.md#10-operations--paradas)).
+
 🔴 **Não se assume que todo impacto pode ser calculado automaticamente.** O cálculo depende de topologia íntegra, válvulas classificadas, entradas de água configuradas e estado operativo dos elementos — requisitos que o próprio Giswater documenta (§7). O impacto guardado é um **snapshot versionado**: recalcular depois não altera o que foi comunicado.
 
 **Unidades usuárias afetadas**: o elo entre o elemento de rede (ligação/ramal, hidrômetro) e a unidade usuária é o da [matriz por atributo](../arquitetura/gis-redes-ativos.md) — identidade corporativa, nunca cópia. ⚠️ Ligação comercial × ramal físico continua pendência que **não bloqueia** o início.
@@ -198,6 +200,8 @@ MAPA DE PARADAS
 
 Filtros: período · sistema · motivo · status · tipo · região
 ```
+
+🆕 **Perfis (ADR-0010)**: o mapa existe **só com o módulo Networks** ativo — ele traz a capacidade GIS. Numa instalação *Operations* sem Networks, a mesma consulta aparece como **lista e linha do tempo**, e o impacto é **declarado** (CEN-MOD-005).
 
 [DEC] Segue a [ADR-0007](../decisoes/0007-arquitetura-de-interface.md): página server-driven com o mapa como **ilha** interativa; geometria servida pela capacidade GIS; **nada de SPA**. O mapa respeita o escopo territorial do usuário.
 

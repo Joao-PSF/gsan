@@ -629,7 +629,7 @@ Classificação **primária**, por área:
 | **Representação atual** | ⚠️ 🟢 **Divergência mapping × banco**: DDL tem `ordem_servico.rgat_id NULL` e `registro_atendimento.imov_id NULL`, mas os mappings Hibernate declaram ambos `not-null="true"` |
 | **Classificação** | **Semântica: PRESERVAR · Estrutura: EXIGE APROFUNDAMENTO** · confiança **BAIXA** |
 | **Motivo** | ⚠️ ⚠️ **Não transformar em 1:1** — a semântica opcional nos dois sentidos está comprovada. Mas **a forma de persistência não está**: não se sabe se existem registros nulos, nem por qual caminho foram gravados. Decidir a cardinalidade física agora seria assumir desenho sem evidência |
-| **O que falta** | 🔴 Verificar em dados reais: existem `rgat_id IS NULL` e `imov_id IS NULL`? Por qual caminho? |
+| **O que falta** | 🔴 Verificar em dados reais: existem `rgat_id IS NULL` e `imov_id IS NULL`? Por qual caminho? — 🆕 **(2026-09-29, segundo adendo)** o *caminho* da OS está achado: a ação de cobrança insere OS **sem associar RA** (`ControladorCobranca:24135–24142` → `ControladorOrdemServicoSEJB:1032–1086`; [`atendimento.md §12`](../modulos/atendimento.md#12-ra--os-cardinalidade-real)). Classificação mantida até os dados reais |
 
 ### ATE-03 · `SolicitacaoTipoEspecificacao` — o núcleo paramétrico
 
