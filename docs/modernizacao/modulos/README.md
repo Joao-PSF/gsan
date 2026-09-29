@@ -4,13 +4,15 @@
 >
 > ⚠️ **A tabela de ordem que ocupava este arquivo era hipótese preliminar** e **foi substituída** em 2026-09-15 pela análise de dependências. Ver §"Mudanças" abaixo e o [registro da execução](../alteracoes/2026-09-15-dependencias-e-ordem-implementacao.md).
 
-**Mapas funcionais concluídos (Fase 0 — todos)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md) · [arrecadacao](arrecadacao.md) · [atendimento](atendimento.md) · [seguranca](seguranca.md) · [batch](batch.md) · [relatorios](relatorios.md) · [integracoes](integracoes.md) · 🆕 [financeiro-contabilizacao](financeiro-contabilizacao.md) · 🆕 [operacional](operacional.md).
+**Mapas funcionais concluídos (Fase 0 — todos)**: [cadastro](cadastro.md) · [micromedicao](micromedicao.md) · [faturamento](faturamento.md) · [cobranca](cobranca.md) · [arrecadacao](arrecadacao.md) · [atendimento](atendimento.md) · [seguranca](seguranca.md) · [batch](batch.md) · [relatorios](relatorios.md) · [integracoes](integracoes.md) · 🆕 [financeiro-contabilizacao](financeiro-contabilizacao.md) · 🆕 [operacional](operacional.md) · 🆕 [**fiscal**](fiscal.md) (auditoria final, 2026-09-29 — requisito nativo, sem comportamento GSAN a mapear).
 
 🆕 **Revisão controlada de escopo (2026-09-28)**: os módulos Financeiro e Operacional do GSAN **não tinham mapa** — lacuna da Fase 0 corrigida. Conclusões: o Financeiro é **contabilização subsidiária**, não ERP; o Operacional do núcleo é **cadastro de referência + calendário**, e a gestão operacional com medições viveu num satélite fora do núcleo. A visão de [Gestão de Ativos](../dominio/gestao-de-ativos.md) e a [arquitetura Redes/GIS/Ativos](../arquitetura/gis-redes-ativos.md) seguem a [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md).
 
 ⚠️ Mapa concluído **não é** especificação pronta para implementar: cada um lista dúvidas abertas, e a especificação dos cenários críticos é item do fechamento da Fase 0 (ver [`estrategia-testes.md`](../testes/estrategia-testes.md)).
 
-**Além dos doze mapas**, esta pasta contém:
+🆕 **Auditoria final (2026-09-29)**: o **Fiscal** entrou como módulo — a **NFAg (modelo 75)** é obrigação dos prestadores de água e esgoto, com ciclo próprio (autorização, eventos, contingência, guarda); **Conta ≠ NFAg**. PIX e boleto registrado passaram à **Arrecadação/Pagamentos** (Etapa 5), Pix Automático à Etapa 6, e a Tarifa Social nacional à Etapa 4 com concessão automática antes da operação. Veredito e matrizes em [`../auditoria/`](../auditoria/auditoria-final-fase0.md).
+
+**Além dos treze mapas** (doze do GSAN e o Fiscal), esta pasta contém:
 
 - [Catálogo de funcionalidades futuras](funcionalidades-futuras.md) — 26 capacidades do legado que **não são módulos**.
 - 🔴 [**Dependências e ordem de implementação**](dependencias-e-ordem-implementacao.md) — **o documento detalhado**: matriz de dependências, os 8 ciclos, fundação mínima, primeira fatia vertical, 9 etapas, gates de avanço e decisões bloqueantes.
@@ -27,11 +29,11 @@
 | **1** | **Primeira fatia vertical** | Autenticar → consultar imóvel/cliente → **abrir e tramitar RA** (especificação paramétrica) | Pendente |
 | **2** | **Núcleo de atendimento e execução** | Estrutura territorial · **ligação e sua situação** · OS · 🔴 **contrato "solicita × aplica"** · **S2** (escopo territorial) · motor de relatório · 🆕 **Gestão Operacional mínima** (distrito, bacia, divisão de esgoto, calendário) | Pendente |
 | **3** | **Medição** | Hidrômetro → instalação → leitura → **consumo com origem** · anormalidades · camada de integração + coleta móvel | Pendente |
-| **4** | **Financeiro individual** | Estrutura tarifária versionada · **motor de conta individual** · Conta e snapshots · identidade estável do documento · débito/crédito/guia · 🆕 qualidade da água no documento emitido | Pendente |
-| **5** | **Recebimento** | Recepção → classificação → aplicação → conciliação · **posição de dívida como consulta derivada** · assíncrono genérico | Pendente |
-| **6** | **Cobrança** | Política · ação · documento · **parcelamento** · negativação · terceirização · notificação | Pendente |
-| **7** | **Escala** | **Faturamento em lote** (unidade = rota) · arrecadação mensal · encerramentos · resumos financeiros · 🆕 **Contabilização** (lançamentos, devedores duvidosos, exportação por adaptador) | Pendente |
-| **8** | **Canais e evoluções** | **Identidade do cliente final** · canal digital · PIX · boleto registrado · bureau, telemetria, analytics, GIS | Pendente |
+| **4** | **Financeiro individual** | Estrutura tarifária versionada · **motor de conta individual** · Conta e snapshots · identidade estável do documento · débito/crédito/guia · 🆕 qualidade da água no documento emitido · 🆕 **Tarifa Social** (regra nacional) · 🆕 **NFAg individual** (homologação) | Pendente |
+| **5** | **Recebimento** | Recepção → classificação → aplicação → conciliação · **posição de dívida como consulta derivada** · assíncrono genérico · 🆕 **Pix Cobrança · boleto registrado** | Pendente |
+| **6** | **Cobrança** | Política · ação · documento · **parcelamento** · negativação · terceirização · notificação · 🆕 **Pix Automático** | Pendente |
+| **7** | **Escala** | **Faturamento em lote** (unidade = rota) · arrecadação mensal · encerramentos · resumos financeiros · 🆕 **Contabilização** (lançamentos, devedores duvidosos, exportação por adaptador) · 🆕 **NFAg em lote, contingência e eventos** · 🆕 concessão automática da Tarifa Social | Pendente |
+| **8** | **Canais e evoluções** | **Identidade do cliente final** · canal digital (🆕 apresenta Pix e boleto) · bureau, telemetria, analytics, GIS · 🆕 prestação de informações regulatórias | Pendente |
 
 🆕 **Trilha estrutural** — Gestão de Ativos, Redes/GIS (Giswater opcional), Engenharia/Simulação: **pode começar depois da Etapa 2**, em paralelo ou depois das Etapas 3–7; **não é décima etapa** e **não bloqueia** nenhum gate do núcleo comercial ([§24.2](dependencias-e-ordem-implementacao.md)).
 
@@ -39,7 +41,7 @@
 
 **Plataforma, posicionada por parte**: `seguranca` em **três blocos** (S1 na Etapa 0, S2 na 2, S3 progressivo) · `relatorios` com o módulo dono, motor na Etapa 2 · `integracoes` como convenção na Etapa 0, camada na 3, adapters com o dono · `batch` na Etapa 7 (a dependência é **inversa**: orquestrador exige operação individual comprovada).
 
-🔴 **Fora da ordem**: `fiscal`/SPED permanecem `EXIGE APROFUNDAMENTO` — schema sem comportamento observável não gera etapa, e **não podem bloquear o início**. Devem ser esclarecidos antes da Etapa 4.
+🆕 ~~**Fora da ordem**: `fiscal`/SPED permanecem `EXIGE APROFUNDAMENTO`~~ — **esclarecido na auditoria final (2026-09-29)**: o **Fiscal** entra nas Etapas **4** (NFAg individual) e **7** (lote, contingência, eventos); o **SPED** do legado sai do OpenGSAN (dados ao ERP por adaptador). Nenhum dos dois bloqueia a Etapa 0.
 
 ---
 
@@ -56,7 +58,8 @@ A tabela antiga era `1 cadastros auxiliares · 2 consultas · 3 atendimento · 4
 | 5 | **Faturamento deixa de ser o último**: motor individual na Etapa 4, lote na 7 | 🟢 `gerarConta` é a mesma lógica no individual e no lote; separar honra a estrutura que o legado já tem, e evita descobrir tarde que a arquitetura não suporta o núcleo financeiro |
 | 6 | **Arrecadação e Micromedição deixam de ser blocos únicos** | A *recepção* de pagamento não depende de nada financeiro; as anormalidades de leitura não são pré-requisito do cálculo |
 | 7 | **Portal / canal digital entra na ordem** (Etapa 8) | Não existia na ordem antiga — descoberto pelo catálogo de funcionalidades futuras (47 classes sem dono) |
-| 8 | **`fiscal`/SPED saem do pacote do faturamento** | Permanecem sem comportamento observável nesta branch |
+| 8 | **`fiscal`/SPED saem do pacote do faturamento** | Permanecem sem comportamento observável nesta branch. 🆕 (2026-09-29) O **Fiscal** volta à ordem como módulo **próprio** — por obrigação (NFAg), não por evidência do legado |
+| 9 🆕 | **PIX e boleto registrado saem da Etapa 8** para a Arrecadação/Pagamentos (Etapa 5) | PIX não depende do Portal; depende de conta, recebimento, PSP e conciliação (auditoria final) |
 
 🔵 **O que a ordem anterior acertou** e permanece: começar por risco baixo, Micromedição antes de Faturamento, e batch por último. ⚠️ O erro não foi de critério — foi ordenar o financeiro por **risco crescente** em vez de por **dependência**.
 

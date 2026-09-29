@@ -3,6 +3,8 @@
 > **Procedência**: consolida o que já foi documentado nos [dez mapas funcionais](README.md), no [inventário do banco](../banco/estrutura-atual.md) e no [inventário de integrações](../integracoes/integracoes-identificadas.md), com **verificação dirigida no código** apenas onde era preciso distinguir *capacidade com fluxo* de *tabela sem fluxo*. Base: `HEAD = 73577c4`. Níveis de certeza em [`procedencia.md`](../procedencia.md).
 >
 > ⚠️ **Não implementa, não modela e não prioriza por data.** Nenhuma tabela, schema, migration ou escolha de ferramenta. Nenhuma funcionalidade entra no núcleo por este documento.
+>
+> 🆕 **Auditoria final da Fase 0 (2026-09-29)**: a varredura por **fonte oficial** reclassificou o documento fiscal (**NFAg**) e a **Tarifa Social** como **capacidades regulatórias necessárias**, reclassificou o SPED do legado como integração, reposicionou o PIX na **Arrecadação/Pagamentos** e acrescentou três capacidades sem origem no legado (§28). Detalhe na [matriz de completude](../auditoria/completude-funcional-regulatoria.md).
 
 ---
 
@@ -35,8 +37,9 @@ Toda funcionalidade encontrada passa por análise. Pode ser universal, comum-mas
 | **INTEGRAÇÃO** | Depende principalmente de sistema ou serviço externo |
 | **EXTENSÃO DE COMPANHIA** | Necessidade específica que **não deve contaminar o núcleo** |
 | **EXIGE APROFUNDAMENTO** | Evidência insuficiente |
+| 🆕 **CAPACIDADE REGULATÓRIA NECESSÁRIA** | Obrigação legal ou regulatória **vigente ou com data publicada** para prestadores de água e esgoto. ⚠️ **Não depende de evidência no legado** — a necessidade vem da norma; o teste é de requisito nativo (oráculo N) |
 
-⚠️ **`CORE FUTURO` não se atribui porque algo existe numa instalação.**
+⚠️ **`CORE FUTURO` não se atribui porque algo existe numa instalação.** 🆕 E o inverso vale para obrigação: **não se descobre no legado** — o caso da NFAg (§6).
 
 ### 2.3 Maturidade da evidência
 
@@ -84,11 +87,12 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 
 | Natureza | Qtd | Leitura |
 | -------- | --: | ------- |
-| **CORE FUTURO** | 12 | Genéricas para saneamento; complementam o núcleo comercial |
+| **CORE FUTURO** | 11 | Genéricas para saneamento; complementam o núcleo comercial |
 | **MÓDULO OPCIONAL** | 6 | Úteis a várias companhias, dispensáveis ao núcleo |
-| **INTEGRAÇÃO** | 5 | Dependem de sistema ou serviço externo |
-| **EXIGE APROFUNDAMENTO** | 2 | ⚠️ Fiscal e SPED — a natureza **não pode ser atribuída** sem conhecer o comportamento |
+| **INTEGRAÇÃO** | 6 | Dependem de sistema ou serviço externo — 🆕 inclui o SPED do legado (§7) |
+| 🆕 **CAPACIDADE REGULATÓRIA NECESSÁRIA** | 2 | 🔴 **Obrigação vigente**: documento fiscal (NFAg) e Tarifa Social nacional |
 | **EXTENSÃO DE COMPANHIA** | 1 | ⚠️ **Não deve contaminar o núcleo** |
+| ~~EXIGE APROFUNDAMENTO~~ | 0 | 🆕 Eram 2 (fiscal e SPED) até a auditoria final |
 
 | Maturidade | Qtd |
 | ---------- | --: |
@@ -98,17 +102,17 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 
 | Horizonte | Qtd |
 | --------- | --: |
-| **H1** — próximo do núcleo | 9 |
-| **H2** — evolução importante | 11 |
+| **H1** — próximo do núcleo | 10 |
+| **H2** — evolução importante | 10 |
 | **H3** — plataforma ampliada | 5 |
 | **ESPECÍFICA** | 1 |
 
-⚠️ **Os totais acima foram conferidos por script contra a tabela do §4** — não são estimativas de leitura. 🆕 **Recontados em 2026-09-28** depois da correção da capacidade 10 (integração contábil: *módulo opcional / apenas evidência* → **core futuro / comprovada** — ver [`procedencia.md §4`](../procedencia.md)). Cada eixo soma 26. As oito especificidades de companhia do §21 **não entram nesta contagem**: são *instâncias* de capacidades genéricas já catalogadas, não capacidades adicionais.
+⚠️ **Os totais acima foram conferidos por script contra a tabela do §4** — não são estimativas de leitura. 🆕 **Recontados em 2026-09-28** depois da correção da capacidade 10 (integração contábil: *módulo opcional / apenas evidência* → **core futuro / comprovada** — ver [`procedencia.md §4`](../procedencia.md)). 🆕 **Recontados de novo em 2026-09-29**, na auditoria final: capacidades 08 e 11 → **capacidade regulatória necessária**, 09 → **integração**, 08 de H2 → **H1**. Cada eixo soma 26; as três capacidades **sem origem no legado** (§28) são contadas à parte. As oito especificidades de companhia do §21 **não entram nesta contagem**: são *instâncias* de capacidades genéricas já catalogadas, não capacidades adicionais.
 
 🔵 **Três leituras do conjunto:**
 
 1. **O canal digital com o cliente é a maior lacuna do GSAN público.** O portal de autoatendimento (47 classes) é a capacidade mais substancial encontrada e a menos documentada até agora — nenhum mapa funcional a cobriu, porque nenhum módulo é seu dono.
-2. **O fiscal é o maior desconhecido.** Existe um schema inteiro e uma integração de obrigação acessória, mas **sem nenhuma classe Java correspondente nesta branch** — é a maior área com evidência estrutural e comportamento desconhecido.
+2. ~~**O fiscal é o maior desconhecido.**~~ 🆕 **O fiscal deixou de ser desconhecido pela via certa (2026-09-29)**: o comportamento do schema do legado continua não observável, mas a **obrigação** é conhecida — a NFAg, modelo 75, é documento fiscal eletrônico obrigatório dos prestadores de água e esgoto. Virou módulo **Fiscal** ([mapa](fiscal.md)).
 3. **Pagamento digital é o item mais urgente e o menos pronto.** PIX é hoje meio de pagamento dominante no Brasil, e o que existe no legado é uma classe utilitária com chave de teste em código.
 
 ---
@@ -117,17 +121,17 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 
 | # | Funcionalidade | Problema resolvido | Área dona | Natureza | Maturidade | Horiz. |
 | - | -------------- | ------------------ | --------- | -------- | ---------- | ------ |
-| 01 | **Pagamento instantâneo (PIX)** | Receber conta por meio dominante no país, com confirmação imediata | Arrecadação + Integrações | **CORE FUTURO** | Parcial | **H1** |
-| 02 | **Cobrança bancária registrada (boleto)** | Emitir cobrança registrada no banco, com baixa automática e rastreio | Faturamento + Arrecadação | **CORE FUTURO** | Comprovada | **H1** |
+| 01 | **Pagamento instantâneo (PIX)** — 🆕 Pix Cobrança vinculada ao documento | Receber conta por meio dominante no país, com confirmação imediata | 🆕 **Arrecadação (Pagamentos)** + Integrações (PSP) | **CORE FUTURO** | Parcial | **H1** |
+| 02 | **Cobrança bancária registrada (boleto)** | Emitir cobrança registrada no banco, com baixa automática e rastreio | Faturamento + 🆕 **Arrecadação (Pagamentos)** | **CORE FUTURO** | Comprovada | **H1** |
 | 03 | **Pagamento por cartão** | Aceitar débito/crédito, inclusive parcelando negociação | Arrecadação + Cobrança | MÓDULO OPCIONAL | Parcial | H2 |
 | 04 | **Portal de autoatendimento** | Cliente resolve sozinho: 2ª via, extrato, parcelamento, certidão, solicitação | ⚠️ **Sem dono hoje** — candidato a capacidade própria | **CORE FUTURO** | Comprovada | **H1** |
 | 05 | **Identidade do cliente (login externo)** | Autenticar o cliente final, distinto do usuário interno | Segurança (identidade externa) | **CORE FUTURO** | Parcial | **H1** |
 | 06 | **Notificação ao cliente** | Avisar vencimento, corte, confirmação — por e-mail e SMS | Plataforma | **CORE FUTURO** | Comprovada | **H1** |
 | 07 | **Acessibilidade da conta (braile)** | Atender cliente com deficiência visual | Faturamento (emissão) | MÓDULO OPCIONAL | Comprovada | H2 |
-| 08 | **Documento fiscal eletrônico** | Emitir nota fiscal do serviço prestado | ⚠️ **Candidato a módulo Fiscal** | ⚠️ **EXIGE APROFUNDAMENTO** | ⚠️ **Apenas evidência** | H2 |
-| 09 | **Obrigação acessória fiscal (SPED)** | Entregar escrituração digital ao fisco | Fiscal | ⚠️ **EXIGE APROFUNDAMENTO** | ⚠️ **Apenas evidência** | H2 |
+| 08 | **Documento fiscal eletrônico** — 🆕 **NFAg, modelo 75**, com determinação tributária IBS/CBS e devolução personalizada | Emitir o documento tributário do serviço, autorizado pelo Fisco | 🆕 **Fiscal** (módulo) + Integrações (adapter) | 🆕 **CAPACIDADE REGULATÓRIA NECESSÁRIA** | ⚠️ Apenas evidência (no legado) | 🆕 **H1** |
+| 09 | **Obrigação acessória fiscal (SPED do legado)** | Entregar escrituração digital ao fisco | 🆕 ERP/contabilidade corporativa — o OpenGSAN fornece dados por Integrações | 🆕 **INTEGRAÇÃO** | ⚠️ **Apenas evidência** | H2 |
 | 10 | **Integração contábil** | Gerar lançamentos contábeis a partir do movimento comercial | 🆕 **Contabilização** (domínio) + Integrações (exportação por adaptador) | **CORE FUTURO** | Comprovada | H2 |
-| 11 | **Benefício social tarifário** | Conceder tarifa reduzida por critério socioeconômico | Cadastro + Faturamento | **CORE FUTURO** | Parcial | **H1** |
+| 11 | **Benefício social tarifário** — 🆕 **Tarifa Social nacional** (Lei 14.898/2024), concessão automática | Conceder tarifa reduzida por critério socioeconômico | Cadastro (elegibilidade) + Faturamento (aplicação) + Integrações (CadÚnico/BPC) | 🆕 **CAPACIDADE REGULATÓRIA NECESSÁRIA** | Parcial | **H1** |
 | 12 | **Programas de subsídio nomeados** | Programa institucional específico de uma companhia/governo | Extensão sobre (11) | **EXTENSÃO DE COMPANHIA** | Parcial | ESPECÍFICA |
 | 13 | **Campanha de recadastramento** | Atualizar cadastro em massa, com coleta em campo e validação | Cadastro + Campo | **CORE FUTURO** | Comprovada | H2 |
 | 14 | **Coleta móvel de leitura** | Ler, criticar e transmitir do campo; releitura | Micromedição + Integrações | **CORE FUTURO** | Comprovada | **H1** |
@@ -138,7 +142,7 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 | 19 | **Gestão de contrato de empresa de campo** | Medir e pagar serviço de terceiro por produção | Atendimento e Execução | MÓDULO OPCIONAL | Parcial | H3 |
 | 20 | **Bureau de crédito** | Negativar e reabilitar devedor | Cobrança + Integrações | **INTEGRAÇÃO** | Comprovada | H2 |
 | 21 | **Cobrança terceirizada por resultado** | Entregar carteira a empresa e remunerar por recuperação | Cobrança | MÓDULO OPCIONAL | Comprovada | H2 |
-| 22 | **Prestação de contas regulatória** | Responder à agência reguladora sobre atendimento | Atendimento | **INTEGRAÇÃO** | Parcial | H2 |
+| 22 | **Prestação de contas regulatória** — 🆕 **prestação de informações regulatórias** (regulador, SINISA, SISAGUA) | Responder à agência reguladora e aos sistemas nacionais de informação | 🆕 Donos dos dados primários + Analytics + Integrações — **capacidade transversal**, sem módulo | **INTEGRAÇÃO** | Parcial | H2 |
 | 23 | **Análise gerencial (BI)** | Acompanhar indicadores sem onerar o transacional | ⚠️ **Candidato a capacidade Analytics** | **INTEGRAÇÃO** | Parcial | H3 |
 | 24 | **Georreferenciamento (GIS)** | Localizar imóveis e ocorrências no território | Integrações — ⚠️ **hoje só integração** | **INTEGRAÇÃO** | Comprovada | H3 |
 | 25 | **Armazenamento de documentos** | Guardar arquivos fora do banco transacional | Plataforma | **INTEGRAÇÃO** | ⚠️ Apenas evidência | H3 |
@@ -188,9 +192,22 @@ FATURAMENTO   dono do DOCUMENTO ao qual o QR Code se refere
 
 Cobrança dinâmica vinculada a documento · confirmação assíncrona do PSP com idempotência · conciliação do recebido contra o esperado · tratamento de pagamento sem documento identificável (o catálogo de resultados da classificação já cobre) · **chave PIX como configuração por ambiente/companhia, nunca constante** (D-08 já registra o problema no legado).
 
+### 5.5 🆕 Auditoria final (2026-09-29) — Pix Cobrança, Pix Automático e posição
+
+🔴 **PIX pertence à Arrecadação/Pagamentos, não ao Portal**: depende de conta + recebimento + integração com PSP + conciliação; o canal digital só **apresenta e aciona**. Reposicionado da Etapa 8 para a **Etapa 5** ([ordem §20.1](dependencias-e-ordem-implementacao.md)).
+
+| Modalidade | Conceitos que o OpenGSAN precisa representar | Fonte |
+| ---------- | -------------------------------------------- | ----- |
+| **Pix Cobrança** | Cobrança vinculada ao documento · identificador da cobrança (`txid`) · valor · vencimento quando aplicável (cobrança com vencimento admite juros, multa, desconto e abatimento) · QR dinâmico · expiração · cancelamento · confirmação por notificação **ou** consulta, **idempotente** · devolução · conciliação | Banco Central — Manual de Padrões para Iniciação do Pix; API Pix |
+| **Pix Automático** (desde 16/06/2025) | **Autorização** do pagador (jornadas definidas no Regulamento) · **recorrência** com status, vigência e limite · cobrança por conta · **agendamento** em janela antes da liquidação · **tentativa e retentativa** · liquidação · cancelamento da autorização ou da recorrência — com as regras do arranjo lidas na fonte, **nunca codificadas no domínio** | Res. BCB 402 e 403/2024, Res. BCB 506/2025; Guia de implementação do Pix Automático |
+
+⚠️ **Débito automático ≠ Pix Automático** — arranjos, participantes e regras diferentes. Abstração comum **mínima**: *autorização de pagamento recorrente* (quem autorizou, para qual unidade/conta, com que vigência e limite, em que estado), sem fundir os mecanismos. Detalhe na [matriz de completude §5](../auditoria/completude-funcional-regulatoria.md#5-pagamentos--meios-como-extensão); cenários CEN-ARR-012 e CEN-ARR-013.
+
 ---
 
 ## 6. Fiscal e documentos fiscais
+
+> 🆕 **Superado na auditoria final (2026-09-29)** — a pergunta "o que o schema do legado faz?" continua sem resposta, e **deixou de importar**: a **NFAg (modelo 75)** é obrigação dos prestadores de água e esgoto, instituída na Reforma Tributária do Consumo, com leiaute aprovado e cronograma publicado. Classificação corrente: **CAPACIDADE REGULATÓRIA NECESSÁRIA**, **H1**, módulo **Fiscal** — [`fiscal.md`](fiscal.md). O texto abaixo fica como registro do raciocínio anterior.
 
 ### 6.1 ⚠️ O maior desconhecido do catálogo
 
@@ -226,7 +243,7 @@ INTEGRAÇÃO/REGULAÇÃO  autoridade fiscal, certificado digital, contingência
 
 🔵 A capacidade comum é modelável; o ponto variável **precisa ser ponto de extensão, não código no núcleo**.
 
-**Classificação**: ⚠️ `EXIGE APROFUNDAMENTO`, H2 — 🔴 **não** `MÓDULO OPCIONAL`. Dizer "opcional" já seria afirmar que o núcleo passa sem ela, e isso **depende do comportamento que não se observou**. Enquanto houver schema sem código, a natureza fica indeterminada por decisão, não por descuido.
+**Classificação** (2026-09-15, 🆕 superada): ⚠️ `EXIGE APROFUNDAMENTO`, H2 — 🔴 **não** `MÓDULO OPCIONAL`. Dizer "opcional" já seria afirmar que o núcleo passa sem ela, e isso **depende do comportamento que não se observou**. Enquanto houver schema sem código, a natureza fica indeterminada por decisão, não por descuido.
 
 ---
 
@@ -248,7 +265,9 @@ Faturamento · Arrecadação · Financeiro
 
 ⚠️ **Layout não analisado** — e não deve ser. Formato de obrigação acessória muda por legislação e ano-calendário; é implementação, não domínio.
 
-**Classificação**: ⚠️ `EXIGE APROFUNDAMENTO`, H2 — pela mesma razão do §6.3, agravada: o comportamento está em função de banco, fora do alcance dos mapas funcionais.
+**Classificação** (2026-09-15, 🆕 superada): ⚠️ `EXIGE APROFUNDAMENTO`, H2 — pela mesma razão do §6.3, agravada: o comportamento está em função de banco, fora do alcance dos mapas funcionais.
+
+🆕 **Reclassificado na auditoria final (2026-09-29) → `INTEGRAÇÃO`, H2.** Escrituração e obrigações acessórias são deveres da **pessoa jurídica**, cumpridos pela contabilidade corporativa/ERP; o OpenGSAN **fornece dados** por adaptador. ⚠️ Não se assume que o "SPED" encontrado no banco seja a arquitetura futura: a Reforma cria outros instrumentos, e a **DeRE** foi prevista para regimes específicos (instituições financeiras, planos de saúde, concursos de prognósticos, consórcios, seguros e previdência) — **não para saneamento** (`NÃO APLICÁVEL`). Documento fiscal · obrigações acessórias · contabilização · apuração separados em [`fiscal.md §10`](fiscal.md).
 
 ---
 
@@ -361,7 +380,21 @@ Critério de elegibilidade (parametrizado) · cadastro do beneficiário com orig
 
 ⚠️ **Registro de Cadastro Único / NIS é integração externa**, não parte da capacidade.
 
-**Classificação**: `CORE FUTURO`, **H1** — tarifa social é praticamente universal no saneamento brasileiro e **afeta o cálculo da conta**, portanto precisa ser considerada cedo, não acoplada depois.
+**Classificação** (2026-09-15): `CORE FUTURO`, **H1** — tarifa social é praticamente universal no saneamento brasileiro e **afeta o cálculo da conta**, portanto precisa ser considerada cedo, não acoplada depois.
+
+### 11.4 🆕 Auditoria final (2026-09-29) — de capacidade genérica a obrigação nacional
+
+🔴 A **Lei 14.898/2024** (em vigor desde 11/12/2024) instituiu diretrizes nacionais para a Tarifa Social de Água e Esgoto: famílias do **CadÚnico** com renda per capita de até meio salário mínimo, ou com membro que recebe o **BPC**; desconto na tarifa para a parcela de consumo até um limite de volume; **concessão automática** pelo prestador a partir das bases oficiais, **sem requerimento**. A **NR ANA 13/2025** incorporou as diretrizes e deu aos prestadores até **11/12/2026** para implementar ou adequar as regras locais.
+
+| Consequência | Tratamento |
+| ------------ | ---------- |
+| Classificação | 🆕 **CAPACIDADE REGULATÓRIA NECESSÁRIA**, H1 |
+| "CadÚnico/NIS é integração externa" | Continua sendo integração — mas deixa de ser opcional: **sem ela não há concessão automática** |
+| Parâmetros (percentual, limite de volume, critérios adicionais do regulador) | **Parâmetro regulado** com vigência, contexto institucional e origem normativa — o regulador local pode ampliar |
+| Programas nomeados do legado | Continuam **instâncias** (§12), agora ao lado de uma regra nacional |
+| Dados pessoais de CadÚnico/BPC | Finalidade específica, minimização e acesso restrito — [matriz de completude §7](../auditoria/completude-funcional-regulatoria.md#7-privacidade-por-fluxo-sensível) |
+
+⚠️ **Não é módulo**: elegibilidade e vínculo no Cadastro, aplicação no Faturamento, fonte oficial em Integrações, prestação de informações na capacidade transversal. Cenário CEN-FAT-012.
 
 ---
 
@@ -564,7 +597,7 @@ DOMÍNIO GIS NATIVO FUTURO     visão estratégica do OpenGSAN (rede, ativos, tr
 
 | Candidato | Justificativa | Contra-argumento | Situação |
 | --------- | ------------- | ---------------- | -------- |
-| **Fiscal** | 🟢 Schema próprio de 14 tabelas; ciclo próprio (documento fiscal tem numeração, cancelamento e prazo legais distintos do documento comercial); depende de legislação que varia; e o SPED depende dele | ⚠️ Comportamento **não observável** nesta branch — pode ser menor do que o schema sugere | **CANDIDATO** — decisão depende de esclarecer o comportamento |
+| **Fiscal** | 🟢 Schema próprio de 14 tabelas; ciclo próprio (documento fiscal tem numeração, cancelamento e prazo legais distintos do documento comercial); depende de legislação que varia; e o SPED depende dele | ⚠️ Comportamento **não observável** nesta branch — pode ser menor do que o schema sugere | 🆕 **DECIDIDO (2026-09-29)** — módulo **Fiscal**: a NFAg é obrigatória e tem **ciclo próprio** (autorização, eventos, contingência, guarda) — [`fiscal.md`](fiscal.md) |
 | **Analytics** | 🟢 O GSAN já separou de fato (base gerencial, papel dedicado); pergunta analítica difere da transacional; consumidores diretos do banco restringem mudanças | ⚠️ Pode ser capacidade de plataforma em vez de módulo de domínio | **CANDIDATO** |
 | **GIS** | Visão estratégica já estabelecida; o legado demonstra necessidade de localizar o que não é imóvel | 🔴 O que existe hoje é **só integração** — não há domínio GIS no legado a preservar | **CANDIDATO FUTURO** — não por evidência atual, mas por visão. 🆕 Direção: Redes/GIS como domínio, GIS como capacidade ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
 | 🆕 **Gestão de Ativos** | Decisão do responsável do projeto; o satélite do GSAN já precisava de identidade e aferição de instrumentos | Sem oráculo GSAN | **DECIDIDO** — domínio nativo, trilha estrutural ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
@@ -618,15 +651,16 @@ PAGAMENTO INSTANTÂNEO (PIX)          COBRANÇA BANCÁRIA REGISTRADA
 ├── Conciliação                      ├── Conciliação
 └── Contrato com PSP                 └── Contrato bancário
 
-BENEFÍCIO SOCIAL TARIFÁRIO           DOCUMENTO FISCAL
-├── Cadastro (imóvel, economias)     ├── Documento comercial emitido
-├── Categoria/classificação          ├── Tributos apurados
-├── Estrutura tarifária              ├── Numeração própria
+BENEFÍCIO SOCIAL TARIFÁRIO           DOCUMENTO FISCAL (🆕 NFAg)
+├── Cadastro (imóvel, economias)     ├── Documento comercial emitido (fato tributável)
+├── Categoria/classificação          ├── Determinação tributária vigente (IBS/CBS)
+├── Estrutura tarifária              ├── Numeração própria (chave · série · número)
 ├── Critério de elegibilidade        ├── Certificado digital
-├── Condição de perda                └── Autoridade fiscal externa
-└── Origem do dado social (externa)        ↓
-                                     OBRIGAÇÃO ACESSÓRIA (SPED)
-COLETA MÓVEL DE LEITURA              └── depende de Documento Fiscal
+├── Condição de perda                └── Ambiente autorizador (SVRS) — adapter
+└── Origem do dado social                  ↓
+    (🆕 CadÚnico/BPC — obrigatória   OBRIGAÇÃO ACESSÓRIA (SPED do legado)
+     para a concessão automática)    └── 🆕 fora do OpenGSAN: dados ao ERP
+COLETA MÓVEL DE LEITURA
 ├── Estrutura territorial (rota)
 ├── Ciclo de leitura                 CANAL DIGITAL DO CLIENTE
 ├── Identidade de dispositivo        ├── Identidade do cliente final
@@ -640,7 +674,7 @@ RECADASTRAMENTO                      └── Abertura de demanda
 └── Validação antes de aplicar           (consome, não produz)
 ```
 
-🔵 **Duas cadeias de dependência importantes**: (a) **SPED depende de Fiscal**, que depende do documento comercial — construir na ordem inversa é inviável; (b) **Analytics depende de todos** — por isso é H3, não por ser menos valiosa.
+🔵 **Duas cadeias de dependência importantes**: (a) **SPED depende de Fiscal**, que depende do documento comercial — construir na ordem inversa é inviável (🆕 e o SPED saiu do OpenGSAN: é integração com o ERP); (b) **Analytics depende de todos** — por isso é H3, não por ser menos valiosa.
 
 ---
 
@@ -648,13 +682,14 @@ RECADASTRAMENTO                      └── Abertura de demanda
 
 ⚠️ **Não é ordem de implementação** — é indicação de proximidade ao núcleo. A ordem sai da próxima atividade.
 
-### H1 — próximo do núcleo (9)
+### H1 — próximo do núcleo (10)
 
 | Capacidade | Por que H1 |
 | ---------- | ---------- |
 | **Pagamento instantâneo (PIX)** | Meio dominante no país; sem ele a companhia perde canal de recebimento |
 | **Cobrança bancária registrada** | Exigência bancária; sem registro a cobrança moderna não funciona |
-| **Benefício social tarifário** | 🔴 **Afeta o cálculo da conta** — acoplar depois é mais caro que considerar cedo |
+| **Benefício social tarifário** | 🔴 **Afeta o cálculo da conta** — acoplar depois é mais caro que considerar cedo. 🆕 E é **obrigação nacional** (Lei 14.898/2024) |
+| 🆕 **Documento fiscal (NFAg)** | 🔴 **Obrigação dos prestadores** com cronograma publicado — acompanha toda conta emitida |
 | **Portal de autoatendimento** | Expectativa mínima do cliente hoje |
 | **Identidade do cliente final** | Pré-requisito do portal |
 | **Notificação ao cliente** | Sustenta cobrança, atendimento e portal |
@@ -662,9 +697,9 @@ RECADASTRAMENTO                      └── Abertura de demanda
 | **Execução móvel de OS** | Idem |
 | **APIs para terceiros e dispositivos** | Sem elas o sistema fica ilhado |
 
-### H2 — evolução importante (11)
+### H2 — evolução importante (10)
 
-Recadastramento · Documento fiscal · SPED · Integração contábil · Cartão · Telemetria · Bureau de crédito · Cobrança terceirizada · Prestação de contas regulatória · Evidência de campo · Acessibilidade.
+Recadastramento · SPED (🆕 integração) · Integração contábil · Cartão · Telemetria · Bureau de crédito · Cobrança terceirizada · Prestação de contas regulatória (🆕 prestação de informações) · Evidência de campo · Acessibilidade.
 
 ### H3 — plataforma ampliada (5)
 
@@ -682,19 +717,19 @@ Programas de subsídio nomeados (§12 do catálogo).
 | ---- | ----------- |
 | **Comercial** | PIX · boleto registrado · cartão · portal · identidade do cliente · benefício social · recadastramento · bureau · cobrança terceirizada · acessibilidade |
 | **Campo e execução** | Coleta móvel · execução móvel de OS · evidência de campo · contrato de empresa de campo · prestação de contas regulatória |
-| 🆕 **Financeiro / Contabilização** | Contabilização subsidiária |
+| 🆕 **Financeiro / Regulatório** | Contabilização subsidiária · 🆕 documento fiscal (NFAg) |
 | **Técnico** | Telemetria · correção por idade do medidor |
 | **GIS** | Georreferenciamento (hoje integração) |
 | **Analytics** | Análise gerencial |
-| **Plataforma** | Notificação · APIs · armazenamento de documentos · documento fiscal · SPED |
+| **Plataforma** | Notificação · APIs · armazenamento de documentos · SPED (integração) |
 
 ### 24.2 Necessidade para o núcleo moderno
 
 | Classificação | Capacidades |
 | ------------- | ----------- |
-| **NECESSÁRIA PARA O CORE MODERNO** | PIX · boleto registrado · benefício social · notificação · APIs |
+| **NECESSÁRIA PARA O CORE MODERNO** | PIX · boleto registrado · benefício social · notificação · APIs · 🆕 **documento fiscal (NFAg)** |
 | **IMPORTANTE APÓS O CORE** | Portal · identidade do cliente · coleta móvel · execução móvel de OS · recadastramento · 🆕 contabilização (Etapa 7) |
-| **EVOLUÇÃO FUTURA** | Fiscal · SPED · telemetria · analytics · GIS · armazenamento · contrato de campo |
+| **EVOLUÇÃO FUTURA** | SPED (integração) · telemetria · analytics · GIS · armazenamento · contrato de campo |
 | **ESPECÍFICA/OPCIONAL** | Cartão · acessibilidade · bureau · cobrança terceirizada · regulatória · correção por idade · programas nomeados |
 
 ---
@@ -703,10 +738,10 @@ Programas de subsídio nomeados (§12 do catálogo).
 
 | # | Lacuna | Impacto | O que falta |
 | - | ------ | ------- | ----------- |
-| 1 | 🔴 **Comportamento da capacidade fiscal** | Bloqueia decidir se Fiscal é módulo e o que exatamente faz | Acesso ao código fiscal da instalação, ou entrevista funcional |
-| 2 | 🔴 **Comportamento do SPED** | Depende de (1) | Idem |
+| 1 | ~~🔴 **Comportamento da capacidade fiscal**~~ 🆕 **Superada (2026-09-29)** | Fiscal é módulo por **obrigação** (NFAg), não por evidência do legado | Pendências fiscais específicas em [`fiscal.md §12`](fiscal.md) — `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` |
+| 2 | ~~🔴 **Comportamento do SPED**~~ 🆕 **Superada (2026-09-29)** | Reclassificado como integração com o ERP (§7) | — |
 | 3 | **Fluxo real de PIX na instalação de referência** | Define o que já existe × o que é novo | Estrutura e uso das tabelas PIX |
-| 4 | **Critérios reais de elegibilidade social** | A capacidade é H1 e afeta cálculo | Regras de concessão, manutenção e perda por companhia |
+| 4 | **Critérios reais de elegibilidade social** — 🆕 **critério nacional definido em lei** (2026-09-29) | A capacidade é H1 e afeta cálculo | Regras **adicionais** de cada regulador e o detalhe de permanência/transição — parâmetro regulado |
 | 5 | **Uso efetivo de telemetria e cartão** | Define se é opcional ou raro | Volume e companhias que usam |
 | 6 | ~~**Escopo da contabilização**~~ ✅ **Resolvida (2026-09-28)** | Contabilização subsidiária é **domínio**; a exportação é **integração** por adaptador | [`financeiro-contabilizacao.md`](financeiro-contabilizacao.md) |
 | 7 | **Consumidores reais das APIs** | Já registrado como dúvida nas Integrações | Inventário de consumidores |
@@ -751,4 +786,18 @@ Programas de subsídio nomeados (§12 do catálogo).
 
 ## 27. Próxima atividade
 
-**Refinamento das Dependências e Ordem de Implementação** — combinando mapa de domínio + Visão Conceitual + compatibilidade das estruturas + este catálogo, para definir a sequência mais segura de construção do OpenGSAN. ⚠️ **Não executada aqui.**
+~~**Refinamento das Dependências e Ordem de Implementação**~~ ✅ executado em 2026-09-15; 🆕 catálogo revisto na **auditoria final** (2026-09-29).
+
+---
+
+## 28. 🆕 Capacidades sem origem no legado (auditoria final, 2026-09-29)
+
+⚠️ **Contadas à parte dos 26 do §4** — este catálogo nasceu das evoluções das instalações GSAN; as linhas abaixo nasceram da **varredura regulatória e de mercado**. Obrigações que cabem numa capacidade existente foram **incorporadas nela** (NFAg e devolução personalizada → 08; Tarifa Social nacional e concessão automática → 11; SINISA e SISAGUA → 22).
+
+| # | Capacidade | Problema resolvido | Área dona | Natureza | Horiz. |
+| - | ---------- | ------------------ | --------- | -------- | ------ |
+| N1 | **Pix Automático — autorização de pagamento recorrente** | Cobrar a conta mensal por débito recorrente autorizado pelo pagador, no arranjo Pix | Arrecadação (Pagamentos) + Integrações (PSP) | **CORE FUTURO** | **H1** |
+| N2 | **Evento operacional com área afetada** | Registrar interrupção programada/emergencial e racionamento, e acionar comunicação ao regulador e aos usuários | Gestão Operacional + Notificação | **CORE FUTURO** | H2 |
+| N3 | **Controle da qualidade da água e prestação ao SISAGUA** | Plano de amostragem, resultados, conformidade e informação ao sistema nacional | Gestão Operacional + Integrações (LIMS, SISAGUA) | **INTEGRAÇÃO** — ciclo laboratorial próprio como opção | H2 |
+
+🔴 **Nenhuma delas é módulo novo.** Detalhe e fontes na [matriz de completude](../auditoria/completude-funcional-regulatoria.md).

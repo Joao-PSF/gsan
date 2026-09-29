@@ -1,6 +1,6 @@
 # Cenários Críticos do OpenGSAN — Índice e Matriz de Cobertura
 
-> **Fase 0 — 20ª execução (2026-09-28); ampliado na 21ª (revisão controlada de escopo)** com os mapas de Financeiro/Contabilização e Operacional: **+8 especificações** e **+18 itens** de inventário. Especifica **o que testar, em que estado, com qual entrada, o que observar, qual semântica esperar, qual diferença é permitida, qual oráculo decide e qual gate o teste protege**.
+> **Fase 0 — 20ª execução (2026-09-28); ampliado na 21ª (revisão controlada de escopo)** com os mapas de Financeiro/Contabilização e Operacional: **+8 especificações** e **+18 itens** de inventário. 🆕 **Ampliado na auditoria final (2026-09-29)**: **+8 especificações** — seis **requisitos nativos** (NFAg, Pix, Tarifa Social — oráculo **N**), o antigo **BLQ-04** e a divergência **D-18** —, inventário inalterado. Especifica **o que testar, em que estado, com qual entrada, o que observar, qual semântica esperar, qual diferença é permitida, qual oráculo decide e qual gate o teste protege**.
 >
 > 🔴 **Nada aqui foi executado.** Nenhum teste rodou, nenhum golden master foi capturado, nenhuma massa foi criada, nenhum *harness* foi escrito. Os **valores concretos** do GSAN são preenchidos na **Fase 2**.
 
@@ -16,15 +16,16 @@ As especificações estão em [`cenarios/`](cenarios/), por área. Este índice 
 
 | Área | Arquivo | Especificações |
 | ---- | ------- | -------------: |
-| Segurança | [`cenarios/seguranca.md`](cenarios/seguranca.md) | 11 |
+| Segurança | [`cenarios/seguranca.md`](cenarios/seguranca.md) | 12 |
 | Cadastro e Atendimento | [`cenarios/cadastro-atendimento.md`](cenarios/cadastro-atendimento.md) | 13 |
 | Micromedição | [`cenarios/micromedicao.md`](cenarios/micromedicao.md) | 5 |
-| Faturamento | [`cenarios/faturamento.md`](cenarios/faturamento.md) | 11 |
-| Arrecadação | [`cenarios/arrecadacao.md`](cenarios/arrecadacao.md) | 10 |
+| Faturamento | [`cenarios/faturamento.md`](cenarios/faturamento.md) | 12 |
+| Arrecadação | [`cenarios/arrecadacao.md`](cenarios/arrecadacao.md) | 13 |
 | Cobrança | [`cenarios/cobranca.md`](cenarios/cobranca.md) | 7 |
 | Processamento, Relatórios e Integrações | [`cenarios/batch-relatorios-integracoes.md`](cenarios/batch-relatorios-integracoes.md) | 14 |
 | Contabilização e Gestão Operacional | [`cenarios/financeiro-operacional.md`](cenarios/financeiro-operacional.md) | 8 |
-| **Total** | | **79** |
+| Fiscal 🆕 | [`cenarios/fiscal.md`](cenarios/fiscal.md) | 3 |
+| **Total** | | **87** |
 
 ---
 
@@ -37,7 +38,7 @@ A regra normativa está em [`estrategia-testes.md`](estrategia-testes.md) — �
 | Fecha | operação, estado, entrada, observáveis, semântica comprovada, normalizações, divergência permitida, oráculo, gate | valores, registros, arquivos, totais, saídas efetivamente produzidos pelo GSAN de referência |
 | 🔴 Não pode | inventar valor | deduzir valor de leitura de código |
 
-🟢 **Estado desta entrega**: todas as especificações estão **fechadas**; **uma** baseline é `JÁ COMPROVADA` — a de um artefato estático (§6); as demais estão `⬜ A CAPTURAR NA FASE 2`.
+🟢 **Estado desta entrega**: todas as especificações estão **fechadas**; **uma** baseline é `JÁ COMPROVADA` — a de um artefato estático (§6); 🆕 **seis** são `➖ NÃO APLICÁVEL` — requisitos nativos, sem legado a observar (§4.5); as demais estão `⬜ A CAPTURAR NA FASE 2`.
 
 ---
 
@@ -61,6 +62,7 @@ Da [compatibilidade conceitual](../compatibilidade/gsan-opengsan.md) §22:
 C1 → oráculo 1                       C3 → oráculo 2 (igualdade é defeito)
 C2 → oráculo 1, por mapeamento       C4 → sem equivalência a comparar
      semântico                       C5 → ver §12 — refinado nesta execução
+🆕 requisito nativo (fora da matriz de compatibilidade) → oráculo N — auditoria final
 ```
 
 Um mesmo cenário pode ter **observáveis de classes diferentes** — por exemplo, a autenticação (C1) e a forma da credencial armazenada (C3). Nesses casos o oráculo é declarado **por observável** (`1+2`), nunca escolhido para o cenário inteiro.
@@ -95,20 +97,22 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 
 ⚠️ **O mapa do Cadastro não tem seção de cenários.** Os cinco cenários `CEN-CAD` foram derivados das regras e estados do próprio mapa.
 
+🆕 **Auditoria final (2026-09-29)**: o inventário **não muda** (184). Muda um destino: o item 19 da Segurança (*restrição de grupo*) sai de **BLQ-02** para **CEN-SEG-004 V7**, porque o uso da restrição no cálculo de autorização foi **comprovado** no código ([`seguranca.md §10`](../modulos/seguranca.md)). O novo mapa [Fiscal](../modulos/fiscal.md) não tem inventário: descreve obrigação, não comportamento do GSAN.
+
 🆕 **Revisão controlada de escopo (21ª execução)**: os dois módulos do GSAN que não tinham mapa — [Financeiro/Contabilização](../modulos/financeiro-contabilizacao.md) e [Operacional](../modulos/operacional.md) — acrescentaram **18 itens** ao inventário (166 → **184**). O item 22 de Integrações (*integração contábil padrão × variante*), antes `A COMPLEMENTAR`, passou a ser absorvido por **CEN-FIN-005** — só a variante de companhia continua a complementar.
 
 ### 4.2 Destino de cada item
 
 | Destino | Itens |
 | ------- | ----: |
-| Absorvido em especificação | 150 |
-| Bloqueado por decisão | 3 |
+| Absorvido em especificação | 151 |
+| Bloqueado por decisão | 2 |
 | Sem equivalência (C4) | 3 |
 | A complementar — variante por companhia | 1 |
 | P2 — mantido no inventário | 27 |
 | **Total** | **184** |
 
-🔵 **150 itens** foram absorvidos em **67 especificações**; outras **12** foram **derivadas** (§4.3). Total: **79 especificações**.
+🔵 **151 itens** foram absorvidos em **67 especificações**; outras **20** foram **derivadas** (§4.3). Total: **87 especificações**.
 
 ### 4.3 Especificações derivadas — sem origem no inventário
 
@@ -116,6 +120,9 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 | ------------- | ------ |
 | [CEN-ARR-001](cenarios/arrecadacao.md) — Recepção do movimento do arrecadador | O inventário partia da classificação; faltava a **recepção** (ARR-01/02) |
 | [CEN-ARR-006](cenarios/arrecadacao.md) — Identidade do pagamento no arquivamento | Cenário obrigatório de compatibilidade `C2` — identidade do pagamento (ARR-04) |
+| [CEN-ARR-011](cenarios/arrecadacao.md) — Pagamento de Fatura do cliente responsável | 🆕 Auditoria final — antigo **BLQ-04**, desbloqueado pela semântica de "Fatura" (documento agregador) |
+| [CEN-ARR-012](cenarios/arrecadacao.md) — Cobrança Pix vinculada ao documento: confirmação idempotente e conciliação | 🆕 Auditoria final — **requisito nativo**: Pix Cobrança na Arrecadação/Pagamentos |
+| [CEN-ARR-013](cenarios/arrecadacao.md) — Pix Automático: autorização, cobrança recorrente, retentativa e cancelamento | 🆕 Auditoria final — **requisito nativo**: Pix Automático (autorização de pagamento recorrente) |
 | [CEN-ATE-001](cenarios/cadastro-atendimento.md) — Consulta de imóvel e cliente sob autorização | Segundo passo da **fatia vertical** — consulta de imóvel |
 | [CEN-CAD-001](cenarios/cadastro-atendimento.md) — Matrícula e dígito verificador | Regra 1 do mapa do Cadastro — o mapa não tem inventário |
 | [CEN-CAD-002](cenarios/cadastro-atendimento.md) — Cliente × Imóvel por papel e vigência | Regra 5 do mapa do Cadastro |
@@ -123,15 +130,24 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 | [CEN-CAD-004](cenarios/cadastro-atendimento.md) — Situações da ligação: faturabilidade e situação derivada do imóvel | Regras 3, 4 e 8 do mapa do Cadastro |
 | [CEN-FAT-002](cenarios/faturamento.md) — Mudança de vigência tarifária dentro do período de leitura | 🟢 **Leitura dirigida de código** — cálculo proporcional entre vigências, 9 usos de HALF_UP |
 | [CEN-FAT-011](cenarios/faturamento.md) — Imóvel sem consumo anterior: consumo de reserva | Divergência **D-15** sem cenário |
+| [CEN-FAT-012](cenarios/faturamento.md) — Tarifa Social: concessão automática, desconto e perda de elegibilidade | 🆕 Auditoria final — **requisito nativo**: Tarifa Social nacional (Lei 14.898/2024) |
+| [CEN-FIS-001](cenarios/fiscal.md) — Emissão da NFAg a partir da conta: autorização e rejeição | 🆕 Auditoria final — **requisito nativo**: NFAg, emissão, autorização e rejeição |
+| [CEN-FIS-002](cenarios/fiscal.md) — Contingência e transmissão posterior | 🆕 Auditoria final — **requisito nativo**: NFAg, contingência |
+| [CEN-FIS-003](cenarios/fiscal.md) — Retificação e cancelamento de conta com NFAg autorizada | 🆕 Auditoria final — **requisito nativo**: NFAg × retificação e cancelamento |
 | [CEN-REL-002](cenarios/batch-relatorios-integracoes.md) — Resumos de faturamento e de arrecadação por competência | Prioridade 7 da baseline, corrigida para o núcleo (`RelatorioResumo*`) |
 | [CEN-SEG-010](cenarios/seguranca.md) — Cadeia de filtros sem elo decorativo | Divergência **D-07** sem cenário |
 | [CEN-SEG-011](cenarios/seguranca.md) — Nenhuma credencial em artefato versionado | Divergências **D-08** e **D-16** sem cenário |
+| [CEN-SEG-012](cenarios/seguranca.md) — Sessão e requisição forjada | 🆕 Auditoria final — divergência **D-18** (achado 6) sem cenário |
 
-🔵 **Por que existem**: o inventário listava o que cada mapa **observou**; ele não tinha como listar o que nenhum mapa cobria. As derivadas vêm de três fontes: a **fatia vertical** (consulta de imóvel), o **registro de divergências** (D-07, D-08, D-15, D-16 sem cenário próprio), e a **leitura dirigida de código** feita nesta execução para localizar as políticas de arredondamento — que revelou o cálculo proporcional entre vigências, **ausente de todo o inventário** e dono da maior concentração de HALF_UP do controlador.
+🔵 **Por que existem**: o inventário listava o que cada mapa **observou**; ele não tinha como listar o que nenhum mapa cobria. As derivadas vêm de três fontes: a **fatia vertical** (consulta de imóvel), o **registro de divergências** (D-07, D-08, D-15, D-16 sem cenário próprio), e a **leitura dirigida de código** feita nesta execução para localizar as políticas de arredondamento — que revelou o cálculo proporcional entre vigências, **ausente de todo o inventário** e dono da maior concentração de HALF_UP do controlador. 🆕 **Na auditoria final**, mais três: a **varredura regulatória** (seis requisitos nativos), a **resolução do BLQ-04** (semântica de "Fatura") e a **D-18** sem cenário.
 
 ### 4.4 Sobre a quantidade
 
-O roteiro sugeriu **35–60** especificações "somente se a evidência justificar". 🔵 A faixa foi calibrada para um inventário de ~110; com **166** itens reais, a mesma proporção (32 %–55 %) daria **53–91**. O resultado fica dentro dela — ⚠️ e não foi forçado: a contagem saiu da deduplicação, não o contrário. Com **184** itens (21ª execução), a mesma proporção daria **59–101**; são **79** especificações.
+O roteiro sugeriu **35–60** especificações "somente se a evidência justificar". 🔵 A faixa foi calibrada para um inventário de ~110; com **166** itens reais, a mesma proporção (32 %–55 %) daria **53–91**. O resultado fica dentro dela — ⚠️ e não foi forçado: a contagem saiu da deduplicação, não o contrário. Com **184** itens (21ª execução), a mesma proporção daria **59–101**; eram **79** especificações. 🆕 A auditoria final levou a **87** — oito acréscimos, cada um justificado no §4.3, **seis deles fora do inventário por natureza** (requisitos nativos não têm item de mapa do GSAN).
+
+### 4.5 🆕 Requisitos nativos — oráculo N
+
+NFAg (CEN-FIS-001 a 003), Pix Cobrança (CEN-ARR-012), Pix Automático (CEN-ARR-013) e Tarifa Social nacional (CEN-FAT-012) **não existem no GSAN público**. O resultado esperado vem da **norma ou da decisão registrada**; a baseline do legado é `➖ NÃO APLICÁVEL`; e onde a regra ainda depende de confirmação, o cenário registra `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` e **não fecha** antes da resposta ([`estrategia-testes.md`](estrategia-testes.md)). ⚠️ Nenhum deles entra na matriz de compatibilidade GSAN → OpenGSAN.
 
 ---
 
@@ -152,6 +168,7 @@ O roteiro sugeriu **35–60** especificações "somente se a evidência justific
 | [CEN-SEG-009](cenarios/seguranca.md) | Segurança | Token de acesso dos servlets auxiliares | P1 | 0 | C3 | 2 | ⬜ a capturar | 0 → 1 |
 | [CEN-SEG-010](cenarios/seguranca.md) | Segurança | Cadeia de filtros sem elo decorativo | P1 | 0 | C3 | 2 | ⬜ a capturar | 0 → 1 |
 | [CEN-SEG-011](cenarios/seguranca.md) | Segurança | Nenhuma credencial em artefato versionado | P0 | 0 | C3 | 2 | 🟢 comprovada | 0 → 1 |
+| [CEN-SEG-012](cenarios/seguranca.md) | Segurança | Sessão e requisição forjada | P1 | 1 | C3 | 2 | ⬜ a capturar | 1 → 2 |
 | [CEN-CAD-001](cenarios/cadastro-atendimento.md) | Cadastro | Matrícula e dígito verificador | P1 | 1 | C1/C2 | 1 | ⬜ a capturar | 1 → 2 |
 | [CEN-CAD-002](cenarios/cadastro-atendimento.md) | Cadastro | Cliente × Imóvel por papel e vigência | P0 | 1 | C1 | 1 | ⬜ a capturar | 1 → 2 |
 | [CEN-CAD-003](cenarios/cadastro-atendimento.md) | Cadastro | Composição de economias por categoria e subcategoria | P0 | 2 | C1/C2 | 1 | ⬜ a capturar | 2 → 3 |
@@ -181,6 +198,7 @@ O roteiro sugeriu **35–60** especificações "somente se a evidência justific
 | [CEN-FAT-009](cenarios/faturamento.md) | Faturamento | Emissão: pré-faturamento, linhas tarifárias e vencimento | P1 | 4 | C1 | 1 | ⬜ a capturar | 4 → 5 |
 | [CEN-FAT-010](cenarios/faturamento.md) | Faturamento | Referência de faturamento × referência contábil | P1 | 4 | C1 | 1 | ⬜ a capturar | 4 → 5 |
 | [CEN-FAT-011](cenarios/faturamento.md) | Faturamento | Imóvel sem consumo anterior: consumo de reserva | P1 | 4 | C3 | 1+2 | ⬜ a capturar | 4 → 5 |
+| [CEN-FAT-012](cenarios/faturamento.md) | Faturamento | Tarifa Social: concessão automática, desconto e perda de elegibilidade | P0 | 4 | nativo/C1 | N | ➖ não aplicável | 4 → 5 |
 | [CEN-ARR-001](cenarios/arrecadacao.md) | Arrecadação | Recepção do movimento do arrecadador | P1 | 5 | C1 | 1 | ⬜ a capturar | 5 → 6 |
 | [CEN-ARR-002](cenarios/arrecadacao.md) | Arrecadação | Classificação contra conta vigente, por valor e prazo | P0 | 5 | C1 | 1 | ⬜ a capturar | 5 → 6 |
 | [CEN-ARR-003](cenarios/arrecadacao.md) | Arrecadação | Classificação em situação especial: nada é descartado | P0 | 5 | C1 | 1 | ⬜ a capturar | 5 → 6 |
@@ -191,6 +209,9 @@ O roteiro sugeriu **35–60** especificações "somente se a evidência justific
 | [CEN-ARR-008](cenarios/arrecadacao.md) | Arrecadação | Pagamento de entrada e de prestação de parcelamento | P0 | 6 | C1 | 1 | ⬜ a capturar | 6 → 7 |
 | [CEN-ARR-009](cenarios/arrecadacao.md) | Arrecadação | Débito automático | P1 | 6 | C1 | 1 | ⬜ a capturar | 6 → 7 |
 | [CEN-ARR-010](cenarios/arrecadacao.md) | Arrecadação | Encerramento mensal da arrecadação | P0 | 7 | C1 | 1 | ⬜ a capturar | 7 → operação |
+| [CEN-ARR-011](cenarios/arrecadacao.md) | Arrecadação | Pagamento de Fatura do cliente responsável | P1 | 5 | C1/C2 | 1 | ⬜ a capturar | 5 → 6 |
+| [CEN-ARR-012](cenarios/arrecadacao.md) | Arrecadação | Cobrança Pix vinculada ao documento: confirmação idempotente e conciliação | P1 | 5 | nativo/C1 | N | ➖ não aplicável | 5 → 6 |
+| [CEN-ARR-013](cenarios/arrecadacao.md) | Arrecadação | Pix Automático: autorização, cobrança recorrente, retentativa e cancelamento | P1 | 6 | nativo/C1 | N | ➖ não aplicável | 6 → 7 |
 | [CEN-COB-001](cenarios/cobranca.md) | Cobrança | Posição de dívida derivada | P0 | 5 | C2 | 1 | ⬜ a capturar | 5 → 6 |
 | [CEN-COB-002](cenarios/cobranca.md) | Cobrança | Ação de cobrança e pagamento antes ou depois do documento | P0 | 6 | C1 | 1 | ⬜ a capturar | 6 → 7 |
 | [CEN-COB-003](cenarios/cobranca.md) | Cobrança | Corte e religação | P1 | 6 | C1/C2 | 1 | ⬜ a capturar | 6 → 7 |
@@ -220,6 +241,9 @@ O roteiro sugeriu **35–60** especificações "somente se a evidência justific
 | [CEN-OPE-001](cenarios/financeiro-operacional.md) | Gestão Operacional | Localização operacional da demanda | P1 | 2 | C1/C2 | 1 | ⬜ a capturar | 2 → 3 |
 | [CEN-OPE-002](cenarios/financeiro-operacional.md) | Gestão Operacional | RA de falta de água confrontado com a programação | P1 | 2 | C1 | 1 | ⬜ a capturar | 2 → 3 |
 | [CEN-OPE-003](cenarios/financeiro-operacional.md) | Gestão Operacional | Qualidade da água no documento emitido | P1 | 4 | C1/C2 | 1 | ⬜ a capturar | 4 → 5 |
+| [CEN-FIS-001](cenarios/fiscal.md) | Fiscal | Emissão da NFAg a partir da conta: autorização e rejeição | P0 | 4 | nativo/C2 | N | ➖ não aplicável | 4 → 5 |
+| [CEN-FIS-002](cenarios/fiscal.md) | Fiscal | Contingência e transmissão posterior | P0 | 7 | nativo/C1 | N | ➖ não aplicável | 7 → operação |
+| [CEN-FIS-003](cenarios/fiscal.md) | Fiscal | Retificação e cancelamento de conta com NFAg autorizada | P0 | 7 | nativo/C1/C2 | N | ➖ não aplicável | 7 → operação |
 
 ---
 
@@ -227,59 +251,63 @@ O roteiro sugeriu **35–60** especificações "somente se a evidência justific
 
 | Área | Qtd |
 | --- | --: |
-| Segurança | 11 |
+| Segurança | 12 |
 | Cadastro | 5 |
 | Atendimento | 8 |
 | Micromedição | 5 |
-| Faturamento | 11 |
-| Arrecadação | 10 |
+| Faturamento | 12 |
+| Arrecadação | 13 |
 | Cobrança | 7 |
 | Processamento | 5 |
 | Relatórios | 2 |
 | Integrações | 7 |
 | Contabilização | 5 |
 | Gestão Operacional | 3 |
-| **Total** | **79** |
+| Fiscal | 3 |
+| **Total** | **87** |
 
 | Criticidade | Qtd |
 | --- | --: |
-| P0 | 45 |
-| P1 | 34 |
-| **Total** | **79** |
+| P0 | 49 |
+| P1 | 38 |
+| **Total** | **87** |
 
 | Oráculo | Qtd |
 | --- | --: |
-| 1 — igualdade | 62 |
+| 1 — igualdade | 63 |
 | 1+2 — por observável | 8 |
-| 2 — divergência exigida | 6 |
+| 2 — divergência exigida | 7 |
+| N — requisito nativo 🆕 | 6 |
 | Pendente de caracterização | 3 |
-| **Total** | **79** |
+| **Total** | **87** |
 
 | Etapa | Qtd |
 | --- | --: |
 | 0 — Fundação | 7 |
-| 1 — Fatia vertical | 8 |
+| 1 — Fatia vertical | 9 |
 | 2 — Atendimento e execução | 11 |
 | 3 — Medição | 9 |
-| 4 — Financeiro individual | 13 |
-| 5 — Recebimento | 9 |
-| 6 — Cobrança | 9 |
-| 7 — Escala | 12 |
+| 4 — Financeiro individual | 15 |
+| 5 — Recebimento | 11 |
+| 6 — Cobrança | 10 |
+| 7 — Escala | 14 |
 | 8 — Canais | 1 |
-| **Total** | **79** |
+| **Total** | **87** |
 
 | Baseline | Qtd |
 | --- | --: |
-| ⬜ A capturar na Fase 2 | 78 |
+| ⬜ A capturar na Fase 2 | 80 |
 | 🟢 Já comprovada | 1 |
-| **Total** | **79** |
+| ➖ Não aplicável — requisito nativo 🆕 | 6 |
+| **Total** | **87** |
 
 🔵 **Leituras**:
 
 - **P0 é maioria** porque o núcleo financeiro é P0 por natureza — cada centavo errado é cobrança errada.
 - **A Etapa 4 concentra o maior número de cenários**: é onde o GSAN mais acertou e onde a equivalência é mais estrita.
 - **A única baseline já comprovada** é a de CEN-SEG-011: ali o observável é o **próprio artefato versionado** — ler o arquivo *é* observá-lo. Para qualquer comportamento em execução, leitura de código **não** vale como baseline.
-- **Todos os 16 `D-xx` aprovados têm cenário**: D-01 SEG-001 · D-02 SEG-009 · D-03 REL-001 · D-04 INT-003 · D-05 INT-001, INT-002 · D-06 INT-005 · D-07 SEG-010 · D-08 SEG-011 · D-09 INT-005, INT-006 · D-10 INT-003 · D-11 INT-007 · D-12 INT-004 · D-13 INT-006 · D-14 FAT-007 · D-15 FAT-011 · D-16 SEG-011.
+- **Todos os `D-xx` aprovados têm cenário** — 🆕 **17** desde a auditoria final, que registrou a aprovação de D-01…D-16 e criou a D-18: D-01 SEG-001 · D-02 SEG-009 · D-03 REL-001 · D-04 INT-003 · D-05 INT-001, INT-002 · D-06 INT-005 · D-07 SEG-010 · D-08 SEG-011 · D-09 INT-005, INT-006 · D-10 INT-003 · D-11 INT-007 · D-12 INT-004 · D-13 INT-006 · D-14 FAT-007 · D-15 FAT-011 · D-16 SEG-011 · 🆕 D-18 SEG-012.
+- 🆕 **Seis cenários não têm baseline do legado** — são requisitos nativos (§4.5). Não é lacuna: não há comportamento GSAN a observar.
 
 ---
 
@@ -325,6 +353,8 @@ Dos P0, os que mais protegem — escolhidos pelo dano que a falha causaria e pel
 | **CEN-SEG-004** — matriz de autorização | Prova **negação**, não só concessão |
 | **CEN-REL-001** — acesso ao artefato | Acesso indevido **confirmado** no legado (D-03) |
 | **CEN-BAT-002** — retomada sem refazer | Reprocessar não pode duplicar efeito de dinheiro |
+| 🆕 **CEN-FIS-001** — emissão da NFAg | Obrigação que acompanha **toda** conta; *Conta ≠ NFAg* verificado desde a Etapa 4 |
+| 🆕 **CEN-FAT-012** — Tarifa Social | Obrigação legal que **altera o valor** da conta; concessão automática |
 
 ---
 
@@ -335,16 +365,16 @@ Dos P0, os que mais protegem — escolhidos pelo dano que a falha causaria e pel
 | Transição | Cenários obrigatórios | O que precisam provar |
 | --------- | --------------------- | --------------------- |
 | **0 → 1** | SEG-001 · SEG-002 · SEG-006 · SEG-010 · SEG-011 | Autenticação contra hash moderno · bloqueio por tentativas · escrita auditada · cada filtro barra · CI reprova segredo |
-| **1 → 2** | SEG-004 · ATE-001 · ATE-002 · ATE-003 · ATE-004 · CAD-002 | **Negação provada** · consulta autorizada · RA governado por dado · encerramento · tramitação · cliente por papel |
+| **1 → 2** | SEG-004 · ATE-001 · ATE-002 · ATE-003 · ATE-004 · CAD-002 · 🆕 SEG-012 | **Negação provada** (🆕 inclusive a restrição por usuário) · consulta autorizada · RA governado por dado · encerramento · tramitação · cliente por papel · 🆕 requisição forjada recusada |
 | **2 → 3** | ATE-007 · SEG-007 · CAD-003 · CAD-004 · REL-001 | **Efeito aplicado pelo dono** · escopo territorial · economias · faturabilidade · artefato protegido |
 | **3 → 4** | MIC-001 · MIC-002 · MIC-003 · INT-001 | Consumo com **origem declarada** · mínimo · troca · leitura rejeitada sem dispositivo identificado |
-| **4 → 5** | FAT-001 · FAT-002 · FAT-003 · FAT-005 · FAT-006 · FAT-007 | **Ao centavo** · as cinco políticas caracterizadas · retificação pela operação da Micromedição |
-| **5 → 6** | ARR-002 · ARR-003 · ARR-005 · ARR-006 · COB-001 | Baixa · **nada descartado** · identidade documental · identidade do pagamento · posição derivada |
+| **4 → 5** | FAT-001 · FAT-002 · FAT-003 · FAT-005 · FAT-006 · FAT-007 · 🆕 FIS-001 · FAT-012 | **Ao centavo** · as cinco políticas caracterizadas · retificação pela operação da Micromedição · 🆕 documento fiscal autorizado ou rejeição rastreável · Tarifa Social pela regra vigente |
+| **5 → 6** | ARR-002 · ARR-003 · ARR-005 · ARR-006 · COB-001 · 🆕 ARR-012 | Baixa · **nada descartado** · identidade documental · identidade do pagamento · posição derivada · 🆕 confirmação Pix idempotente |
 | **6 → 7** | COB-002 · COB-004 · COB-005 | Ação e documento · parcelamento **criar e desfazer** |
-| **7 → operação** | BAT-002 · BAT-005 · ARR-010 · FIN-001 | Retomada sem refazer · **lote = soma dos individuais** · encerramento · **lançamentos contábeis conferem com os resumos** |
+| **7 → operação** | BAT-002 · BAT-005 · ARR-010 · FIN-001 · 🆕 FIS-002 · FIS-003 | Retomada sem refazer · **lote = soma dos individuais** · encerramento · **lançamentos contábeis conferem com os resumos** · 🆕 nenhuma conta sem documento fiscal · retificação e cancelamento com o tratamento fiscal vigente |
 | **Etapa 8** | INT-007 | ⚠️ GIS é evolução — não gate do núcleo |
 
-⚠️ **Três cenários de gate têm oráculo pendente** e só fecham depois da caracterização: SEG-005 (1 → 2), BAT-003 e BAT-004 (7 → operação). Eles **não** estão na coluna de obrigatórios acima, mas bloqueiam a transição se a baseline revelar comportamento que exija divergência.
+⚠️ **Três cenários de gate têm oráculo pendente** e só fecham depois da caracterização: SEG-005 (1 → 2), BAT-003 e BAT-004 (7 → operação). Eles **não** estão na coluna de obrigatórios acima, mas bloqueiam a transição se a baseline revelar comportamento que exija divergência. 🆕 E **CEN-FIS-003** só fecha quando a regra fiscal da retificação e do cancelamento for confirmada (`VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` — [`fiscal.md §12`](../modulos/fiscal.md)).
 
 ---
 
@@ -357,9 +387,9 @@ Dos P0, os que mais protegem — escolhidos pelo dano que a falha causaria e pel
 | ID | O que seria testado | Origem | Decisão que falta |
 | -- | ------------------- | ------ | ----------------- |
 | **BLQ-01** | Consulta em superfície que **não** chama a verificação de abrangência | SEG#16 | 🔴 **Aprovação de D-17** — a divergência continua **proposta** |
-| **BLQ-02** | Efeito de restrição de grupo (*deny*) sobre a autorização | SEG#19 | 🔴 **Existe mecanismo de negação?** — 🟢 a tabela existe; o **uso** no cálculo de autorização **não foi observado**. Único bloqueio de dia 1 |
+| ~~**BLQ-02**~~ | Efeito de restrição de grupo (*deny*) sobre a autorização | SEG#19 | ✅ **Desbloqueado na auditoria final (2026-09-29)**: o uso **foi observado** — acesso se restrições < concessões (`ControladorAcessoSEJB:3104`, `:3517`). Absorvido em **CEN-SEG-004 V7** |
 | **BLQ-03** | Disparo de processamento sobre território fora da abrangência | BAT#15 | **D-17** — e abrangência no lote **não localizada** |
-| **BLQ-04** | Pagamento contra documento do tipo **Fatura** | derivado | 🔴 **Semântica de "Fatura"** — tipo de documento `FATURA_CLIENTE(5)` aceito pela arrecadação, semântica nunca esclarecida |
+| ~~**BLQ-04**~~ | Pagamento contra documento do tipo **Fatura** | derivado | ✅ **Desbloqueado na auditoria final (2026-09-29)**: "Fatura" é o documento **agregador** do cliente responsável; o pagamento se desdobra por conta. Especificado em **CEN-ARR-011** |
 
 ### 10.2 PENDENTE DE CARACTERIZAÇÃO
 
@@ -372,6 +402,7 @@ Especificados e prontos para a Fase 2 — o que falta é **decidir o oráculo de
 | **CEN-BAT-003** | Atomicidade dentro da unidade — **CAND-02**. 🔴 Não se constrói oráculo 2 como se a divergência existisse |
 | **CEN-BAT-004** | Execução duplicada — se houver faturamento em dobro, protegê-lo exige divergência |
 | **CEN-OPE-003 V5** 🆕 | O passo 2 da cascata de qualidade da água não limpa o filtro do passo 1 — se o legado deixar de encontrar o registro por isso, não reproduzir exige divergência |
+| **CEN-SEG-004 V7(c)** 🆕 | Composição do filtro de restrições com limite de laço trocado (`ControladorAcessoSEJB:3072`) — se o resultado desviar de "restrições < concessões", não reproduzir exige divergência — **CAND-05** |
 
 ### 10.3 A COMPLEMENTAR — variantes por companhia
 
@@ -408,7 +439,7 @@ Registrados para a auditoria, com o motivo:
 
 ## 11. Candidatos a divergência
 
-⚠️ **Nenhum aprovado.** São comportamentos que talvez devam mudar e **não estão registrados**. Os dois primeiros vêm da execução anterior; os dois últimos foram encontrados **nesta**.
+⚠️ **Nenhum aprovado.** São comportamentos que talvez devam mudar e **não estão registrados**. Os dois primeiros vêm da execução anterior; CAND-03 e CAND-04, da especificação dos cenários; 🆕 CAND-05, da auditoria final. ⚠️ A auditoria **não** aprovou CAND-03 nem CAND-04: não há decisão explícita nem caracterização que as sustente.
 
 | # | Conceito | Origem | Situação |
 | - | -------- | ------ | -------- |
@@ -416,6 +447,7 @@ Registrados para a auditoria, com o motivo:
 | CAND-02 | Atomicidade dentro da unidade | 19ª execução | Condicional à caracterização — CEN-BAT-003 |
 | **CAND-03** | **Contador de tentativas de login na sessão** | 🆕 | 🟢 O contador vive na `HttpSession`; o mapa de segurança o classifica `REESTRUTURAR` e a visão conceitual o descreve como "persistente" **atribuindo-o a D-01** — mas ⚠️ **o texto de D-01 cobre apenas o hash**. É **lacuna de registro**: ampliar D-01 ou criar divergência própria — CEN-SEG-002 V3 |
 | **CAND-04** | **Exceção de autorização por substring `pesquisar`/`relatorio`** | 🆕 | 🟢 Qualquer Action cujo nome contenha os termos **sai do bloco de autorização funcional do filtro**; para `relatorio` no download, o acesso indevido já é achado confirmado. Para `pesquisar`, **depende de cada Action** — CEN-SEG-005 |
+| 🆕 **CAND-05** | **Composição do filtro de restrições por funcionalidade** | Auditoria final | 🟢 No laço sobre as concessões, o marcador do último termo do `OR` usa o total de **grupos**, não de concessões (`ControladorAcessoSEJB:3072`) — condicional à caracterização — CEN-SEG-004 V7(c) |
 
 ---
 
@@ -425,8 +457,8 @@ Registrados para a auditoria, com o motivo:
 
 | C5 | Bloqueia cenário? | Por quê |
 | -- | ----------------- | ------- |
-| Semântica de "Fatura" | 🔴 **Sim** — BLQ-04 | O conceito é desconhecido; não há o que observar |
-| Mecanismo de negação | 🔴 **Sim** — BLQ-02 | O comportamento esperado do OpenGSAN depende da decisão |
+| Semântica de "Fatura" | ~~🔴 Sim — BLQ-04~~ ✅ **Resolvida** (auditoria final) | Documento agregador — CEN-ARR-011 |
+| Mecanismo de negação | ~~🔴 Sim — BLQ-02~~ ✅ **Resolvido** (auditoria final) | Restrição por usuário comprovada no código — CEN-SEG-004 V7 |
 | Aplicação da abrangência (D-17) | 🔴 **Sim** — BLQ-01, BLQ-03 | Depende de aprovação que ainda não existe |
 | Fórmulas de acréscimo | 🟢 **Não** | A pendência é de **representação** (parametrizar ou não). O **resultado** é financeiro e, pela regra explícita do registro de divergências, **oráculo 1** — CEN-ARR-002 V2 |
 | Cardinalidade física RA ↔ OS | 🟢 **Não** | A pendência é **física**; os casos semânticos (RA sem OS, OS de origem não individual) são observáveis. A caracterização **produz a evidência** que a decisão precisa |
@@ -465,6 +497,7 @@ Registrados para a auditoria, com o motivo:
 | **IMV-16** | **Sem nenhum** registro de consumo anterior |
 | **IMV-17** | **Rota alternativa** definida |
 | **IMV-18** | Período de leitura atravessando **mudança de vigência** tarifária |
+| **IMV-19** 🆕 | Residencial com família **elegível à Tarifa Social nacional** (CadÚnico com renda per capita até ½ salário mínimo, ou BPC) — consumos abaixo e acima do limite de volume; identificadores externos **pseudonimizados** |
 
 Complementos por combinação, sem perfil próprio: as situações de água e esgoto em todas as combinações parametrizadas (CEN-CAD-004), inclusive o **valor 4**; imóveis com override de mínimo na ligação, na situação e por área (CEN-MIC-002).
 
@@ -480,6 +513,7 @@ Complementos por combinação, sem perfil próprio: as situações de água e es
 | **DOC-06** | Conta **arquivada** |
 | **DOC-10** | Parcelamento com entrada paga e prestações em contas futuras, parte delas paga |
 | **DOC-11** | Parcelamento com **entrada vencida e não paga** |
+| **DOC-12** 🆕 | **Fatura do cliente responsável** agregando contas de pelo menos dois imóveis numa referência |
 
 Além deles, por cenário: conta em revisão, guia não quitada, débito a cobrar de serviço em N parcelas, crédito a realizar, documento de cobrança com itens.
 
@@ -531,7 +565,7 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 
 | Perfil | Cenários |
 | ------ | -------- |
-| IMV-01 | CEN-ARR-009 · CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-007 · CEN-CAD-002 · CEN-CAD-003 · CEN-CAD-005 · CEN-COB-001 · CEN-COB-002 · CEN-COB-003 · CEN-COB-004 · CEN-COB-006 · CEN-COB-007 · CEN-FAT-001 · CEN-FAT-003 · CEN-FAT-004 · CEN-FAT-007 · CEN-FAT-009 · CEN-FAT-010 · CEN-FIN-004 · CEN-MIC-001 · CEN-MIC-005 · CEN-OPE-003 |
+| IMV-01 | CEN-ARR-009 · CEN-ARR-013 · CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-007 · CEN-CAD-002 · CEN-CAD-003 · CEN-CAD-005 · CEN-COB-001 · CEN-COB-002 · CEN-COB-003 · CEN-COB-004 · CEN-COB-006 · CEN-COB-007 · CEN-FAT-001 · CEN-FAT-003 · CEN-FAT-004 · CEN-FAT-007 · CEN-FAT-009 · CEN-FAT-010 · CEN-FIN-004 · CEN-MIC-001 · CEN-MIC-005 · CEN-OPE-003 |
 | IMV-02 | CEN-CAD-003 · CEN-FAT-001 · CEN-FAT-009 |
 | IMV-03 | CEN-ATE-001 · CEN-CAD-003 · CEN-FAT-001 · CEN-FIN-004 · CEN-MIC-002 |
 | IMV-04 | CEN-MIC-002 |
@@ -551,16 +585,18 @@ Mais: sequência de ações de cobrança (aviso → corte) com critérios; perfi
 | IMV-16 | CEN-FAT-011 |
 | IMV-17 | CEN-CAD-005 |
 | IMV-18 | CEN-FAT-002 |
-| DOC-01 | CEN-ARR-002 · CEN-ARR-004 · CEN-ARR-006 · CEN-FAT-007 |
+| IMV-19 | CEN-FAT-012 |
+| DOC-01 | CEN-ARR-002 · CEN-ARR-004 · CEN-ARR-006 · CEN-ARR-012 · CEN-FAT-007 · CEN-FIS-001 |
 | DOC-01P | CEN-FAT-007 |
 | DOC-02 | CEN-FAT-008 · CEN-FIN-002 |
-| DOC-03 | CEN-ARR-005 |
-| DOC-04 | CEN-ARR-003 |
+| DOC-03 | CEN-ARR-005 · CEN-FIS-003 |
+| DOC-04 | CEN-ARR-003 · CEN-FIS-003 |
 | DOC-05 | CEN-ARR-003 |
 | DOC-06 | CEN-ARR-005 |
 | DOC-10 | CEN-ARR-008 · CEN-COB-005 |
 | DOC-11 | CEN-COB-005 |
-| USR-01 | CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-004 · CEN-BAT-001 · CEN-REL-001 · CEN-SEG-001 · CEN-SEG-002 · CEN-SEG-004 · CEN-SEG-006 · CEN-SEG-008 · CEN-SEG-009 |
+| DOC-12 | CEN-ARR-011 |
+| USR-01 | CEN-ATE-001 · CEN-ATE-002 · CEN-ATE-004 · CEN-BAT-001 · CEN-REL-001 · CEN-SEG-001 · CEN-SEG-002 · CEN-SEG-004 · CEN-SEG-006 · CEN-SEG-008 · CEN-SEG-009 · CEN-SEG-012 |
 | USR-01B | CEN-SEG-001 |
 | USR-02 | CEN-SEG-004 |
 | USR-03 | CEN-REL-001 · CEN-SEG-004 · CEN-SEG-005 |
@@ -608,15 +644,16 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 | A **forma de entrega** do artefato em CEN-REL-001 | **Caso de uso de obtenção do artefato** com verificação de usuário, propriedade e escopo — V2 e V3 continuam negadas (D-03) |
 | O canal digital (Etapa 8) | **Canal próprio**; nenhum cenário especificado — continua sem baseline a comparar |
 
-⚠️ **Controles novos, sem antecedente no GSAN** — sessão com cookie `HttpOnly`/`Secure`/`SameSite`, CSRF inclusive em requisições parciais, fixação de sessão: são **testes próprios da fundação (S1)**, não cenários de equivalência. O achado 6, que os motiva, **não tem `D-xx` registrado** — pendência para a auditoria final.
+🆕 **Sessão, cookie e CSRF — corrigido na auditoria final (2026-09-29)**. Esta seção dizia que eram controles *sem antecedente no GSAN*, só testes da fundação. ⚠️ **Não é assim**: o legado **tem** sessão e cookie — sem `HttpOnly`/`Secure`/`SameSite` e sem token de formulário —, e aceitar requisição forjada é comportamento observável. A diferença virou a divergência **[D-18](../compatibilidade/divergencias-aprovadas.md)** e o cenário **CEN-SEG-012** (oráculo 2). Fixação de sessão, expiração e invalidação no logout continuam **testes próprios da fundação (S1)**.
+
 ---
 
 ## 15. O que a Fase 2 recebe
 
-1. **79 especificações fechadas**, cada uma com a lista de observáveis, o oráculo e o gate.
+1. **87 especificações fechadas** (🆕 79 até a auditoria final), cada uma com a lista de observáveis, o oráculo e o gate — ⚠️ **81 com baseline a capturar ou já comprovada**; as **6** de requisito nativo não têm baseline do legado e são testadas contra a norma.
 2. Os **perfis de massa** e o mapa perfil → cenário.
-3. A lista do que **não** comparar (C4) e do que está **bloqueado** (BLQ-01 a 04).
-4. Cinco casos — três cenários e duas variações — cuja decisão de oráculo **depende da própria baseline** (§10.2).
+3. A lista do que **não** comparar (C4) e do que está **bloqueado** — 🆕 **BLQ-01 e BLQ-03**, ambos pela D-17; BLQ-02 e BLQ-04 foram desbloqueados na auditoria final.
+4. Seis casos — três cenários e três variações (🆕 CEN-SEG-004 V7(c)) — cuja decisão de oráculo **depende da própria baseline** (§10.2).
 5. 🔴 A **ordem de captura** continua a de [`estrategia-testes.md`](estrategia-testes.md) — autenticação, conta individual, baixa, parcelamento, consumo, OS, resumos.
 
 ⚠️ **O que a Fase 2 precisa fixar antes de capturar**, porque a baseline depende disso: a **variante de companhia** ativa na instância de referência; o **limite de tentativas** e os parâmetros da política de senha; os **parâmetros de faixa** das tarifas; se a **taxa de emissão** está ativa.
@@ -755,7 +792,7 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 | 16 | Consulta sem verificação de abrangência | BLQ-01 |
 | 17 | Permissão especial | CEN-SEG-008 |
 | 18 | Outra unidade tramitando RA | CEN-ATE-004 |
-| 19 | Restrição de grupo (deny) | BLQ-02 |
+| 19 | Restrição de grupo (deny) | CEN-SEG-004 |
 | 20 | Operação efetuada | CEN-SEG-006 |
 | 21 | Trilha por linha/coluna | CEN-SEG-006 |
 | 22 | Autor USUARIO_BATCH | CEN-BAT-001 |
@@ -876,11 +913,14 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 | 2 | 🔴 **Ajustar o registro para o contador de tentativas** (CAND-03) — ampliar D-01 ou criar divergência | CEN-SEG-002 V3 |
 | 3 | **Confirmar a leitura de D-15**: divergência de configurabilidade, **valor padrão 20 preservado** | CEN-FAT-011 |
 | 4 | **Inventário das variantes por companhia** | §10.3 |
-| 5 | Decisões de BLQ-01 a BLQ-04 | §10.1 |
+| 5 | Decisão de BLQ-01 e BLQ-03 (aprovação de D-17) — 🆕 BLQ-02 e BLQ-04 resolvidos na auditoria final | §10.1 |
 | 6 | Origem dos dados dos resumos financeiros (pré-calculado × consulta) | CEN-REL-002 |
 | 7 🆕 | "Dívida ativa" e "baixa contábil" são o mesmo conceito? — hoje, o mesmo campo | CEN-FIN-002 · Cobrança |
 | 8 🆕 | Quem produz a estimativa de consumo não faturado | CEN-FIN-004 |
 | 9 🆕 | Chave de área da programação (bairro × unidade operacional) no OpenGSAN | CEN-OPE-002 |
+| 10 🆕 | Regra fiscal da retificação, do cancelamento e da contingência em campo — `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` | CEN-FIS-002 · CEN-FIS-003 |
+| 11 🆕 | Permanência/transição na perda da Tarifa Social e prazos de comunicação — regra do regulador | CEN-FAT-012 V4 |
+| 12 🆕 | Tratamento de conta alterada depois do agendamento do Pix Automático — decisão de produto | CEN-ARR-013 V4 |
 
 ---
 
@@ -889,6 +929,4 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 Restam para fechar a Fase 0:
 
 1. ~~**ADR-0007 — arquitetura de interface.**~~ ✅ **Aceita em 2026-09-29** — sem efeito sobre os observáveis (§14).
-2. **Auditoria final e encerramento da Fase 0.** Esta documentação foi escrita para permitir verificar cobertura, oráculo, rastreabilidade, pendências, gates e **ausência de resultado inventado**.
-
-⚠️ **Não executadas aqui.**
+2. ~~**Auditoria final e encerramento da Fase 0.**~~ ✅ **Concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md): oito especificações acrescentadas (§4.3), dois bloqueios resolvidos (§10.1), a D-18 com cenário e o oráculo N para requisitos nativos.

@@ -370,3 +370,14 @@ Menu (2016):  módulo 10 — 49 funcionalidades, 25 pontos de entrada (45 de est
               programação: módulo 6 (518, 248) · qualidade: módulo 7 (7) · marca de hidrômetro: módulo 5 (4)
 Grants:       20170504180427_...cobranca_emprsa.sql:35,78 (gsan_operacional)
 ```
+
+
+---
+
+## 🆕 Adendo da auditoria final da Fase 0 (2026-09-29)
+
+| Tema | Posição |
+| ---- | ------- |
+| **Interrupção programada e emergencial · racionamento** (NR ANA 11/2024: interrupção programada comunicada previamente ao regulador e aos usuários) | 🔵 **Evento operacional** com **área afetada**, dono Gestão Operacional. O legado já tem a semente — programação de abastecimento e de manutenção cruzada com o RA de falta de água (CEN-OPE-002). O que falta, e fica registrado: o evento como conceito, a área afetada derivável do território, o **evento de negócio** que a comunicação consome (canal é da Notificação) e o reflexo na prestação de informações. Classificação **L1** |
+| **Qualidade da água** (Portaria GM/MS 888/2021 · SISAGUA · Decreto 5.440/2005) | A informação na conta já está coberta (CEN-OPE-003). O **ciclo de controle** — plano de amostragem, coleta, parâmetro, resultado, limite, conformidade, ação — é **evolução** (L3) da Gestão Operacional; laboratório: **receber resultados de LIMS externo primeiro, ciclo laboratorial próprio como opção** (C); SISAGUA é **adapter** de prestação de informação, sem leiaute no domínio |
+| **Perdas e telemetria** | Sem metodologia nesta fase. Os dados que um balanço hídrico exigirá **poderão existir**: consumo micromedido (Micromedição), volume faturado (Faturamento), volume macromedido e setor (Gestão Operacional/Ativos/Redes), séries de telemetria com unidade, origem e qualidade da medição ([completude §10](../auditoria/completude-funcional-regulatoria.md#10-operação-qualidade-metrologia-perdas-telemetria-e-energia)) |

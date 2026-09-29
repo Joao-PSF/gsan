@@ -26,5 +26,5 @@ Levantamento do comportamento atual — base para reproduzir o **modelo conceitu
 
 ## Credenciais e segredos conhecidos
 
-- Roles de banco criadas com **senha igual ao login** em script versionado público (`gsan-migracoes/comercial/scripts/20160118183208_create_roles.sql`: `gsan_admin`, `gsan_batch`, `gsan_dba`, `gsan_olap`, `gsan_online`) — considerar comprometidas.
+- Roles de banco criadas com **senha igual ao login** em script versionado público (`gsan-migracoes/comercial/scripts/20160118183208_create_roles.sql`, cinco roles) — considerar comprometidas. 🆕 *Auditoria final (2026-09-29)*: esta linha listava as roles junto com a afirmação da senha; como senha = login, isso **equivalia a transcrever a credencial** — a lista foi retirada. Os nomes de role continuam em outros documentos **apenas como estrutura** (dono, consumidores, privilégios); a rotação é obrigatória em qualquer instalação que use o script (D-16, achado 2).
 - Credenciais reais do datasource ficam nos `*-ds.xml` do JBoss dos servidores de cada instalação — em instalações operantes, inventariar e rotacionar (item do checklist de migração futura; este projeto não opera infraestrutura GSAN). Nenhuma dessas credenciais deve ser reutilizada em qualquer ambiente OpenGSAN.

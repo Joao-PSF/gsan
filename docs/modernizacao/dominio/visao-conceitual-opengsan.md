@@ -143,7 +143,7 @@ flowchart TB
     style PLAT fill:#f0f0f0,stroke:#777,stroke-width:2px
 ```
 
-🆕 **Refinamento de 2026-09-28**: o diagrama acima continua válido para o **núcleo inicial**; a arquitetura macro completa — com Contabilização, Gestão Operacional, Gestão de Ativos e Redes/GIS — está no §27.1.
+🆕 **Refinamento de 2026-09-28**: o diagrama acima continua válido para o **núcleo inicial**; a arquitetura macro completa — com Contabilização, Gestão Operacional, Gestão de Ativos e Redes/GIS — está no §27.1. 🆕 **Auditoria final (2026-09-29)**: a estrutura conceitual consolidada, com **Fiscal** e as capacidades transversais, está no **§27.2**.
 
 🔵 **A distinção que o diagrama carrega**: o **core** resolve o negócio; a **plataforma** oferece capacidades ao core. ⚠️ Não são dez módulos equivalentes — Segurança, Processamento, Relatórios e Integrações têm natureza diferente de Faturamento, e tratá-los como iguais foi diagnosticado como erro potencial de desenho no mapa de domínio.
 
@@ -573,6 +573,12 @@ PROCESSO    o que se executa                   (definição catalogada)
 | 🆕 Estrutura operacional · calendário operacional · qualidade distribuída | **Gestão Operacional** | Atendimento (roteamento, falta de água), Emissão (qualidade), Analytics | Gestão Operacional — [mapa](../modulos/operacional.md) |
 | 🆕 Ativo — identidade, classe, ciclo de vida, condição, manutenção | **Gestão de Ativos** | Redes/GIS, Telemetria, Analytics; Atendimento executa a OS | Gestão de Ativos — [visão](gestao-de-ativos.md) |
 | 🆕 Geometria · topologia · zonas derivadas da rede | **Redes/GIS** | Ativos, Gestão Operacional, Analytics | Redes/GIS — matriz **por atributo** em [`gis-redes-ativos.md §6`](../arquitetura/gis-redes-ativos.md) |
+| 🆕 **Documento fiscal (NFAg)** — identidade fiscal, autorização, eventos, contingência, DANFAG, guarda · **determinação tributária** · devolução personalizada | **Fiscal** | Faturamento (compõe o documento), Arrecadação (vinculação de pagamento), Contabilização (fatos fiscais) | Fiscal — [mapa](../modulos/fiscal.md). 🔴 **Conta ≠ NFAg** |
+| 🆕 **Benefício tarifário** (Tarifa Social) — elegibilidade e vínculo com a unidade usuária | **Cadastro** | Faturamento (aplica), Atendimento, Prestação de informações | Cadastro — a **fonte** de elegibilidade é integração (CadÚnico/BPC) |
+| 🆕 Benefício tarifário — **regra e aplicação no cálculo** | **Faturamento** | Cobrança, Arrecadação | Faturamento — regra versionada com vigência e origem normativa |
+| 🆕 **Meio de pagamento · autorização de pagamento recorrente** (débito automático, Pix Automático) · cobrança Pix vinculada ao documento | **Arrecadação** (Pagamentos) | Faturamento (documento), Cobrança, canais | Arrecadação — o contrato com banco/PSP é de Integrações |
+| 🆕 **Evento operacional** (interrupção programada/emergencial, racionamento, área afetada) | **Gestão Operacional** | Atendimento, Notificação, Prestação de informações | Gestão Operacional |
+| 🆕 **Contexto institucional** — prestador, titular, instrumento de delegação, área de prestação, regulador, vigência | **Cadastro** (área de prestação como recorte territorial) + configuração da instalação | Todos os parâmetros regulados | Ver §27.3 — **não** é decisão de multi-tenancy |
 
 🔵 **Três mudanças de propriedade** em relação ao GSAN, todas para corrigir estado guardado no lugar errado: situação da ligação, situação de cobrança e escrita de consumo na retificação.
 
@@ -718,6 +724,8 @@ AUDITORIA               "o usuário fulano alterou esta coluna às 14h32"
 
 **No OpenGSAN**: parametrização **versionada e governada** onde a regra afeta resultado financeiro ou compromisso com o cliente. ⚠️ Não em tudo — versionar catálogos operacionais simples seria cerimônia sem benefício.
 
+🆕 **Parâmetro regulado** (auditoria final, 2026-09-29): quando a regra vem de norma — tarifa, benefício, prazo de atendimento, aviso prévio, tributação —, o parâmetro carrega também **contexto institucional** (a que área de prestação e regulador se aplica) e **origem normativa** (qual ato o fundamenta). É isso que evita `if estado == X`: a mesma regra com valores diferentes por regulador é **dado com contexto**, não código (§27.3).
+
 ---
 
 ## 24. Extensibilidade
@@ -766,7 +774,7 @@ Toda particularidade real é classificada antes de entrar:
 | **Política** | Ponto de extensão nomeado | Regra de aplicação de faixas que varia por companhia |
 | **Extensão** | Módulo adicional, fora do núcleo | Programas sociais, recadastramento |
 | **Integração** | Fronteira externa | Layouts bancários por convênio |
-| **Módulo específico** | Separado, opcional | Obrigações regulatórias regionais |
+| **Módulo específico** | Separado, opcional | Obrigação regional que exija **ciclo próprio** — 🆕 regra de regulador local é, por padrão, **parâmetro regulado** (§23.2), não módulo |
 
 ⚠️ Uma particularidade que não se encaixa em nenhuma dessas é sinal de que o **núcleo está errado**, não de que falta uma categoria.
 
@@ -884,6 +892,55 @@ flowchart TB
 
 🔵 O GSAN já tem sinais dessas necessidades (coordenadas no atendimento, macromedição, telemetria, distritos operacionais) — o que confirma que a expansão é natural, não especulativa.
 
+
+### 27.2 🆕 Estrutura conceitual consolidada (auditoria final, 2026-09-29)
+
+⚠️ **Agrupamento de leitura, não camada técnica nem pacote.** Cada caixa é um módulo com dono; os grupos só dizem **de que natureza** é a responsabilidade.
+
+```text
+GESTÃO COMERCIAL                          FINANCEIRO / REGULATÓRIO
+├─ Cadastro   (+ elegibilidade e vínculo   ├─ Contabilização   fatos → lançamentos (subsidiária, não ERP)
+│              do benefício tarifário)     └─ Fiscal           documento tributário: NFAg, determinação
+├─ Micromedição                                                tributária, eventos, guarda
+├─ Faturamento (+ aplicação do benefício)
+├─ Cobrança                                OPERACIONAL
+├─ Arrecadação                             ├─ Gestão Operacional  estrutura, calendário, qualidade distribuída,
+│  └─ Pagamentos: boleto registrado ·      │                      evento operacional (interrupção, racionamento)
+│     Pix Cobrança · Pix Automático ·      ├─ Gestão de Ativos    nativa — ADR-0008
+│     débito automático · cartão           └─ Redes/GIS           Giswater opcional — ADR-0008
+└─ Atendimento e Execução (RA · OS)
+
+PLATAFORMA — Segurança · Processamento · Relatórios · Integrações · GIS como capacidade
+CAPACIDADES TRANSVERSAIS (sem módulo) — Notificação · Documentos e evidências ·
+                                        Prestação de informações regulatórias · Analytics
+CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
+```
+
+🔴 **Três ciclos distintos que não se fundem**:
+
+| Módulo | Responde a | Não responde a |
+| ------ | ---------- | -------------- |
+| **Fiscal** | *Qual documento tributário existe, com que tributos, reconhecido pelo Fisco?* | Quanto entrou no caixa; como lançar |
+| **Contabilização** | *Que fatos contábeis e lançamentos decorrem das operações?* | Autorização fiscal; recebimento |
+| **Arrecadação** | *O que foi recebido, contra qual documento, conciliado com quem?* | Tributação; lançamento |
+
+🔵 **O que a auditoria não criou**: nenhum módulo *Regulação*, *Pagamentos*, *Tarifa Social*, *Laboratório*, *LGPD* ou *Notificação*. Obrigação regulatória vira **regra, parâmetro regulado, integração, evento ou capacidade transversal** — só vira módulo quando tem **ciclo próprio e obrigatório**, e só o Fiscal passou nesse critério ([matriz de completude](../auditoria/completude-funcional-regulatoria.md)).
+
+### 27.3 🆕 Contexto institucional — sem decidir multi-tenancy
+
+🟢 O GSAN assume **uma companhia** e distribui a variação por localidade. Uma companhia real opera **vários municípios, contratos e reguladores**, e as normas de referência da ANA são aplicadas por **entidades reguladoras infranacionais** com detalhes próprios.
+
+| Conceito | O que é | Onde vive |
+| -------- | ------- | --------- |
+| **Prestador** | Quem opera — a instalação | Configuração da instalação |
+| **Titular** | Ente titular do serviço (município, agrupamento) | Referência institucional |
+| **Instrumento de delegação** | Contrato, convênio ou prestação direta, com vigência | Referência institucional |
+| **Área de prestação** | Recorte territorial coberto por um instrumento | **Cadastro** — é recorte do território |
+| **Entidade reguladora** | Quem regula aquela área | Referência institucional |
+| **Vigência e origem normativa** | Quando e por qual ato uma regra vale | Em cada **parâmetro regulado** (§23.2) |
+
+🔴 **Regra**: tarifa, benefício, prazo de atendimento, aviso prévio, prestação de informações e tributação podem variar **por área de prestação e por regulador sem fork e sem `if`**. ⚠️ **Não é decisão de multi-tenancy** — uma instalação com várias áreas e um SaaS com várias companhias são perguntas diferentes, e a segunda continua aberta. O mínimo que a fundação precisa é **não impedir** o contexto: o parâmetro regulado nasce com ele (Etapa 0 — convenção; Etapa 4 — tarifa).
+
 ---
 
 ## 28. Decisões pendentes
@@ -894,7 +951,7 @@ flowchart TB
 | - | ------- | ---------------- |
 | 1 | ~~**ADR-0007 — arquitetura de interface**~~ ✅ **Aceita em 2026-09-29** | Canais sobre casos de uso; backoffice server-driven com aprimoramento progressivo; contratos explícitos para canais externos |
 | 2 | **Diferenças reais entre as variantes por companhia** | Sem o inventário, o ponto de extensão (§24) pode não cobrir os casos reais |
-| 3 | **Existe mecanismo de negação na autorização?** | Define se o modelo é *allow-only* ou tem *deny*. Muda o desenho da autorização inteira |
+| 3 | ~~**Existe mecanismo de negação na autorização?**~~ ✅ **Resolvida na auditoria final (2026-09-29)** | 🟢 Sim: **restrição por usuário** que subtrai a concessão de um grupo — acesso se restrições < concessões ([`seguranca.md §10`](../modulos/seguranca.md)). O modelo é *união dos grupos menos as restrições do usuário* |
 | 4 | **Nome físico do repositório e governança do projeto aberto** | O código não pode começar sem repositório; licença e organização são decisão de governança |
 | 5 | **Aprovação da divergência D-17** (escopo territorial sistemático) | Altera comportamento visível; precisa de aceite antes de ser implementada |
 
@@ -926,9 +983,9 @@ flowchart TB
 | O que representa? | 🔵 Um valor devido por alguém, identificável, com situação, que pode ser cobrado, negociado e quitado |
 | Quem seria dono? | 🟡 Provavelmente **Faturamento** (cria a maioria), com a Cobrança criando as derivadas |
 | Quais documentos participam? | 🟢 Conta, guia e débito a cobrar — com alta confiança |
-| Quais ficam fora? | ❔ **Documento de cobrança** é instrumento de ação, não obrigação — mas é destino de pagamento. ❔ **"Fatura"**: semântica nunca esclarecida |
+| Quais ficam fora? | ❔ **Documento de cobrança** é instrumento de ação, não obrigação — mas é destino de pagamento. 🆕 **"Fatura"** (esclarecida em 2026-09-29): **documento agregador** de contas de um cliente responsável — o pagamento se desdobra em um pagamento **por conta**; também fica fora |
 
-⚠️ **Marcado `PROPOSTO`.** 🔴 Não criar superentidade universal sem necessidade: o risco de uma abstração errada aqui é contaminar Faturamento, Cobrança e Arrecadação de uma vez. A decisão depende de esclarecer "Fatura" e de verificar se os candidatos têm ciclo de vida realmente comum.
+⚠️ **Marcado `PROPOSTO`.** 🔴 Não criar superentidade universal sem necessidade: o risco de uma abstração errada aqui é contaminar Faturamento, Cobrança e Arrecadação de uma vez. A decisão depende de ~~esclarecer "Fatura"~~ (✅ 2026-09-29) e de verificar se os candidatos têm ciclo de vida realmente comum.
 
 ---
 
@@ -950,6 +1007,8 @@ flowchart TB
 | 12 | **Perder capacidade funcional ao descartar implementação de integração** | 🔊 Visível na operação de campo | §18.3 separa capacidade de implementação |
 | 13 | ⚠️ **Projeto aberto sem governança definida** | 🔊 Visível | Licença, organização e mantenedores registrados como pendência |
 | 14 🆕 | **OS ou identidade de ativo duplicadas** entre ferramentas (Giswater, QField, EAM) | 🔴 Silencioso — dois registros divergem aos poucos | [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md): OS só no Atendimento; identidade emitida por Ativos; forma de consumo declarada por atributo |
+| 16 🆕 | **Descobrir tarde uma obrigação regulatória** (o caso NFAg) e reestruturar o Faturamento | 🔴 Estrutural | Auditoria final (2026-09-29): varredura por **fonte oficial**, não só pelo legado — [matriz de completude](../auditoria/completude-funcional-regulatoria.md); **Fiscal** com fronteira própria; requisito nativo com oráculo N |
+| 17 🆕 | **Regra de regulador codificada por estado** | 🔊 Visível ao atender a segunda jurisdição | §23.2 — parâmetro regulado com contexto institucional e origem normativa |
 | 15 🆕 | **Tratar indicador herdado como requisito numérico** | 🔊 Visível tarde | Os índices de perda e de macromedição do satélite do GSAN são **degenerados** ([`operacional.md §6.3`](../modulos/operacional.md)) — nenhuma equivalência exigida |
 
 ---
@@ -996,4 +1055,4 @@ GSAN sete padrões de integração                →  OpenGSAN camada única de
 
 ## 31. Próxima atividade
 
-~~**Catálogo de Funcionalidades Futuras**~~ — concluído em 2026-09-15; depois vieram a ordem de implementação, a compatibilidade conceitual, a especificação dos cenários e a revisão controlada de escopo (2026-09-28). ✅ ADR-0007 aceita em 2026-09-29. 🆕 **Próxima**: **auditoria final** da Fase 0 — backlog em [`MODERNIZACAO_GSAN.md`](../../../MODERNIZACAO_GSAN.md).
+~~**Catálogo de Funcionalidades Futuras**~~ — concluído em 2026-09-15; depois vieram a ordem de implementação, a compatibilidade conceitual, a especificação dos cenários e a revisão controlada de escopo (2026-09-28). ✅ ADR-0007 aceita em 2026-09-29. ✅ **Auditoria final concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md). Próximo estágio conforme o plano vigente — [`MODERNIZACAO_GSAN.md`](../../../MODERNIZACAO_GSAN.md).

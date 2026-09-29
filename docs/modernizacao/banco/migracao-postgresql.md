@@ -9,7 +9,7 @@
 - Versão: PostgreSQL 18.x (18.6+ em 2026-08; reconfirmar a cada fase).
 - Encoding **UTF-8** com collation explícita e documentada na criação do cluster/banco (ADR-0004) — sem depender do locale implícito do SO.
 - Schema versionado por **Flyway desde `V1`** (ADR-0002): o modelo nasce das decisões de compatibilidade (`PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`, ADR-0006), não de baseline copiada do `gsan_comercial`.
-- Contas segregadas por finalidade desde o início (aplicação online, batch, consulta/BI, administração) com menor privilégio — reaproveitando o conceito já presente no GSAN (`gsan_online/batch/olap/dba`), **nunca** as credenciais (senha = login, comprometidas).
+- Contas segregadas por finalidade desde o início (aplicação online, batch, consulta/BI, administração) com menor privilégio — reaproveitando o **conceito** de contas por finalidade já presente no GSAN, **nunca** as credenciais do script versionado, consideradas comprometidas (D-16). 🆕 *Auditoria final (2026-09-29)*: a lista de roles que estava nesta linha foi retirada — ao lado da afirmação sobre a senha, equivalia a transcrever a credencial.
 - Extensões: apenas as necessárias e via `CREATE EXTENSION` (ex.: `pg_trgm` se a busca aproximada for preservada); `dblink` não entra no OpenGSAN — integrações entre bases serão explícitas na aplicação.
 - Dev: docker-compose; testes de persistência com Testcontainers sobre o schema real do OpenGSAN. VPS: instância PostgreSQL própria para testes/homologação/demonstração (sem requisitos de produção crítica nesta etapa).
 

@@ -24,7 +24,7 @@ Pontos críticos de partida: 19 classes de teste no total; migrations (MyBatis) 
 
 Java 25 LTS · Spring Boot 4.1.x (Spring Framework 7/Jakarta) · Spring Security (RBAC reproduzindo a semântica de `seguranca.*`) · Spring Data JPA para CRUD e `JdbcTemplate`/SQL nativo para consultas complexas e relatórios · Spring Batch · Maven multi-módulo · **Flyway a partir de `V1`, sem baseline copiada do banco legado** (ADR-0002) · PostgreSQL 18.x **em UTF-8** (ADR-0004) · Docker + CI/CD (SAST/SCA/SBOM/secrets) · Actuator/Micrometer.
 
-Organização: **monólito modular** (ADR-0001) — `cadastro`, `micromedicao`, `faturamento`, `cobranca`, `arrecadacao`, `atendimento`, `seguranca`, `relatorios`, `batch`, `integracoes`, `shared` e, desde a revisão de escopo (2026-09-28), `contabilizacao` e `operacional` —, com fronteiras explícitas entre módulos.
+Organização: **monólito modular** (ADR-0001) — `cadastro`, `micromedicao`, `faturamento`, `cobranca`, `arrecadacao`, `atendimento`, `seguranca`, `relatorios`, `batch`, `integracoes`, `shared` e, desde a revisão de escopo (2026-09-28), `contabilizacao` e `operacional` — e, desde a auditoria final (2026-09-29), `fiscal` —, com fronteiras explícitas entre módulos.
 
 **Não há coexistência, banco compartilhado nem roteamento por proxy.** O OpenGSAN é um sistema próprio, com banco próprio. A relação com o GSAN é de **compatibilidade** — o legado é a referência de comportamento e a origem dos dados numa migração futura, não um parceiro de execução simultânea.
 
@@ -77,11 +77,13 @@ ETAPA 0  fundação            → projeto modular com fronteira verificada, Fly
 ETAPA 1  fatia vertical      → autenticar + consultar imóvel/cliente + abrir e tramitar RA
 ETAPA 2  atendimento e execução  → território, ligação e situação, OS, contrato "solicita × aplica", S2
 ETAPA 3  medição             → hidrômetro → instalação → leitura → consumo; integração de campo
-ETAPA 4  financeiro individual → tarifa versionada, motor de conta individual, identidade documental
-ETAPA 5  recebimento         → recepção → classificação → aplicação → conciliação
-ETAPA 6  cobrança            → posição de dívida → política → ação → parcelamento
-ETAPA 7  escala              → faturamento em lote, arrecadação mensal, encerramentos
-ETAPA 8  canais e evoluções  → identidade do cliente final, canal digital, PIX, boleto registrado
+ETAPA 4  financeiro individual → tarifa versionada, motor de conta individual, identidade documental,
+                               Tarifa Social nacional, NFAg individual (módulo Fiscal)
+ETAPA 5  recebimento         → recepção → classificação → aplicação → conciliação; Pix Cobrança, boleto registrado
+ETAPA 6  cobrança            → posição de dívida → política → ação → parcelamento; Pix Automático
+ETAPA 7  escala              → faturamento em lote, arrecadação mensal, encerramentos, contabilização,
+                               NFAg em lote e contingência
+ETAPA 8  canais e evoluções  → identidade do cliente final, canal digital (apresenta Pix e boleto)
 ```
 
 🔴 **A cadeia financeira tem direção única**, e é a principal correção em relação à ordem anterior:
@@ -98,7 +100,7 @@ Cobrança atua sobre essa posição
 
 ⚠️ **A obrigação financeira nasce com o documento, não com a cobrança.** O que depende dos recebimentos é a **posição em aberto**, não a existência da dívida.
 
-Transversais: `seguranca` em **três blocos** (S1 na fundação, S2 após o Cadastro territorial, S3 progressivo); `relatorios` acompanham o módulo dono, com o motor no primeiro caso real; `integracoes` como convenção desde a fundação, camada implementada no primeiro adapter real, adapters com o módulo dono; `batch` ao final, porque a dependência é **inversa** — orquestrador exige operação individual comprovada. ⚠️ `fiscal`/SPED **saem do pacote do faturamento**: permanecem `EXIGE APROFUNDAMENTO` e não bloqueiam o início. **Observabilidade (Fase 10) e CI/CD (Fase 11) deixam de ser fases finais** e passam a atividades transversais contínuas.
+Transversais: `seguranca` em **três blocos** (S1 na fundação, S2 após o Cadastro territorial, S3 progressivo); `relatorios` acompanham o módulo dono, com o motor no primeiro caso real; `integracoes` como convenção desde a fundação, camada implementada no primeiro adapter real, adapters com o módulo dono; `batch` ao final, porque a dependência é **inversa** — orquestrador exige operação individual comprovada. ⚠️ `fiscal`/SPED **saem do pacote do faturamento** — 🆕 e a auditoria final (2026-09-29) os resolveu: a **NFAg é obrigatória** e o `fiscal` é módulo próprio (Etapas 4 e 7; **Conta ≠ NFAg**); o SPED do legado é integração com o ERP. PIX e boleto registrado são meios de recebimento (Etapa 5), não canal. **Observabilidade (Fase 10) e CI/CD (Fase 11) deixam de ser fases finais** e passam a atividades transversais contínuas.
 
 ## 6. Estratégia PostgreSQL
 
@@ -130,5 +132,7 @@ Detalhe em [seguranca/riscos-identificados.md](seguranca/riscos-identificados.md
 OAuth2/OIDC apenas se houver infraestrutura de identidade; não é pré-requisito.
 
 ## 9. Situação da execução
+
+✅ **Fase 0 concluída em 2026-09-29** — [auditoria final](auditoria/auditoria-final-fase0.md). Próxima: **Fase 1 — Ambiente de referência**, não iniciada.
 
 O controle vivo de atividades, backlog e pendências está em [`MODERNIZACAO_GSAN.md`](../../MODERNIZACAO_GSAN.md). A lista de "primeiro ciclo" que ocupava esta seção foi removida: ela pressupunha produção, DBA e acesso a banco real — nada disso existe neste projeto, e o que restava de válido já está no backlog da Fase 0.

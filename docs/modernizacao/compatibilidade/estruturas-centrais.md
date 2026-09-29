@@ -91,10 +91,12 @@ estrutura no OpenGSAN                   → REESTRUTURAR
 
 | Classificação | Primária | Tocam | Leitura |
 | ------------- | -------: | ----: | ------- |
-| **PRESERVAR** | **37** | 37 | 🔴 **O GSAN acertou mais do que errou.** Quase 6 em cada 10 decisões preservam a estrutura atual |
+| **PRESERVAR** | **38** | 38 | 🔴 **O GSAN acertou mais do que errou.** Quase 6 em cada 10 decisões preservam a estrutura atual |
 | **REESTRUTURAR** | **14** | 15 | Acoplamentos reais, representações concorrentes e estruturas cuja melhoria se justifica (§19) |
 | **MODERNIZAR** | **6** | 11 | Estruturas conceitualmente corretas com problemas técnicos pequenos |
-| **EXIGE APROFUNDAMENTO** | **5** | 6 | Sem evidência suficiente — registrados, não forçados (§20) |
+| **EXIGE APROFUNDAMENTO** | **4** | 5 | Sem evidência suficiente — registrados, não forçados (§20) |
+
+🆕 **Recontado por script em 2026-09-29** depois da resolução de `SEG-07` (APROFUNDAMENTO → PRESERVAR) na auditoria final. Os demais números não mudaram.
 | **NÃO TRANSPORTAR** | **2** | 7 | Infraestrutura morta, mecanismos inadequados, artefatos — mais **6 famílias** em §18 |
 
 🔵 **A leitura mais importante da tabela**: `PRESERVAR` domina. Isso **não** é conservadorismo — é consequência da regra da ADR-0006 (quanto maior criticidade + consumidores + valor histórico + risco financeiro, maior a evidência exigida para reestruturar) aplicada a um sistema cujo modelo funcional, nos módulos financeiros, é bom.
@@ -117,13 +119,13 @@ Classificação **primária**, por área:
 | Faturamento | 10 | 7 | 3 | — | — | — |
 | Cobrança | 7 | 5 | — | 1 | 1 | — |
 | Arrecadação | 7 | 5 | 2 | — | — | — |
-| Segurança | 7 | 4 | 1 | — | 1 | 1 |
+| Segurança | 7 | 5 | 1 | — | — | 1 |
 | Micromedição | 6 | 4 | — | 1 | — | 1 |
 | Atendimento | 6 | 2 | 1 | 2 | 1 | — |
 | Integrações | 4 | 2 | 2 | — | — | — |
 | Batch | 3 | 2 | 1 | — | — | — |
 | Relatórios | 3 | 1 | 1 | — | 1 | — |
-| **Total** | **64** | **37** | **14** | **6** | **5** | **2** |
+| **Total** | **64** | **38** | **14** | **6** | **4** | **2** |
 
 🔵 **Leituras**:
 
@@ -154,7 +156,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | O imóvel precisa expor: identificação, localização, características físicas, classificação tarifária e **o estado corrente relevante** aos processos |
 | **Representação atual** | ⚠️ 🟢 O registro concentra também: **situação das ligações de água e esgoto** (`last_id`/`lest_id` — estado de *outra* entidade), **situação de cobrança** + contadores de parcelamento/reparcelamento (estado de processo de *outro módulo*), parâmetros de faturamento (dia de vencimento, débito automático, situação especial), denormalizações (`imov_qteconomia`, categoria principal), três colunas de rota, campos sociais e nomenclaturas de companhia |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.1](#191-cad-02--estado-de-outros-domínios-dentro-do-imóvel) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.1](#191--cad-02--estado-de-outros-domínios-dentro-do-imóvel) |
 | **Motivo** | 🔵 É a causa estrutural das 123 FKs e do acoplamento entre módulos. Não é questão estética: **o estado de cobrança e de ligação escrito no Imóvel é o que obriga Cobrança e Atendimento a escreverem no agregado do Cadastro** |
 | **Impacto de migração** | Médio — a transformação é redistribuição de colunas, sem perda de informação |
 | **Validação** | Para cada imóvel: o estado reconstruído no OpenGSAN reproduz exatamente o que as colunas legadas continham |
@@ -188,7 +190,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 A **economia é a unidade tarifária**: tarifas mínimas e faixas aplicam-se por economia dentro da categoria. É preciso saber **quantas economias** o imóvel tem **por subcategoria**, e essa composição é o que governa o cálculo |
 | **Representação atual** | ⚠️ 🟢 **Três representações concorrentes, sem entidade própria**: (a) `imovel_subcategoria.imsb_qteconomia` — agregada, **governa os processos**; (b) `imov_qteconomia` — total denormalizado, conveniência; (c) `imovel_economia` — individualizada, **só relatórios**, não participa do cálculo |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.2](#192-cad-05--economia-com-três-representações) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.2](#192--cad-05--economia-com-três-representações) |
 | **Motivo** | 🔴 Três fontes para o mesmo dado, com apenas uma correta. Usar a errada muda o valor da conta. É o conceito mais central do sistema **sem forma explícita** |
 | **Impacto de migração** | Médio — a fonte de verdade já é conhecida (a agregada) |
 | **Validação** | 🔴 **Recálculo de contas**: as economias por categoria do OpenGSAN devem reproduzir `conta_categoria.ctcg_qteconomia` das contas emitidas |
@@ -222,7 +224,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 Cada imóvel tem **no máximo uma** ligação de água e uma de esgoto; a ligação tem características técnicas próprias, eventos datados (corte, supressão, religação, restabelecimento) e percentuais (esgoto/coleta/alternativo) que o Faturamento usa |
 | **Representação atual** | ⚠️ 🟢 **PK compartilhada por construção**: `ligacaoAgua.setId(imovel.getId())`, FK `lagu_id → imov_id`. **O estado corrente mora no Imóvel** (`last_id`/`lest_id`), não na ligação. Não há tabela de histórico de situações da ligação — o detalhe dos eventos fica nas OSs |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.3](#193-cad-08--ligação-com-pk-compartilhada-e-estado-fora-da-entidade) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.3](#193--cad-08--ligação-com-pk-compartilhada-e-estado-fora-da-entidade) |
 | **Motivo** | 🔵 **Preservar a semântica 1:1 não exige preservar a PK compartilhada** — são duas decisões diferentes, e a pergunta do roteiro tem resposta clara: não exige. A PK compartilhada impede a ligação de ter ciclo de vida próprio e ancora o estado no lugar errado |
 | **Impacto de migração** | 🟡 Médio-alto — o migrador precisa mapear `lagu_id = imov_id` para a nova chave, e **todas as FKs que apontam a ligação** |
 | **Validação** | Toda ligação migrada resolve para o mesmo imóvel; estado corrente reproduz `last_id`/`lest_id` |
@@ -350,7 +352,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🔴 **INEGOCIÁVEL**: referências externas (pagamento, cobrança, parcelamento, débito automático) apontam um identificador que **permanece válido quando o documento é arquivado**. É isso que permite pagar uma conta que já foi para o histórico |
 | **Representação atual** | 🟢 `conta_geral` é entidade **física** cuja sequence origina o `cnta_id`, com `indicadorHistorico` e one-to-one para `conta`, `conta_historico` e `conta_impressao` — todas com o mesmo id (generator `assigned`). Padrão replicado em `guia_pagamento_geral`, `debito_a_cobrar_geral`, `credito_a_realizar_geral` |
-| **Classificação** | ⚠️ **Semântica: PRESERVAR OBRIGATORIAMENTE** · **Estrutura: REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.4](#194-fat-02fat-03--identidade-estável-e-tabelas-espelho) |
+| **Classificação** | ⚠️ **Semântica: PRESERVAR OBRIGATORIAMENTE** · **Estrutura: REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.4](#194--fat-02fat-03--identidade-estável-e-tabelas-espelho) |
 | **Motivo** | 🔵 O mecanismo resolve um problema real de forma engenhosa — mas resolve-o com **uma tabela extra por tipo de documento**, existindo apenas para ser fonte de sequence e ponteiro. O problema (identidade que sobrevive ao arquivamento) tem soluções mais simples; a semântica é obrigatória, a forma não |
 | **Impacto de migração** | 🔴 **Máximo** — todo `cnta_id` do legado precisa continuar resolvendo para o mesmo documento (§17) |
 | **Validação** | 🔴 Para cada pagamento legado, o documento resolvido no OpenGSAN é o mesmo |
@@ -361,7 +363,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 O encerramento mensal **arquiva** documentos, mantendo-os consultáveis e **participantes de regras** (a classificação de pagamento busca no histórico; 2ª via reconstrói) |
 | **Representação atual** | ⚠️ 🟢 Par de tabelas espelho por tipo (`conta`/`conta_historico`, e satélites: `conta_categoria_historico`, `conta_impostos_deduzidos_historico`…), movidas por batches de encerramento |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.4](#194-fat-02fat-03--identidade-estável-e-tabelas-espelho) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.4](#194--fat-02fat-03--identidade-estável-e-tabelas-espelho) |
 | **Motivo** | 🔵 Duplicação estrutural que obriga **toda consulta relevante a saber dos dois lugares** — evidência direta: `classificarPagamentosConta` busca em ambas. Cada satélite dobra junto. O arquivamento é semântica real; a tabela-espelho é uma das formas de implementá-lo, não a única |
 | **Impacto de migração** | Médio — a união das duas fontes é mecânica |
 | **Validação** | Contagem corrente + histórico = contagem no OpenGSAN; nenhuma conta perdida no merge |
@@ -405,7 +407,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | Companhias aplicam faixas/franquias de forma diferente |
 | **Representação atual** | ⚠️ 🟢 **Três camadas simultâneas**: parametrização (tabelas), subclasses de controlador, **e métodos com nome de companhia dentro do núcleo compartilhado** — `calcularValorFaturadoFaixaCAER*` em `ControladorFaturamentoFINAL` |
-| **Classificação** | **REESTRUTURAR** · confiança **MÉDIA** · detalhamento em [§19.5](#195-fat-07--variação-por-companhia-dentro-do-núcleo) |
+| **Classificação** | **REESTRUTURAR** · confiança **MÉDIA** · detalhamento em [§19.5](#195--fat-07--variação-por-companhia-dentro-do-núcleo) |
 | **Motivo** | 🔵 Nome de companhia no núcleo é dívida objetiva. ⚠️ Confiança **MÉDIA** e não alta porque **as diferenças reais nunca foram inventariadas** — sabe-se que o mecanismo é ruim, não o que exatamente ele faz de diferente |
 | **Impacto de migração** | Nenhum sobre dados; total sobre a arquitetura de extensibilidade |
 | **Validação** | 🔴 Por companhia: conta calculada no OpenGSAN = conta da variante legada, ao centavo |
@@ -566,7 +568,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | Um recebimento é um fato financeiro que precisa ser rastreável ao longo do tempo |
 | **Representação atual** | ⚠️ 🟢 `arrecadacao.pagamento` usa `seq_pagamento`; ao ser arquivado, `PagamentoHistorico` usa **`seq_pagamento_historico`** — **o pagamento recebe novo identificador**. É a **única** exceção ao padrão `*Geral` do sistema |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.6](#196-arr-04--identidade-do-pagamento) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.6](#196--arr-04--identidade-do-pagamento) |
 | **Motivo** | 🔵 A pergunta do roteiro — *necessidade funcional ou limitação estrutural histórica?* — tem resposta com a evidência disponível: **limitação estrutural**. Nenhum mapa encontrou razão funcional para o recebimento perder identidade enquanto todos os documentos de dívida a preservam. 🔵 O sistema **inteiro** demonstra o padrão correto; este é o ponto onde ele não foi aplicado |
 | **Impacto de migração** | 🟡 Médio-alto — pagamentos correntes e históricos precisam de identidade unificada, e o histórico pode ter colisões de id entre as duas sequences |
 | **Validação** | 🔴 Nenhum pagamento duplicado após o merge; rastreabilidade pagamento↔documento preservada antes e depois do arquivamento |
@@ -599,7 +601,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 O sistema precisa ler **layouts posicionais versionados** de arrecadação, ficha de compensação e cartão, validando por tipo de registro e versão |
 | **Representação atual** | ⚠️ 🟢 Rotinas de validação **dentro de `ControladorArrecadacao`** (`validarArquivoMovimentoArrecadador`, `...ArquivosBanco`, `...FichaCompensacao`, header/trailer de cartão) |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.7](#197-arr-07--layouts-bancários-no-controlador) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.7](#197--arr-07--layouts-bancários-no-controlador) |
 | **Motivo** | 🔵 Layout bancário é **contrato externo versionado** que muda por convênio e por banco, independentemente da regra de negócio. Tê-lo dentro do controlador de domínio significa que acrescentar um convênio mexe no núcleo financeiro |
 | **Impacto de migração** | Nenhum sobre dados |
 | **Validação** | 🔴 Reprocessar arquivos reais preservados (`amit_cnregistro`) produzindo os mesmos pagamentos |
@@ -657,7 +659,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 Um atendimento pode ficar **em espera** (aguardando terceiro/informação) e pode ser **reiterado** pelo solicitante — e ambos são sinais operacionais relevantes |
 | **Representação atual** | ⚠️ 🟢 **Espera** = um par único de datas no próprio RA (`tminicioespera`/`tmfimespera`) → **múltiplas esperas sobrescrevem a anterior**. **Reiteração** = contador + data da última → **perde o histórico individual** (quem, quando, por qual canal) |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.8](#198-ate-05--espera-e-reiteração-sem-histórico) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.8](#198--ate-05--espera-e-reiteração-sem-histórico) |
 | **Motivo** | 🔵 Perda de informação **por construção**, não por decisão: o modelo não consegue representar o que acontece na operação real. Sem motivo da espera nem histórico de reiterações, indicadores de atendimento ficam incompletos e reclamações regulatórias não são reconstituíveis |
 | **Impacto de migração** | Baixo — o que existe cabe no modelo novo como primeira ocorrência |
 | **Validação** | Todo RA migrado preserva a espera e a contagem atuais |
@@ -696,7 +698,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 Uma funcionalidade e uma operação precisam ser **identificáveis de forma estável** para que concessões durem |
 | **Representação atual** | ⚠️ 🟢 Resolvidas por **`CAMINHO_URL`** — o identificador efetivo da concessão é o caminho HTTP da Action Struts (`/exibirManterConta.do` etc.) |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.9](#199-seg-02--concessão-ancorada-na-url-da-action) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.9](#199--seg-02--concessão-ancorada-na-url-da-action) |
 | **Motivo** | 🔴 **Problema de migração antes de ser problema de arquitetura**: o OpenGSAN não terá URLs `.do`. Se a concessão é a URL, **todas as concessões de todas as instalações precisariam ser reconfiguradas manualmente** — inviável e propenso a erro de segurança |
 | **Impacto de migração** | 🔴 **Bloqueante** sem chave estável |
 | **Validação** | 🔴 Cada concessão legada mapeia para exatamente uma concessão no OpenGSAN, sem perda nem ganho de permissão |
@@ -707,7 +709,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🔴 **PRESERVAR OBRIGATORIAMENTE**: recorte territorial hierárquico (gerência regional → unidade de negócio → elo/polo → localidade) que limita sobre quais dados o usuário atua. Requisito real de companhias multirregionais |
 | **Representação atual** | ⚠️ 🟢 Estrutura adequada (`UsuarioAbrangencia` + eixos), **mas a aplicação é manual**: além do filtro, `verificarAcessoAbrangencia` / `existeLocalidadeForaDaAbrangenciaUsuario` são chamados explicitamente em Fachada, controladores e Actions — e no filtro só ocorre no ramo "operação", quando há contexto de abrangência |
-| **Classificação** | **Conceito: PRESERVAR · Aplicação: REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.10](#1910-seg-03--abrangência-aplicada-manualmente) |
+| **Classificação** | **Conceito: PRESERVAR · Aplicação: REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.10](#1910--seg-03--abrangência-aplicada-manualmente) |
 | **Motivo** | 🔴 Uma consulta nova que esqueça a checagem **vaza dados de outro território em silêncio** — e o sistema tem milhares de consultas. 🔵 Não é defeito de modelo, é defeito de **garantia**: o modelo está certo, a aplicação depende de disciplina humana. Herdar isso é herdar vazamento por omissão (LGPD) |
 | **Impacto de migração** | Baixo sobre dados |
 | **Validação** | 🔴 Cenário dirigido: usuário com abrangência restrita consultando dados fora dela em **cada** superfície de consulta |
@@ -751,8 +753,9 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | ❔ Aparentemente: "este usuário, neste grupo, **não** recebe esta concessão" |
 | **Representação atual** | 🟢 A tabela e o mapping existem (vinculando `GrupoFuncionalidadeOperacao` e `UsuarioGrupo`). ⚠️ 🟢 **O uso no cálculo de autorização não foi observado** — os métodos `verificarAcessoPermitido*` consultam concessões e grupos, sem consulta visível à restrição |
-| **Classificação** | **EXIGE APROFUNDAMENTO** · confiança **BAIXA** |
-| **Motivo** | 🔴 ⚠️ **Decisão de alta prioridade que não pode ser tomada agora.** Define se o modelo do OpenGSAN tem *deny* ou é allow-only — e isso muda o desenho da autorização inteira. Duas leituras possíveis: aplicada em outro ponto, ou estrutura pouco utilizada. **A existência da tabela não prova o uso** |
+| **Classificação** | 🆕 **PRESERVAR** · confiança **ALTA** (auditoria final, 2026-09-29). ~~EXIGE APROFUNDAMENTO · confiança BAIXA~~ |
+| 🆕 **Resolução** | 🟢 **O uso no cálculo foi rastreado**: `FiltroSegurancaAcesso:219/241` → `ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade` (`:2664`, decisão em `:3104`) e `verificarAcessoPermitidoOperacao` (`:3137`, decisão em `:3517`) contam as restrições do usuário sobre as concessões dos seus grupos — **acesso se restrições < concessões**. Semântica: *subtração de um caminho de concessão*, não *deny* global. A leitura anterior parou antes do trecho da consulta. Anomalia de composição em `:3072` registrada como CAND-05 ([`modulos/seguranca.md §10`](../modulos/seguranca.md)) |
+| **Motivo (original)** | 🔴 ⚠️ **Decisão de alta prioridade que não pode ser tomada agora.** Define se o modelo do OpenGSAN tem *deny* ou é allow-only — e isso muda o desenho da autorização inteira. Duas leituras possíveis: aplicada em outro ponto, ou estrutura pouco utilizada. **A existência da tabela não prova o uso** |
 | **O que falta** | 🔴 Rastreio dirigido do cálculo de autorização + verificação de dados reais (há restrições cadastradas?) |
 
 ---
@@ -787,7 +790,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 **Contexto**: os parâmetros da execução precisam ser persistidos para sustentar reinício e auditoria. 🟢 **Transporte**: o trabalho precisa ser agendado, distribuído e paralelizado |
 | **Representação atual** | ⚠️ 🟢 **Contexto**: a **tarefa inteira serializada em bytes** (`IoUtil.transformarObjetoParaBytes`) dentro de `FuncionalidadeIniciada`. ⚠️ **Transporte**: Quartz 1.5.2 + JMS + MDB (EJB 2.x), com `NotSupported` no MDB |
-| **Classificação** | Contexto: **REESTRUTURAR** ([§19.11](#1911-bat-03--contexto-de-execução-serializado-em-bytes)) · Transporte: **NÃO TRANSPORTAR** · confiança **ALTA** |
+| **Classificação** | Contexto: **REESTRUTURAR** ([§19.11](#1911--bat-03--contexto-de-execução-serializado-em-bytes)) · Transporte: **NÃO TRANSPORTAR** · confiança **ALTA** |
 | **Motivo** | 🔵 **Serialização Java de classes do legado amarra a migração**: o contexto só é legível por um processo que tenha exatamente aquelas classes no classpath. 🔵 O transporte **não é conceito de domínio** — EJB/MDB/JMS/Quartz antigo é infraestrutura; a capacidade (agendar, distribuir, paralelizar) permanece |
 | **Impacto de migração** | 🟡 Execuções em andamento não migram (aceitável — são transitórias) |
 | **Validação** | Contexto legível e reconstruível fora do runtime original |
@@ -840,7 +843,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 O sistema precisa falar com o mundo externo com **política comum**: autenticação da origem, identidade rastreável atravessando a fronteira, erro durável e observável, segredo fora do código, transporte cifrado |
 | **Representação atual** | ⚠️ 🟢 **Não existe camada**: sete padrões técnicos independentes, criados em momentos diferentes. O pacote `gcom.integracao` cobre **uma** integração; as demais vivem em Actions, servlets, utilitários e controladores de negócio |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.12](#1912-int-01--camada-de-integração-inexistente) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · detalhamento em [§19.12](#1912--int-01--camada-de-integração-inexistente) |
 | **Motivo** | 🔵 Não é "melhorar uma camada" — é **criar a que nunca existiu**. O espectro atual vai de OAuth2 com credencial em banco (`INT-03`) a chave de API em constante Java (`INT-04`), e essa desigualdade é consequência direta da ausência de política |
 | **Impacto de migração** | Nenhum sobre dados |
 | **Validação** | Toda integração do OpenGSAN autentica a origem e registra erro de forma durável |
@@ -862,7 +865,7 @@ Classificação **primária**, por área:
 |---|---|
 | **Semântica** | 🟢 Trocar ordens de serviço com um executante terceirizado: exportar OS a executar, receber de volta as executadas, encerrar no GSAN, notificar a empresa |
 | **Representação atual** | ⚠️ 🟢 **Segunda `SessionFactory`**: o GSAN **insere diretamente no banco do sistema parceiro**; idempotência por `ConstraintViolationException` engolida; identidade atravessa como **string de login**; falha de resolução → `continue` + `System.out`, **sem registro durável** |
-| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · governado por **D-12** · detalhamento em [§19.13](#1913-int-03--integração-por-banco-compartilhado) |
+| **Classificação** | **REESTRUTURAR** · confiança **ALTA** · governado por **D-12** · detalhamento em [§19.13](#1913--int-03--integração-por-banco-compartilhado) |
 | **Motivo** | 🔴 **Acoplamento máximo com observabilidade mínima**: o contrato é o schema alheio (muda sem aviso) e a OS fica presa no limbo sem que ninguém saiba. A capacidade é legítima; a forma é a pior possível |
 | **Impacto de migração** | Nenhum sobre dados do GSAN; exige renegociar o contrato com o parceiro |
 | **Validação** | Nenhuma OS perdida em silêncio; toda rejeição em fila consultável |
@@ -1178,12 +1181,14 @@ resolveria dois problemas simultâneos: (a) o OpenGSAN não fica preso às seque
 
 🔴 Seis bloqueios de evidência. ⚠️ Nenhum deve orientar implementação antes de ser resolvido.
 
-⚠️ **Nem todos são linhas `EXIGE APROFUNDAMENTO` na matriz**: cinco são (`CAD-11`, `COB-02`, `ATE-02`, `SEG-07`, `REL-02`); os outros dois são **pré-requisitos bloqueantes de decisões já classificadas** — o inventário das variantes por companhia bloqueia `FAT-07`/`MIC-06`, e as fórmulas de acréscimos bloqueiam a parte não decidida de `COB-07`.
+🆕 **Auditoria final (2026-09-29)**: o item 1 (`SEG-07`) foi **resolvido** por rastreio de código e o item 2 teve a parte "Fatura" **resolvida** — ver as linhas abaixo.
+
+⚠️ **Nem todos são linhas `EXIGE APROFUNDAMENTO` na matriz**: cinco eram (`CAD-11`, `COB-02`, `ATE-02`, `SEG-07`, `REL-02`) — quatro depois da resolução de `SEG-07`; os outros dois são **pré-requisitos bloqueantes de decisões já classificadas** — o inventário das variantes por companhia bloqueia `FAT-07`/`MIC-06`, e as fórmulas de acréscimos bloqueiam a parte não decidida de `COB-07`.
 
 | # | Item | Por que não dá para decidir | O que falta | Impacto se decidido errado |
 | - | ---- | --------------------------- | ----------- | -------------------------- |
-| 1 | **`UsuarioGrupoRestricao`** (`SEG-07`) | A tabela existe; **o uso no cálculo não foi observado** | 🔴 Rastreio dirigido + verificação de dados reais | Define se o modelo tem *deny*. Errar remove um controle de segurança sem perceber |
-| 2 | **"Fatura"** e a **obrigação financeira** (`COB-02`) | Semântica de `faturamento.fatura` nunca esclarecida; sem ela não se sabe se os 5 alvos têm ciclo comum | Análise dirigida da entidade Fatura e de seus consumidores | Desenhar a abstração errada contamina Cobrança, Arrecadação e Parcelamento |
+| 1 | ~~**`UsuarioGrupoRestricao`** (`SEG-07`)~~ ✅ **Resolvido em 2026-09-29** — uso no cálculo comprovado (`ControladorAcessoSEJB:3104`, `:3517`) | A tabela existe; **o uso no cálculo não foi observado** | 🔴 Rastreio dirigido + verificação de dados reais | Define se o modelo tem *deny*. Errar remove um controle de segurança sem perceber |
+| 2 | **"Fatura"** e a **obrigação financeira** (`COB-02`) — 🆕 **"Fatura" resolvida em 2026-09-29**: documento **agregador** de cobrança do cliente responsável, cujo pagamento se desdobra em um pagamento por conta (`ControladorArrecadacao:7217–7440`); a obrigação financeira comum **continua** em aprofundamento | Semântica de `faturamento.fatura` nunca esclarecida; sem ela não se sabe se os 5 alvos têm ciclo comum | Análise dirigida da entidade Fatura e de seus consumidores | Desenhar a abstração errada contamina Cobrança, Arrecadação e Parcelamento |
 | 3 | **Cardinalidade física RA↔OS e RA↔Imóvel** (`ATE-02`) | 🟢 DDL permite nulo, mapping não. Não se sabe se há registros nulos nem por qual caminho | 🔴 Verificação em dados reais | Tornar obrigatório o que é opcional quebra ocorrências de rede e OS de cobrança |
 | 4 | **Diferenças entre variantes por companhia** (`MIC-06`, `FAT-07`) | 7 companhias × 4 módulos, **nunca inventariadas** | Inventário das diferenças reais | Ponto de extensão que não cobre os casos reais; regressão financeira por companhia |
 | 5 | **Fórmulas de acréscimos** (`COB-07`) | Atravessam três módulos, em código, **nunca caracterizadas** | Caracterização numérica de juros/multa/atualização | Divergência financeira em toda dívida vencida |
@@ -1271,7 +1276,7 @@ resolveria dois problemas simultâneos: (a) o OpenGSAN não fica preso às seque
 | SEG-04 | Segurança | Permissões especiais; ciclo do usuário | **PRESERVAR** | ALTA | — |
 | SEG-05 | Segurança | Auditoria em dois níveis | **PRESERVAR / MODERNIZAR** | ALTA | — |
 | SEG-06 | Segurança | Mecanismos de autenticação e sessão | **NÃO TRANSPORTAR** | ALTA | D-01, D-02, D-06, D-07 |
-| SEG-07 | Segurança | `UsuarioGrupoRestricao` (deny) | **APROFUNDAMENTO** | BAIXA | — |
+| SEG-07 | Segurança | `UsuarioGrupoRestricao` (restrição por usuário) 🆕 | **PRESERVAR** | ALTA | — |
 | BAT-01 | Batch | Definição × execução em três níveis | **PRESERVAR** | ALTA | — |
 | BAT-02 | Batch | Retomada por unidade; autorização | **PRESERVAR** | ALTA | — |
 | BAT-03 | Batch | Serialização Java / Quartz-JMS-MDB | **REESTRUTURAR / NÃO TRANSPORTAR** | ALTA | — |
@@ -1283,9 +1288,9 @@ resolveria dois problemas simultâneos: (a) o OpenGSAN não fica preso às seque
 | INT-03 | Integrações | Banco compartilhado (UPA/SAM) | **REESTRUTURAR** | ALTA | D-12 |
 | INT-04 | Integrações | `GsanApi` / `ServicoSMS` | **PRESERVAR / NÃO TRANSPORTAR** | ALTA | D-08, D-09, D-13 |
 
-**Totais — 64 decisões.** Por classificação **primária** (a primeira listada em cada linha): **37 PRESERVAR · 14 REESTRUTURAR · 6 MODERNIZAR · 5 EXIGE APROFUNDAMENTO · 2 NÃO TRANSPORTAR**.
+**Totais — 64 decisões.** Por classificação **primária** (a primeira listada em cada linha): **38 PRESERVAR · 14 REESTRUTURAR · 6 MODERNIZAR · 4 EXIGE APROFUNDAMENTO · 2 NÃO TRANSPORTAR** (🆕 recontado em 2026-09-29 — `SEG-07`).
 
-⚠️ **12 linhas têm classificação dupla** — `COB-06`, `COB-07`, `ARR-03`, `ATE-06`, `SEG-03`, `SEG-05`, `BAT-03`, `REL-01`, `REL-02`, `REL-03`, `INT-02`, `INT-04`. Contando também a secundária, as decisões que **tocam** cada categoria: PRESERVAR 37 · REESTRUTURAR 15 · MODERNIZAR 11 · NÃO TRANSPORTAR 7 · EXIGE APROFUNDAMENTO 6.
+⚠️ **12 linhas têm classificação dupla** — `COB-06`, `COB-07`, `ARR-03`, `ATE-06`, `SEG-03`, `SEG-05`, `BAT-03`, `REL-01`, `REL-02`, `REL-03`, `INT-02`, `INT-04`. Contando também a secundária, as decisões que **tocam** cada categoria: PRESERVAR 38 · REESTRUTURAR 15 · MODERNIZAR 11 · NÃO TRANSPORTAR 7 · EXIGE APROFUNDAMENTO 5.
 
 Além da matriz: **6 famílias** não transportadas (§18) e **16 famílias paramétricas** (§15).
 

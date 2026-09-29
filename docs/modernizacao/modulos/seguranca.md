@@ -147,7 +147,15 @@ FiltroSegurancaAcesso
 
 🟢 `UsuarioGrupoRestricao` existe e seu mapping vincula-se a **`GrupoFuncionalidadeOperacao`** e a **`UsuarioGrupo`** (ambas as associações com `update="false" insert="false"` sobre a coluna `grup_id`) — 🔵 ou seja, a restrição é modelada **no cruzamento entre um vínculo usuário-grupo e uma concessão específica do grupo**, o que sugere semântica de **"este usuário, neste grupo, não recebe esta concessão"**.
 
-❔ **Não comprovei que a restrição participe do cálculo de autorização do filtro**: os métodos `verificarAcessoPermitido*` que li consultam `GrupoFuncionalidadeOperacao` e os grupos do usuário, sem consulta visível a `UsuarioGrupoRestricao`. Isso é uma **lacuna importante** — a existência da tabela não prova o uso (regra do §35 do roteiro). Classificação: **DÚVIDA ABERTA** de alta prioridade, com duas leituras possíveis: (a) a restrição é aplicada em outro ponto (montagem da coleção de grupos/consulta específica), (b) é estrutura pouco utilizada. Precisa de rastreio dirigido antes de qualquer decisão no OpenGSAN.
+🆕 **Resolvido na auditoria final (2026-09-29) — a restrição participa, sim, do cálculo.** ⚠️ A versão anterior deste parágrafo dizia não ter visto consulta a `UsuarioGrupoRestricao` nos métodos `verificarAcessoPermitido*`: a leitura parou antes do trecho que a faz. Evidência:
+
+- `FiltroSegurancaAcesso:219` chama `verificarAcessoPermitidoFuncionalidade` e `:241` chama `verificarAcessoPermitidoOperacao` (a tag de botão `ControleAcessoBotaoTag:102` também usa a segunda);
+- `ControladorAcessoSEJB:2664` — o próprio javadoc declara a regra: *"verifica se o(s) grupo(s) que o usuário pertence tem acesso a funcionalidade e se todas as operações desta funcionalidade não estão com restrições (existe ocorrência na tabela UsuarioGrupoRestricao)"*;
+- a decisão é uma **contagem**: concessões `GrupoFuncionalidadeOperacao` dos grupos do usuário × restrições `UsuarioGrupoRestricao` do usuário sobre esses mesmos grupos e operações — **acesso se restrições < concessões** (`:3104` para funcionalidade, `:3517` para operação).
+
+🔵 **Semântica**: a restrição **subtrai um caminho de concessão** — *"este usuário, por este grupo, não recebe esta operação"*. Não é *deny* global com precedência absoluta: se outro grupo do usuário concede a mesma operação sem restrição, o acesso permanece. O modelo real é **união dos grupos menos as restrições do usuário**.
+
+⚠️ **Anomalia a caracterizar** (CAND-05): ao montar o filtro das restrições por funcionalidade, o laço sobre as **concessões** usa `colecaoGruposUsuario.size()` como marcador do último termo do `OR` (`:3072`), onde se esperaria o total de concessões. Quando os dois números diferem, o agrupamento da consulta pode sair diferente do pretendido — resultado exato **a capturar** em CEN-SEG-004 V7.
 
 ## 11. Permissões especiais
 
@@ -173,19 +181,20 @@ requisição *.do
   ├─ 2. FUNCIONALIDADE: URL → Funcionalidade (+ funcionalidades principais via dependência)
   ├─ 3. OPERAÇÃO:      URL → Operacao (e sua funcionalidade dona)
   ├─ 4. CONCESSÃO:     existe GrupoFuncionalidadeOperacao para (func ∈ lista) × operação × (algum grupo do usuário)?
-  │                    → UNIÃO dos grupos; basta um conceder; não há deny explícito nesse caminho
+  │                    → UNIÃO dos grupos MENOS as restrições do usuário (UsuarioGrupoRestricao):
+  │                      acesso se restrições < concessões (§10 — corrigido em 2026-09-29)
   ├─ 5. ABRANGÊNCIA:   verificarAcessoAbrangencia(abrangencia) compara os níveis informados com os do usuário
   └─ 6. se tudo passar → Action executa
          └─ dentro da Action: PERMISSÕES ESPECIAIS nomeadas habilitam exceções pontuais
 ```
 
 ❔ **Não confirmado** (registrado como lacuna, sem inventar fórmula):
-1. **Restrições** (`UsuarioGrupoRestricao`) — não observadas no caminho de decisão (§10). Sem isso, não é possível afirmar se existe *deny* efetivo nem sua precedência.
+1. ~~**Restrições** (`UsuarioGrupoRestricao`) — não observadas no caminho de decisão~~ ✅ **Observadas (2026-09-29)**: participam por contagem (§10); a precedência é de subtração por grupo, não *deny* global.
 2. Se permissão especial pode **vencer abrangência**.
 3. Se a abrangência é sempre aplicada **antes** da função (no filtro ela vem depois das checagens funcionais, mas cada consulta pode reaplicá-la — §13).
 4. Interação entre permissão especial por grupo × por usuário.
 
-🔵 O que se pode afirmar com segurança: o modelo é **allow-list por união de grupos, ancorado em URL, com abrangência como segundo filtro e permissões especiais como exceções nomeadas dentro da funcionalidade**.
+🔵 O que se pode afirmar com segurança: o modelo é **allow-list por união de grupos, menos as restrições por usuário, ancorado em URL, com abrangência como segundo filtro e permissões especiais como exceções nomeadas dentro da funcionalidade** (restrições incorporadas em 2026-09-29).
 
 ## 13. Abrangência
 
@@ -264,7 +273,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 
 1. 🟢 **Existe um gate transversal de autorização para rotas web** (`FiltroSegurancaAcesso`, `*.do`): para rotas protegidas e não excepcionadas, o controle não depende do menu e a URL direta passa por ele. ⚠️ O gate **não é universal** — há lista de exceções no próprio filtro, controles internos nas Actions e superfícies fora de `*.do`.
 2. 🟢 **Funcionalidade e Operação são identificadas pela URL** e a concessão é o trio **grupo × funcionalidade × operação**.
-3. 🟢 **União dos grupos**: basta um grupo conceder; não há *deny* no caminho de decisão observado.
+3. 🟢 **União dos grupos, menos as restrições do usuário**: basta um grupo conceder **sem restrição** — 🆕 corrigido em 2026-09-29 (§10); a versão anterior dizia não haver *deny* no caminho observado.
 4. 🟢 **Dependência entre funcionalidades participa** do cálculo (funcionalidade principal habilita dependentes).
 5. 🟢 **Permissões especiais são capacidades nomeadas verificadas dentro da funcionalidade**, para exceções — não substituem a concessão comum.
 6. 🟢 **Abrangência é um segundo eixo, territorial e hierárquico** (gerência regional, unidade de negócio, elo/polo, localidade).
@@ -297,7 +306,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 | Hash SHA-1 sem salt e comparação por consulta | **NÃO TRANSPORTAR** (a implementação) | A **semântica** (validar credencial, histórico, blacklist, bloqueio) é preservada; o mecanismo é substituído, com migração progressiva do hash legado |
 | Contagem de tentativas em sessão | REESTRUTURAR | Controle por sessão é contornável; deve ser persistente/por identidade |
 | Token MD5 efêmero para servlets auxiliares; pseudo-autenticação de APIs | **NÃO TRANSPORTAR** | Substituir por credenciais de sistema com escopo |
-| `UsuarioGrupoRestricao` (deny) | EXIGE APROFUNDAMENTO | Estrutura existe; **uso no cálculo não comprovado** — decidir só depois de rastrear |
+| `UsuarioGrupoRestricao` (restrição por usuário) | 🆕 **PRESERVAR** (2026-09-29) | Uso no cálculo **comprovado** (§10): subtrai concessões do grupo para um usuário. Preservar a semântica; a anomalia de `:3072` é caracterizada antes (CAND-05) |
 | `CasoDeUso`/`CasoDeUsoTipo`, `FuncionalidadeCaracteristica` | EXIGE APROFUNDAMENTO | Não apareceram no caminho de decisão; papel atual indefinido |
 | Escopo/validade de tokens de API | EXIGE APROFUNDAMENTO | Necessário para desenhar clientes de sistema |
 
@@ -333,7 +342,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 16. Consulta que **não** aplica a verificação de abrangência (verificar se há vazamento — cenário de risco estrutural, §13).
 17. Ação com permissão especial concedida × não concedida: instalação de hidrômetro sem RA; ligação de esgoto sem RA; replicar valor de cobrança de serviço; encerrar comando de cobrança por empresa.
 18. Usuário de unidade diferente tentando tramitar/encerrar RA (verificar se há bloqueio — §14/§16).
-19. Restrição (`UsuarioGrupoRestricao`) configurada: verificar se afeta a autorização efetiva (§10).
+19. Restrição (`UsuarioGrupoRestricao`) configurada: 🆕 afeta, por contagem (§10) — cenário CEN-SEG-004 V7.
 20. Operação sensível gerando `OperacaoEfetuada` (correlação usuário × operação × objeto).
 21. Alteração de campo anotado gerando trilha por linha/coluna; e alteração de campo **não** anotado (ausência de trilha).
 22. Execução batch registrando `Usuario.USUARIO_BATCH` como autor.
@@ -342,7 +351,7 @@ Usando os módulos já mapeados apenas como amostra, o mesmo padrão se repete: 
 
 ## 28. Dúvidas abertas
 
-1. ❔ **`UsuarioGrupoRestricao` participa do cálculo de autorização?** (alta prioridade — define se existe *deny* efetivo).
+1. ~~❔ **`UsuarioGrupoRestricao` participa do cálculo de autorização?**~~ ✅ **Sim** — resolvida na auditoria final (2026-09-29), §10.
 2. ❔ Precedência entre permissão especial e abrangência.
 3. ❔ Se a unidade organizacional restringe tramitação/encerramento (fronteira do Atendimento parcialmente aberta).
 4. ❔ Papel atual de `CasoDeUso`/`CasoDeUsoTipo` e de `FuncionalidadeCaracteristica`.

@@ -296,3 +296,25 @@
 - **Evidência**: [`modulos/micromedicao.md`](../../modulos/micromedicao.md) §15 dúvida 2; [D-15](../../compatibilidade/divergencias-aprovadas.md) — cenário **derivado** da divergência
 
 ⚠️ **Consequência para o registro**: esta leitura de D-15 — *divergência de configurabilidade, com o valor padrão preservado* — é a única compatível com a regra de que nenhuma divergência atinge cálculo financeiro. Deve ser confirmada na aprovação de D-15.
+
+---
+
+## CEN-FAT-012 — Tarifa Social: concessão automática, desconto e perda de elegibilidade
+
+- **Criticidade**: P0
+- **Etapa OpenGSAN**: 4 — Financeiro individual
+- **Conceitos relacionados**: benefício tarifário (requisito nativo) · estrutura tarifária versionada (C1)
+- **Objetivo**: verificar que a Tarifa Social nacional é concedida **automaticamente** a partir das bases oficiais, aplicada pela **regra vigente** e retirada conforme o regulamento, com comunicação e histórico
+- **Pré-condições**: IMV-19; regra da Tarifa Social parametrizada com **vigência, contexto institucional e origem normativa**; retorno de base oficial de elegibilidade simulado (CadÚnico/BPC)
+- **Entrada**: V1 — unidade usuária passa a constar como elegível → faturamento da referência seguinte; V2 — consumo **abaixo** do limite de volume; V3 — consumo **acima** do limite; V4 — unidade deixa de constar como elegível; V5 — regulador local amplia o benefício (nova vigência do parâmetro)
+- **Operação GSAN**: não aplicável — a tarifa social do GSAN é **extensão de companhia** (programas, campos sociais), não a regra nacional; não é oráculo
+- **Operação conceitual OpenGSAN**: conceder benefício tarifário por elegibilidade oficial; aplicar no cálculo; revisar
+- **Observações semânticas**: concessão sem requerimento · vigência do benefício · valor da conta com e sem benefício · parcela beneficiada × não beneficiada do consumo · origem normativa aplicada · evento de negócio de concessão e de perda · histórico · dado pessoal exposto apenas ao necessário
+- **Localizadores GSAN**: não aplicável
+- **Resultado semântico esperado**: V1 — benefício concedido **sem requerimento** e aplicado a partir da vigência. V2 e V3 — desconto conforme a regra vigente (Lei 14.898/2024: redução na tarifa para a parcela de consumo até o limite de volume), **ao centavo** e com a política de arredondamento nomeada. V4 — perda conforme o regulamento; ⚠️ período de permanência ou transição e prazos de comunicação: `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` (regra do regulador). V5 — nova vigência aplicada **sem código novo**. Em todas: evento de negócio emitido; o canal de comunicação é da Notificação
+- **Baseline concreta do legado**: ➖ NÃO APLICÁVEL — requisito nativo
+- **Normalizações**: identificadores externos da base oficial (pseudonimizados na massa)
+- **Divergência permitida**: não aplicável
+- **Oráculo**: **N** — requisito nativo; esperado derivado da Lei 14.898/2024, da NR ANA 13/2025 e do regulamento local parametrizado
+- **Gate que este cenário protege**: 4 → 5 — *Tarifa Social aplicada pela regra vigente, com origem normativa*
+- **Evidência**: [`modulos/funcionalidades-futuras.md`](../../modulos/funcionalidades-futuras.md) §11.4; [`auditoria/completude-funcional-regulatoria.md`](../../auditoria/completude-funcional-regulatoria.md) §4

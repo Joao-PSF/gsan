@@ -232,3 +232,13 @@ Rotas em uso:  Relatorio2ViaConta* (rotaEntrega); ExibirDadosAnaliseExcecoesLeit
 Estados:       LigacaoAguaSituacao/LigacaoEsgotoSituacao/ImovelSituacaoTipo/FaturamentoSituacaoTipo (constantes)
 Dependências:  123 FKs REFERENCES cadastro.imovel no DDL
 ```
+
+
+---
+
+## 🆕 Adendo da auditoria final da Fase 0 (2026-09-29)
+
+| Tema | O que muda para o Cadastro |
+| ---- | -------------------------- |
+| **Tarifa Social nacional** (Lei 14.898/2024; NR ANA 13/2025) | O Cadastro é dono da **elegibilidade e do vínculo** do benefício com a unidade usuária — concessão **automática** a partir de bases oficiais (CadÚnico/BPC, por integração), com vigência, revisão, perda e histórico. Os campos sociais desta instalação (§8) continuam **extensão de companhia**; o benefício nacional é **requisito nativo** (CEN-FAT-012). Dados de CadÚnico/BPC: minimização e finalidade específica ([completude §7](../auditoria/completude-funcional-regulatoria.md#7-privacidade-por-fluxo-sensível)) |
+| **Contexto institucional** | A **área de prestação** é recorte do território — dona natural, o Cadastro ([visão §27.3](../dominio/visao-conceitual-opengsan.md)) |

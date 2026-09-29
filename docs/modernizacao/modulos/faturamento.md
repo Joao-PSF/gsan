@@ -323,3 +323,19 @@ Precisão:      Util.arredondar:653 (setScale(0,HALF_UP)); no FINAL: HALF_UP 27,
 Companhia:     ControladorFaturamento{CAEMA,CAERN,CAER,COMPESA,COSAMA,COSANPA,JUAZEIRO}SEJB; calcularValorFaturadoFaixaCAER:5723; validator-compesa.xml
 Débitos/impostos: DebitoCobrado/CreditoRealizado.hbm; conta_impostos_deduzidos(+historico); grandes consumidores: identificarGrandesConsumidores:59186
 ```
+
+
+---
+
+## 🆕 Adendo da auditoria final da Fase 0 (2026-09-29)
+
+⚠️ Sem reanálise do mapa — apenas as fronteiras que a varredura regulatória mostrou faltar. Detalhe em [`auditoria/completude-funcional-regulatoria.md`](../auditoria/completude-funcional-regulatoria.md).
+
+| Tema | O que muda para o Faturamento |
+| ---- | ----------------------------- |
+| **NFAg** | 🔴 **Conta ≠ documento fiscal.** O Faturamento continua dono do cálculo, do consumo faturado, da tarifa, dos valores e da linhagem; **publica o fato tributável** e **consulta** a determinação tributária vigente para compor o documento — nunca codifica regra fiscal ([`fiscal.md`](fiscal.md) §3–§4). Retificação e cancelamento publicam o fato; a ação fiscal é do Fiscal (§7.1) |
+| **Devolução personalizada (cashback) de IBS/CBS** | Linha de devolução **apresentada** na conta; a regra é do Fiscal — `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` |
+| **Tarifa Social nacional** (Lei 14.898/2024) | A **aplicação** do benefício é do Faturamento, como regra versionada com vigência e **origem normativa** (parâmetro regulado); a elegibilidade e o vínculo são do Cadastro — CEN-FAT-012 |
+| **Fatura do cliente responsável** | ✅ Semântica resolvida: documento **agregador** de contas; a obrigação continua em cada conta — CEN-ARR-011 |
+| **Cobrança conjunta de outros serviços** (NR ANA 13/2025) | Itens de terceiros na conta já têm forma (débito a cobrar parametrizado); o reflexo fiscal é o **faturamento conjunto** da NFAg (Fiscal) |
+| **Qualidade da água na conta** (Decreto 5.440/2005) | Já coberta — dado da Gestão Operacional projetado na emissão (CEN-OPE-003); o DANFAG também a exibe |

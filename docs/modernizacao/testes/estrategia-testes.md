@@ -19,7 +19,17 @@ A equivalência é avaliada por **dois critérios independentes**, e todo compor
 | **1. Funcional / financeiro** | O OpenGSAN produz o mesmo resultado de negócio? | `RESULTADO A = RESULTADO B`. Valores financeiros: **exato ao centavo** | **Defeito.** Investigar e corrigir o OpenGSAN |
 | **2. Técnico / de segurança** | O OpenGSAN se comporta melhor onde o legado está errado? | O OpenGSAN **deve divergir** nos pontos registrados | **Conformidade.** Uma igualdade aqui é que seria o defeito |
 
-**Nada fica fora dos dois.** Um comportamento não classificado é uma pendência de análise, não um caso "neutro".
+**Nada fica fora dos dois** — para comportamento que **existe no GSAN**. Um comportamento não classificado é uma pendência de análise, não um caso "neutro".
+
+### 🆕 Requisito nativo — oráculo N (auditoria final, 2026-09-29)
+
+Há requisitos que o OpenGSAN **deve** cumprir e que o GSAN público **não tem**: documento fiscal eletrônico (NFAg), Tarifa Social nacional com concessão automática, Pix Cobrança e Pix Automático. Para eles **não existe resultado A** — usar o oráculo 1 fabricaria uma equivalência; usar o 2 inventaria uma divergência.
+
+| Oráculo | Pergunta | Critério | O que uma diferença significa |
+| ------- | -------- | -------- | ----------------------------- |
+| **N. Requisito nativo** | O OpenGSAN cumpre a obrigação ou a decisão registrada? | Resultado esperado derivado da **norma, do leiaute oficial ou da decisão registrada** — **nunca** do legado | **Defeito** do OpenGSAN |
+
+⚠️ **Regras**: baseline do legado `➖ NÃO APLICÁVEL`; onde a norma ainda não foi confirmada, o cenário registra `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` e **não fecha** até a resposta; e o requisito nativo **não entra** na matriz de compatibilidade GSAN → OpenGSAN, para não distorcê-la ([`gsan-opengsan.md §5.2`](../compatibilidade/gsan-opengsan.md)). Quando o requisito nativo passa por um comportamento que o GSAN tem — a classificação de um recebimento Pix, por exemplo —, **essa parte** continua sob o oráculo 1 no cenário que já a cobre.
 
 ### Registro de divergências aprovadas
 
@@ -69,11 +79,11 @@ Um cenário está **ESPECIFICADO NA FASE 0** quando estão fechados: **o que exe
 - **Observações semânticas**: lista FECHADA do que é comparado
 - **Localizadores GSAN**: tabela.coluna / saída / arquivo, quando conhecidos
 - **Resultado semântico esperado**: regra ou invariante comprovado — testável
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 | 🟢 JÁ COMPROVADA
+- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 | 🟢 JÁ COMPROVADA | ➖ NÃO APLICÁVEL (requisito nativo)
 - **Normalizações**: o que se ignora — nunca dinheiro, referência, situação,
                      identidade funcional, ordem com semântica ou arredondamento
 - **Divergência permitida**: D-xx | nenhuma
-- **Oráculo**: 1 | 2 | 1+2 (por observável) | PENDENTE DE CARACTERIZAÇÃO
+- **Oráculo**: 1 | 2 | 1+2 (por observável) | N (requisito nativo) | PENDENTE DE CARACTERIZAÇÃO
 - **Gate que este cenário protege**: transição de etapa
 - **Evidência**: documentos e código que sustentam a especificação
 ```

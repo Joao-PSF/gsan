@@ -278,7 +278,9 @@ Onde houver sessão com cookie em navegador:
 - proteção contra fixação de sessão, expiração e invalidação no logout;
 - política de conteúdo estrita.
 
-⚠️ Não se escolheu arquitetura para **evitar** CSRF: ele é **tratado**. Estes controles são **novos no OpenGSAN** — o legado não os tem (achado 6) — e entram como **requisito da fundação (S1)**, não como cenário de equivalência.
+⚠️ Não se escolheu arquitetura para **evitar** CSRF: ele é **tratado**. Estes controles são **novos no OpenGSAN** — o legado não os tem (achado 6) — e entram como **requisito da fundação (S1)**.
+
+🆕 **Correção da auditoria final (2026-09-29)**: a versão aceita dizia que estes controles não tinham antecedente e por isso não eram cenário de equivalência. ⚠️ *Não ter a proteção* é **comportamento observável** do legado — ele tem sessão e cookie, sem `HttpOnly`/`Secure`/`SameSite` e sem token de formulário —, e o OpenGSAN diverge dele deliberadamente. A diferença foi registrada como **[D-18](../compatibilidade/divergencias-aprovadas.md)** e ganhou cenário próprio pelo oráculo 2 (CEN-SEG-012). A decisão desta ADR não muda.
 
 ---
 
@@ -374,7 +376,7 @@ Infraestrutura exigida: Spring MVC + motor de templates + biblioteca de atualiza
 
 - **CEN-SEG-004** já compara pela **funcionalidade**, não pelo caminho.
 - **CEN-REL-001** já exige negar V2 e V3; a decisão fixa **como** — caso de uso de obtenção do artefato.
-- **Sessão, cookie e CSRF** são controles **sem antecedente** no GSAN: testes próprios da fundação (S1), não equivalência — e o achado 6 não tem `D-xx` registrado (pendência da auditoria).
+- **Sessão, cookie e CSRF**: ~~controles sem antecedente no GSAN, sem `D-xx`~~ — 🆕 **corrigido na auditoria final (2026-09-29)**: a ausência da proteção é observável no legado; registrada como **D-18**, com cenário CEN-SEG-012 (oráculo 2), além dos testes próprios da fundação (S1).
 
 ---
 

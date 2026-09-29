@@ -161,11 +161,14 @@ Tipos: **DURA** (B não funciona sem A) · **PARCIAL** (só parte de B depende) 
 | 19 | Integrações (camada) | Módulo dono do efeito | **OPERACIONAL** | 🔴 Integração traduz e entrega; **não é dona do domínio** | Convenção antes; adapter com o dono |
 | 20 | Canal digital | Cadastro · Faturamento · Cobrança · Atendimento | **DURA** | 🔵 É **camada consumidora**, não dona de domínio | **Sim, os quatro** |
 | 21 | Canal digital | Identidade do cliente final | **DURA** | 🔴 Modelo **distinto** do usuário interno | **Sim** |
-| 22 | PIX | Documento · Recebimento · Conciliação · Contrato com PSP | **FUTURA/DURA** | Urgência não altera dependência | **Sim** |
+| 22 | PIX | Documento · Recebimento · Conciliação · Contrato com PSP | **FUTURA/DURA** | Urgência não altera dependência. 🆕 **Não depende do Portal** — o canal só apresenta e aciona (2026-09-29) | **Sim** |
 | 23 | Boleto registrado | Documento · Recebimento · Contrato bancário | **FUTURA/DURA** | Idem | **Sim** |
 | 24 | Notificação | Evento de negócio + contrato de canal | **TRANSVERSAL/FUTURA** | Nasce no primeiro evento real a notificar | Não |
-| 25 | SPED | Documento fiscal | **FUTURA/DURA** | 🟢 Cadeia confirmada: SPED → fiscal → documento comercial | **Sim** |
+| 25 | SPED | Documento fiscal | **FUTURA/DURA** | 🟢 Cadeia confirmada: SPED → fiscal → documento comercial. 🆕 **Fora do OpenGSAN** (2026-09-29): obrigação da pessoa jurídica, dados ao ERP por adaptador | **Sim** |
 | 26 | Analytics | Todos | **CONSULTA** | 🔵 Consome, não produz | **Não bloqueia** — ver §20 |
+| 🆕 27 | **Fiscal (NFAg)** | Conta emitida (fato tributável) · determinação tributária · adapter do ambiente autorizador | **DURA** | 🔴 Obrigação vigente; **Conta ≠ NFAg** — o Faturamento publica o fato, o Fiscal emite ([`fiscal.md`](fiscal.md)) | **Sim** — individual na Etapa 4, lote e contingência na 7 |
+| 🆕 28 | **Tarifa Social — concessão automática** | Cadastro (vínculo) · Faturamento (aplicação) · bases oficiais CadÚnico/BPC | **DURA** | 🔴 Lei 14.898/2024: concessão **sem requerimento**, a partir das bases oficiais | **Sim** — antes da operação |
+| 🆕 29 | **Prestação de informações regulatórias** (SINISA, SISAGUA, regulador) | Dados primários dos donos | **CONSULTA** | Consome e consolida; submissão por adapter | Não bloqueia — antes do primeiro ciclo anual |
 
 ### 5.1 Onde a matriz contraria a intuição
 
@@ -192,9 +195,13 @@ Cadastro mínimo
              │
              ├──► Arrecadação (classificação/aplicação)
              │              │
-             └──► Cobrança ◄┘ (validação)
-                      │
-                      └──► Canal digital ──► PIX / boleto registrado
+             ├──► Cobrança ◄┘ (validação)
+             │        │
+             │        └──► Canal digital (apresenta e aciona Pix/boleto — não é dono deles)
+             │
+             └──► 🆕 Fiscal (NFAg) ──► Contabilização
+                      ↑ fato tributável
+Arrecadação ◄── 🆕 meios de pagamento: boleto registrado · Pix Cobrança · Pix Automático · débito automático
 ```
 
 🔴 **A cadeia financeira é a espinha da ordem** e tem direção única: **documento → recebimento → dívida**. Ela não admite inversão, porque cada elo cria o objeto que o próximo consome.
@@ -534,7 +541,11 @@ Separação pedida, resolvida por dependência:
 | Execução móvel de OS · evidência de campo | Atendimento/OS + camada | 3 |
 | Arquivo bancário / arrecadador | Arrecadação | 5 |
 | Bureau de crédito · cobrança terceirizada | Cobrança | 6 |
-| PSP / PIX · boleto registrado | Arrecadação + Faturamento maduros | 8 |
+| PSP / PIX · boleto registrado | Arrecadação (Pagamentos) — 🆕 reposicionado (2026-09-29) | **5** |
+| 🆕 Pix Automático (via PSP) | Arrecadação (Pagamentos), com o débito automático | 6 |
+| 🆕 Ambiente autorizador da NFAg (SVRS) | **Fiscal** | 4 (homologação) · 7 (lote, contingência) |
+| 🆕 Bases oficiais de elegibilidade (CadÚnico/BPC) | Cadastro | 4 — operante antes do gate 7 → operação |
+| 🆕 SINISA · SISAGUA · regulador local | Donos dos dados + Analytics | Após a operação, antes do primeiro ciclo anual |
 | Notificação (e-mail/SMS) | Primeiro evento real a notificar | 6 |
 | GIS · telemetria · analytics | Posterior | 8+ |
 | 🆕 Exportação contábil ao ERP | Contabilização | 7 |
@@ -587,17 +598,18 @@ Dois modelos que **não devem ser misturados**:
 
 ## 20. Funcionalidades futuras H1
 
-As nove capacidades H1 do catálogo. 🔴 **H1 não significa "no primeiro release"** — significa "próxima do núcleo".
+As 🆕 **dez** capacidades H1 do catálogo (eram nove; o documento fiscal entrou em 2026-09-29). 🔴 **H1 não significa "no primeiro release"** — significa "próxima do núcleo".
 
 | Capacidade | Fundacional? | Depende de módulo inexistente? | Posição | Motivo |
 | ---------- | ------------ | ------------------------------ | ------- | ------ |
 | **APIs para terceiros e dispositivos** | 🔵 **Parcialmente** | Não — as convenções, sim | **Etapa 0** (convenção) / 3 (camada) | As capacidades já têm consumidores não navegador |
 | **Coleta móvel de leitura** | Não | Micromedição | **Etapa 3** | É a operação real de campo |
 | **Execução móvel de OS** | Não | Atendimento/OS | **Etapa 3** | Idem |
-| **Benefício social tarifário** | 🔴 **Quase** | Cadastro + Faturamento | **Etapa 4** | 🔴 **Afeta o cálculo da conta** — acoplar depois é mais caro |
+| **Benefício social tarifário** | 🔴 **Quase** | Cadastro + Faturamento | **Etapa 4** | 🔴 **Afeta o cálculo da conta** — acoplar depois é mais caro. 🆕 Obrigação nacional com **concessão automática** (§20.2) |
+| 🆕 **Documento fiscal (NFAg)** | 🔴 **Sim** — obrigação | Fiscal | **Etapa 4** (individual) · **7** (lote, contingência, eventos) | 🔴 Acompanha toda conta emitida (§20.3) |
 | **Notificação ao cliente** | Não | Evento a notificar | **Etapa 6** | Nasce no primeiro evento real |
-| **Cobrança bancária registrada** | Não | Faturamento + Arrecadação | **Etapa 8** | Exige documento e baixa maduros |
-| **Pagamento instantâneo (PIX)** | Não | Faturamento + Arrecadação + PSP | **Etapa 8** | Ver §20.1 |
+| **Cobrança bancária registrada** | Não | Faturamento + Arrecadação | 🆕 **Etapa 5** (era 8) | Meio de recebimento: nasce com a recepção e a classificação |
+| **Pagamento instantâneo (PIX)** | Não | Faturamento + Arrecadação + PSP | 🆕 **Etapa 5** (era 8) — Pix Automático na 6 | Ver §20.1 |
 | **Portal de autoatendimento** | Não | Quatro domínios + identidade | **Etapa 8** | §19 |
 | **Identidade do cliente final** | 🔵 **Restringe** a fundação | Não | **Etapa 8** (capacidade) / 0 (restrição) | §19.3 |
 
@@ -607,17 +619,25 @@ PIX é a capacidade mais urgente do catálogo e a menos pronta. Mas depende de d
 
 ⚠️ O que a ordem faz por ele desde já: a **recepção** (Etapa 5) e a **conciliação** nascem genéricas, sem assumir arquivo bancário como único canal de entrada. Isso é desenho, não implementação.
 
+🆕 **Reposicionado na auditoria final (2026-09-29)**: a Etapa 8 era o lugar errado. PIX **não depende do Portal** — depende de conta, recebimento, contrato com PSP e conciliação, que existem ao fim da Etapa 5. O canal digital só **apresenta e aciona** a cobrança.
+
+```text
+Faturamento (4) ──► Recebimento (5) ──► Pix Cobrança · boleto registrado (5) ──► Cobrança (6) ──► Pix Automático · débito automático (6)
+```
+
 ### 20.2 Benefício social — a exceção que merece atenção
 
 🔴 É a única H1 que entra junto do núcleo financeiro, e a razão é dura: **afeta o cálculo da conta**. Tarifa social é praticamente universal no saneamento brasileiro. Acoplar um critério de elegibilidade e uma condição de perda a um motor de cálculo já construído é mais caro do que prever o ponto de extensão na estrutura tarifária.
 
 ⚠️ **Sem antecipar implementação**: o que entra na Etapa 4 é o **ponto de extensão na estrutura tarifária**; os critérios reais por companhia continuam lacuna registrada (lacuna 4 do catálogo).
 
+🆕 **Auditoria final (2026-09-29)**: deixou de ser só "ponto de extensão". A **Lei 14.898/2024** fixou critério nacional e **concessão automática** a partir de CadÚnico/BPC, e a NR ANA 13/2025 deu aos prestadores até 11/12/2026 para adequação. Na Etapa 4 entram a **regra** (parâmetro regulado com vigência e origem normativa) e o **vínculo** com a unidade usuária; a **integração** com as bases oficiais precisa estar operante **antes do gate 7 → operação** (CEN-FAT-012).
+
 ### 20.3 Fiscal, SPED, analytics, GIS
 
 | Área | Posição | Regra |
 | ---- | ------- | ----- |
-| **Fiscal / SPED** | 🔴 **Fora da ordem** | Permanecem `EXIGE APROFUNDAMENTO`. ⚠️ **Não podem bloquear o início** sem evidência de que são necessários ao primeiro núcleo. Devem ser esclarecidos **antes da Etapa 4** — se o documento fiscal decorrer da conta emitida (hipótese 🟡), o evento que o origina nasce lá |
+| **Fiscal / SPED** | 🆕 **Fiscal na ordem (2026-09-29)**: **Etapa 4** (NFAg individual em homologação) e **Etapa 7** (lote, contingência, eventos, guarda). **SPED fora do OpenGSAN** | ~~Permanecem `EXIGE APROFUNDAMENTO`… devem ser esclarecidos antes da Etapa 4~~ — **esclarecido**: a NFAg é obrigatória e o documento fiscal **decorre da conta emitida** — o Faturamento publica o fato tributável, o Fiscal emite ([`fiscal.md §11`](fiscal.md)). ⚠️ Não bloqueia a Etapa 0 |
 | **Analytics** | Etapa 8+ | 🔴 **Não bloqueia o núcleo**, mas impõe **uma restrição desde a Etapa 0**: o desenho não pode tornar impossível a análise futura. Concretamente — evento de negócio legível, competência explícita, e nenhuma destruição de identidade no arquivamento (o legado destrói a do pagamento) |
 | **GIS** | Etapa 8+ | 🔴 **Não é dependência do core comercial.** 🟢 O que existe no legado é só integração; não há domínio GIS a preservar. Coordenada no RA é atributo, não capacidade. 🆕 Redes/GIS e Gestão de Ativos seguem a **trilha estrutural** (§24.2) — [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md) |
 
@@ -767,20 +787,23 @@ ETAPA 4 — FINANCEIRO INDIVIDUAL
 ├── Conta + contexto congelado + identidade estável do documento
 ├── débito · crédito · guia · retificação (via operação da Micromedição) · cancelamento
 ├── efeitos financeiros da OS
-└── 🆕 qualidade da água projetada no documento emitido (dona: Gestão Operacional)
+├── 🆕 qualidade da água projetada no documento emitido (dona: Gestão Operacional)
+├── 🆕 Tarifa Social: regra nacional como parâmetro regulado + vínculo com a unidade usuária
+└── 🆕 Fiscal: fato tributável · determinação tributária · NFAg individual (homologação) · DANFAG
         ↓
 ETAPA 5 — RECEBIMENTO
 ├── recepção (movimento, registro bruto, conferência)
 ├── classificação por situação do pagamento (nenhum descartado)
 ├── aplicação contra o documento · conciliação por aviso bancário
 ├── posição de dívida como consulta derivada  ◄── valida o conceito antes da Cobrança
-└── processamento assíncrono genérico (primeiro caso real)
+├── processamento assíncrono genérico (primeiro caso real)
+└── 🆕 meios de pagamento como extensão: boleto registrado · Pix Cobrança (PSP), confirmação idempotente
         ↓
 ETAPA 6 — COBRANÇA
 ├── situação de cobrança (dono correto) · política · ação · documento com itens
 ├── parcelamento · desfazimento com estornos · reparcelamento
 ├── negativação · terceirização por carteira
-├── excedente/devolução · débito automático
+├── excedente/devolução · débito automático · 🆕 Pix Automático (autorização de pagamento recorrente)
 └── notificação ao cliente (primeiro evento real)
         ↓
 ETAPA 7 — ESCALA
@@ -789,13 +812,15 @@ ETAPA 7 — ESCALA
 ├── 🆕 Contabilização subsidiária: lançamentos por competência × localidade × origem,
 │      devedores duvidosos, regeração, exportação ao ERP por adaptador
 ├── três níveis (processo/etapa/unidade), retomada por unidade, reprocessamento por etapa
-└── relatórios financeiros de conferência
+├── relatórios financeiros de conferência
+├── 🆕 Fiscal em escala: NFAg em lote · contingência e transmissão posterior · eventos · guarda
+└── 🆕 Tarifa Social: concessão automática pelas bases oficiais operante
         ↓
 ETAPA 8 — CANAIS E EVOLUÇÕES
 ├── identidade do cliente final (verificação de vínculo, não RBAC)
 ├── canal digital: 2ª via, extrato, parcelamento, certidão, solicitação
-├── PIX · boleto registrado
-└── bureau, telemetria, analytics, GIS, acessibilidade — por prioridade posterior
+├── 🆕 o canal apresenta e aciona Pix e boleto — os meios já existem desde as Etapas 5–6
+└── bureau, telemetria, analytics, GIS, acessibilidade, 🆕 prestação de informações regulatórias — por prioridade posterior
 ```
 
 ### 24.1 Resultado observável por etapa
@@ -806,11 +831,11 @@ ETAPA 8 — CANAIS E EVOLUÇÕES
 | **1** | Consultar imóvel e abrir RA, com autorização e auditoria | Imóvel, cliente, RA, especificação | Etapa 2 |
 | **2** | Ciclo de atendimento e execução completo, com efeito aplicado pelo dono e escopo territorial | Ligação, situação, OS, território, escopo, estrutura operacional mínima | Etapas 3 e 4; trilha estrutural |
 | **3** | Medir: hidrômetro instalado, leitura coletada, consumo determinado | Instalação, leitura, consumo com origem | Etapa 4 |
-| **4** | 🔴 **Gerar uma conta correta ao centavo** | Tarifa, Conta, snapshot, identidade do documento, débito/crédito | Etapas 5 e 7 |
-| **5** | Receber, classificar e baixar pagamento; posição de dívida correta | Recebimento, situação do pagamento, conciliação, posição de dívida | Etapas 6 e 7 |
+| **4** | 🔴 **Gerar uma conta correta ao centavo** — 🆕 com documento fiscal autorizado em homologação e Tarifa Social aplicada | Tarifa, Conta, snapshot, identidade do documento, débito/crédito, 🆕 fato tributável, NFAg, benefício tarifário | Etapas 5 e 7 |
+| **5** | Receber, classificar e baixar pagamento; posição de dívida correta; 🆕 receber por Pix e boleto registrado | Recebimento, situação do pagamento, conciliação, posição de dívida, 🆕 meio de pagamento | Etapas 6 e 7 |
 | **6** | Cobrar, negociar e parcelar | Política, ação, documento de cobrança, parcelamento | Etapa 8 |
-| **7** | Faturar, arrecadar e **contabilizar** em volume, com retomada | Execução em três níveis, competência encerrada, lançamento contábil | Operação real |
-| **8** | Cliente se atende sozinho e paga por meio moderno | Identidade do cliente, canal, PSP | Evoluções |
+| **7** | Faturar, arrecadar e **contabilizar** em volume, com retomada — 🆕 e **emitir o documento fiscal** em volume, com contingência | Execução em três níveis, competência encerrada, lançamento contábil, 🆕 evento fiscal | Operação real |
+| **8** | Cliente se atende sozinho — 🆕 pelos meios de pagamento que já existem | Identidade do cliente, canal | Evoluções |
 
 
 ### 24.2 🆕 Trilha estrutural — Gestão de Ativos, Redes/GIS e Engenharia
@@ -869,6 +894,8 @@ Revisão controlada de escopo (2026-09-28) · [ADR-0008](../decisoes/0008-gestao
 - Identidade estável do documento verificada entre versão corrente e histórico.
 - Retificação altera consumo **pela operação da Micromedição** (D-14), nunca por escrita direta.
 - Desempenho por imóvel medido contra a baseline.
+- 🆕 Conta emitida produz **documento fiscal autorizado em homologação ou rejeição rastreável**, sem regra fiscal no motor tarifário (CEN-FIS-001).
+- 🆕 Tarifa Social aplicada pela regra vigente, com origem normativa registrada (CEN-FAT-012).
 
 ### 5 → 6
 
@@ -876,6 +903,7 @@ Revisão controlada de escopo (2026-09-28) · [ADR-0008](../decisoes/0008-gestao
 - **Nenhum pagamento descartado**; situação anterior preservada em todos os caminhos.
 - Conciliação fecha calculado × informado.
 - Posição de dívida reflete pagamentos **por derivação**, comprovada por caso pago/parcial/não pago.
+- 🆕 Confirmação de Pix **idempotente**: o mesmo aviso duas vezes gera **um** recebimento (CEN-ARR-012).
 
 ### 6 → 7
 
@@ -889,6 +917,8 @@ Revisão controlada de escopo (2026-09-28) · [ADR-0008](../decisoes/0008-gestao
 - Reprocessamento por etapa comprovado.
 - Encerramento de competência confere com os resumos financeiros.
 - 🆕 Lançamentos contábeis da competência conferem com os resumos de faturamento e arrecadação; regerar não duplica (CEN-FIN-001, CEN-FIN-003).
+- 🆕 **Nenhuma conta sem documento fiscal** autorizado ou em contingência registrada; contingência termina autorizada ou tratada; retificação e cancelamento com o tratamento fiscal vigente (CEN-FIS-002, CEN-FIS-003).
+- 🆕 Concessão automática da Tarifa Social operante a partir das bases oficiais (CEN-FAT-012).
 
 ### Gate de golden master — forma geral
 
@@ -936,7 +966,7 @@ aceitação sob os DOIS oráculos
 
 | # | Decisão | Bloqueia de fato | **Não** bloqueia | Prazo real |
 | - | ------- | ---------------- | ---------------- | ---------- |
-| 3 | 🔴 **Existe negação na autorização?** | **S1 — o modelo de avaliação da concessão** | Nada além | 🔴 **Antes da Etapa 0.** É o único bloqueio de dia 1 |
+| 3 | ~~🔴 **Existe negação na autorização?**~~ ✅ **Resolvida na auditoria final (2026-09-29)** | S1 — o modelo de avaliação da concessão | Nada além | — resolvida: **sim**, restrição por usuário que subtrai a concessão de um grupo ([`seguranca.md §10`](seguranca.md)) |
 | 4 | **Nome do repositório e governança** | A **partida física** do código | Todo o trabalho conceitual | Antes da Etapa 0 — ver §27.2 |
 | 1 | ~~**ADR-0007 — interface**~~ ✅ **aceita em 2026-09-29** | Superfície de entrega da Etapa 1; entrega de relatório; canal digital | 🔵 Fundação, domínio, persistência, testes, motor financeiro | — resolvida |
 | 5 | **Divergência D-17** (escopo sistemático) | **S2** | Etapas 0 e 1 | Antes da Etapa 2 |
@@ -984,11 +1014,11 @@ ETAPA 0   Fundação                      ── sem dependência de domínio
 ETAPA 1   Primeira fatia vertical       ── auth + consulta + RA
 ETAPA 2   Atendimento e execução        ── ligação, OS, contrato de efeito, escopo territorial
 ETAPA 3   Medição                       ── hidrômetro → consumo + integração de campo
-ETAPA 4   Financeiro individual         ── tarifa + motor de conta + identidade do documento
-ETAPA 5   Recebimento                   ── recepção → classificação → aplicação → conciliação
-ETAPA 6   Cobrança                      ── posição de dívida → política → parcelamento
-ETAPA 7   Escala                        ── lote de faturamento e arrecadação + contabilização
-ETAPA 8   Canais e evoluções            ── identidade do cliente, canal digital, PIX, boleto
+ETAPA 4   Financeiro individual         ── tarifa + motor de conta + identidade do documento + 🆕 NFAg individual + Tarifa Social
+ETAPA 5   Recebimento                   ── recepção → classificação → aplicação → conciliação + 🆕 Pix Cobrança · boleto registrado
+ETAPA 6   Cobrança                      ── posição de dívida → política → parcelamento + 🆕 Pix Automático
+ETAPA 7   Escala                        ── lote de faturamento e arrecadação + contabilização + 🆕 NFAg em lote e contingência
+ETAPA 8   Canais e evoluções            ── identidade do cliente, canal digital (🆕 apresenta Pix e boleto; não é dono deles)
 ```
 
 ### 28.1 A resposta direta
@@ -997,7 +1027,7 @@ ETAPA 8   Canais e evoluções            ── identidade do cliente, canal di
 | -------- | -------- |
 | **O que programamos primeiro?** | A **fundação** (Etapa 0) — projeto modular com fronteira verificada, Flyway `V1`, testes com Testcontainers, S1, auditoria mínima, convenção monetária |
 | **Qual é a primeira funcionalidade real?** | **Autenticar → consultar imóvel/cliente → abrir e tramitar um RA** (Etapa 1) |
-| **O que precisa existir antes dela?** | Etapa 0 + Cadastro mínimo em leitura. E a resposta sobre **negação na autorização** |
+| **O que precisa existir antes dela?** | Etapa 0 + Cadastro mínimo em leitura. ~~E a resposta sobre negação na autorização~~ ✅ respondida em 2026-09-29 |
 | **O que vem depois?** | Ligação com situação, OS e o **contrato "solicita × aplica"** (Etapa 2) |
 | **Quando começa Micromedição?** | **Etapa 3**, depois de o Cadastro ter território, ligação e categoria |
 | **Quando começa Faturamento?** | **Etapa 4** — no meio, não no fim |
@@ -1052,7 +1082,7 @@ Registrado por honestidade, e porque três acertos permanecem:
 | 4 | ✅ *Mitigado — ADR-0007 decidida antes da fatia 1 (2026-09-29).* **ADR-0007 decidida depois da fatia 1** obriga reescrever a superfície | Domínio e aplicação livres de conceito de entrega; concessão em caso de uso (§4.3); decidir antes da **superfície** da Etapa 1 |
 | 5 | **Problema de escala descoberto na Etapa 7**, com o núcleo inteiro construído | Baseline de performance conhecida antes de substituir comportamento; medição **por imóvel** desde a Etapa 4 |
 | 6 | **Ordem por capacidade** produz módulos permanentemente incompletos | Gates por etapa (§25) + critério de pronto por capacidade (§31.1) |
-| 7 | **Fiscal obrigatório** descoberto tarde, já com a conta construída | Esclarecimento exigido **antes da Etapa 4**: se o documento fiscal decorre da conta, o evento nasce lá (§20.3) |
+| 7 | ✅ *Mitigado na auditoria final (2026-09-29).* **Fiscal obrigatório** descoberto tarde, já com a conta construída | **Descoberto antes**: NFAg obrigatória; módulo Fiscal com fronteira própria; NFAg individual na Etapa 4 e em escala na 7 (§20.3) |
 | 8 | **Fronteira degradada** para acoplamento direto, como no legado | Verificação automatizada de fronteira é **gate**, e precisa reprovar violação deliberada (§25) |
 | 9 | 🔴 **Nada disto vale sem a rede de testes** (19 testes / 2,39M LOC no legado) | Os gates são de **prova**, não de código; a caracterização do legado precede a comparação |
 | 10 | **A ordem ser tratada como imutável** | §26: a matriz é revisada ao fim de cada etapa; dependência descoberta **muda a ordem**, com motivo registrado |
@@ -1087,9 +1117,9 @@ Capacidade pronta quando:
 1. ~~**Compatibilidade conceitual GSAN → OpenGSAN**~~ ✅ concluída em 2026-09-15.
 2. ~~**Especificação dos cenários críticos**~~ ✅ **concluída em 2026-09-28** — os **166** itens inventariados resultaram em **71 especificações** ([`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md)), com os gates por etapa desta ordem. 🆕 Revisão controlada de escopo (2026-09-28): **184 itens → 79 especificações**, com Contabilização e Gestão Operacional.
 3. ~~**Decisão da ADR-0007**~~ ✅ **aceita em 2026-09-29** — [ADR-0007](../decisoes/0007-arquitetura-de-interface.md).
-4. **Auditoria final e encerramento da Fase 0.**
+4. ~~**Auditoria final e encerramento da Fase 0.**~~ ✅ **concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md).
 
-🔴 **Três respostas que devem existir antes da Etapa 0 começar**: negação na autorização (bloqueio de dia 1), nome/governança do repositório (bloqueio de partida) e a decisão da ADR-0007 antes da superfície da Etapa 1 — ✅ **esta última resolvida em 2026-09-29**.
+🔴 **Três respostas que deviam existir antes da Etapa 0 começar**: ~~negação na autorização~~ ✅ **resolvida na auditoria final** (existe: restrição por usuário), nome/governança do repositório (bloqueio de **partida** — exige decisão, não investigação) e ~~a decisão da ADR-0007~~ ✅ **resolvida em 2026-09-29**.
 
 ### 31.4 Relação com as fases do plano de trabalho
 

@@ -367,3 +367,20 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 🔵 O `GsanApi` prova que esse padrão já era conhecido dentro do próprio código. A camada de integração do OpenGSAN é a generalização dele, não uma invenção.
 
 🆕 **Decidido na [ADR-0007](../decisoes/0007-arquitetura-de-interface.md) (2026-09-29)**: integrações, campo e ferramentas GIS consomem **contratos explícitos** — autenticados por identidade de sistema ou de dispositivo, documentados e versionados —, **nunca endpoints de tela** nem o banco interno; a autorização é a do **caso de uso**, a mesma de qualquer canal.
+
+
+---
+
+## 🆕 Adendo da auditoria final da Fase 0 (2026-09-29)
+
+🔴 A varredura regulatória acrescenta **adapters regulatórios e de pagamento** — todos sob a regra deste mapa: *a integração traduz e entrega; o dono aplica*, e **nenhum leiaute externo entra no domínio**.
+
+| Adapter | Dono do efeito | Etapa |
+| ------- | -------------- | ----- |
+| **Ambiente autorizador da NFAg** (SVRS) — assinatura, transmissão, retentativa, contingência | **Fiscal** | 4 (homologação) · 7 (lote e contingência) |
+| **PSP Pix** — cobrança, confirmação assíncrona idempotente, conciliação, devolução | Arrecadação | 5 |
+| **Pix Automático** — autorização e agendamento via PSP | Arrecadação | 6 |
+| **Bases oficiais de elegibilidade** (CadÚnico/BPC) | Cadastro (elegibilidade) | 4 — antes da operação |
+| **SINISA · SISAGUA · regulador local** — prestação de informações | Donos dos dados primários + Analytics | Após a operação — antes do primeiro ciclo anual |
+
+Detalhe em [`auditoria/completude-funcional-regulatoria.md`](../auditoria/completude-funcional-regulatoria.md) e [`fiscal.md`](fiscal.md).

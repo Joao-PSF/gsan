@@ -103,7 +103,7 @@
 
 - **Criticidade**: P0
 - **Etapa OpenGSAN**: 1 — Primeira fatia vertical
-- **Conceitos relacionados**: grupo, concessão por união (C1) · funcionalidade/operação ancorada em URL (C2)
+- **Conceitos relacionados**: grupo, concessão por união (C1) · 🆕 restrição por usuário (C1) · funcionalidade/operação ancorada em URL (C2)
 - **Objetivo**: caracterizar quem pode executar o quê — **e provar a negação**, não só a concessão
 - **Pré-condições**: funcionalidades F1 (concedida ao grupo A), F2 (concedida ao grupo B), F3 (não concedida a ninguém do cenário), F4 (dependente de F1); operação O1 de F1 concedida a A e operação O2 de F1 **não** concedida; USR-01 (grupo A), USR-02 (grupos A e B), USR-03 (nenhum dos dois)
 - **Entrada**:
@@ -116,12 +116,13 @@
   | V4 | USR-03 acessa F1 **digitando o endereço direto** em rota protegida e não excepcionada |
   | V5 | USR-01 executa O1; depois O2 |
   | V6 | USR-01 acessa F4 tendo apenas F1 concedida |
+  | V7 🆕 | Restrição por usuário: (a) USR-01 com restrição sobre O1 **pelo grupo A** — seu único caminho de concessão; (b) USR-02 com restrição sobre O1 pelo grupo A, **com B também concedendo O1**; (c) usuário com mais concessões do que grupos, para exercitar a composição do filtro (CAND-05) |
 
-- **Operação GSAN**: acesso à Action `*.do`; `FiltroSegurancaAcesso` classifica a URL como funcionalidade **ou** operação e consulta `GrupoFuncionalidadeOperacao`
+- **Operação GSAN**: acesso à Action `*.do`; `FiltroSegurancaAcesso` classifica a URL como funcionalidade **ou** operação e consulta `GrupoFuncionalidadeOperacao` — 🆕 e as restrições `UsuarioGrupoRestricao` do usuário (`ControladorAcessoSEJB:3104`, `:3517`)
 - **Operação conceitual OpenGSAN**: executar caso de uso protegido
 - **Observações semânticas**: permitido/negado por variação · recurso efetivamente executado (sim/não) · efeito colateral em caso de negação (nenhum esperado)
-- **Localizadores GSAN**: `seguranca.grupo_funcionalidade_operacao`; `FiltroSegurancaAcesso`
-- **Resultado semântico esperado**: V1, V2, V5-O1 permitidos. V3, V4, V5-O2 negados, **sem efeito colateral**. 🟢 A concessão é a **união** dos grupos. V4 — 🟢 para rota protegida e não excepcionada, o endereço direto **passa pelo filtro** e é barrado. V6 — dependência entre funcionalidades participa da decisão: **a capturar** se concede ou nega
+- **Localizadores GSAN**: `seguranca.grupo_funcionalidade_operacao`; 🆕 `UsuarioGrupoRestricao`; `FiltroSegurancaAcesso`
+- **Resultado semântico esperado**: V1, V2, V5-O1 permitidos. V3, V4, V5-O2 negados, **sem efeito colateral**. 🟢 A concessão é a **união** dos grupos. V4 — 🟢 para rota protegida e não excepcionada, o endereço direto **passa pelo filtro** e é barrado. V6 — dependência entre funcionalidades participa da decisão: **a capturar** se concede ou nega. 🆕 V7 — regra lida no código: **acesso se restrições < concessões** — (a) **negado**, (b) **permitido** (B concede sem restrição); (c) **a capturar** — se a composição de `:3072` desviar da regra, não reproduzir exige divergência (CAND-05)
 - **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
 - **Normalizações**: endereço/rota (a unidade de concessão muda de URL para identificador de domínio — comparar pela **funcionalidade**, não pelo caminho)
 - **Divergência permitida**: nenhuma
@@ -291,3 +292,25 @@
 - **Oráculo**: **2**
 - **Gate que este cenário protege**: 0 → 1 — *CI reprova segredo commitado*
 - **Evidência**: achados 2, 11 e 20 de [`riscos-identificados.md`](../../seguranca/riscos-identificados.md); [D-08, D-16](../../compatibilidade/divergencias-aprovadas.md); achado 20 localizado em [`modulos/operacional.md §6.3`](../../modulos/operacional.md)
+
+---
+
+## CEN-SEG-012 — Sessão e requisição forjada
+
+- **Criticidade**: P1
+- **Etapa OpenGSAN**: 1 — Primeira fatia vertical
+- **Conceitos relacionados**: sessão e proteção contra requisição forjada (C3 — D-18)
+- **Objetivo**: registrar que o legado aceita requisição forjada com a sessão do usuário e exigir que o OpenGSAN a recuse
+- **Pré-condições**: USR-01 autenticado em navegador; página de **outra origem** que submete uma operação que altera estado (ex.: tramitar RA) usando a sessão do usuário
+- **Entrada**: V1 — requisição forjada sem token; V2 — requisição legítima com token; V3 — inspeção dos atributos do cookie de sessão
+- **Operação GSAN**: submissão de Action `*.do` que altera estado, a partir de outra origem
+- **Operação conceitual OpenGSAN**: executar caso de uso que altera estado por canal de navegador
+- **Observações semânticas**: requisição aceita ou recusada · efeito colateral (estado alterado sim/não) · atributos `HttpOnly`, `Secure`, `SameSite` do cookie
+- **Localizadores GSAN**: `gcom/WEB-INF/web.xml` (sem `session-config`); ausência de `saveToken`/`isTokenValid` em `src/`
+- **Resultado semântico esperado**: GSAN — 🟢 V1 **aceita**, com efeito (não há token a verificar); cookie **sem** os três atributos. OpenGSAN — V1 **recusada sem efeito colateral**; V2 aceita; cookie **com** os três atributos
+- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 — ⚠️ a ausência de configuração e de token é leitura de artefato; o **aceite efetivo** da requisição forjada é comportamento em execução
+- **Normalizações**: identificador de sessão
+- **Divergência permitida**: **D-18**
+- **Oráculo**: **2**
+- **Gate que este cenário protege**: 1 → 2
+- **Evidência**: achado 6 de [`riscos-identificados.md`](../../seguranca/riscos-identificados.md); [D-18](../../compatibilidade/divergencias-aprovadas.md); [ADR-0007 §9.4](../../decisoes/0007-arquitetura-de-interface.md)

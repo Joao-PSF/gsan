@@ -246,3 +246,69 @@
 - **Oráculo**: **1** — **ao centavo**
 - **Gate que este cenário protege**: 7 → operação — *encerramento confere com os resumos financeiros*
 - **Evidência**: [`modulos/arrecadacao.md`](../../modulos/arrecadacao.md) §14 e §22 item 19; [`modulos/batch.md`](../../modulos/batch.md) §25 item 19
+
+---
+
+## CEN-ARR-011 — Pagamento de Fatura do cliente responsável
+
+- **Criticidade**: P1
+- **Etapa OpenGSAN**: 5 — Recebimento
+- **Conceitos relacionados**: Fatura do cliente responsável — documento agregador (C1, resolvido na auditoria final) · identidade documental (C2)
+- **Objetivo**: caracterizar o recebimento de um documento **agregador**: o pagamento da Fatura se desdobra em pagamentos **por conta** — antigo BLQ-04, desbloqueado quando a semântica de "Fatura" foi esclarecida
+- **Pré-condições**: DOC-12 — Fatura de um cliente responsável agregando contas de pelo menos dois imóveis, numa referência
+- **Entrada**: V1 — pagamento pelo código de barras da Fatura com valor **igual** ao débito dela; V2 — valor **diferente** do débito da Fatura; V3 — cliente responsável inexistente no código de barras
+- **Operação GSAN**: processamento de pagamento por código de barras do cliente responsável (UC0259)
+- **Operação conceitual OpenGSAN**: classificar recebimento de documento agregador
+- **Observações semânticas**: aceitação ou recusa do registro · motivo da recusa · quantidade de pagamentos gerados · para cada pagamento: conta alvo, valor, tipo do documento e documento agregador · situação de cada conta depois · posição de dívida de cada imóvel depois
+- **Localizadores GSAN**: `ControladorArrecadacao.processarPagamentosCodigoBarrasClienteResponsavel` (`:7217`); `Fatura`/`FaturaItem` (`faturamento.fatura`); tipo de documento CONTA com agregador `FATURA_CLIENTE(5)` (`:7400`, `:7430`)
+- **Resultado semântico esperado**: V1 — 🟢 **um pagamento por conta** da Fatura, cada um com o valor da conta, tipo CONTA e a Fatura como **agregador**; a obrigação é quitada **em cada conta**. V2 — 🟢 recusa com o motivo *valor da fatura diferente do valor do pagamento* (`:7289`) — ⚠️ se o dinheiro recusado é preservado para tratamento posterior, como exige o princípio da área: **a capturar**. V3 — 🟢 recusa com motivo *cliente responsável não cadastrado*
+- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Normalizações**: identificadores técnicos dos pagamentos
+- **Divergência permitida**: nenhuma
+- **Oráculo**: **1** — por mapeamento semântico
+- **Gate que este cenário protege**: 5 → 6
+- **Evidência**: [`dominio/glossario.md`](../../dominio/glossario.md) — pontos de aprofundamento, item 5; [`modulos/arrecadacao.md`](../../modulos/arrecadacao.md) — adendo da auditoria final; cenário **derivado** do antigo BLQ-04
+
+---
+
+## CEN-ARR-012 — Cobrança Pix vinculada ao documento: confirmação idempotente e conciliação
+
+- **Criticidade**: P1
+- **Etapa OpenGSAN**: 5 — Recebimento
+- **Conceitos relacionados**: meio de pagamento (requisito nativo) · recebimento em quatro momentos (C1)
+- **Objetivo**: verificar que o Pix entra como **mais um meio** do ciclo de recebimento — cobrança vinculada ao documento, confirmação idempotente, conciliação — sem criar uma arrecadação paralela
+- **Pré-condições**: DOC-01; contrato com PSP de **teste**; chave Pix configurada por ambiente (nunca constante — achado 10a)
+- **Entrada**: V1 — cobrança criada para a conta e paga; V2 — a **mesma** confirmação do PSP recebida duas vezes; V3 — **dois pagamentos distintos** para a mesma conta; V4 — pagamento de cobrança **expirada** ou cancelada; V5 — conciliação do dia contra o extrato do PSP
+- **Operação GSAN**: não aplicável — o GSAN público só monta QR estático, sem integração (catálogo §5)
+- **Operação conceitual OpenGSAN**: criar cobrança Pix para documento; receber confirmação; classificar; conciliar
+- **Observações semânticas**: cobrança (identificador `txid`, valor, vencimento ou expiração, documento alvo) · recebimentos criados · situação atribuída na classificação · recebimento conciliado × extrato · nada descartado
+- **Localizadores GSAN**: não aplicável
+- **Resultado semântico esperado**: V1 — **um** recebimento, aplicado ao documento, pelo mesmo ciclo dos demais meios. V2 — 🔴 **idempotência**: a segunda confirmação **não** cria recebimento. V3 — segundo pagamento segue o tratamento de **duplicidade** (mesma regra de CEN-ARR-004, sem regra própria do Pix). V4 — o dinheiro **não é descartado**: fica em situação tratável, como qualquer pagamento sem documento apropriável (CEN-ARR-003). V5 — conciliação fecha recebido × informado pelo PSP
+- **Baseline concreta do legado**: ➖ NÃO APLICÁVEL — requisito nativo
+- **Normalizações**: identificadores do PSP e horários
+- **Divergência permitida**: não aplicável
+- **Oráculo**: **N** — requisito nativo; ⚠️ a classificação posterior **reutiliza** as regras de CEN-ARR-002/003/004 (oráculo 1), que não são duplicadas aqui
+- **Gate que este cenário protege**: 5 → 6 — *confirmação idempotente: o mesmo aviso duas vezes gera um recebimento*
+- **Evidência**: [`modulos/funcionalidades-futuras.md`](../../modulos/funcionalidades-futuras.md) §5; Banco Central — Manual de Padrões para Iniciação do Pix e API Pix (cobrança imediata e com vencimento)
+
+---
+
+## CEN-ARR-013 — Pix Automático: autorização, cobrança recorrente, retentativa e cancelamento
+
+- **Criticidade**: P1
+- **Etapa OpenGSAN**: 6 — Cobrança
+- **Conceitos relacionados**: autorização de pagamento recorrente (requisito nativo) · débito automático (C1)
+- **Objetivo**: verificar que o Pix Automático é representado como **autorização de pagamento recorrente**, distinta do débito automático, e que falha, retentativa e cancelamento não produzem recebimento duplicado nem perdido
+- **Pré-condições**: IMV-01 com autorização de Pix Automático **aprovada** pelo pagador; contas mensais emitidas; PSP de **teste**
+- **Entrada**: V1 — cobrança da conta do mês agendada e liquidada; V2 — liquidação falha na primeira tentativa e ocorre na **retentativa**; V3 — pagador **cancela a autorização** depois de uma cobrança já agendada; V4 — conta **retificada** depois do agendamento
+- **Operação GSAN**: não aplicável — o GSAN tem débito automático (CEN-ARR-009), não Pix Automático
+- **Operação conceitual OpenGSAN**: gerir autorização de pagamento recorrente; agendar cobrança; receber liquidação
+- **Observações semânticas**: autorização (unidade/conta, vigência, limite, estado) · recorrência · cobrança agendada por conta · tentativas · liquidação · recebimento gerado · estado da autorização depois do cancelamento
+- **Localizadores GSAN**: não aplicável
+- **Resultado semântico esperado**: V1 — **um** recebimento pela conta. V2 — **um** recebimento, no momento da liquidação efetiva; tentativas sem efeito financeiro. V3 — o estado da autorização muda; o efeito sobre a cobrança **já agendada** segue a regra do arranjo vigente, **lida na fonte** e nunca codificada no domínio. V4 — o valor cobrado segue a regra de janela do arranjo; ⚠️ o tratamento de conta alterada depois do agendamento é **decisão de produto a registrar** antes da implementação — não inventado aqui
+- **Baseline concreta do legado**: ➖ NÃO APLICÁVEL — requisito nativo
+- **Normalizações**: identificadores do PSP e horários
+- **Divergência permitida**: não aplicável
+- **Oráculo**: **N** — requisito nativo
+- **Gate que este cenário protege**: 6 → 7
+- **Evidência**: [`modulos/funcionalidades-futuras.md`](../../modulos/funcionalidades-futuras.md) §5.5; Banco Central — Guia de implementação e FAQ do Pix Automático; Res. BCB 402/2024, 403/2024 e 506/2025

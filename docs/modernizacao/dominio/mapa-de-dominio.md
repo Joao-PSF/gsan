@@ -300,7 +300,7 @@ flowchart TB
     PG -->|gpag_id| GUIA["GuiaPagamentoGeral"]
     PG -->|dbac_id| DBAC["DébitoACobrarGeral"]
     PG -->|cbdo_id| DOC
-    PG -->|fatu_id| FAT["Fatura ❔"]
+    PG -->|fatu_id| FAT["Fatura — agregador<br/>do cliente responsável"]
     PGH["PagamentoHistorico<br/><b>NOVO id</b>"]
     PG -.->|arquivamento| PGH
 
@@ -592,6 +592,18 @@ Consumo ──► Faturamento ──► CONTA ──► obrigação ──► Co
 
 🆕 **A cadeia não termina na Arrecadação**: os fatos do Faturamento, da Arrecadação e da baixa de devedores duvidosos são **contabilizados** por parametrização e exportados ao sistema contábil da companhia — o GSAN é gerador **subsidiário** de fatos contábeis, não razão ([`financeiro-contabilizacao.md`](../modulos/financeiro-contabilizacao.md) §2, §11).
 
+🆕 **Nem termina na Contabilização — e o fiscal é um ciclo à parte** (auditoria final, 2026-09-29). A conta emitida é também **fato tributável**: a NFAg (modelo 75) é documento fiscal com identidade, autorização, eventos, contingência e guarda próprios, obrigatório para os prestadores de água e esgoto. 🔴 É o **único conceito estrutural novo** que a auditoria acrescentou a este mapa — **sem antecedente comportamental no GSAN público** (o schema `fiscal` da instalação de referência não tem código), e por isso requisito nativo:
+
+```text
+Faturamento ──► CONTA ──► fato tributável ──► Fiscal ──► NFAg (autorizada · rejeitada · contingência · eventos)
+                  │                              │
+                  └──► Arrecadação ◄── vinculação de pagamento (split payment, se aplicável)
+                                                 │
+                         Contabilização ◄────────┘ fatos fiscais, sem duplicar valores
+```
+
+🔴 **Conta ≠ NFAg** — identidades separadas, vínculo rastreável. Ciclo, ownership e pendências em [`modulos/fiscal.md`](../modulos/fiscal.md).
+
 ### 12.1 Três propriedades financeiras estruturais
 
 1. 🟢 **Nada é apagado.** Cancelar é estado com motivo; retificar cria documento novo; prescrever é situação; pagamento não apropriável vira **situação**, não descarte.
@@ -849,9 +861,9 @@ Concentra: identidade + dados de cálculo + **fotografia do contexto** + resulta
 
 | # | Dúvida | Origem | Por que afeta o domínio |
 | - | ------ | ------ | ----------------------- |
-| 1 | **`UsuarioGrupoRestricao` participa do cálculo de autorização?** | Segurança §10 | Define se existe *deny* no modelo, ou só *allow* |
+| 1 | ~~**`UsuarioGrupoRestricao` participa do cálculo de autorização?**~~ ✅ **Sim** (auditoria final, 2026-09-29) — subtrai a concessão de um grupo para o usuário; acesso se restrições < concessões | Segurança §10 | O modelo é *união dos grupos menos restrições do usuário* |
 | 2 | **Persistência de RA sem imóvel e de OS sem RA** (banco permite, mapping não) | Atendimento §6/§12 | Define a cardinalidade real e se matrícula é opcional |
-| 3 | **"Fatura" (`faturamento.fatura`)** como 5º alvo de pagamento | Glossário §5 / Arrecadação | É conceito de domínio ou resíduo? Afeta a abstração de obrigação |
+| 3 | ~~**"Fatura" (`faturamento.fatura`)** como 5º alvo de pagamento~~ ✅ **Resolvida** (auditoria final, 2026-09-29) — **documento agregador** de contas de um cliente responsável; o pagamento se desdobra em um pagamento **por conta** (`ControladorArrecadacao:7217–7440`) | Glossário §5 / Arrecadação | Não é obrigação própria: não entra na abstração de obrigação |
 | 4 | **Abrangência no batch** — não localizada | Batch §15 / Segurança §28 | Se não existe, o escopo territorial tem um furo estrutural |
 | 5 | **Rateio/baixa dos itens** quando o pagamento vai ao Documento de Cobrança | Arrecadação §12 | Define se o documento é agregador real ou só referência |
 | 6 | **Fórmulas de acréscimos** (juros/multa/atualização) | Cobrança §33 / Arrecadação §23 | Atravessa três módulos; conceito financeiro sem forma |

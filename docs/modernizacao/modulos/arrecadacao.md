@@ -309,3 +309,31 @@ PIX:              gcom/arrecadacao/GeradorQrCodePIX.java (apenas string de QR Co
                   "testqrcode01@bb.com.br"); sem migration oficial; tabelas arrecadacao_pix/conta_qrcode_pix só na instalação de referência
 Companhia:        ControladorArrecadacao{CAEMA,CAER,CAERN,COMPESA,COSAMA,COSANPA,JUAZEIRO}SEJB; descriptors/arrecadacao<COMPANHIA>
 ```
+
+
+---
+
+## 🆕 Adendo da auditoria final da Fase 0 (2026-09-29)
+
+⚠️ Sem reanálise do mapa. Detalhe em [`auditoria/completude-funcional-regulatoria.md §5`](../auditoria/completude-funcional-regulatoria.md#5-pagamentos--meios-como-extensão).
+
+🟢 **"Fatura" resolvida** (§3 deste mapa listava `FATURA_CLIENTE(5)` sem semântica): é o **documento agregador** do cliente responsável. Pago pelo código de barras próprio, exige valor **igual** ao débito da fatura (`ControladorArrecadacao:7289`) e se desdobra em **um pagamento por conta**, tipo CONTA, com a Fatura como agregador (`:7400`, `:7430`) — CEN-ARR-011.
+
+🔵 **Pagamentos como extensão da Arrecadação — sem uma arrecadação por meio**: os quatro momentos (recepção → classificação → aplicação → conciliação) **não mudam**. O que varia por meio é o **contrato de meio de pagamento**:
+
+```text
+Arrecadação
+└─ Pagamentos (contrato de meio de pagamento)
+   ├─ Boleto registrado       título registrado · retorno · baixa
+   ├─ Pix Cobrança            cobrança vinculada ao documento (txid, QR dinâmico, vencimento, expiração)
+   ├─ Pix Automático          autorização de pagamento recorrente · agendamento · retentativa
+   ├─ Débito automático       autorização de pagamento recorrente · movimento · retorno (C1)
+   └─ Cartão                  opcional
+```
+
+| Tema | Posição |
+| ---- | ------- |
+| **PIX** | 🔴 Pertence à **Arrecadação/Pagamentos**, não ao Portal — o canal só **apresenta e aciona**. Reposicionado para a **Etapa 5** (CEN-ARR-012) |
+| **Pix Automático** | Com o débito automático, na **Etapa 6** (CEN-ARR-013). Mecanismos distintos sob uma abstração comum mínima: **autorização de pagamento recorrente** |
+| **Vinculação pagamento–documento fiscal** (*split payment*) | A Arrecadação fornece o **fato de pagamento**; o evento de vinculação, se aplicável à NFAg, é do Fiscal — `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` |
+| **Chave Pix** | Configuração por ambiente, nunca constante (achado 10a) |

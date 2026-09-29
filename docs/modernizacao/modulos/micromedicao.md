@@ -232,3 +232,10 @@ Fronteira fat.: ControladorFaturamentoFINAL (permiteFaturamentoParaAgua/Esgoto:1
 Por companhia: ControladorMicromedicaoCAEMA/CAER/CAERN/COMPESA/COSAMA/COSANPA/JUAZEIRO SEJB (src/gcom/micromedicao/)
 Evoluções:     DDL gsan_comercial: telemetria_*, releitura_mobile, situacao_transm_leitura, movimento_rot_empr_foto, micro_boletim_*, consumo/medicao_hist_anterior, hidrometro_fat_correcao
 ```
+
+
+---
+
+## 🆕 Adendo da auditoria final da Fase 0 (2026-09-29)
+
+🔵 **Metrologia legal** — os medidores usados para tarifação estão sujeitos a regulamento técnico metrológico do Inmetro (Portaria Inmetro 155/2022) e a verificação inicial e após reparo (Portaria Inmetro 78/2022). O hidrômetro do GSAN já guarda classe metrológica, vazões, revisão, garantia e baixa com motivo; **não guarda** verificação metrológica, selo/lacre, certificado nem validade. ⚠️ Quais obrigações recaem **sobre o prestador** (e não sobre o fabricante ou o órgão de verificação) não foi possível confirmar por fonte oficial nesta execução — **PENDENTE POR FONTE**. Registrado sem modelagem: se confirmadas, entram como atributos do equipamento (Micromedição/Gestão de Ativos), não como módulo ([completude §10](../auditoria/completude-funcional-regulatoria.md#10-operação-qualidade-metrologia-perdas-telemetria-e-energia)).

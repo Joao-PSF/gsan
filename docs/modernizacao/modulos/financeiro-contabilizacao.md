@@ -329,3 +329,10 @@ Menu (2016):   gsan-migracoes/.../20160118183244_popula_tabela_de_funcionalidade
                14 funcionalidades, 2 pontos de entrada (684 genérica · 752 CAERN) — contagem por script
 Banco:         schema financeiro, 27 tabelas
 ```
+
+
+---
+
+## 🆕 Adendo da auditoria final da Fase 0 (2026-09-29)
+
+🔴 **Fiscal ≠ Contabilização ≠ Arrecadação** — três ciclos. A Contabilização passa a consumir também **fatos fiscais** (tributos destacados, devolução personalizada) além dos comerciais e financeiros, com a regra de que **cada valor tem uma única origem** e nenhum é somado duas vezes ([`fiscal.md §9`](fiscal.md)). A parametrização contábil ganha **origens fiscais** sem mudar o princípio de lançamento por competência × localidade × origem. Obrigações acessórias (o SPED do legado) e apuração de IBS/CBS ficam **fora** do OpenGSAN — dados por adaptador ao ERP ([`fiscal.md §10`](fiscal.md)).

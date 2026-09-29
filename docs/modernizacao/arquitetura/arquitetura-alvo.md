@@ -47,7 +47,7 @@ Cada módulo com separação `domain / application / infrastructure / web` **qua
 
 🆕 **Canais (ADR-0007)**: `web` e `api` são **adaptadores de canal** do módulo; os casos de uso (`application`) existem **sem HTTP** e concentram autorização, validação e auditoria. Módulos conversam por **contratos internos em Java** — nunca por HTTP. Uma tela que compõe dados de vários módulos chama os contratos de cada um, nunca o repositório alheio.
 
-🆕 **Módulos acrescentados pela revisão de escopo (2026-09-28)**: `contabilizacao` e `operacional` (Gestão Operacional) — domínio GSAN a recuperar; Gestão de Ativos e Redes seguem a **trilha estrutural** ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)).
+🆕 **Módulos acrescentados pela revisão de escopo (2026-09-28)**: `contabilizacao` e `operacional` (Gestão Operacional) — domínio GSAN a recuperar; Gestão de Ativos e Redes seguem a **trilha estrutural** ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)). 🆕 **Auditoria final (2026-09-29)**: `fiscal` — documento fiscal de água e saneamento (NFAg), requisito nativo com ciclo próprio; **Conta ≠ NFAg**; o adapter do ambiente autorizador fica em `integracoes` ([`modulos/fiscal.md`](../modulos/fiscal.md)). Nenhum módulo `regulacao`, `pagamentos` ou `tarifasocial`: são regra, parâmetro regulado, integração ou capacidade transversal.
 
 ## Modelo de dados evolutivo e continuidade conceitual GSAN → OpenGSAN (ADRs 0005/0006)
 

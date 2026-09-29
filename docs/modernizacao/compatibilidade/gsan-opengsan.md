@@ -100,7 +100,7 @@ ainda que a representação técnica seja diferente.
 
 | O C5 é… | Consequência | Casos |
 | ------- | ------------ | ----- |
-| 🔴 **De comportamento** — o que o OpenGSAN deve fazer depende da decisão | **Bloqueia** o cenário | Semântica de "Fatura" · mecanismo de negação · aplicação da abrangência (D-17) |
+| 🔴 **De comportamento** — o que o OpenGSAN deve fazer depende da decisão | **Bloqueia** o cenário | ~~Semântica de "Fatura"~~ · ~~mecanismo de negação~~ — 🆕 **ambos resolvidos por evidência de código na auditoria final (2026-09-29)** · aplicação da abrangência (D-17) |
 | 🟢 **De representação** — parametrizar ou não, cardinalidade física, política de guarda — e o oráculo já está fixado por outra regra explícita | **Não bloqueia**: o cenário é especificável, e muitas vezes **é ele que produz a evidência** para decidir | Fórmulas de acréscimo (resultado financeiro → oráculo 1) · cardinalidade física RA ↔ OS · retenção de artefatos |
 | ⚠️ **De comportamento ainda desconhecido no próprio legado** | Especificável; **oráculo pendente de caracterização** | Atomicidade dentro da unidade |
 
@@ -148,21 +148,23 @@ Detalhe e cenários correspondentes em [`testes/cenarios-criticos.md`](../testes
 
 | Classe | Qtd | Leitura |
 | ------ | --: | ------- |
-| **C1 — Equivalente** | 90 | 🔴 **A maioria larga.** O OpenGSAN é reconhecível como o GSAN porque 62% dos conceitos centrais permanecem intactos |
+| **C1 — Equivalente** | 91 | 🔴 **A maioria larga.** O OpenGSAN é reconhecível como o GSAN porque 62% dos conceitos centrais permanecem intactos |
 | **C2 — Equivalente com reorganização** | 25 | Semântica preservada; forma, propriedade ou visibilidade diferentes |
 | **C3 — Divergência deliberada** | 17 | ⚠️ **Todas com `D-xx` registrada** — 16 divergências distintas, porque **D-03 aparece em duas áreas** (Segurança e Relatórios). Nenhuma inventada aqui |
 | **C4 — Sem equivalente** | 5 | Mecanismos que não vão adiante |
 | **C4-i — Sem antecedente no GSAN** | 1 | A camada de integração |
-| **C5 — Pendente** | 7 | 🔴 3 bloqueiam cenário; 4 são especificáveis — ver §4.3 (refinado em 2026-09-28) |
+| **C5 — Pendente** | 6 | 🔴 **1** bloqueia cenário (aplicação da abrangência, D-17); 5 são especificáveis — ver §4.3. 🆕 Eram 7, com 3 bloqueando, até a auditoria final (2026-09-29) resolver a negação (→ C1) e a semântica de "Fatura" |
 | **Total** | **145** | — |
 
-🔵 **A leitura que responde à pergunta central**: **115 dos 145 conceitos (C1 + C2) mantêm a semântica** — 90 deles sem qualquer mudança. As 16 divergências distintas concentram-se em **segurança (11)**, fronteira e mecanismo (4) e **um defeito funcional** (D-13) — nenhuma em regra de negócio. 🔴 **Nenhuma divergência deliberada atinge cálculo financeiro**, e isso é decisão, não acaso (§9.4).
+🔵 **A leitura que responde à pergunta central**: **116 dos 145 conceitos (C1 + C2) mantêm a semântica** — 91 deles sem qualquer mudança (🆕 recontado por script em 2026-09-29). As 16 divergências distintas concentram-se em **segurança (11)**, fronteira e mecanismo (4) e **um defeito funcional** (D-13) — nenhuma em regra de negócio. 🔴 **Nenhuma divergência deliberada atinge cálculo financeiro**, e isso é decisão, não acaso (§9.4).
 
-⚠️ **As 16 divergências estão todas cobertas**: D-01…D-16, sem lacuna. D-17 não entra na contagem por ser **proposta**, não aprovada (§20.2).
+⚠️ **As 16 divergências estão todas cobertas**: D-01…D-16, sem lacuna. D-17 não entra na contagem por ser **proposta**, não aprovada (§20.2). 🆕 **D-18** (sessão e requisição forjada, aprovada na auditoria final) é classificada em §5.2 — a contagem de 145 não muda.
 
 ### 5.2 🆕 Conceitos classificados fora dos 145 (revisão controlada de escopo, 2026-09-28)
 
 Os módulos **Financeiro** e **Operacional** do GSAN não tinham mapa quando os 145 conceitos foram classificados. Seus conceitos foram classificados **nos próprios mapas** — [`financeiro-contabilizacao.md`](../modulos/financeiro-contabilizacao.md) e [`operacional.md`](../modulos/operacional.md), pela escala A–F de escopo — e recebem aqui a classe de compatibilidade usada nas especificações `CEN-FIN` e `CEN-OPE`. ⚠️ **A contagem de 145 não muda**: são conceitos adicionais, não reclassificação.
+
+🔴 **Requisitos nativos não entram nesta matriz** (auditoria final, 2026-09-29): NFAg, determinação tributária e devolução personalizada, Tarifa Social nacional com concessão automática, Pix Cobrança e Pix Automático **não são conceitos do GSAN** — classificá-los em C1–C5 distorceria a matriz. São testados pelo **oráculo N** ([`estrategia-testes.md`](../testes/estrategia-testes.md)) e mapeados em [`modulos/fiscal.md`](../modulos/fiscal.md) e na [matriz de completude](../auditoria/completude-funcional-regulatoria.md). A exceção é quando afetam um conceito compatível — §21.
 
 | Conceito | Classe | Semântica GSAN → OpenGSAN |
 | -------- | ------ | ------------------------- |
@@ -175,6 +177,8 @@ Os módulos **Financeiro** e **Operacional** do GSAN não tinham mapa quando os 
 | Programação de abastecimento e de manutenção | **C1** | Idem — a troca da chave de área exigiria divergência registrada |
 | Qualidade da água no documento | **C2** | Dono passa do Faturamento à **Gestão Operacional**; a emissão congela o que imprimiu |
 | Modelo corporativo de gestão de ativos · geometria · topologia | **C4-i** | **Sem antecedente no núcleo do GSAN** — que tem objetos físicos (hidrômetro com ciclo de vida, estrutura operacional), mas não o modelo corporativo — Gestão de Ativos e Redes/GIS ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
+| 🆕 **Fatura do cliente responsável** (auditoria final, 2026-09-29) | **C1** | Documento **agregador** de cobrança: agrupa contas de vários imóveis de um cliente responsável; pago pelo código de barras próprio, o pagamento se desdobra em **um pagamento por conta**, tipo CONTA, com a Fatura como agregador (`ControladorArrecadacao:7217–7440`) — CEN-ARR-011 |
+| 🆕 **Sessão e proteção contra requisição forjada** (auditoria final) | **C3** | Cookie sem atributos e sem token anti-CSRF → cookie protegido e token em toda requisição que altera estado — **D-18**, CEN-SEG-012 |
 
 ---
 
@@ -366,7 +370,7 @@ a Cobrança ATUA sobre essa posição           (não a cria)
 | - | - |
 | **GSAN** | 🟢 Cinco tipos de documento convivem como destino de recebimento e como item de cobrança e parcelamento |
 | **OpenGSAN** | 🟡 **Pode** reconhecer conceitualmente uma obrigação financeira comum |
-| **Status** | 🔴 **`PROPOSTO`** — depende de esclarecer a semântica de "Fatura" e de verificar se os candidatos têm ciclo de vida realmente comum |
+| **Status** | 🔴 **`PROPOSTO`** — depende de ~~esclarecer a semântica de "Fatura"~~ (🆕 **esclarecida em 2026-09-29**: documento **agregador** de cobrança do cliente responsável — o pagamento se desdobra em um pagamento por conta, com a Fatura como agregador; **não é obrigação própria** — `ControladorArrecadacao:7217–7440`, CEN-ARR-011) e de verificar se os candidatos têm ciclo de vida realmente comum |
 | **Risco de antecipar** | Uma abstração errada aqui contamina Faturamento, Cobrança e Arrecadação **de uma vez** |
 
 ### 9.3 Negativação — domínio e integração separados
@@ -496,14 +500,14 @@ estado alterado                     o dono valida, aplica e responde
 
 🔵 **A lista acima é a resposta honesta a "o OpenGSAN é compatível com o GSAN?"**: em segurança, **deliberadamente não é** — e cada ponto tem registro, motivo e teste próprio sob o oráculo 2.
 
-### 12.3 🔴 Dois pendentes que mudam o desenho
+### 12.3 🔴 Pendentes que mudam o desenho — 🆕 um resolvido em 2026-09-29
 
 | Pendência | Situação | Bloqueia |
 | --------- | -------- | -------- |
 | **Aplicação da abrangência** (por chamada manual × por construção) | **C5** — depende de **D-17**, que continua `PROPOSTA` | O bloco S2 da Segurança. ⚠️ **COMPATIBILIDADE PENDENTE DE DECISÃO** — não tratar como aprovada |
-| **Existe mecanismo de negação?** (`UsuarioGrupoRestricao`) | **C5** — 🟢 a tabela existe; ⚠️ 🟢 **o uso no cálculo de autorização não foi observado** | 🔴 O modelo inteiro de autorização: *allow-only* × com *deny*. **Único bloqueio de dia 1** |
+| ~~**Existe mecanismo de negação?**~~ → **Restrição por usuário** (`UsuarioGrupoRestricao`) | **C1** — 🆕 **resolvido na auditoria final (2026-09-29)**: a restrição **participa** do cálculo — `FiltroSegurancaAcesso:219/241` → `ControladorAcessoSEJB` conta restrições do usuário sobre as concessões dos seus grupos; **acesso se restrições < concessões** (`:3104`, `:3517`). Semântica: subtrai um caminho de concessão, não *deny* global | ✅ Deixa de ser bloqueio de dia 1. Preservar a semântica — CEN-SEG-004 V7; anomalia de `:3072` como **CAND-05** |
 
-⚠️ **A existência da tabela não prova o uso** — a mesma lição registrada no catálogo de funcionalidades futuras para fiscal e SPED.
+⚠️ **A existência da tabela não prova o uso** — a mesma lição registrada no catálogo de funcionalidades futuras para fiscal e SPED. 🆕 E a lição inversa, aprendida na auditoria final: **a ausência de uso também precisa ser provada** — a leitura original parou antes do trecho que consultava a restrição.
 
 ### 12.4 Identidade interna ≠ cliente final
 
@@ -724,6 +728,7 @@ contrato de energia do imóvel         →  identificador externo genérico
 | **D-14** | Fronteira de módulo | Retificação escreve em `ConsumoHistorico` | Operação exposta pela Micromedição | Fronteira de agregado |
 | **D-15** | Consumo de fallback | Constante 20 em código | Parâmetro configurável | Constante mágica em caminho financeiro |
 | **D-16** | Credenciais de banco | Senha = login, versionada | Credencial por ambiente, menor privilégio | Acesso trivial |
+| 🆕 **D-18** | Sessão e requisição forjada | Cookie sem `HttpOnly`/`Secure`/`SameSite`; nenhum token anti-CSRF | Cookie protegido; token em toda requisição que altera estado | Achado 6 — ADR-0007 §9.4 (registrada na auditoria final) |
 
 ### 20.2 ⚠️ D-17 — compatibilidade **pendente de decisão**
 
@@ -754,6 +759,7 @@ COMPATIBILIDADE PENDENTE DE DECISÃO
 | - | -------- | -------- | -------------- |
 | **CAND-03** | **Contador de tentativas de login** | 🟢 Vive na **sessão HTTP** (`numeroTentativas`), logo tentativas distribuídas em sessões diferentes não somam. O mapa de segurança o classifica `REESTRUTURAR` e a visão conceitual (§26, linha 25) o descreve como "persistente" **atribuindo-o a D-01** — ⚠️ mas **o texto de D-01 cobre apenas o hash** | 🔴 **Lacuna de registro**, não só de caracterização: ampliar D-01 ou criar divergência própria. Até lá, a variação entre sessões fica **pendente de decisão** — CEN-SEG-002 V3 |
 | **CAND-04** | **Exceção de autorização por substring** `pesquisar`/`relatorio` | 🟢 Qualquer Action cujo nome contenha os termos **sai do bloco de autorização funcional** do filtro. Para `relatorio` no download, o acesso indevido já é **achado confirmado** (D-03). Para `pesquisar`, ❔ **depende de cada Action** | Condicional à caracterização — CEN-SEG-005. Se uma Action excepcionada retornar dado sem concessão, protegê-la exige divergência aprovada |
+| 🆕 **CAND-05** | **Composição do filtro de restrições por funcionalidade** | 🟢 No laço sobre as **concessões**, o marcador do último termo do `OR` usa `colecaoGruposUsuario.size()` (`ControladorAcessoSEJB:3072`) em vez do total de concessões — acrescentado na auditoria final (2026-09-29) | Condicional à caracterização — CEN-SEG-004 V7. Se o legado conceder ou negar diferente da regra "restrições < concessões", não reproduzir exige divergência aprovada |
 
 🔵 **Por que registrar candidatos importa**: sem isso, a primeira comparação que acusar diferença terá duas leituras possíveis — defeito ou melhoria — e a escolha será feita sob pressão de prazo, não por decisão.
 
@@ -778,7 +784,10 @@ COMPATIBILIDADE PENDENTE DE DECISÃO
 | **Benefício social tarifário** | Estrutura tarifária (**C1**) | 🔴 **Afeta o cálculo da conta** — o ponto de extensão nasce com a tarifa, não depois |
 | **Canal digital** | Conta, parcelamento, RA, cliente | 🔵 **Consome**; não é dono de nenhum — §21.1 |
 | **Identidade do cliente final** | Segurança (**C2**) | Tipo de ator distinto; não é RBAC |
-| **Documento fiscal** | Conta emitida | 🟡 Se decorrer da conta, o evento nasce no Faturamento. ⚠️ `EXIGE APROFUNDAMENTO` |
+| **Documento fiscal (NFAg)** | Conta emitida (**C2**) | 🆕 **Obrigação confirmada na auditoria final** — o Faturamento publica o **fato tributável**; o **Fiscal** é dono do documento fiscal. **Conta ≠ NFAg**: identidades separadas, vínculo rastreável *versão da conta ↔ documento fiscal* ([`fiscal.md`](../modulos/fiscal.md)) |
+| 🆕 **Tarifa Social nacional** (Lei 14.898/2024) | Estrutura tarifária (**C1**) · categoria | Benefício com ciclo próprio (concessão automática, vigência, perda); a tarifa social do legado é **extensão de companhia**, não oráculo |
+| 🆕 **Pix Cobrança · Pix Automático** | Recebimento (**C1**) · débito automático (**C1**) | Novos **meios** sob o mesmo ciclo de quatro momentos; a autorização recorrente generaliza a do débito automático sem fundi-los |
+| 🆕 **Devolução personalizada de IBS/CBS** | Conta emitida (**C2**) | Linha de devolução no documento, **regra do Fiscal** — ⚠️ `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` |
 
 ### 21.1 Portal / canal digital — canal consumidor, não dono
 
@@ -804,6 +813,7 @@ canal digital  ──consome──►  Faturamento · Cobrança · Atendimento �
 | **C3** | **2** | 🔴 **Diferença exigida**, conforme o `D-xx` | ⚠️ **Igualdade é defeito** |
 | **C4** | — | Nada a comparar | ⚠️ Afirmar equivalência é **erro de categoria** |
 | **C5** | — ou pendente | 🔴 **Bloqueado** quando a decisão muda o comportamento esperado; **especificável** quando a pendência é de representação e o oráculo já está fixado (§4.3) | — |
+| 🆕 *(fora da matriz)* **Requisito nativo** | **N** | Resultado esperado derivado da **norma ou da decisão registrada**, nunca do legado | **Defeito** do OpenGSAN — sem comparação com o GSAN |
 
 ### 22.1 Oráculo 1 — onde a igualdade é exigida
 
@@ -829,8 +839,8 @@ Segurança corrigida (D-01…D-11, D-16) · fronteiras corrigidas (D-14) · defe
 
 | # | Pendência | Afeta | Bloqueia |
 | - | --------- | ----- | -------- |
-| 1 | 🔴 **Semântica de "Fatura"** | A decisão sobre obrigação financeira comum | Formalizar o conceito (COB-02) |
-| 2 | 🔴 **Existe mecanismo de negação na autorização?** | O modelo inteiro de autorização | **Dia 1** da implementação |
+| 1 | ~~🔴 **Semântica de "Fatura"**~~ ✅ **Resolvida em 2026-09-29** — documento agregador (§5.2) | A decisão sobre obrigação financeira comum | Nada — a obrigação comum (COB-02) segue `PROPOSTO` por outro motivo: ciclo de vida comum não verificado |
+| 2 | ~~🔴 **Existe mecanismo de negação na autorização?**~~ ✅ **Resolvida em 2026-09-29** — restrição por usuário, por contagem (§12.3) | O modelo inteiro de autorização | Nada — ✅ deixa de ser bloqueio de dia 1 |
 | 3 | **Aprovação de D-17** | Aplicação do escopo territorial | O bloco S2 |
 | 4 | **Individualização de economia** | Granularidade da composição | Cadastro |
 | 5 | **Variantes reais por companhia** | Desenho do ponto de extensão tarifário | Faturamento |
@@ -841,7 +851,7 @@ Segurança corrigida (D-01…D-11, D-16) · fronteiras corrigidas (D-14) · defe
 
 🔵 **Leitura para a próxima atividade**, com a distinção que a contagem obriga a fazer:
 
-- **Sete são conceitos `C5`** (1, 2, 3, 6, 7, 8, 9). ⚠️ **Refinado em 2026-09-28**: só **três** (1, 2, 3) bloqueiam cenário — nelas a decisão muda o comportamento esperado. Nas outras quatro a pendência é de representação ou de caracterização, e o cenário é especificável (§4.3).
+- **Sete eram conceitos `C5`** (1, 2, 3, 6, 7, 8, 9). ⚠️ **Refinado em 2026-09-28**: só **três** (1, 2, 3) bloqueavam cenário. 🆕 **Auditoria final (2026-09-29)**: 1 e 2 resolvidas por evidência de código — **resta uma** que bloqueia cenário (3, D-17). Nas outras a pendência é de representação ou de caracterização, e o cenário é especificável (§4.3).
 - **Duas (4 e 5) não são `C5`**: os conceitos que elas afetam — Economia e variação por companhia — já estão **decididos como `C2`**. O que falta é **granularidade** (a economia é individualizável?) e **inventário** (quais são as variantes reais). 🔵 Seus cenários **podem** ser especificados no nível já decidido; o que não se pode é especificar o nível mais fino.
 
 ---
@@ -867,17 +877,17 @@ Segurança corrigida (D-01…D-11, D-16) · fronteiras corrigidas (D-14) · defe
 
 > **O OpenGSAN continua sendo funcionalmente reconhecível como evolução do GSAN?**
 
-🟢 **Sim, e com margem larga.** Dos **145 conceitos centrais classificados, 115 preservam a semântica** — 90 sem qualquer mudança. Os quatro padrões estruturais do GSAN (regra como dado · identidade + versão + linhagem · snapshot · informado × efetivo) atravessam o OpenGSAN inteiro. **Todo o cálculo financeiro é equivalência estrita.**
+🟢 **Sim, e com margem larga.** Dos **145 conceitos centrais classificados, 116 preservam a semântica** — 91 sem qualquer mudança (🆕 recontado em 2026-09-29, com a restrição por usuário resolvida como C1). Os quatro padrões estruturais do GSAN (regra como dado · identidade + versão + linhagem · snapshot · informado × efetivo) atravessam o OpenGSAN inteiro. **Todo o cálculo financeiro é equivalência estrita.**
 
 > **E onde escolhemos conscientemente deixar de ser iguais?**
 
-Em **três lugares, todos registrados** — 16 divergências, nenhuma em regra de negócio:
+Em **três lugares, todos registrados** — 16 divergências, nenhuma em regra de negócio (🆕 **17** com a D-18, de sessão e CSRF, registrada na auditoria final):
 
 1. 🔴 **Segurança** — **11** (D-01…D-11). O legado autentica com hash sem salt, expõe endpoints sem credencial, entrega artefato sem dono e versiona segredo em código. Igualdade aqui seria reproduzir a falha.
 2. **Fronteira e mecanismo** — **4** (D-12, D-14, D-15, D-16): escrita cruzada entre módulos, escrita no banco do parceiro, constante mágica em caminho financeiro, credencial de banco trivial.
 3. **Um defeito funcional** — **D-13**, o SMS que envia sempre a mensagem errada. O legado está errado; isso não é regra de negócio a preservar.
 
-⚠️ **E em sete conceitos ainda não escolhemos**, mais duas pendências de refinamento (§23) — registrados como pendência, não disfarçados de decisão. Somam-se a eles **quatro candidatos a divergência** (§20.3 — dois acrescentados em 2026-09-28), que dependem de caracterização ou de ajuste do registro para virar decisão.
+⚠️ **E em seis conceitos ainda não escolhemos** (🆕 sete até a auditoria final resolver a negação), mais duas pendências de refinamento (§23) — registrados como pendência, não disfarçados de decisão. Somam-se a eles **cinco candidatos a divergência** (§20.3 — dois acrescentados em 2026-09-28 e um, CAND-05, na auditoria final), que dependem de caracterização ou de ajuste do registro para virar decisão.
 
 ---
 
