@@ -2,6 +2,8 @@
 
 > **Fase 0 — revisão controlada de escopo (21ª execução, 2026-09-28).** Define **papéis e ownership** entre Gestão de Ativos, Redes/GIS, Gestão Operacional e Atendimento e Execução, e o papel de Giswater, QGIS, QGIS Server, QField e EPANET/SWMM. Responde às perguntas do critério de saída da revisão (§11).
 >
+> 🆕 **Adendo pós-Fase 0 (2026-09-29)**: *mincut* × **Parada** — o cálculo de isolamento é de Redes/GIS; a Parada é da Gestão Operacional ([`paradas-interrupcoes.md`](../dominio/paradas-interrupcoes.md)). Pontos tocados: §6, §8, §12, §13.
+>
 > ⚠️ **Não decide** schema, tabelas, chaves, PostGIS, sincronização, eventos nem REST. Decisão estrutural: [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md).
 
 ---
@@ -86,6 +88,8 @@ Formas de consumo (§7): **R** referência · **P** projeção · **S** snapshot
 | Plano, necessidade e histórico de manutenção; custo técnico | **Gestão de Ativos** | Analytics (P) · ERP — custo (exportação) | [PROP] |
 | Geometria (ponto da válvula, traçado da tubulação) | **Redes/GIS** | Ativos, QGIS, QField, Analytics (R/P) | [PROP] |
 | Topologia (conectividade) | **Redes/GIS** | Engenharia, mincut (—) | [PROP] |
+| 🆕 Análise de isolamento (*mincut*) — válvulas, elementos afetados, extensão, estado da análise | **Redes/GIS** (Giswater, quando usado) | Gestão Operacional — Parada (S: **snapshot versionado** do impacto, com data do cálculo e versão da topologia) | [REF] + [DEC] |
+| 🆕 **Parada** — identidade, tipo, estado, previsão, realizado | **Gestão Operacional** | Redes/GIS (R — comanda a análise), Notificação (R), Atendimento (R), Gerencial (P) | [DEC] |
 | Zona a que pertence uma ligação (DMA, setor, zona de pressão) | **Redes/GIS** — derivada da rede | Gestão Operacional (P) | [PROP] |
 | Identidade, nome e responsável de uma unidade operacional | **Gestão Operacional** | Atendimento (R), Analytics (R) | [PROP] |
 | Correspondência território comercial ↔ unidade operacional | **Gestão Operacional** — mantida **ou** derivada de geometria | Atendimento, Faturamento (P) | [PEND] |
@@ -118,13 +122,16 @@ Todo atributo que atravessa ferramentas tem **um** dono e **uma** forma de consu
 
 ---
 
-## 8. Fronteira Operacional × Redes/GIS × Ativos — três exemplos
+## 8. Fronteira Operacional × Redes/GIS × Ativos — exemplos
 
 | Objeto | Gestão Operacional | Redes/GIS | Gestão de Ativos | Atendimento e Execução |
 | ------ | ------------------ | --------- | ---------------- | ---------------------- |
 | **Distrito operacional** | Identidade, nome, unidade responsável, calendário | Polígono — possivelmente derivado da topologia | — | Consulta para rotear e programar |
 | **Estação elevatória** | Unidade operacional: o que ela abastece, volumes | Ponto no mapa; nó na rede | A instalação e seus componentes (bombas, painéis, macromedidor) | Executa a manutenção |
 | **Válvula** | — | Ponto; papel na topologia; efeito no mincut | A peça: identidade, estado, condição, manutenção | Executa a **manobra** e registra o resultado |
+| 🆕 **Parada** | **Dona**: o fato operacional — tipo, estado, previsão, realizado | Calcula o impacto (*mincut*) — sem posse; a projeção espacial é geometria sua | Necessidade de manutenção (PCM) que pede a janela | Executa manobra, reparo e normalização por **OS** |
+
+🆕 [DEC] **O estado do *mincut* é estado da análise; o da Parada, do fato operacional.** Segundo a API oficial do Giswater, o *mincut* tem estados próprios (planejado, em curso, encerrado, cancelado, em planejamento, **em conflito**) e operações de iniciar, encerrar e cancelar — ciclo que **não** pode ser o da Parada. Se a instalação usar esse ciclo, o adaptador o **comanda a partir da Parada**, nunca o inverso ([`paradas-interrupcoes.md §7`](../dominio/paradas-interrupcoes.md#7-giswater--o-que-o-mincut-faz)).
 
 ---
 
@@ -183,11 +190,12 @@ PostGIS no banco do OpenGSAN · mecanismo de sincronização · eventos · REST 
 | 4 | QGIS Server como publicação; QField como cliente oficial de campo |
 | 5 | Visitas e campanhas do Giswater × OS |
 | 6 | Os dois conceitos de DMC do legado (núcleo 2023 × satélite) |
+| 7 🆕 | Protocolo do adaptador Parada ↔ *mincut* — nada decidido ([`paradas-interrupcoes.md §16`](../dominio/paradas-interrupcoes.md#16-pendências)) |
 
 ---
 
 ## 13. Fontes externas
 
-Giswater — [software](https://www.giswater.org/software/?lang=en) · [documentação (GitHub)](https://github.com/Giswater/docs) · [mincut](https://docs.giswater.org/master/en/docs/giswater/for-users/dialogs/mincut.html) · [algoritmo de mapzones](https://github.com/Giswater/giswater_dbmodel/wiki/Mapzones-algorithm) · [API v1.8.0](https://github.com/giswater/api/releases/tag/v1.8.0) · [Giswater 4 — FOSS4G Europe 2025](https://talks.osgeo.org/foss4g-europe-2025/talk/ETPJKW/) — QGIS Server — [serviços](https://docs.qgis.org/3.44/en/docs/server_manual/services.html) — QField — [QField](https://qfield.org/) · [QFieldCloud](https://qfield.cloud/) — openMAINT/CMDBuild — [funcionalidades](https://www.openmaint.org/en/product/features) · [CMDBuild](https://www.cmdbuild.org/en/products/cmdbuild) — GeoSan — [Nexus](https://www.nexusbr.com/es/geosan) · [Portal do Software Público](https://softwarepublico.gov.br/social/gsan).
+Giswater — [software](https://www.giswater.org/software/?lang=en) · [documentação (GitHub)](https://github.com/Giswater/docs) · [mincut](https://docs.giswater.org/master/en/docs/giswater/for-users/dialogs/mincut.html) · [algoritmo de mapzones](https://github.com/Giswater/giswater_dbmodel/wiki/Mapzones-algorithm) · [API v1.8.0](https://github.com/giswater/api/releases/tag/v1.8.0) · 🆕 [API — repositório, lido em 2026-09-29](https://github.com/Giswater/api) · 🆕 protocolo *P16 — mincut basics* no [repositório de documentação](https://github.com/Giswater/docs) · [Giswater 4 — FOSS4G Europe 2025](https://talks.osgeo.org/foss4g-europe-2025/talk/ETPJKW/) — QGIS Server — [serviços](https://docs.qgis.org/3.44/en/docs/server_manual/services.html) — QField — [QField](https://qfield.org/) · [QFieldCloud](https://qfield.cloud/) — openMAINT/CMDBuild — [funcionalidades](https://www.openmaint.org/en/product/features) · [CMDBuild](https://www.cmdbuild.org/en/products/cmdbuild) — GeoSan — [Nexus](https://www.nexusbr.com/es/geosan) · [Portal do Software Público](https://softwarepublico.gov.br/social/gsan).
 
-⚠️ Conteúdo obtido por **resumo de mecanismo de busca** sobre essas páginas: os hosts de documentação estão bloqueados para leitura direta nesta sessão. **Pesquisa externa informa requisitos; não substitui decisão arquitetural.**
+⚠️ Conteúdo obtido por **resumo de mecanismo de busca** sobre essas páginas: os hosts de documentação estão bloqueados para leitura direta nesta sessão. 🆕 No adendo pós-Fase 0, a API e o protocolo P16 foram lidos **diretamente nos repositórios públicos** do projeto Giswater — o site de documentação seguia bloqueado. **Pesquisa externa informa requisitos; não substitui decisão arquitetural.**

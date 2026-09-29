@@ -14,6 +14,7 @@ Uma decisão por arquivo, numerada. Status: Proposta → Aceita → (Substituíd
 | [0006](0006-modelo-de-dados-evolutivo.md) | Modelo de dados evolutivo (`PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR`) | **Aceita** | 2026-08-13 (calibrada 2026-09-15) |
 | [0007](0007-arquitetura-de-interface.md) | **Arquitetura de interface: canais sobre casos de uso** — backoffice server-driven com aprimoramento progressivo; portal como canal próprio; contratos explícitos para integrações, campo e GIS; autorização no caso de uso; relatórios por caso de uso autorizado | **Aceita** | 2026-09-14 (decidida 2026-09-29) |
 | [0008](0008-gestao-de-ativos-nativa.md) | **Gestão de Ativos nativa**; Giswater para redes, GIS e engenharia (não EAM, não obrigatório); OS não duplicada; identidade corporativa única do ativo; ownership explícito por atributo | **Aceita** | 2026-09-28 |
+| [0009](0009-sinisa-preenchimento-manual.md) | **SINISA manual por padrão** — e, na versão inicial, exclusivamente manual; sem mapeamento universal; métrica interna ≠ informação SINISA; automação futura só por mapeamento da companhia, **desligada por padrão**; mudança de glossário exige revalidação | **Aceita** | 2026-09-29 (adendo pós-Fase 0) |
 
 Obs.: os arquivos das ADRs 0004 e 0005 mantêm os nomes originais (`0004-encoding-latin1-...`, `0005-sisan-...`) para preservar links; o conteúdo registra a decisão vigente e o histórico da substituição.
 

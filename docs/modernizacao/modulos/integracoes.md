@@ -381,6 +381,7 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 | **PSP Pix** — cobrança, confirmação assíncrona idempotente, conciliação, devolução | Arrecadação | 5 |
 | **Pix Automático** — autorização e agendamento via PSP | Arrecadação | 6 |
 | **Bases oficiais de elegibilidade** (CadÚnico/BPC) | Cadastro (elegibilidade) | 4 — antes da operação |
-| **SINISA · SISAGUA · regulador local** — prestação de informações | Donos dos dados primários + Analytics | Após a operação — antes do primeiro ciclo anual |
+| **SISAGUA · regulador local** — prestação de informações | Donos dos dados primários | Após a operação — antes do primeiro ciclo anual |
+| 🆕 **SINISA** — ~~prestação por adapter~~ **nenhum adapter na V1**: preenchimento e submissão **manuais** (adendo pós-Fase 0, [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)); se existir arquivo oficial — **pendente por fonte** —, adapter acionado por pessoa | **Prestação de Informações** — Workspace SINISA | Só com mecanismo oficial confirmado |
 
 Detalhe em [`auditoria/completude-funcional-regulatoria.md`](../auditoria/completude-funcional-regulatoria.md) e [`fiscal.md`](fiscal.md).

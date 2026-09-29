@@ -12,6 +12,8 @@
 
 🆕 **Auditoria final (2026-09-29)**: o **Fiscal** entrou como módulo — a **NFAg (modelo 75)** é obrigação dos prestadores de água e esgoto, com ciclo próprio (autorização, eventos, contingência, guarda); **Conta ≠ NFAg**. PIX e boleto registrado passaram à **Arrecadação/Pagamentos** (Etapa 5), Pix Automático à Etapa 6, e a Tarifa Social nacional à Etapa 4 com concessão automática antes da operação. Veredito e matrizes em [`../auditoria/`](../auditoria/auditoria-final-fase0.md).
 
+🆕 **Adendo pós-Fase 0 (2026-09-29)** — sem reabrir a Fase 0: [PCM](../dominio/pcm.md) (capacidade da Gestão de Ativos), [Paradas](../dominio/paradas-interrupcoes.md) (Gestão Operacional), [Workspace SINISA manual](../regulatorio/sinisa.md) (módulo *Prestação de Informações*, [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)) e [Gerencial & Analytics](../analytics/gerencial-analytics.md). Não são mapas funcionais: não há comportamento GSAN a mapear.
+
 **Além dos treze mapas** (doze do GSAN e o Fiscal), esta pasta contém:
 
 - [Catálogo de funcionalidades futuras](funcionalidades-futuras.md) — 26 capacidades do legado que **não são módulos**.
@@ -33,9 +35,13 @@
 | **5** | **Recebimento** | Recepção → classificação → aplicação → conciliação · **posição de dívida como consulta derivada** · assíncrono genérico · 🆕 **Pix Cobrança · boleto registrado** | Pendente |
 | **6** | **Cobrança** | Política · ação · documento · **parcelamento** · negativação · terceirização · notificação · 🆕 **Pix Automático** | Pendente |
 | **7** | **Escala** | **Faturamento em lote** (unidade = rota) · arrecadação mensal · encerramentos · resumos financeiros · 🆕 **Contabilização** (lançamentos, devedores duvidosos, exportação por adaptador) · 🆕 **NFAg em lote, contingência e eventos** · 🆕 concessão automática da Tarifa Social | Pendente |
-| **8** | **Canais e evoluções** | **Identidade do cliente final** · canal digital (🆕 apresenta Pix e boleto) · bureau, telemetria, analytics, GIS · 🆕 prestação de informações regulatórias | Pendente |
+| **8** | **Canais e evoluções** | **Identidade do cliente final** · canal digital (🆕 apresenta Pix e boleto) · bureau, telemetria, GIS · ~~analytics~~ · ~~prestação de informações regulatórias~~ — 🆕 ver trilhas abaixo | Pendente |
 
-🆕 **Trilha estrutural** — Gestão de Ativos, Redes/GIS (Giswater opcional), Engenharia/Simulação: **pode começar depois da Etapa 2**, em paralelo ou depois das Etapas 3–7; **não é décima etapa** e **não bloqueia** nenhum gate do núcleo comercial ([§24.2](dependencias-e-ordem-implementacao.md)).
+🆕 **Trilha estrutural** — Gestão de Ativos, Redes/GIS (Giswater opcional), Engenharia/Simulação: **pode começar depois da Etapa 2**, em paralelo ou depois das Etapas 3–7; **não é décima etapa** e **não bloqueia** nenhum gate do núcleo comercial ([§24.2](dependencias-e-ordem-implementacao.md)). 🆕 Adendo: **PCM** depois de Ativos + OS; **Parada** depois da Gestão Operacional mínima — o GIS **agrega** o cálculo de impacto.
+
+🆕 **Trilha regulatória** — **Workspace SINISA manual**, quando os glossários do ciclo estiverem definidos, **sem depender do Analytics**; automação **fora** da ordem inicial ([§24.3](dependencias-e-ordem-implementacao.md)).
+
+🆕 **Gerencial & Analytics** — **incremental**: cada métrica entra quando o seu fato existe; nenhum gate depende dele ([§24.4](dependencias-e-ordem-implementacao.md)).
 
 **Transversais desde a Etapa 0** (⚠️ não são fases finais): testes · auditoria · S1 · log com correlação · configuração externa · neutralidade institucional · convenção monetária · verificação de fronteira · revisão desta matriz ao fim de cada etapa.
 

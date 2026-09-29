@@ -4,6 +4,8 @@
 >
 > **Pergunta**: *se começássemos a implementação amanhã, existe alguma obrigação, capacidade ou domínio fundamental de uma companhia moderna de água e esgoto que descobriríamos tarde demais porque a Fase 0 não o enxergou?*
 >
+> 🆕 **Adendo pós-Fase 0 (2026-09-29)** — notas datadas nas linhas de SINISA, contingência operacional e NR 11 (§2, §3.1, §6, §10). O registro da auditoria **não foi reescrito**: as notas dizem o que mudou depois, e por quê ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md), [`paradas-interrupcoes.md`](../dominio/paradas-interrupcoes.md)).
+>
 > ⚠️ **Não implementa, não modela, não escolhe fornecedor, leiaute, PSP, plataforma ou biblioteca.** Onde uma interpretação jurídica ou fiscal não pôde ser confirmada, a linha diz `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` — nunca uma conclusão presumida.
 
 ---
@@ -54,14 +56,14 @@
 | Qualidade | Informação mensal na conta e relatório anual ao consumidor | Decreto 5.440/2005 | ✅ CEN-OPE-003 | **L0** | Gestão Operacional + emissão | **JÁ COBERTO** — o DANFAG também exibe qualidade |
 | Qualidade | Ciclo de controle — plano, amostra, parâmetro, resultado, limite, conformidade, ação | Portaria GM/MS 888/2021 | ⚠️ Qualidade por fonte para a conta; controle no satélite | **L3** | Gestão Operacional | **DEFERIDO** — catálogo N3; laboratório: opção C (§10) |
 | Qualidade | Prestação ao SISAGUA | Portaria GM/MS 888/2021; SISAGUA | ❌ Ausente | **L4** | Integrações + Gestão Operacional | **DEFERIDO** — adapter, sem leiaute no domínio |
-| Prestação de informações | **SINISA** anual — condição de acesso a recursos federais | Ministério das Cidades — SINISA; Portaria MCID nº 1.069 | ⚠️ Catálogo 22 (RA ao regulador) | **L1** | Donos + Analytics + Integrações | **CORRIGIDO** — capacidade transversal (§10); implementação **DEFERIDA** |
+| Prestação de informações | **SINISA** anual — condição de acesso a recursos federais | Ministério das Cidades — SINISA; Portaria MCID nº 1.069 | ⚠️ Catálogo 22 (RA ao regulador) | **L1** | ~~Donos + Analytics + Integrações~~ 🆕 **Prestação de Informações** — Workspace SINISA **manual** (adendo pós-Fase 0, ADR-0009) | **CORRIGIDO** — capacidade transversal (§10); implementação **DEFERIDA** · 🆕 adendo: premissa de preenchimento derivado **corrigida** — [`sinisa.md`](../regulatorio/sinisa.md) |
 | Metrologia | Verificação metrológica, selo, certificado, validade do medidor | Portarias Inmetro 155/2022 e 78/2022 | ⚠️ Hidrômetro sem verificação metrológica | **L3** | Micromedição + Ativos | **PENDENTE POR FONTE** — obrigações do **prestador** não confirmadas |
 | Privacidade | Finalidade, retenção, bloqueio, anonimização, correção, exportação — por fluxo | LGPD | ⚠️ Genérico | **L1** | Segurança + donos | **CORRIGIDO** — §7 |
 | Atendimento digital | 2ª via, débito, certidão, parcelamento, RA, acompanhamento | Legado (portal) | ✅ Catálogo 04; ADR-0007 §12 | **L0** | Canal digital | **JÁ COBERTO** |
 | Comunicação | **Evento de negócio ≠ canal**; comunicações obrigatórias | NR 11; Lei 14.898/2024; Decreto 5.440/2005 | ⚠️ Padrão T2 genérico; SMS com defeito (D-13) | **L1** | Donos (evento) + Notificação (canal) | **CORRIGIDO** — §8 |
 | Documentos e evidências | Armazenamento, metadados, dono, acesso, retenção, integridade | — | ⚠️ T1 e T4 como padrões soltos | **L1** | Plataforma + donos | **CORRIGIDO** — §6, sem ECM |
 | Acessibilidade | WCAG no canal web; documento acessível; atendimento assistido | ADR-0007 §7.3 (WCAG 2.2 AA); legado (conta em braile) | ✅ ADR-0007; catálogo 07 | **L0** | Canais + emissão | **JÁ COBERTO** |
-| Contingência operacional | Interrupção programada e emergencial, racionamento, área afetada, comunicação | NR ANA 11/2024 | ⚠️ Programação de abastecimento/manutenção × RA de falta d'água (CEN-OPE-002) | **L1** | Gestão Operacional + Notificação | **CORRIGIDO** — evento operacional (catálogo N2; adendo do Operacional) |
+| Contingência operacional | Interrupção programada e emergencial, racionamento, área afetada, comunicação | NR ANA 11/2024 | ⚠️ Programação de abastecimento/manutenção × RA de falta d'água (CEN-OPE-002) | **L1** | Gestão Operacional + Notificação | **CORRIGIDO** — evento operacional (catálogo N2; adendo do Operacional) · 🆕 adendo pós-Fase 0: **Parada / interrupção operacional** — [`paradas-interrupcoes.md`](../dominio/paradas-interrupcoes.md) |
 | Perdas | Dados para balanço hídrico | — | ⚠️ Volumes não faturados; índices degenerados no satélite | **L3** | Gestão Operacional + Analytics | **DEFERIDO** — dados necessários identificados (§10) |
 | Telemetria | Ponto, série, unidade, qualidade da medição, origem, vínculo | — | ⚠️ Origem de leitura (catálogo 17) | **L3** | Micromedição · Ativos | **DEFERIDO** — requisitos mínimos registrados (§10) |
 | Energia | Consumo e custo energético | — | ❌ Ausente | **L3** | Ativos + Analytics | **DEFERIDO** — atributo/indicador, sem módulo |
@@ -115,8 +117,8 @@
 | Cobrança e suspensão por inadimplência | Aviso prévio, prazos, vedações | Cobrança + Atendimento | Sequência aviso → corte parametrizada (CEN-COB-003) | **REGRA DO REGULADOR LOCAL** |
 | Suspensão por irregularidade técnica | Ligação clandestina, religação à revelia, instalação deficiente | Atendimento + Cadastro | Situações da ligação e OS (CEN-CAD-004) | **COBERTO** |
 | Religação normal e de urgência | Prazos e valores informados ao usuário | Atendimento + Cobrança | OS de religação; valor do serviço (CEN-ATE-008) | **REGRA DO REGULADOR LOCAL** |
-| Interrupção programada | Comunicação prévia ao regulador e aos usuários | Gestão Operacional + Notificação | Programação × falta d'água (CEN-OPE-002); sem evento com área afetada | **PARCIAL** — evento operacional registrado (catálogo N2) |
-| Interrupção emergencial e racionamento | Registro, área afetada, comunicação | Gestão Operacional | ❌ Sem conceito explícito | **AUSENTE** → registrado como evolução (N2) |
+| Interrupção programada | Comunicação prévia ao regulador e aos usuários | Gestão Operacional + Notificação | Programação × falta d'água (CEN-OPE-002); sem evento com área afetada | **PARCIAL** — evento operacional registrado (catálogo N2) · 🆕 adendo: Parada programada especificada (CEN-PAR-001) |
+| Interrupção emergencial e racionamento | Registro, área afetada, comunicação | Gestão Operacional | ❌ Sem conceito explícito | **AUSENTE** → registrado como evolução (N2) · 🆕 adendo: Parada emergencial especificada (CEN-PAR-002); racionamento = **plano** que gera paradas |
 | Atendimento | Canais, protocolo, prazos de resposta | Atendimento | RA com protocolo, especificação com prazo (CEN-ATE-005) | **COBERTO** · prazos **PARAMETRIZÁVEL** |
 | Padrões de atendimento e informação ao regulador | Indicadores e dados ao regulador | Atendimento + prestação de informações | Dados complementares do RA ao regulador (catálogo 22) | **PARCIAL** |
 | Obrigações do usuário | Violação de medidor, intervenção na ligação | Micromedição + Atendimento | Fiscalização de leitura e anormalidades | **COBERTO** |
@@ -196,7 +198,7 @@ Arrecadação
 | **Regenerável** | Conta impressa, DANFAG, relatório | Operacional | Regenerado a partir do dado |
 | **Evidência** | Foto de campo, anexo de OS | Política da companhia | Imutável |
 | **Pessoal** | Documento do cliente | Finalidade + LGPD (§7) | Correção pelo dono |
-| **Regulatório** | O que foi prestado ao SINISA, SISAGUA, regulador | Rastreabilidade da informação prestada | Imutável |
+| **Regulatório** | O que foi prestado ao SINISA, SISAGUA, regulador — 🆕 declaração SINISA versionada, evidências e comprovantes ([`sinisa.md §13`](../regulatorio/sinisa.md#13-rastreabilidade-da-declaração)) | Rastreabilidade da informação prestada | Imutável |
 
 ---
 
@@ -259,7 +261,7 @@ Tratado na [visão conceitual §27.3](../dominio/visao-conceitual-opengsan.md): 
 | **Qualidade — conceitos** | Plano de amostragem · ponto de coleta · amostra · coleta · parâmetro · resultado · limite · conformidade · não conformidade · ação · histórico — **evolução** da Gestão Operacional (catálogo N3) |
 | **Laboratório** | **Opção C**: receber resultados de LIMS/laboratório externo **primeiro** (B); ciclo laboratorial próprio (A) como opção futura. ❌ Nenhum módulo Laboratório |
 | **SISAGUA** | Integração regulatória — **adapter**; o leiaute atual não entra no domínio |
-| **SINISA** | 🔴 **Não é BI**: exige dado primário, consolidação por período, validação, responsável, submissão, **histórico do que foi prestado** e rastreabilidade. Capacidade transversal **Prestação de Informações Regulatórias**: dados primários nos donos; consolidação e indicadores em Analytics; validação e submissão por Integrações; o que foi prestado guardado como documento regulatório (§6). ❌ Nenhum módulo *Regulação* |
+| **SINISA** | 🔴 **Não é BI**: exige dado primário, consolidação por período, validação, responsável, submissão, **histórico do que foi prestado** e rastreabilidade. Capacidade transversal **Prestação de Informações Regulatórias**: dados primários nos donos; consolidação e indicadores em Analytics; validação e submissão por Integrações; o que foi prestado guardado como documento regulatório (§6). ❌ Nenhum módulo *Regulação*. 🆕 **Adendo pós-Fase 0 — premissa corrigida**: consolidar métricas internas e submetê-las presumia equivalência semântica com o glossário do ciclo. O SINISA passa a **manual por padrão** — e só manual na V1 —, num **Workspace dono da declaração** (módulo *Prestação de Informações*), com glossário versionado, fonte, evidência, aprovação e retificação; o Analytics só oferece referência ([`sinisa.md`](../regulatorio/sinisa.md), [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)). *Não é BI* continua valendo |
 | **Metrologia** | O equipamento já tem classe metrológica, vazões, revisão e garantia. Verificação, selo/lacre, certificado e validade entram **como atributos**, se confirmado que a obrigação recai sobre o prestador — **PENDENTE POR FONTE** |
 | **Perdas** | Sem metodologia. Os dados do balanço hídrico **poderão existir**: consumo micromedido (Micromedição), volume faturado (Faturamento), volume macromedido e setor (Gestão Operacional, Ativos, Redes), séries de telemetria. Os índices do satélite do GSAN são **degenerados** e não são requisito |
 | **Telemetria** | Mínimo a não inviabilizar: identidade do **ponto** de medição (vinculada a ativo ou rede), **série temporal**, **unidade**, **qualidade da medição**, **origem** e vínculo **vigente** com o ativo. Nenhuma plataforma IoT escolhida |

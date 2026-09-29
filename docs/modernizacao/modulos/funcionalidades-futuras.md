@@ -5,6 +5,8 @@
 > ⚠️ **Não implementa, não modela e não prioriza por data.** Nenhuma tabela, schema, migration ou escolha de ferramenta. Nenhuma funcionalidade entra no núcleo por este documento.
 >
 > 🆕 **Auditoria final da Fase 0 (2026-09-29)**: a varredura por **fonte oficial** reclassificou o documento fiscal (**NFAg**) e a **Tarifa Social** como **capacidades regulatórias necessárias**, reclassificou o SPED do legado como integração, reposicionou o PIX na **Arrecadação/Pagamentos** e acrescentou três capacidades sem origem no legado (§28). Detalhe na [matriz de completude](../auditoria/completude-funcional-regulatoria.md).
+>
+> 🆕 **Adendo pós-Fase 0 (2026-09-29)**: N2 passa a **Parada / interrupção operacional**; entram **N4 — PCM** e **N5 — Workspace SINISA** (§28); a capacidade 22 perde o SINISA para N5 ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)); a 23 passa a **Gerencial & Analytics** ([`gerencial-analytics.md`](../analytics/gerencial-analytics.md)). Nenhum eixo do §4 muda — conferido por script.
 
 ---
 
@@ -107,7 +109,7 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 | **H3** — plataforma ampliada | 5 |
 | **ESPECÍFICA** | 1 |
 
-⚠️ **Os totais acima foram conferidos por script contra a tabela do §4** — não são estimativas de leitura. 🆕 **Recontados em 2026-09-28** depois da correção da capacidade 10 (integração contábil: *módulo opcional / apenas evidência* → **core futuro / comprovada** — ver [`procedencia.md §4`](../procedencia.md)). 🆕 **Recontados de novo em 2026-09-29**, na auditoria final: capacidades 08 e 11 → **capacidade regulatória necessária**, 09 → **integração**, 08 de H2 → **H1**. Cada eixo soma 26; as três capacidades **sem origem no legado** (§28) são contadas à parte. As oito especificidades de companhia do §21 **não entram nesta contagem**: são *instâncias* de capacidades genéricas já catalogadas, não capacidades adicionais.
+⚠️ **Os totais acima foram conferidos por script contra a tabela do §4** — não são estimativas de leitura. 🆕 **Recontados em 2026-09-28** depois da correção da capacidade 10 (integração contábil: *módulo opcional / apenas evidência* → **core futuro / comprovada** — ver [`procedencia.md §4`](../procedencia.md)). 🆕 **Recontados de novo em 2026-09-29**, na auditoria final: capacidades 08 e 11 → **capacidade regulatória necessária**, 09 → **integração**, 08 de H2 → **H1**. Cada eixo soma 26; as três capacidades **sem origem no legado** (§28) são contadas à parte — 🆕 **cinco** desde o adendo pós-Fase 0. As oito especificidades de companhia do §21 **não entram nesta contagem**: são *instâncias* de capacidades genéricas já catalogadas, não capacidades adicionais.
 
 🔵 **Três leituras do conjunto:**
 
@@ -142,8 +144,8 @@ Também não entram: tabelas isoladas, campos isolados, customizações sem flux
 | 19 | **Gestão de contrato de empresa de campo** | Medir e pagar serviço de terceiro por produção | Atendimento e Execução | MÓDULO OPCIONAL | Parcial | H3 |
 | 20 | **Bureau de crédito** | Negativar e reabilitar devedor | Cobrança + Integrações | **INTEGRAÇÃO** | Comprovada | H2 |
 | 21 | **Cobrança terceirizada por resultado** | Entregar carteira a empresa e remunerar por recuperação | Cobrança | MÓDULO OPCIONAL | Comprovada | H2 |
-| 22 | **Prestação de contas regulatória** — 🆕 **prestação de informações regulatórias** (regulador, SINISA, SISAGUA) | Responder à agência reguladora e aos sistemas nacionais de informação | 🆕 Donos dos dados primários + Analytics + Integrações — **capacidade transversal**, sem módulo | **INTEGRAÇÃO** | Parcial | H2 |
-| 23 | **Análise gerencial (BI)** | Acompanhar indicadores sem onerar o transacional | ⚠️ **Candidato a capacidade Analytics** | **INTEGRAÇÃO** | Parcial | H3 |
+| 22 | **Prestação de contas regulatória** — 🆕 **prestação de informações regulatórias** (regulador, SISAGUA; 🆕 SINISA → N5) | Responder à agência reguladora e aos sistemas nacionais de informação | 🆕 Donos dos dados primários + Integrações — regulador e SISAGUA; 🆕 **o SINISA saiu para o Workspace manual** (N5, ADR-0009) | **INTEGRAÇÃO** | Parcial | H2 |
+| 23 | **Análise gerencial (BI)** | Acompanhar indicadores sem onerar o transacional | 🆕 **Gerencial & Analytics** — capacidade transversal consumidora de fatos; métricas **incrementais**, plataforma rica em H3 | **INTEGRAÇÃO** | Parcial | H3 |
 | 24 | **Georreferenciamento (GIS)** | Localizar imóveis e ocorrências no território | Integrações — ⚠️ **hoje só integração** | **INTEGRAÇÃO** | Comprovada | H3 |
 | 25 | **Armazenamento de documentos** | Guardar arquivos fora do banco transacional | Plataforma | **INTEGRAÇÃO** | ⚠️ Apenas evidência | H3 |
 | 26 | **APIs para terceiros e dispositivos** | Permitir que outros sistemas consultem e operem | Integrações | **CORE FUTURO** | Comprovada | **H1** |
@@ -598,9 +600,10 @@ DOMÍNIO GIS NATIVO FUTURO     visão estratégica do OpenGSAN (rede, ativos, tr
 | Candidato | Justificativa | Contra-argumento | Situação |
 | --------- | ------------- | ---------------- | -------- |
 | **Fiscal** | 🟢 Schema próprio de 14 tabelas; ciclo próprio (documento fiscal tem numeração, cancelamento e prazo legais distintos do documento comercial); depende de legislação que varia; e o SPED depende dele | ⚠️ Comportamento **não observável** nesta branch — pode ser menor do que o schema sugere | 🆕 **DECIDIDO (2026-09-29)** — módulo **Fiscal**: a NFAg é obrigatória e tem **ciclo próprio** (autorização, eventos, contingência, guarda) — [`fiscal.md`](fiscal.md) |
-| **Analytics** | 🟢 O GSAN já separou de fato (base gerencial, papel dedicado); pergunta analítica difere da transacional; consumidores diretos do banco restringem mudanças | ⚠️ Pode ser capacidade de plataforma em vez de módulo de domínio | **CANDIDATO** |
+| **Analytics** | 🟢 O GSAN já separou de fato (base gerencial, papel dedicado); pergunta analítica difere da transacional; consumidores diretos do banco restringem mudanças | ⚠️ Pode ser capacidade de plataforma em vez de módulo de domínio | 🆕 **DECIDIDO (adendo pós-Fase 0)** — **capacidade transversal Gerencial & Analytics**, consumidora de fatos; **não** é módulo de domínio ([`gerencial-analytics.md`](../analytics/gerencial-analytics.md)) |
+| 🆕 **Prestação de Informações** | A declaração ao SINISA tem **ciclo próprio e obrigatório** — ciclo, glossário, valor declarado, aprovação, submissão, retificação — e passou a ser **guardada**, não derivada | A auditoria final a tratou como capacidade transversal, quando a declaração era derivada de dados alheios | 🆕 **DECIDIDO (adendo pós-Fase 0)** — módulo, com o **Workspace SINISA manual** como primeiro conteúdo ([`sinisa.md`](../regulatorio/sinisa.md), [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)) |
 | **GIS** | Visão estratégica já estabelecida; o legado demonstra necessidade de localizar o que não é imóvel | 🔴 O que existe hoje é **só integração** — não há domínio GIS no legado a preservar | **CANDIDATO FUTURO** — não por evidência atual, mas por visão. 🆕 Direção: Redes/GIS como domínio, GIS como capacidade ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
-| 🆕 **Gestão de Ativos** | Decisão do responsável do projeto; o satélite do GSAN já precisava de identidade e aferição de instrumentos | Sem oráculo GSAN | **DECIDIDO** — domínio nativo, trilha estrutural ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)) |
+| 🆕 **Gestão de Ativos** | Decisão do responsável do projeto; o satélite do GSAN já precisava de identidade e aferição de instrumentos | Sem oráculo GSAN | **DECIDIDO** — domínio nativo, trilha estrutural ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)); 🆕 o **PCM** é capacidade dele, não módulo ([`pcm.md`](../dominio/pcm.md)) |
 | **Canal digital do cliente** | 🟢 47 classes sem dono; atravessa quatro módulos; identidade do cliente é modelo distinto do usuário interno | 🔵 Pode ser camada de apresentação sobre capacidades existentes, não domínio | **CANDIDATO** — ✅ posição de interface decidida: **canal próprio** sobre os mesmos casos de uso, padrão por omissão server-driven ([ADR-0007 §12](../decisoes/0007-arquitetura-de-interface.md)) |
 
 ---
@@ -792,12 +795,14 @@ Programas de subsídio nomeados (§12 do catálogo).
 
 ## 28. 🆕 Capacidades sem origem no legado (auditoria final, 2026-09-29)
 
-⚠️ **Contadas à parte dos 26 do §4** — este catálogo nasceu das evoluções das instalações GSAN; as linhas abaixo nasceram da **varredura regulatória e de mercado**. Obrigações que cabem numa capacidade existente foram **incorporadas nela** (NFAg e devolução personalizada → 08; Tarifa Social nacional e concessão automática → 11; SINISA e SISAGUA → 22).
+⚠️ **Contadas à parte dos 26 do §4** — este catálogo nasceu das evoluções das instalações GSAN; as linhas abaixo nasceram da **varredura regulatória e de mercado**. Obrigações que cabem numa capacidade existente foram **incorporadas nela** (NFAg e devolução personalizada → 08; Tarifa Social nacional e concessão automática → 11; SINISA e SISAGUA → 22). 🆕 **Adendo pós-Fase 0**: o SINISA saiu da 22 para **N5** — a declaração deixou de ser derivada ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)); N4 e N5 vêm do refinamento arquitetural, não de varredura.
 
 | # | Capacidade | Problema resolvido | Área dona | Natureza | Horiz. |
 | - | ---------- | ------------------ | --------- | -------- | ------ |
 | N1 | **Pix Automático — autorização de pagamento recorrente** | Cobrar a conta mensal por débito recorrente autorizado pelo pagador, no arranjo Pix | Arrecadação (Pagamentos) + Integrações (PSP) | **CORE FUTURO** | **H1** |
-| N2 | **Evento operacional com área afetada** | Registrar interrupção programada/emergencial e racionamento, e acionar comunicação ao regulador e aos usuários | Gestão Operacional + Notificação | **CORE FUTURO** | H2 |
+| N2 | **Evento operacional com área afetada** — 🆕 **Parada / interrupção operacional** ([`paradas-interrupcoes.md`](../dominio/paradas-interrupcoes.md)) | Registrar interrupção programada/emergencial e racionamento, e acionar comunicação ao regulador e aos usuários | Gestão Operacional + Notificação; impacto calculado por Redes/GIS quando houver | **CORE FUTURO** | H2 |
 | N3 | **Controle da qualidade da água e prestação ao SISAGUA** | Plano de amostragem, resultados, conformidade e informação ao sistema nacional | Gestão Operacional + Integrações (LIMS, SISAGUA) | **INTEGRAÇÃO** — ciclo laboratorial próprio como opção | H2 |
+| N4 🆕 | **PCM — Planejamento e Controle da Manutenção** ([`pcm.md`](../dominio/pcm.md)) | Transformar necessidades de manutenção em trabalho planejado, priorizado, programado, acompanhado e medido — **sem OS paralela** | Gestão de Ativos (capacidade) + Atendimento e Execução (OS) | **CORE FUTURO** | H2 |
+| N5 🆕 | **Workspace SINISA — declaração regulatória manual e versionada** ([`sinisa.md`](../regulatorio/sinisa.md)) | Declarar ao SINISA com glossário versionado, fonte, evidência, aprovação, submissão e retificação — **nenhum valor derivado de métrica** | Prestação de Informações (módulo) — [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md) | **CORE FUTURO** | H2 |
 
-🔴 **Nenhuma delas é módulo novo.** Detalhe e fontes na [matriz de completude](../auditoria/completude-funcional-regulatoria.md).
+🔴 **Nenhuma delas é módulo novo** — 🆕 exceto **N5**, cuja declaração tem ciclo próprio e obrigatório, o critério de módulo da auditoria. Detalhe e fontes na [matriz de completude](../auditoria/completude-funcional-regulatoria.md); busca de origem no legado de N5: `grep -rIo -i -w snis` e `grep -rIl -i sinisa` em `gsan` (`*.java`, `*.xml`, `*.jsp`, `*.sql`, `*.properties`) e em todos os arquivos de `gsan-migracoes` e `SISAN` — **zero**.

@@ -2,6 +2,8 @@
 
 > **Procedência**: consome o [mapa de domínio](mapa-de-dominio.md), a [análise de compatibilidade](../compatibilidade/estruturas-centrais.md) (64 decisões), o [glossário](glossario.md), as [divergências aprovadas](../compatibilidade/divergencias-aprovadas.md) e as ADRs 0001–0007. Método e níveis de certeza em [`procedencia.md`](../procedencia.md).
 >
+> 🆕 **Adendo pós-Fase 0 (2026-09-29)** — PCM, Parada, Prestação de Informações (SINISA) e Gerencial & Analytics: §19, §27.2, §27.4 e §29; [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md). A Fase 0 continua encerrada; nada aqui a reabre.
+>
 > ⚠️ **Este documento é conceitual.** Não contém — e não pode conter — tabelas, colunas, tipos, chaves, índices, schemas, migrations, entidades JPA, DTOs, APIs, mensageria, eventos ou layouts de tela. Onde uma decisão exigiria escolher mecanismo, o documento define **responsabilidade** e para.
 
 ---
@@ -572,12 +574,15 @@ PROCESSO    o que se executa                   (definição catalogada)
 | 🆕 Lançamento contábil · parametrização contábil · baixa contábil | **Contabilização** | ERP (exportação por adaptador), Cobrança e Arrecadação (consulta) | Contabilização — [mapa](../modulos/financeiro-contabilizacao.md) |
 | 🆕 Estrutura operacional · calendário operacional · qualidade distribuída | **Gestão Operacional** | Atendimento (roteamento, falta de água), Emissão (qualidade), Analytics | Gestão Operacional — [mapa](../modulos/operacional.md) |
 | 🆕 Ativo — identidade, classe, ciclo de vida, condição, manutenção | **Gestão de Ativos** | Redes/GIS, Telemetria, Analytics; Atendimento executa a OS | Gestão de Ativos — [visão](gestao-de-ativos.md) |
+| 🆕 **Necessidade de manutenção · backlog · planejamento · programação** (PCM) | **Gestão de Ativos** — PCM é capacidade dela | Atendimento (executa a OS), Gestão Operacional (pedido de janela), Gerencial | Gestão de Ativos — [`pcm.md`](pcm.md). 🔴 Sem ordem de trabalho além da OS |
 | 🆕 Geometria · topologia · zonas derivadas da rede | **Redes/GIS** | Ativos, Gestão Operacional, Analytics | Redes/GIS — matriz **por atributo** em [`gis-redes-ativos.md §6`](../arquitetura/gis-redes-ativos.md) |
 | 🆕 **Documento fiscal (NFAg)** — identidade fiscal, autorização, eventos, contingência, DANFAG, guarda · **determinação tributária** · devolução personalizada | **Fiscal** | Faturamento (compõe o documento), Arrecadação (vinculação de pagamento), Contabilização (fatos fiscais) | Fiscal — [mapa](../modulos/fiscal.md). 🔴 **Conta ≠ NFAg** |
 | 🆕 **Benefício tarifário** (Tarifa Social) — elegibilidade e vínculo com a unidade usuária | **Cadastro** | Faturamento (aplica), Atendimento, Prestação de informações | Cadastro — a **fonte** de elegibilidade é integração (CadÚnico/BPC) |
 | 🆕 Benefício tarifário — **regra e aplicação no cálculo** | **Faturamento** | Cobrança, Arrecadação | Faturamento — regra versionada com vigência e origem normativa |
 | 🆕 **Meio de pagamento · autorização de pagamento recorrente** (débito automático, Pix Automático) · cobrança Pix vinculada ao documento | **Arrecadação** (Pagamentos) | Faturamento (documento), Cobrança, canais | Arrecadação — o contrato com banco/PSP é de Integrações |
-| 🆕 **Evento operacional** (interrupção programada/emergencial, racionamento, área afetada) | **Gestão Operacional** | Atendimento, Notificação, Prestação de informações | Gestão Operacional |
+| 🆕 **Evento operacional** (interrupção programada/emergencial, racionamento, área afetada) — 🆕 **Parada / interrupção operacional** | **Gestão Operacional** | Atendimento, Notificação, Gerencial; Redes/GIS **calcula** o impacto sem ser dono | Gestão Operacional — [`paradas-interrupcoes.md`](paradas-interrupcoes.md). 🔴 Parada ≠ polígono ≠ *mincut* |
+| 🆕 **Declaração regulatória** (SINISA) — ciclo, glossário, valor declarado, aprovação, submissão, retificação | **Prestação de Informações** | Gerencial (só progresso) | Prestação de Informações — [`sinisa.md`](../regulatorio/sinisa.md). 🔴 Valor **informado pelo usuário**, nunca derivado de métrica (ADR-0009) |
+| 🆕 **Métrica** — definição, fórmula, versão, metas e alertas | **Gerencial & Analytics** (cálculo) · *owner* de negócio (definição) | Painéis, relatórios gerenciais, Workspace SINISA (**só referência**) | [Catálogo de métricas](../analytics/catalogo-de-metricas.md). 🔴 Métrica ≠ informação SINISA |
 | 🆕 **Contexto institucional** — prestador, titular, instrumento de delegação, área de prestação, regulador, vigência | **Cadastro** (área de prestação como recorte territorial) + configuração da instalação | Todos os parâmetros regulados | Ver §27.3 — **não** é decisão de multi-tenancy |
 
 🔵 **Três mudanças de propriedade** em relação ao GSAN, todas para corrigir estado guardado no lugar errado: situação da ligação, situação de cobrança e escrita de consumo na retificação.
@@ -849,7 +854,7 @@ flowchart TB
         ENG["Engenharia / Simulação<br/><i>EPANET · SWMM via Giswater</i>"]
         CAM["Campo"]
         TEL["Telemetria"]
-        ANA["Analytics"]
+        ANA["Gerencial · Analytics"]
     end
 
     PLAT["<b>PLATAFORMA</b> — Segurança · Processamento · Relatórios · Integrações · GIS como capacidade"]
@@ -873,7 +878,7 @@ flowchart TB
 | --------- | -------- | ----------------- | ------------ |
 | **Núcleo inicial** | Gestão Comercial · Atendimento e Execução · plataforma | Etapas 0–8 da [ordem de implementação](../modulos/dependencias-e-ordem-implementacao.md) | Sim |
 | **Domínio GSAN a recuperar** | **Contabilização** subsidiária (Etapa 7) · **Gestão Operacional** mínima (Etapas 2 e 4) | 🟢 **Existiam no GSAN** e não tinham mapa — lacuna da Fase 0 | Sim — `CEN-FIN`, `CEN-OPE` |
-| **Expansão estrutural** | **Gestão de Ativos** (decidida nativa) · Redes · Engenharia/Simulação · Campo · Telemetria · Analytics | Visão estratégica; trilha estrutural depois da Etapa 2 | ❌ **Não** — especificação própria, sem equivalência fabricada |
+| **Expansão estrutural** | **Gestão de Ativos** (decidida nativa) · Redes · Engenharia/Simulação · Campo · Telemetria · Analytics — 🆕 **Gerencial & Analytics**, incremental (§27.4) | Visão estratégica; trilha estrutural depois da Etapa 2 | ❌ **Não** — especificação própria, sem equivalência fabricada |
 | **Fora desta revisão** | Perdas · SCADA · laboratório · energia · compras · estoque corporativo · ERP · BIM | Regra de **não abrir escopo infinito** | — |
 
 🔵 **GIS não é módulo de negócio**: guardar, exibir e publicar geometria é **capacidade** de plataforma; **Redes** — topologia, zonas derivadas, engenharia — é domínio, realizável pelo Giswater quando a instalação o usar ([`gis-redes-ativos.md §9`](../arquitetura/gis-redes-ativos.md)).
@@ -900,19 +905,21 @@ flowchart TB
 ```text
 GESTÃO COMERCIAL                          FINANCEIRO / REGULATÓRIO
 ├─ Cadastro   (+ elegibilidade e vínculo   ├─ Contabilização   fatos → lançamentos (subsidiária, não ERP)
-│              do benefício tarifário)     └─ Fiscal           documento tributário: NFAg, determinação
-├─ Micromedição                                                tributária, eventos, guarda
+│              do benefício tarifário)     ├─ Fiscal           documento tributário: NFAg, determinação
+├─ Micromedição                            │                   tributária, eventos, guarda
+│                                          └─ 🆕 Prestação de Informações  declaração regulatória versionada —
+│                                                              Workspace SINISA manual (ADR-0009)
 ├─ Faturamento (+ aplicação do benefício)
 ├─ Cobrança                                OPERACIONAL
 ├─ Arrecadação                             ├─ Gestão Operacional  estrutura, calendário, qualidade distribuída,
-│  └─ Pagamentos: boleto registrado ·      │                      evento operacional (interrupção, racionamento)
-│     Pix Cobrança · Pix Automático ·      ├─ Gestão de Ativos    nativa — ADR-0008
+│  └─ Pagamentos: boleto registrado ·      │                      🆕 Parada / interrupção operacional
+│     Pix Cobrança · Pix Automático ·      ├─ Gestão de Ativos    nativa — ADR-0008 · 🆕 PCM como capacidade
 │     débito automático · cartão           └─ Redes/GIS           Giswater opcional — ADR-0008
 └─ Atendimento e Execução (RA · OS)
 
 PLATAFORMA — Segurança · Processamento · Relatórios · Integrações · GIS como capacidade
 CAPACIDADES TRANSVERSAIS (sem módulo) — Notificação · Documentos e evidências ·
-                                        Prestação de informações regulatórias · Analytics
+                                        🆕 Gerencial & Analytics (consumidor de fatos)
 CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
 ```
 
@@ -924,7 +931,7 @@ CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
 | **Contabilização** | *Que fatos contábeis e lançamentos decorrem das operações?* | Autorização fiscal; recebimento |
 | **Arrecadação** | *O que foi recebido, contra qual documento, conciliado com quem?* | Tributação; lançamento |
 
-🔵 **O que a auditoria não criou**: nenhum módulo *Regulação*, *Pagamentos*, *Tarifa Social*, *Laboratório*, *LGPD* ou *Notificação*. Obrigação regulatória vira **regra, parâmetro regulado, integração, evento ou capacidade transversal** — só vira módulo quando tem **ciclo próprio e obrigatório**, e só o Fiscal passou nesse critério ([matriz de completude](../auditoria/completude-funcional-regulatoria.md)).
+🔵 **O que a auditoria não criou**: nenhum módulo *Regulação*, *Pagamentos*, *Tarifa Social*, *Laboratório*, *LGPD* ou *Notificação*. Obrigação regulatória vira **regra, parâmetro regulado, integração, evento ou capacidade transversal** — só vira módulo quando tem **ciclo próprio e obrigatório**, e só o Fiscal passou nesse critério ([matriz de completude](../auditoria/completude-funcional-regulatoria.md)). 🆕 **Adendo pós-Fase 0**: a **Prestação de Informações** passou no mesmo critério quando a declaração ao SINISA deixou de ser derivada e passou a ser **guardada**, com ciclo, glossário, aprovação e retificação ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)). Continua não existindo módulo *Regulação*.
 
 ### 27.3 🆕 Contexto institucional — sem decidir multi-tenancy
 
@@ -940,6 +947,35 @@ CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
 | **Vigência e origem normativa** | Quando e por qual ato uma regra vale | Em cada **parâmetro regulado** (§23.2) |
 
 🔴 **Regra**: tarifa, benefício, prazo de atendimento, aviso prévio, prestação de informações e tributação podem variar **por área de prestação e por regulador sem fork e sem `if`**. ⚠️ **Não é decisão de multi-tenancy** — uma instalação com várias áreas e um SaaS com várias companhias são perguntas diferentes, e a segunda continua aberta. O mínimo que a fundação precisa é **não impedir** o contexto: o parâmetro regulado nasce com ele (Etapa 0 — convenção; Etapa 4 — tarifa).
+
+### 27.4 🆕 Adendo pós-Fase 0 — PCM, Paradas, SINISA e Gerencial (2026-09-29)
+
+Refinamento arquitetural antes da Fase 1 — [registro](../alteracoes/2026-09-29-adendo-pos-fase0.md). Duas regras finais:
+
+```text
+PCM E OPERAÇÃO                                   INFORMAÇÃO REGULATÓRIA
+
+ATIVOS                                           DADOS INTERNOS
+  ↓                                                ↓
+PCM ── planeja, prioriza, programa, mede         GERENCIAL & ANALYTICS
+  ↓                                                ↓ servem como referência
+PARADA ── Gestão Operacional                     USUÁRIO
+  ↓                                                ↓ interpreta o glossário SINISA
+GIS calcula o impacto (sem ser dono)             preenche manualmente
+  ↓                                                ↓
+OS executa ── Atendimento e Execução             valida → aprova → submete
+  ↓
+GERENCIAL acompanha
+```
+
+| Conceito | Decisão | Documento |
+| -------- | ------- | --------- |
+| **PCM** | Capacidade da Gestão de Ativos; planejar ≠ programar; backlog com estados próprios; **nenhuma ordem de trabalho além da OS** | [`pcm.md`](pcm.md) |
+| **Parada** | Conceito nativo da Gestão Operacional; **Parada ≠ polígono ≠ *mincut***; impacto calculado **ou** declarado, versionado; o Giswater calcula sem ser dono | [`paradas-interrupcoes.md`](paradas-interrupcoes.md) |
+| **SINISA** | **Manual por padrão** — e só manual na V1; métrica interna ≠ informação SINISA; automação futura só por mapeamento da companhia, desligada por padrão; glossário novo exige revalidação | [`sinisa.md`](../regulatorio/sinisa.md) · [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md) |
+| **Gerencial & Analytics** | Consumidor de fatos; níveis operacional, tático e estratégico; **não existe para preencher o SINISA** | [`gerencial-analytics.md`](../analytics/gerencial-analytics.md) · [catálogo de métricas](../analytics/catalogo-de-metricas.md) |
+
+🔴 **A semântica prevalece sobre o nome.**
 
 ---
 
@@ -1010,6 +1046,8 @@ CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
 | 16 🆕 | **Descobrir tarde uma obrigação regulatória** (o caso NFAg) e reestruturar o Faturamento | 🔴 Estrutural | Auditoria final (2026-09-29): varredura por **fonte oficial**, não só pelo legado — [matriz de completude](../auditoria/completude-funcional-regulatoria.md); **Fiscal** com fronteira própria; requisito nativo com oráculo N |
 | 17 🆕 | **Regra de regulador codificada por estado** | 🔊 Visível ao atender a segunda jurisdição | §23.2 — parâmetro regulado com contexto institucional e origem normativa |
 | 15 🆕 | **Tratar indicador herdado como requisito numérico** | 🔊 Visível tarde | Os índices de perda e de macromedição do satélite do GSAN são **degenerados** ([`operacional.md §6.3`](../modulos/operacional.md)) — nenhuma equivalência exigida |
+| 18 🆕 | **Equivalência semântica presumida** — métrica interna declarada como informação SINISA | 🔴 Silencioso — o número *parece* certo e vira declaração a sistema federal | [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md): V1 manual; nenhum mapeamento por nome; automação só da companhia, desligada por padrão, revalidada a cada glossário |
+| 19 🆕 | **Ferramenta dona do fato** — o estado do *mincut* tomado como estado da parada | 🔴 Silencioso | Parada da Gestão Operacional; a análise tem ciclo próprio e é só referenciada ([`paradas-interrupcoes.md §7`](paradas-interrupcoes.md#7-giswater--o-que-o-mincut-faz)) |
 
 ---
 
@@ -1055,4 +1093,4 @@ GSAN sete padrões de integração                →  OpenGSAN camada única de
 
 ## 31. Próxima atividade
 
-~~**Catálogo de Funcionalidades Futuras**~~ — concluído em 2026-09-15; depois vieram a ordem de implementação, a compatibilidade conceitual, a especificação dos cenários e a revisão controlada de escopo (2026-09-28). ✅ ADR-0007 aceita em 2026-09-29. ✅ **Auditoria final concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md). Próximo estágio conforme o plano vigente — [`MODERNIZACAO_GSAN.md`](../../../MODERNIZACAO_GSAN.md).
+~~**Catálogo de Funcionalidades Futuras**~~ — concluído em 2026-09-15; depois vieram a ordem de implementação, a compatibilidade conceitual, a especificação dos cenários e a revisão controlada de escopo (2026-09-28). ✅ ADR-0007 aceita em 2026-09-29. ✅ **Auditoria final concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md). 🆕 Adendo pós-Fase 0 no mesmo dia (§27.4). Próximo estágio conforme o plano vigente — [`MODERNIZACAO_GSAN.md`](../../../MODERNIZACAO_GSAN.md).

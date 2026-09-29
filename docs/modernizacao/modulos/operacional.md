@@ -381,3 +381,16 @@ Grants:       20170504180427_...cobranca_emprsa.sql:35,78 (gsan_operacional)
 | **Interrupção programada e emergencial · racionamento** (NR ANA 11/2024: interrupção programada comunicada previamente ao regulador e aos usuários) | 🔵 **Evento operacional** com **área afetada**, dono Gestão Operacional. O legado já tem a semente — programação de abastecimento e de manutenção cruzada com o RA de falta de água (CEN-OPE-002). O que falta, e fica registrado: o evento como conceito, a área afetada derivável do território, o **evento de negócio** que a comunicação consome (canal é da Notificação) e o reflexo na prestação de informações. Classificação **L1** |
 | **Qualidade da água** (Portaria GM/MS 888/2021 · SISAGUA · Decreto 5.440/2005) | A informação na conta já está coberta (CEN-OPE-003). O **ciclo de controle** — plano de amostragem, coleta, parâmetro, resultado, limite, conformidade, ação — é **evolução** (L3) da Gestão Operacional; laboratório: **receber resultados de LIMS externo primeiro, ciclo laboratorial próprio como opção** (C); SISAGUA é **adapter** de prestação de informação, sem leiaute no domínio |
 | **Perdas e telemetria** | Sem metodologia nesta fase. Os dados que um balanço hídrico exigirá **poderão existir**: consumo micromedido (Micromedição), volume faturado (Faturamento), volume macromedido e setor (Gestão Operacional/Ativos/Redes), séries de telemetria com unidade, origem e qualidade da medição ([completude §10](../auditoria/completude-funcional-regulatoria.md#10-operação-qualidade-metrologia-perdas-telemetria-e-energia)) |
+
+---
+
+## 🆕 Adendo pós-Fase 0 (2026-09-29)
+
+Refinamento arquitetural antes da Fase 1 — a Fase 0 continua encerrada ([registro](../alteracoes/2026-09-29-adendo-pos-fase0.md)).
+
+| Tema | Posição |
+| ---- | ------- |
+| **Parada / interrupção operacional** | O *evento operacional com área afetada* da auditoria final passa a **conceito nativo** da Gestão Operacional — tipos, estados, impacto calculado **ou** declarado, comunicação, mapa ([`paradas-interrupcoes.md`](../dominio/paradas-interrupcoes.md)). 🔴 **Parada ≠ polígono ≠ *mincut*.** A programação por área consultada pelo Atendimento continua **equivalente** ao legado (CEN-OPE-002, C1); projetá-la a partir da Parada é pendência |
+| **Manutenção programada** do calendário | No OpenGSAN, a manutenção é **planejada e programada pelo PCM** (Gestão de Ativos); o que chega à Gestão Operacional é o **pedido de janela**, que vira Parada aprovada ([`pcm.md`](../dominio/pcm.md)) |
+| **Produção de água** (§4) e volumes do satélite (§6.2) | Insumo do [Gerencial & Analytics](../analytics/gerencial-analytics.md) — a métrica declara o **ponto de medição**. 🔴 **Nunca** valor SINISA por semelhança de nome ([ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)) |
+| **Indicadores do satélite** (§6.3) | Semente do [catálogo de métricas](../analytics/catalogo-de-metricas.md); os defeitos encontrados viraram regras dele |

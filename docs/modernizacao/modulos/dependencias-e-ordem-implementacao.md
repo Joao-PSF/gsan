@@ -3,6 +3,8 @@
 > **Fase 0 — 18ª execução (2026-09-15).** Define **sequência e gates**, não cronograma. Nenhuma tabela, migration, entidade ou API é criada aqui.
 >
 > Fontes: [mapa de domínio](../dominio/mapa-de-dominio.md) (ownership, 14 fronteiras, 7 ciclos) · [visão conceitual](../dominio/visao-conceitual-opengsan.md) (core × plataforma, fronteiras, decisões pendentes) · [compatibilidade](../compatibilidade/estruturas-centrais.md) (64 decisões) · [funcionalidades futuras](funcionalidades-futuras.md) (26 capacidades) · [estratégia de testes](../testes/estrategia-testes.md) · [arquitetura alvo](../arquitetura/arquitetura-alvo.md) · ADRs [0001](../decisoes/0001-monolito-modular-spring-boot.md), [0002](../decisoes/0002-flyway-para-migrations.md), [0007](../decisoes/0007-arquitetura-de-interface.md). **Nenhum módulo foi reanalisado.**
+>
+> 🆕 **Adendo pós-Fase 0 (2026-09-29)** — sem reabrir a Fase 0: PCM e Parada na trilha estrutural (§24.2), **trilha regulatória** do Workspace SINISA (§24.3), Gerencial & Analytics **incremental** (§24.4), matriz #30–#33, gates de trilha (§25) — [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md).
 
 ---
 
@@ -165,10 +167,14 @@ Tipos: **DURA** (B não funciona sem A) · **PARCIAL** (só parte de B depende) 
 | 23 | Boleto registrado | Documento · Recebimento · Contrato bancário | **FUTURA/DURA** | Idem | **Sim** |
 | 24 | Notificação | Evento de negócio + contrato de canal | **TRANSVERSAL/FUTURA** | Nasce no primeiro evento real a notificar | Não |
 | 25 | SPED | Documento fiscal | **FUTURA/DURA** | 🟢 Cadeia confirmada: SPED → fiscal → documento comercial. 🆕 **Fora do OpenGSAN** (2026-09-29): obrigação da pessoa jurídica, dados ao ERP por adaptador | **Sim** |
-| 26 | Analytics | Todos | **CONSULTA** | 🔵 Consome, não produz | **Não bloqueia** — ver §20 |
+| 26 | Analytics — 🆕 **Gerencial & Analytics** | Todos | **CONSULTA** | 🔵 Consome, não produz — 🆕 **incremental**: cada métrica quando o fato existe (§24.4) | **Não bloqueia** — ver §20 |
 | 🆕 27 | **Fiscal (NFAg)** | Conta emitida (fato tributável) · determinação tributária · adapter do ambiente autorizador | **DURA** | 🔴 Obrigação vigente; **Conta ≠ NFAg** — o Faturamento publica o fato, o Fiscal emite ([`fiscal.md`](fiscal.md)) | **Sim** — individual na Etapa 4, lote e contingência na 7 |
 | 🆕 28 | **Tarifa Social — concessão automática** | Cadastro (vínculo) · Faturamento (aplicação) · bases oficiais CadÚnico/BPC | **DURA** | 🔴 Lei 14.898/2024: concessão **sem requerimento**, a partir das bases oficiais | **Sim** — antes da operação |
-| 🆕 29 | **Prestação de informações regulatórias** (SINISA, SISAGUA, regulador) | Dados primários dos donos | **CONSULTA** | Consome e consolida; submissão por adapter | Não bloqueia — antes do primeiro ciclo anual |
+| 🆕 29 | **Prestação de informações regulatórias** (SISAGUA, regulador — 🆕 SINISA em #32) | Dados primários dos donos | **CONSULTA** | Consome e consolida; submissão por adapter — 🆕 **não vale para o SINISA** (ADR-0009) | Não bloqueia — antes do primeiro ciclo anual |
+| 🆕 30 | **PCM** — capacidade da Gestão de Ativos | Gestão de Ativos · OS (Etapa 2) | **DURA** | Planeja e programa; toda execução é **OS** — sem ela, o PCM criaria ordem paralela ([`pcm.md`](../dominio/pcm.md)) | Sim — Ativos e OS |
+| 🆕 31 | **Parada / interrupção operacional** — Gestão Operacional | Gestão Operacional mínima (Etapa 2) · OS · Notificação (evento) · Redes/GIS | **DURA** · **PARCIAL** (Redes/GIS: só o impacto calculado) | A Parada existe **sem GIS**, com impacto declarado; o GIS acrescenta o cálculo ([`paradas-interrupcoes.md`](../dominio/paradas-interrupcoes.md)) | Sim — Gestão Operacional mínima |
+| 🆕 32 | **Workspace SINISA** — Prestação de Informações | Identidade, concessão e auditoria (Etapa 0) · guarda de evidências · contexto institucional · **glossários do ciclo definidos** | **DURA** | 🔴 **Não depende do Analytics nem dos módulos de negócio**: o usuário declara; o Gerencial só oferece referência ([`sinisa.md`](../regulatorio/sinisa.md)) | Antes do primeiro ciclo declarado pelo OpenGSAN |
+| 🆕 33 | **Automação SINISA** — mapeamento configurado pela companhia | Workspace SINISA · catálogo de métricas · Gerencial | **FUTURA** | Decisão da companhia, desligada por padrão; **não é pré-requisito** de nada (ADR-0009) | **Fora da ordem inicial** |
 
 ### 5.1 Onde a matriz contraria a intuição
 
@@ -179,6 +185,8 @@ Tipos: **DURA** (B não funciona sem A) · **PARCIAL** (só parte de B depende) 
 | "Batch é infraestrutura, vem no começo" | **#16** — a dependência é inversa |
 | "Segurança é transversal, resolve-se antes do domínio" | **#15** — o escopo territorial depende do Cadastro |
 | "PIX é urgente, então é cedo" | **#22** — urgência não é dependência |
+| 🆕 "Parada precisa do GIS" | **#31** — impacto declarado basta; o GIS acrescenta o cálculo |
+| 🆕 "SINISA precisa do Analytics pronto" | **#32** — a declaração é manual; o Analytics só oferece referência |
 
 ---
 
@@ -545,7 +553,8 @@ Separação pedida, resolvida por dependência:
 | 🆕 Pix Automático (via PSP) | Arrecadação (Pagamentos), com o débito automático | 6 |
 | 🆕 Ambiente autorizador da NFAg (SVRS) | **Fiscal** | 4 (homologação) · 7 (lote, contingência) |
 | 🆕 Bases oficiais de elegibilidade (CadÚnico/BPC) | Cadastro | 4 — operante antes do gate 7 → operação |
-| 🆕 SINISA · SISAGUA · regulador local | Donos dos dados + Analytics | Após a operação, antes do primeiro ciclo anual |
+| 🆕 SISAGUA · regulador local | Donos dos dados | Após a operação, antes do primeiro ciclo anual |
+| 🆕 SINISA — **nenhum adapter na V1**: submissão manual (adendo pós-Fase 0) | Prestação de Informações — Workspace SINISA | Só se existir arquivo oficial — **pendente por fonte** —, acionado por pessoa; leiaute fora do domínio |
 | Notificação (e-mail/SMS) | Primeiro evento real a notificar | 6 |
 | GIS · telemetria · analytics | Posterior | 8+ |
 | 🆕 Exportação contábil ao ERP | Contabilização | 7 |
@@ -638,7 +647,7 @@ Faturamento (4) ──► Recebimento (5) ──► Pix Cobrança · boleto regi
 | Área | Posição | Regra |
 | ---- | ------- | ----- |
 | **Fiscal / SPED** | 🆕 **Fiscal na ordem (2026-09-29)**: **Etapa 4** (NFAg individual em homologação) e **Etapa 7** (lote, contingência, eventos, guarda). **SPED fora do OpenGSAN** | ~~Permanecem `EXIGE APROFUNDAMENTO`… devem ser esclarecidos antes da Etapa 4~~ — **esclarecido**: a NFAg é obrigatória e o documento fiscal **decorre da conta emitida** — o Faturamento publica o fato tributável, o Fiscal emite ([`fiscal.md §11`](fiscal.md)). ⚠️ Não bloqueia a Etapa 0 |
-| **Analytics** | Etapa 8+ | 🔴 **Não bloqueia o núcleo**, mas impõe **uma restrição desde a Etapa 0**: o desenho não pode tornar impossível a análise futura. Concretamente — evento de negócio legível, competência explícita, e nenhuma destruição de identidade no arquivamento (o legado destrói a do pagamento) |
+| **Analytics** — 🆕 **Gerencial & Analytics** | ~~Etapa 8+~~ 🆕 **Incremental** (§24.4) | 🔴 **Não bloqueia o núcleo**, mas impõe **uma restrição desde a Etapa 0**: o desenho não pode tornar impossível a análise futura. Concretamente — evento de negócio legível, competência explícita, e nenhuma destruição de identidade no arquivamento (o legado destrói a do pagamento). 🆕 Ampliada no adendo: identidade · competência · timestamps · origem · histórico relevante · fatos · estados ([`gerencial-analytics.md §10`](../analytics/gerencial-analytics.md#10-restrições-ao-transacional--desde-já)) |
 | **GIS** | Etapa 8+ | 🔴 **Não é dependência do core comercial.** 🟢 O que existe no legado é só integração; não há domínio GIS a preservar. Coordenada no RA é atributo, não capacidade. 🆕 Redes/GIS e Gestão de Ativos seguem a **trilha estrutural** (§24.2) — [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md) |
 
 ---
@@ -820,7 +829,8 @@ ETAPA 8 — CANAIS E EVOLUÇÕES
 ├── identidade do cliente final (verificação de vínculo, não RBAC)
 ├── canal digital: 2ª via, extrato, parcelamento, certidão, solicitação
 ├── 🆕 o canal apresenta e aciona Pix e boleto — os meios já existem desde as Etapas 5–6
-└── bureau, telemetria, analytics, GIS, acessibilidade, 🆕 prestação de informações regulatórias — por prioridade posterior
+└── bureau, telemetria, GIS, acessibilidade — por prioridade posterior
+    🆕 (adendo) Gerencial & Analytics é incremental e o Workspace SINISA tem trilha própria — §24.3–§24.4
 ```
 
 ### 24.1 Resultado observável por etapa
@@ -847,9 +857,26 @@ Revisão controlada de escopo (2026-09-28) · [ADR-0008](../decisoes/0008-gestao
 | **Gestão de Ativos** | **Etapa 2** | A manutenção executa-se por **OS** (Atendimento e Execução) e a localização funcional pertence a uma unidade da **Gestão Operacional mínima** — ambas nascem na Etapa 2 | Nenhum gate do núcleo comercial |
 | **Redes/GIS** (Giswater opcional) | Identidade corporativa do ativo | O vínculo é **pela identidade** emitida por Ativos; sem ela, integrar seria "copiar e sincronizar" | Nenhum gate do núcleo comercial |
 | **Engenharia/Simulação** (EPANET/SWMM via Giswater) | Redes/GIS + consumo da Micromedição (Etapa 3) | A demanda dos nós vem do consumo — precedente GeoSan | Nenhum gate |
+| 🆕 **PCM** — capacidade da Gestão de Ativos | Gestão de Ativos + **OS** (Etapa 2) | Planeja e programa; toda execução é OS ([`pcm.md`](../dominio/pcm.md)) | Nenhum gate do núcleo comercial |
+| 🆕 **Parada / interrupção** — Gestão Operacional | **Gestão Operacional mínima** (Etapa 2) | Impacto **declarado** basta; Redes/GIS acrescenta o **cálculo** quando existir ([`paradas-interrupcoes.md`](../dominio/paradas-interrupcoes.md)) | Nenhum gate do núcleo comercial — ⚠️ salvo se o regulador local já exigir a comunicação prévia da interrupção programada (NR ANA 11/2024) quando a instalação entrar em operação: então a Parada **mínima**, sem cálculo, precisa estar operante antes — decisão **por instalação** |
 | Telemetria · perdas · energia · laboratório | Posterior | Fora do escopo desta revisão | — |
 
-🔵 A trilha corre **em paralelo ou depois** das Etapas 3–7, conforme prioridade; o que a torna possível já está na Etapa 2. **Ativos e Redes/GIS não têm oráculo GSAN**: sua correção é provada por especificação própria.
+🔵 A trilha corre **em paralelo ou depois** das Etapas 3–7, conforme prioridade; o que a torna possível já está na Etapa 2. **Ativos e Redes/GIS não têm oráculo GSAN**: sua correção é provada por especificação própria. 🆕 Nem PCM e Parada: CEN-PCM-001 e CEN-PAR-001 a 003, oráculo N.
+
+### 24.3 🆕 Trilha regulatória — Workspace SINISA
+
+Adendo pós-Fase 0 (2026-09-29) · [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md). ⚠️ **Também não é uma décima etapa.**
+
+| Capacidade | Pode começar depois de | Precisa estar operante | Não depende de |
+| ---------- | ---------------------- | ---------------------- | -------------- |
+| **Workspace SINISA** — declaração manual | Etapa 0 (identidade, concessão, auditoria) · guarda de evidências · contexto institucional · **glossários do ciclo definidos** | Antes do **primeiro ciclo** declarado pelo OpenGSAN | 🔴 **Analytics** · módulos de negócio |
+| **Automação SINISA** — mapeamento da companhia | — | ❌ **Fora da ordem inicial** — a primeira versão é manual | — |
+
+🔴 **O SINISA manual existe mesmo sem Analytics**; o Analytics só oferece referências. Cenários CEN-REG-001 a 003; CEN-REG-004 e 005 só quando a automação for especificada.
+
+### 24.4 🆕 Gerencial & Analytics — incremental
+
+Sem etapa própria ([`gerencial-analytics.md §12`](../analytics/gerencial-analytics.md#12-ordem)). Cada métrica entra quando o fato de que depende existe — OS e atendimento (Etapa 2), consumo (3), faturamento (4), arrecadação (5), cobrança (6), PCM e paradas (trilha estrutural). Painéis ricos — mapas, séries longas — quando houver série para mostrar. **Nenhum gate depende dele**; a restrição ao transacional vale desde a Etapa 0 (§20.3).
 
 ---
 
@@ -919,6 +946,12 @@ Revisão controlada de escopo (2026-09-28) · [ADR-0008](../decisoes/0008-gestao
 - 🆕 Lançamentos contábeis da competência conferem com os resumos de faturamento e arrecadação; regerar não duplica (CEN-FIN-001, CEN-FIN-003).
 - 🆕 **Nenhuma conta sem documento fiscal** autorizado ou em contingência registrada; contingência termina autorizada ou tratada; retificação e cancelamento com o tratamento fiscal vigente (CEN-FIS-002, CEN-FIS-003).
 - 🆕 Concessão automática da Tarifa Social operante a partir das bases oficiais (CEN-FAT-012).
+
+### 🆕 Gates das trilhas (adendo pós-Fase 0)
+
+- **Trilha estrutural — PCM e Parada**: nenhuma ordem de trabalho além da OS (CEN-PCM-001); parada **com ou sem** GIS, impacto em snapshot, comunicação prévia e previsto × realizado (CEN-PAR-001 a 003).
+- **Trilha regulatória — antes do primeiro ciclo declarado**: declaração manual rastreável e retificação sem sobrescrever (CEN-REG-001); glossário versionado (CEN-REG-002); **nenhum valor nascido de dado interno** (CEN-REG-003).
+- **Automação SINISA — só se um dia for especificada**: nada se ativa sozinho (CEN-REG-004); override auditado (CEN-REG-005).
 
 ### Gate de golden master — forma geral
 
@@ -1019,6 +1052,10 @@ ETAPA 5   Recebimento                   ── recepção → classificação �
 ETAPA 6   Cobrança                      ── posição de dívida → política → parcelamento + 🆕 Pix Automático
 ETAPA 7   Escala                        ── lote de faturamento e arrecadação + contabilização + 🆕 NFAg em lote e contingência
 ETAPA 8   Canais e evoluções            ── identidade do cliente, canal digital (🆕 apresenta Pix e boleto; não é dono deles)
+
+TRILHA ESTRUTURAL (depois da 2)         ── Gestão de Ativos → 🆕 PCM · Redes/GIS · 🆕 Parada (o GIS agrega o impacto calculado)
+🆕 TRILHA REGULATÓRIA                   ── Workspace SINISA manual, quando os glossários estiverem definidos — sem Analytics
+🆕 GERENCIAL & ANALYTICS                ── incremental, à medida que os fatos existem
 ```
 
 ### 28.1 A resposta direta
@@ -1037,6 +1074,9 @@ ETAPA 8   Canais e evoluções            ── identidade do cliente, canal di
 | **Quando entram os batches?** | **Etapa 7**, só depois de a operação individual estar comprovada por golden master |
 | **Quando entra o Portal?** | **Etapa 8** — é camada consumidora de quatro domínios e exige identidade do cliente final |
 | **O que é transversal desde o início?** | Testes, auditoria, S1, log com correlação, configuração externa, neutralidade institucional, convenção monetária, verificação de fronteira |
+| 🆕 **Quando entram PCM e Paradas?** | Trilha estrutural: **PCM** depois de Ativos + OS; **Parada** depois da Gestão Operacional mínima — o GIS **agrega** o cálculo de impacto |
+| 🆕 **Quando entra o SINISA?** | Trilha regulatória: **Workspace manual** quando os glossários estiverem definidos, **sem depender do Analytics**; automação **fora** da ordem inicial |
+| 🆕 **E o Gerencial?** | **Incremental** — cada métrica com o seu fato |
 
 ---
 
@@ -1086,6 +1126,8 @@ Registrado por honestidade, e porque três acertos permanecem:
 | 8 | **Fronteira degradada** para acoplamento direto, como no legado | Verificação automatizada de fronteira é **gate**, e precisa reprovar violação deliberada (§25) |
 | 9 | 🔴 **Nada disto vale sem a rede de testes** (19 testes / 2,39M LOC no legado) | Os gates são de **prova**, não de código; a caracterização do legado precede a comparação |
 | 10 | **A ordem ser tratada como imutável** | §26: a matriz é revisada ao fim de cada etapa; dependência descoberta **muda a ordem**, com motivo registrado |
+| 11 🆕 | **Equivalência semântica presumida** — métrica interna tomada por informação SINISA | ADR-0009: V1 manual; mapeamento só da companhia, desligado por padrão, revalidado a cada glossário (CEN-REG-003, CEN-REG-004) |
+| 12 🆕 | **OS paralela** criada pelo PCM, ou **Giswater dono da parada** | Sem ordem de trabalho além da OS (CEN-PCM-001); estado da análise ≠ estado da Parada (CEN-PAR-001 V4) |
 
 ---
 
@@ -1118,6 +1160,8 @@ Capacidade pronta quando:
 2. ~~**Especificação dos cenários críticos**~~ ✅ **concluída em 2026-09-28** — os **166** itens inventariados resultaram em **71 especificações** ([`testes/cenarios-criticos.md`](../testes/cenarios-criticos.md)), com os gates por etapa desta ordem. 🆕 Revisão controlada de escopo (2026-09-28): **184 itens → 79 especificações**, com Contabilização e Gestão Operacional.
 3. ~~**Decisão da ADR-0007**~~ ✅ **aceita em 2026-09-29** — [ADR-0007](../decisoes/0007-arquitetura-de-interface.md).
 4. ~~**Auditoria final e encerramento da Fase 0.**~~ ✅ **concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md).
+
+🆕 **Depois do encerramento — adendo pós-Fase 0 (2026-09-29)**: refinamento antes da Fase 1, sem reabrir a Fase 0 — §24.2–§24.4, matriz #30–#33, gates das trilhas (§25) ([registro](../alteracoes/2026-09-29-adendo-pos-fase0.md)).
 
 🔴 **Três respostas que deviam existir antes da Etapa 0 começar**: ~~negação na autorização~~ ✅ **resolvida na auditoria final** (existe: restrição por usuário), nome/governança do repositório (bloqueio de **partida** — exige decisão, não investigação) e ~~a decisão da ADR-0007~~ ✅ **resolvida em 2026-09-29**.
 

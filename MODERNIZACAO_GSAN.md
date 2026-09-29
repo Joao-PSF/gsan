@@ -26,6 +26,8 @@
 
 23ª execução (2026-09-29): **auditoria final e encerramento da Fase 0** — [auditoria/auditoria-final-fase0.md](docs/modernizacao/auditoria/auditoria-final-fase0.md) e [matriz de completude funcional e regulatória](docs/modernizacao/auditoria/completude-funcional-regulatoria.md). Varredura de omissões **por fonte oficial**, não só pelo legado. 🔴 **A NFAg (modelo 75) é obrigatória** para os prestadores de água e esgoto e estava como `EXIGE APROFUNDAMENTO`, H2, fora da ordem: virou o módulo **Fiscal** ([mapa](docs/modernizacao/modulos/fiscal.md)) — **Conta ≠ NFAg**, o Faturamento publica o fato tributável e o Fiscal emite; NFAg individual na Etapa 4 e em escala, com contingência, na 7. 🔴 Omissão que o roteiro não listava: a **devolução personalizada (cashback) de IBS/CBS**, concedida no momento da cobrança — altera o valor cobrado. **Tarifa Social nacional** (Lei 14.898/2024, NR ANA 13/2025) com concessão automática por CadÚnico/BPC; **PIX e boleto registrado** passam à Arrecadação/Pagamentos (Etapa 5) e o **Pix Automático** à Etapa 6; **contexto institucional** e **parâmetro regulado** (vigência, contexto, origem normativa) contra `if estado == X`; SINISA e SISAGUA como prestação de informações, sem módulo *Regulação*. Por leitura de código: 🔴 **a restrição por usuário participa da autorização** (acesso se restrições < concessões) — o mapa de Segurança afirmava o contrário, e o "único bloqueio de dia 1" **deixou de existir**; "Fatura" é o **documento agregador** do cliente responsável (BLQ-04 resolvido). Segurança: **D-18** (cookie e CSRF, achado 6) e aprovação de D-01…D-16 **registrada com a origem**; CAND-03 e CAND-04 mantidos pendentes; nenhum segredo transcrito — duas linhas que listavam roles ao lado de "senha = login" corrigidas. Cenários 79 → **87** (seis requisitos nativos com **oráculo N**), recontagens por script em compatibilidade (145: 91 · 25 · 17 · 5 · 1 · 6), estruturas (64: 38 · 14 · 6 · 4 · 2) e catálogo. **Veredito: SIM — Fase 0 concluída.** ⚠️ Portais oficiais (gov.br, Planalto, SVRS) bloqueados pela política de rede: lidos por resumo de busca, com certeza rebaixada onde só havia fonte secundária.
 
+24ª execução (2026-09-29): **ADENDO PÓS-FASE 0 — refinamento arquitetural antes da Fase 1**, sem reabrir a Fase 0 ([§ADENDO PÓS-FASE 0](#adendo-pós-fase-0--refinamento-arquitetural-antes-da-fase-1)). **PCM** como capacidade da Gestão de Ativos, sem ordem de trabalho além da OS; **Parada / interrupção operacional** nativa da Gestão Operacional — *Parada ≠ polígono ≠ mincut*, o Giswater calcula o impacto sem ser dono; 🔴 **premissa do SINISA corrigida**: preenchimento **manual por padrão** — e só manual na V1 —, Workspace dono da declaração, automação futura só por mapeamento da companhia e **desligada por padrão** ([ADR-0009](docs/modernizacao/decisoes/0009-sinisa-preenchimento-manual.md)); **Gerencial & Analytics** com catálogo de métricas, que não existe para preencher o SINISA. Cenários 87 → **96**; trilha regulatória e Gerencial incremental na ordem. Registro em [alteracoes/2026-09-29-adendo-pos-fase0.md](docs/modernizacao/alteracoes/2026-09-29-adendo-pos-fase0.md).
+
 **Leitura honesta do estado (calibrada em 2026-09-14; atualizada em 2026-09-28; 🆕 encerrada em 2026-09-29).** 🆕 *Com a auditoria final, a Fase 0 está concluída: a incompletude descrita abaixo foi endereçada ou aceita explicitamente como pendência com dono e prazo ([§FASE 0 — CONCLUÍDA](#fase-0--concluída)). O parágrafo segue como registro.* Os doze mapas funcionais — os dez originais mais Financeiro/Contabilização e Operacional — cobrem o fluxo principal Cadastro → Micromedição → Faturamento → Conta → Cobrança → Arrecadação, o ciclo de demanda/execução do Atendimento, identidade/autorização/abrangência/auditoria, processamento em lote, relatórios e integrações. **Isso não significa que a Fase 0 esteja pronta para orientar implementação**, por duas razões diferentes que não devem ser confundidas:
 
 - **Incompletude normal da descoberta**: o mapa de domínio, a análise de compatibilidade das estruturas centrais, a visão conceitual alvo, o catálogo de funcionalidades futuras, a **ordem de implementação** e a **compatibilidade conceitual** e a **especificação dos cenários críticos** já foram concluídos, assim como a **revisão controlada de escopo** (2026-09-28); a **ADR-0007 foi decidida** (2026-09-29); falta a **auditoria final**. Permanecem dúvidas abertas registradas em cada mapa, **4 cenários bloqueados por decisão** e **5 casos com oráculo pendente de caracterização** (3 cenários e 2 variações).
@@ -36,6 +38,8 @@ Nenhuma implementação iniciada.
 ## FASE ATUAL
 
 ✅ **Fase 0 concluída (2026-09-29).** Próximo estágio conforme o [plano vigente](docs/modernizacao/plano-de-trabalho.md): **Fase 1 — Ambiente de referência** do legado — **não iniciada**.
+
+🆕 **Adendo pós-Fase 0 registrado (2026-09-29)** — refinamento arquitetural antes da Fase 1; a Fase 0 **não** foi reaberta ([§ADENDO PÓS-FASE 0](#adendo-pós-fase-0--refinamento-arquitetural-antes-da-fase-1)).
 
 *Registro do escopo da Fase 0*: Fase 0 — Descoberta, compatibilidade e arquitetura do **OpenGSAN**. Objetivo: compreender o domínio e as regras do GSAN (mapa funcional, glossário, mapa de domínio), classificar as estruturas centrais (`PRESERVAR / MODERNIZAR / REESTRUTURAR / NÃO TRANSPORTAR`), catalogar funcionalidades futuras descobertas no `gsan_comercial` e estabelecer os princípios de compatibilidade GSAN→SISAN. Sem implementação.
 
@@ -70,6 +74,25 @@ Regra fiscal confirmada tarde (mitigação: fronteira Fiscal isolada e invariant
 ### Próximo estágio
 
 Conforme o [plano vigente](docs/modernizacao/plano-de-trabalho.md): **Fase 1 — Ambiente de referência** do legado → **Fase 2 — rede de segurança** (captura das baselines das especificações) → Fase 3 — build → **Fase 4 — fundação**, que corresponde à **Etapa 0** do OpenGSAN e depende das Fases 0–2. ⚠️ **Nenhuma implementação foi iniciada**, e esta auditoria não inicia nenhuma.
+
+## ADENDO PÓS-FASE 0 — refinamento arquitetural antes da Fase 1
+
+⚠️ **A Fase 0 foi encerrada em 29/09/2026 e continua encerrada.** O adendo complementa quatro capacidades subespecificadas; não reabre a descoberta, não reescreve a auditoria e altera documentos vigentes só onde acrescenta decisão.
+
+| Item | Registro |
+| ---- | -------- |
+| **Data** | 2026-09-29 — estado de entrada `388816d` |
+| **Commit** | O que introduz o [registro da execução](docs/modernizacao/alteracoes/2026-09-29-adendo-pos-fase0.md) — `git log -- docs/modernizacao/alteracoes/2026-09-29-adendo-pos-fase0.md` |
+| **PCM** | Capacidade da **Gestão de Ativos**: *necessidade → backlog → planejamento → programação → OS → execução → controle → histórico*; planejar ≠ programar; backlog ≠ estados da OS; 🔴 **nenhuma ordem de trabalho além da OS** — [pcm.md](docs/modernizacao/dominio/pcm.md) |
+| **Paradas** | **Parada / interrupção operacional**, dona **Gestão Operacional**; *Parada ≠ polígono ≠ mincut*; impacto calculado **ou** declarado, versionado; o **Giswater calcula sem ser dono**; mapa e detalhe da parada — [paradas-interrupcoes.md](docs/modernizacao/dominio/paradas-interrupcoes.md) |
+| **SINISA** | 🔴 **Manual por padrão — e só manual na V1**; métrica interna ≠ informação SINISA; Workspace dono da declaração (módulo *Prestação de Informações*); ciclo e glossário versionados; automação futura só por mapeamento da companhia, `autoPreenchimento = false`, **REVALIDAÇÃO NECESSÁRIA** a cada glossário — [sinisa.md](docs/modernizacao/regulatorio/sinisa.md) · [ADR-0009](docs/modernizacao/decisoes/0009-sinisa-preenchimento-manual.md) |
+| **Gerencial & Analytics** | Consumidor de fatos, **não construído para o SINISA**; catálogo de métricas versionado; níveis operacional, tático e estratégico; ADR-0007 inalterada; nenhum *data warehouse* decidido — [gerencial-analytics.md](docs/modernizacao/analytics/gerencial-analytics.md) · [catálogo de métricas](docs/modernizacao/analytics/catalogo-de-metricas.md) |
+| **Ordem** | PCM depois de Ativos + OS · Parada depois da Gestão Operacional mínima (GIS agrega o impacto) · **trilha regulatória** do Workspace SINISA, **sem depender do Analytics** · Gerencial **incremental** · automação SINISA **fora** da ordem inicial |
+| **Números** | **9 ADRs** aceitas · **96 especificações** (53 P0 · 43 P1; 15 com oráculo N) · 33 relações de dependência · catálogo, compatibilidade (145) e completude (50) **inalterados** — por script |
+
+**Pendências novas** (nenhuma bloqueia a Fase 1): mecanismo oficial de importação/exportação do SINISA — **pendente por fonte** · reprodução integral do glossário — `VALIDAÇÃO JURÍDICA NECESSÁRIA` · granularidade da declaração do prestador regional · segregação de funções na declaração · extensão do princípio da ADR-0009 ao SISAGUA e ao regulador local · protocolo Parada ↔ *mincut* · capacidade, calendário e prioridade do PCM · estoque de peças · metodologia de perdas · tecnologia analítica.
+
+**Próximo estágio — inalterado**: Fase 1 → Fase 2 → Fase 3 → Fase 4 = Etapa 0.
 
 ## CONCLUÍDO
 
@@ -107,11 +130,13 @@ Conforme o [plano vigente](docs/modernizacao/plano-de-trabalho.md): **Fase 1 —
 
 - 🆕 **Auditoria final e encerramento da Fase 0** (23ª execução): [auditoria/auditoria-final-fase0.md](docs/modernizacao/auditoria/auditoria-final-fase0.md) — veredito **SIM**; módulo **Fiscal** (NFAg); Tarifa Social nacional; PIX na Arrecadação; negação na autorização comprovada; D-18; 87 especificações; [matriz de completude](docs/modernizacao/auditoria/completude-funcional-regulatoria.md) com 50 temas, 15 normas e a conformidade com a NR ANA 11/2024.
 
+- 🆕 **Adendo pós-Fase 0** (24ª execução): [PCM](docs/modernizacao/dominio/pcm.md), [Paradas](docs/modernizacao/dominio/paradas-interrupcoes.md), [SINISA manual](docs/modernizacao/regulatorio/sinisa.md) com a [ADR-0009](docs/modernizacao/decisoes/0009-sinisa-preenchimento-manual.md), [Gerencial & Analytics](docs/modernizacao/analytics/gerencial-analytics.md) e [catálogo de métricas](docs/modernizacao/analytics/catalogo-de-metricas.md); 96 especificações; trilhas estrutural e regulatória — [registro](docs/modernizacao/alteracoes/2026-09-29-adendo-pos-fase0.md).
+
 - Decisão da ADR-0007 (22ª execução): [decisoes/0007-arquitetura-de-interface.md](docs/modernizacao/decisoes/0007-arquitetura-de-interface.md) — canais sobre casos de uso; backoffice server-driven com aprimoramento progressivo; portal como canal próprio; contratos explícitos para integrações, campo e GIS; autorização no caso de uso; relatório por caso de uso autorizado. Responde **qual padrão de interface a Etapa 1 usa**, o bloqueio que a ADR existia para resolver.
 
 ## EM EXECUÇÃO
 
-- Nada em execução. ✅ Fase 0 concluída em 2026-09-29; a Fase 1 **não** foi iniciada.
+- Nada em execução. ✅ Fase 0 concluída em 2026-09-29; 🆕 adendo pós-Fase 0 registrado no mesmo dia; a Fase 1 **não** foi iniciada.
 
 ## PRÓXIMAS ATIVIDADES (backlog da Fase 0 — ✅ concluído em 2026-09-29)
 
@@ -171,6 +196,7 @@ FASE 0 — CONCLUÍDA  →  Fase 1 — Ambiente de referência (não iniciada)
 11. ⚠️ **Segredo comprometido em dumps versionados** (achado 20, 2026-09-28): usuário e senha em strings `dblink` de funções armazenadas — rotação obrigatória em qualquer instalação que use essas credenciais; `dblink` não entra no OpenGSAN.
 12. ⚠️ **Inflação de escopo pela expansão estrutural** — Ativos, Redes/GIS, Engenharia, Campo, Telemetria, Analytics. Mitigação: **trilha estrutural sem etapa própria**, ADR-0008 **sem decisão de schema, PostGIS, sincronização, eventos ou REST**, e lista explícita do que ficou **fora da revisão** (perdas, SCADA, laboratório, energia, compras, estoque corporativo, ERP, BIM).
 13. 🆕 ⚠️ **Obrigação regulatória descoberta tarde** — o caso NFAg (2026-09-29). Mitigado pela auditoria final: varredura por **fonte oficial**, módulo Fiscal com fronteira própria, requisito nativo com oráculo N e **parâmetro regulado** para regra de regulador. Resíduo: portais oficiais lidos por **resumo de busca** (rede bloqueada) — reler MOC da NFAg e Regulamento Pix antes de implementar.
+14. 🆕 ⚠️ **Equivalência semântica presumida** (adendo pós-Fase 0) — métrica interna declarada como informação SINISA por ter o mesmo nome; o erro é silencioso e vira declaração a sistema federal. Mitigação: [ADR-0009](docs/modernizacao/decisoes/0009-sinisa-preenchimento-manual.md) — V1 manual, nenhum mapeamento por nome, automação só da companhia, desligada por padrão e revalidada a cada glossário; regra permanente 9 de [`procedencia.md`](docs/modernizacao/procedencia.md).
 
 Lista original de 10 riscos no plano de trabalho, com reinterpretação registrada na [revisão de premissas](docs/modernizacao/alteracoes/2026-08-13-revisao-premissas-fase0.md).
 
@@ -188,6 +214,7 @@ Registradas em [`docs/modernizacao/decisoes/`](docs/modernizacao/decisoes/README
 | 0006 | Modelo de dados evolutivo (PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR) | **Aceita** |
 | 0007 | **Arquitetura de interface: canais sobre casos de uso** — backoffice server-driven com aprimoramento progressivo; portal como canal próprio; contratos explícitos para canais externos; autorização no caso de uso | **Aceita** (2026-09-29) |
 | 0008 | **Gestão de Ativos nativa**; Giswater para redes/GIS/engenharia (não EAM, não obrigatório); OS não duplicada; identidade corporativa única do ativo; ownership por atributo | **Aceita** (2026-09-28) |
+| 0009 | 🆕 **SINISA manual por padrão** — só manual na V1; sem mapeamento universal; métrica interna ≠ informação SINISA; automação futura só por mapeamento da companhia, desligada por padrão; glossário novo exige revalidação | **Aceita** (2026-09-29, adendo pós-Fase 0) |
 
 ## DÍVIDAS TÉCNICAS IDENTIFICADAS (legado — inalterado)
 
@@ -217,7 +244,7 @@ Pendências **não bloqueadoras**: definição da infraestrutura da VPS (antes d
 
 ## TESTES DISPONÍVEIS
 
-19 classes JUnit no legado (`test/`), sem cobertura relevante. **Especificações de caracterização: 87** (🆕 79 até a auditoria final; seis são requisitos nativos, sem baseline do legado), fechadas na Fase 0 ([`cenarios-criticos.md`](docs/modernizacao/testes/cenarios-criticos.md)). **Baseline funcional automatizada: inexistente** — objetivo da Fase 2, sobre ambiente de referência do legado + massa controlada. ⚠️ Especificação existir **não é** teste existir.
+19 classes JUnit no legado (`test/`), sem cobertura relevante. **Especificações de caracterização: 96** (79 até a auditoria final; 87 no encerramento da Fase 0; 🆕 nove do adendo pós-Fase 0 — **quinze** são requisitos nativos, sem baseline do legado), fechadas na Fase 0 ([`cenarios-criticos.md`](docs/modernizacao/testes/cenarios-criticos.md)). **Baseline funcional automatizada: inexistente** — objetivo da Fase 2, sobre ambiente de referência do legado + massa controlada. ⚠️ Especificação existir **não é** teste existir.
 
 ## MÓDULOS IMPLEMENTADOS
 

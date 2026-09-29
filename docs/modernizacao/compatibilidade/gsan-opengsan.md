@@ -164,7 +164,7 @@ Detalhe e cenários correspondentes em [`testes/cenarios-criticos.md`](../testes
 
 Os módulos **Financeiro** e **Operacional** do GSAN não tinham mapa quando os 145 conceitos foram classificados. Seus conceitos foram classificados **nos próprios mapas** — [`financeiro-contabilizacao.md`](../modulos/financeiro-contabilizacao.md) e [`operacional.md`](../modulos/operacional.md), pela escala A–F de escopo — e recebem aqui a classe de compatibilidade usada nas especificações `CEN-FIN` e `CEN-OPE`. ⚠️ **A contagem de 145 não muda**: são conceitos adicionais, não reclassificação.
 
-🔴 **Requisitos nativos não entram nesta matriz** (auditoria final, 2026-09-29): NFAg, determinação tributária e devolução personalizada, Tarifa Social nacional com concessão automática, Pix Cobrança e Pix Automático **não são conceitos do GSAN** — classificá-los em C1–C5 distorceria a matriz. São testados pelo **oráculo N** ([`estrategia-testes.md`](../testes/estrategia-testes.md)) e mapeados em [`modulos/fiscal.md`](../modulos/fiscal.md) e na [matriz de completude](../auditoria/completude-funcional-regulatoria.md). A exceção é quando afetam um conceito compatível — §21.
+🔴 **Requisitos nativos não entram nesta matriz** (auditoria final, 2026-09-29): NFAg, determinação tributária e devolução personalizada, Tarifa Social nacional com concessão automática, Pix Cobrança e Pix Automático — 🆕 e, desde o adendo pós-Fase 0, PCM, Parada e a declaração ao SINISA — **não são conceitos do GSAN** — classificá-los em C1–C5 distorceria a matriz. São testados pelo **oráculo N** ([`estrategia-testes.md`](../testes/estrategia-testes.md)) e mapeados em [`modulos/fiscal.md`](../modulos/fiscal.md) e na [matriz de completude](../auditoria/completude-funcional-regulatoria.md). A exceção é quando afetam um conceito compatível — §21.
 
 | Conceito | Classe | Semântica GSAN → OpenGSAN |
 | -------- | ------ | ------------------------- |
@@ -788,6 +788,8 @@ COMPATIBILIDADE PENDENTE DE DECISÃO
 | 🆕 **Tarifa Social nacional** (Lei 14.898/2024) | Estrutura tarifária (**C1**) · categoria | Benefício com ciclo próprio (concessão automática, vigência, perda); a tarifa social do legado é **extensão de companhia**, não oráculo |
 | 🆕 **Pix Cobrança · Pix Automático** | Recebimento (**C1**) · débito automático (**C1**) | Novos **meios** sob o mesmo ciclo de quatro momentos; a autorização recorrente generaliza a do débito automático sem fundi-los |
 | 🆕 **Devolução personalizada de IBS/CBS** | Conta emitida (**C2**) | Linha de devolução no documento, **regra do Fiscal** — ⚠️ `VALIDAÇÃO JURÍDICA/FISCAL NECESSÁRIA` |
+| 🆕 **PCM** (adendo pós-Fase 0) | OS — unidade de execução (**C1**) | O PCM programa **necessidades**; a execução continua sendo **a OS**, sem ordem paralela — a semântica da OS não muda ([`pcm.md`](../dominio/pcm.md)) |
+| 🆕 **Parada / interrupção operacional** (adendo pós-Fase 0) | Programação de abastecimento e de manutenção (**C1**) | A Parada generaliza a programação por área; a consulta do Atendimento no RA de falta de água continua **equivalente** (CEN-OPE-002) — projetá-la a partir da Parada é pendência ([`paradas-interrupcoes.md §16`](../dominio/paradas-interrupcoes.md#16-pendências)) |
 
 ### 21.1 Portal / canal digital — canal consumidor, não dono
 

@@ -4,6 +4,8 @@
 >
 > 🆕 **Revisão controlada de escopo (2026-09-28)**: dois módulos do GSAN que não tinham mapa — [Financeiro/Contabilização](../modulos/financeiro-contabilizacao.md) e [Operacional](../modulos/operacional.md) — foram mapeados depois desta consolidação. As inserções pontuais estão marcadas 🆕; o "domínio operacional" deste documento passou a chamar-se **atendimento e execução** (§13).
 >
+> 🆕 **Adendo pós-Fase 0 (2026-09-29)**: PCM, Parada, Prestação de Informações (SINISA) e Gerencial & Analytics são conceitos **do OpenGSAN** — não há domínio GSAN a consolidar aqui além das sementes marcadas no §3; decisões na [visão conceitual §27.4](visao-conceitual-opengsan.md#274--adendo-pós-fase-0--pcm-paradas-sinisa-e-gerencial-2026-09-29).
+>
 > **Este documento não projeta o OpenGSAN.** Não há tabelas, entidades JPA, schemas, APIs nem classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR` — isso é a próxima atividade. Aqui consolida-se **como o domínio do GSAN funciona e se relaciona**.
 
 ---
@@ -101,7 +103,7 @@ flowchart TD
 | **Arrecadação** | 🔵 **Domínio próprio** | Reconhece, classifica e concilia o recebimento; tem competência e fechamento próprios |
 | **Atendimento** | 🔵 **Domínio próprio + papel de ponte** | Tem entidades e ciclo próprios (RA, OS), **e** é o canal por onde mudanças entram nos outros domínios (§13) |
 | 🆕 **Financeiro** | 🔵 **Domínio próprio — contabilização subsidiária** | Gera lançamentos de partida dobrada a partir dos fatos do faturamento, da arrecadação e da baixa de devedores duvidosos, por parametrização; **não mantém razão** — [mapa](../modulos/financeiro-contabilizacao.md) |
-| 🆕 **Operacional** | 🔵 **Cadastro de referência + calendário**; a gestão operacional com medições viveu num **satélite** fora do núcleo | Valor nas **pontes** (distrito na quadra, divisão de esgoto → destino do RA, programação × falta de água, qualidade na conta) — [mapa](../modulos/operacional.md) |
+| 🆕 **Operacional** | 🔵 **Cadastro de referência + calendário**; a gestão operacional com medições viveu num **satélite** fora do núcleo | Valor nas **pontes** (distrito na quadra, divisão de esgoto → destino do RA, programação × falta de água, qualidade na conta) — [mapa](../modulos/operacional.md). 🆕 Sementes do adendo pós-Fase 0: a **programação por área** é semente da [Parada](paradas-interrupcoes.md) — não de um PCM, que o GSAN não tem —, e o catálogo de indicadores do satélite, do [catálogo de métricas](../analytics/catalogo-de-metricas.md) |
 | **Segurança** | 🔵 **Transversal + domínio próprio pequeno** | Usuário/grupo/funcionalidade são entidades reais; mas a função é atravessar tudo |
 | **Batch** | 🔵 **Infraestrutura de orquestração** | 🟢 "Não identifiquei regra de negócio de domínio dentro do `ControladorBatchSEJB`" — ele controla estado, não calcula |
 | **Relatórios** | 🔵 **Infraestrutura de leitura/apresentação** | Motor comum; a consulta/regra pertence ao módulo dono |

@@ -2,6 +2,8 @@
 
 > **Fase 0 — revisão controlada de escopo (21ª execução, 2026-09-28).** 🔴 **Decisão do responsável do projeto**: o OpenGSAN terá **Gestão de Ativos nativa** — registrada na [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md). Este documento define a **visão conceitual alvo** do domínio: o que ele é, do que é dono, como se relaciona com Operacional, Redes/GIS, Atendimento e Execução, Micromedição e Contabilização.
 >
+> 🆕 **Adendo pós-Fase 0 (2026-09-29)**: o **PCM** — backlog, planejamento, programação, controle e indicadores — é capacidade deste domínio ([`pcm.md`](pcm.md)); a indisponibilidade que a manutenção exige é pedida à Gestão Operacional como **Parada** ([`paradas-interrupcoes.md`](paradas-interrupcoes.md)). Pontos tocados: §10, §11, §15, §17.
+>
 > ⚠️ **Não decide** schema, tabelas, chaves, PostGIS, sincronização, eventos ou REST. **Não modela** o domínio em profundidade — reconhece, delimita e fixa as regras que impedem decisões ruins mais tarde.
 
 ---
@@ -164,6 +166,8 @@ planejado → adquirido → recebido → instalado → em operação ⇄ em manu
 
 🔵 [INF] As horas de operação que o satélite registrava **por estação** (§2.2) são o insumo natural de manutenção por horas — mas só funcionam se cada bomba tiver identidade.
 
+🆕 **Adendo pós-Fase 0**: esta tabela era a base, não um PCM. O fluxo completo — *necessidade → backlog → planejamento → programação → OS → execução → controle → histórico* —, os estados do backlog e os indicadores estão em [`pcm.md`](pcm.md).
+
 ---
 
 ## 11. 🔴 Sem OS paralela
@@ -188,6 +192,8 @@ necessidade de manutenção
 ```
 
 🔵 É o **contrato central do OpenGSAN** — *solicita × aplica* ([visão conceitual §14.3](visao-conceitual-opengsan.md)) — aplicado nos dois sentidos: Ativos **solicita** execução; o Atendimento **executa**; o resultado volta e **Ativos aplica** ao seu próprio estado.
+
+🆕 **Com o PCM** o contrato não muda: a necessidade passa por backlog, planejamento e programação **antes** da OS, e toda OS continua referenciando a necessidade ([`pcm.md §7`](pcm.md#7-sem-ordem-de-trabalho-paralela)). 🔴 **Programação do PCM ≠ programação da OS**: o PCM decide **janela e prioridade** da manutenção; o Atendimento **distribui e sequencia** as OS no roteiro das equipes — a programação de OS que o legado já tem ([`pcm.md §5`](pcm.md#5-programação)).
 
 ⚠️ [REF] O Giswater também organiza **visitas** e **campanhas de trabalho** ([FOSS4G Europe 2025](https://talks.osgeo.org/foss4g-europe-2025/talk/ETPJKW/); [integração com CRM/hidrômetro](https://github.com/giswater/api/releases/tag/v1.8.0)). [PEND] Se usados, são **registro técnico de inspeção** vinculado à OS — nunca uma segunda OS.
 
@@ -239,7 +245,8 @@ necessidade de manutenção
 | **Micromedição** | Hidrômetro comercial | **Micromedição** — Ativos só referencia |
 | **Contabilização / ERP** | Custo técnico; número patrimonial | Ativos (custo técnico) · **ERP** (imobilizado) |
 | **Telemetria** (futuro) | Ponto de medição ↔ instrumento | Ativos (instrumento) · Telemetria (série de medições) |
-| **Analytics** | Condição, falhas, custos | Analytics consome fatos publicados |
+| 🆕 **Gestão Operacional — Parada** | Necessidade que exige indisponibilidade → pedido de janela → Parada aprovada | **Gestão Operacional** (Parada) · Ativos/PCM (necessidade) — [`paradas-interrupcoes.md`](paradas-interrupcoes.md) |
+| **Analytics** — 🆕 **Gerencial & Analytics** | Condição, falhas, custos · 🆕 indicadores do PCM | Analytics consome fatos publicados — [catálogo de métricas](../analytics/catalogo-de-metricas.md) |
 
 ---
 
@@ -258,4 +265,5 @@ Schema · tabelas · chaves · PostGIS · sincronização · eventos · REST · 
 | 3 | Estoque de peças: módulo futuro ou integração com ERP |
 | 4 | Contratos de manutenção e fornecedores |
 | 5 | Papel das visitas e campanhas do Giswater quando a instalação o usar |
-| 6 | Posição de Gestão de Ativos na ordem de implementação — **trilha estrutural**, depois da Etapa 2 ([`dependencias-e-ordem-implementacao.md`](../modulos/dependencias-e-ordem-implementacao.md)) |
+| 6 | Posição de Gestão de Ativos na ordem de implementação — **trilha estrutural**, depois da Etapa 2 ([`dependencias-e-ordem-implementacao.md`](../modulos/dependencias-e-ordem-implementacao.md)) — 🆕 o PCM vem depois de Ativos + OS (§24.2) |
+| 7 🆕 | Capacidade de equipe, calendário de trabalho e escala de prioridade do PCM ([`pcm.md §12`](pcm.md#12-pendências)) |

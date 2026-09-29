@@ -23,7 +23,7 @@ A equivalência é avaliada por **dois critérios independentes**, e todo compor
 
 ### 🆕 Requisito nativo — oráculo N (auditoria final, 2026-09-29)
 
-Há requisitos que o OpenGSAN **deve** cumprir e que o GSAN público **não tem**: documento fiscal eletrônico (NFAg), Tarifa Social nacional com concessão automática, Pix Cobrança e Pix Automático. Para eles **não existe resultado A** — usar o oráculo 1 fabricaria uma equivalência; usar o 2 inventaria uma divergência.
+Há requisitos que o OpenGSAN **deve** cumprir e que o GSAN público **não tem**: documento fiscal eletrônico (NFAg), Tarifa Social nacional com concessão automática, Pix Cobrança e Pix Automático — 🆕 e, desde o adendo pós-Fase 0, PCM, Parada e a declaração ao SINISA (CEN-PCM, CEN-PAR, CEN-REG). Para eles **não existe resultado A** — usar o oráculo 1 fabricaria uma equivalência; usar o 2 inventaria uma divergência.
 
 | Oráculo | Pergunta | Critério | O que uma diferença significa |
 | ------- | -------- | -------- | ----------------------------- |
@@ -69,7 +69,7 @@ Um cenário está **ESPECIFICADO NA FASE 0** quando estão fechados: **o que exe
 ## CEN-<ÁREA>-<NNN> — <título>
 
 - **Criticidade**: P0 / P1 / P2
-- **Etapa OpenGSAN**: etapa da ordem de implementação
+- **Etapa OpenGSAN**: etapa da ordem de implementação — 🆕 ou **T** (trilha estrutural) e **R** (trilha regulatória), fora das etapas numeradas (adendo pós-Fase 0)
 - **Conceitos relacionados**: conceitos e classe de compatibilidade (C1…C5)
 - **Objetivo**: regra caracterizada
 - **Pré-condições**: estado exigido da massa (perfis, situações, referência)

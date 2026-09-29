@@ -487,6 +487,18 @@ OS/RA → podem gerar Débito, Crédito, Guia, Parcelamento
 | **Comprovante de pagamento** | Evidência de um **recebimento** | Arrecadação | Quitação: a quitação é derivada da classificação, não do comprovante |
 | **Recebimento / pagamento** | O fato financeiro reconhecido e classificado | Arrecadação | "Baixa" como campo — não existe |
 | **Posição de dívida** | Consulta **derivada** sobre documentos, situações e pagamentos | Cobrança | Entidade "Dívida" — não existe (C1) |
+
+### 🆕 Terminologia do adendo pós-Fase 0 (2026-09-29)
+
+| Termo no OpenGSAN | O que é | Dono | ⚠️ Não confundir com |
+| ----------------- | ------- | ---- | -------------------- |
+| **Necessidade de manutenção** | O que precisa ser feito num ativo — por plano, falha ou condição; item do backlog | Gestão de Ativos (PCM) | OS — a necessidade **não** é execução |
+| **PCM** | Capacidade de planejar, priorizar, programar, acompanhar e medir a manutenção ([`pcm.md`](pcm.md)) | Gestão de Ativos | Ordem de trabalho própria — **não existe** |
+| **Parada / interrupção operacional** | O fato de o serviço cessar ou ser restringido numa área e num período ([`paradas-interrupcoes.md`](paradas-interrupcoes.md)) | Gestão Operacional | Polígono (projeção) e *mincut* (cálculo) |
+| **Informação SINISA** | Campo oficial de um ciclo — identidade: **código + versão do glossário** ([`sinisa.md`](../regulatorio/sinisa.md)) | Prestação de Informações | Métrica interna com nome igual |
+| **Declaração SINISA** | Valor **informado pelo usuário**, com fonte e evidência, aprovado e submetido | Prestação de Informações | Valor calculado |
+| **Métrica** | Definição interna versionada de uma medida, com fórmula e *owner* ([catálogo](../analytics/catalogo-de-metricas.md)) | Gerencial & Analytics · *owner* de negócio | Informação SINISA — **métrica ≠ informação SINISA** |
+| **Referência auxiliar** | Dado interno exibido **ao lado** do campo SINISA, rotulado `REFERÊNCIA — NÃO É VALOR SINISA` | Gerencial (fonte) · Workspace (exibição) | Sugestão de valor — não existe na V1 |
 6. ~~Multiplicidade de rotas no imóvel~~ **Resolvida (2026-08-14)**: rota via quadra = processos territoriais/de campo; rota de entrega = distribuição de contas/2ª via; rota alternativa = **override** — quando definida no imóvel, sobrepõe a rota da quadra nos processos de leitura/análise (evidência: dois ramos de consulta em `RepositorioMicromedicaoHBM.pesquisarImovelExcecoesLeituras`). Ver [modulos/cadastro.md §3.8](../modulos/cadastro.md) e [modulos/micromedicao.md §3.10](../modulos/micromedicao.md).
 7. **RA sem imóvel** (por endereço/local de ocorrência) — dimensionar o quanto do fluxo de atendimento independe de matrícula (afeta o modelo do OpenGSAN).
 8. **Nomenclaturas de companhia no núcleo** — parcialmente mapeada no cadastro (2026-08-14): `numeroCelpe`, DV específico CAERN (`Util.obterDigitoVerificadorModuloCAERN`), campos sociais (`imov_classe_social`, `imov_qtd_economias_social`), programas especiais e recadastramento. Consolidar a separação núcleo × extensão na análise de compatibilidade ([modulos/cadastro.md §8](../modulos/cadastro.md)).
