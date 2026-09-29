@@ -44,7 +44,7 @@ Nenhuma implementação iniciada.
 | Item | Registro |
 | ---- | -------- |
 | **Data** | 2026-09-29 |
-| **Commit** | `COMMIT-DE-ENCERRAMENTO` — auditoria final; estado de entrada `9993ac1` |
+| **Commit** | `e360716` — auditoria final e encerramento; estado de entrada `9993ac1` |
 | **Veredito** | **SIM** — não há lacuna estrutural P0/P1 não tratada ([auditoria final §21](docs/modernizacao/auditoria/auditoria-final-fase0.md#21-veredito-da-fase-0)) |
 | **Artefatos** | **13 mapas funcionais** (12 do GSAN + Fiscal), catálogo de funcionalidades futuras e ordem de implementação · glossário, mapa de domínio, visão conceitual e visão de Gestão de Ativos · compatibilidade das estruturas (64 decisões), conceitual (145 conceitos) e **17 divergências aprovadas** · **8 ADRs aceitas** · estratégia de testes com oráculos 1, 2 e N e **87 especificações críticas** · arquitetura legada, alvo e Redes/GIS/Ativos · segurança · **auditoria final** e matriz de completude · procedência · registro de alterações — índice em [`docs/modernizacao/README.md`](docs/modernizacao/README.md) |
 
