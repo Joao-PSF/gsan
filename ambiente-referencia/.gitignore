@@ -1,0 +1,4 @@
+# Configuração local com senhas — nunca versionar.
+.env
+# Saídas locais (inventário do EAR, logs copiados, evidências de execução).
+.saida/

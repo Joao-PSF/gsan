@@ -1,0 +1,26 @@
+# Pré-requisito P2 — avanço mínimo de sequence (ver README.md).
+# Antes de cada migração que chama nextval() numa destas sequences, a sequence avança só o
+# necessário para que os próximos N valores (N = ocorrências da sequence na migração) estejam
+# livres na tabela. Numa base nova, IDs inseridos explicitamente por migrações anteriores
+# ocupam a faixa que a sequence percorreria; em produção eles não colidiam. Avançar o mínimo
+# mantém a sequence perto da de produção e não invade IDs que migrações futuras inserem
+# explicitamente — ao contrário de levá-la ao maior ID (ver a correção registrada no README).
+# A PK é resolvida no catálogo; tabela ainda inexistente = sem efeito.
+# sequence	tabela
+arrecadacao.seq_parametros_convenio	arrecadacao.parametros_convenio
+atendimentopublico.seq_agencia_regul_municipio	atendimentopublico.agencia_regul_municipio
+atendimentopublico.seq_agencia_reguladora	atendimentopublico.agencia_reguladora
+batch.seq_processo_atividade	batch.processo_atividade
+batch.seq_processo_funcionalidade	batch.processo_funcionalidade
+cadastro.seq_contrato	cadastro.contrato
+cadastro.seq_envio_email	cadastro.envio_email
+cadastro.seq_imovel_tipo_ocupante	cadastro.imovel_tipo_ocupante
+cadastro.seq_situacao_atlz_cadastral	cadastro.situacao_atlz_cadastral
+faturamento.seq_comunicado_emitir_conta	faturamento.comunicado_emitir_conta
+faturamento.seq_faturamento_parametro	faturamento.parametro
+financeiro.seq_faixa_valor_consumo	financeiro.faixa_valor_consumo
+seguranca.seq_funcionalidade	seguranca.funcionalidade
+seguranca.seq_operacao	seguranca.operacao
+seguranca.seq_permissao_especial	seguranca.permissao_especial
+seguranca.seq_seguranca_parametro	seguranca.parametro
+seguranca.seq_tabela_coluna	seguranca.tabela_coluna

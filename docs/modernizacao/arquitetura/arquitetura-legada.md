@@ -10,7 +10,7 @@ Mapa técnico levantado em 2026-08-13 a partir do repositório `gsan` (branch ba
 | Servidor | JBoss 4.0.1sp1 (Java EE 1.4 / EJB 2.x), empacotamento `gcom.ear` contendo `gcom.war` |
 | Build | Ant (`build.xml` + `build.properties` local); Middlegen (`middlegen-build.xml`) para gerar mapeamentos Hibernate a partir do banco |
 | Dependências | JARs vendorizados em `lib/` sem gestão (Maven/Gradle inexistentes) |
-| Datasource | JNDI `java:/PostgresDS` configurado no JBoss (`*-ds.xml` fora do repositório, nos servidores) |
+| Datasource | JNDI `java:/PostgresDS` (gsan_comercial) e 🆕 `java:/PostgresGerencialDS` (gsan_gerencial), configurados no JBoss (`postgres-ds.xml` fora do repositório; modelo na receita oficial `prodigasistemas/ti`) — cada um com sua SessionFactory em `HibernateUtil` |
 | Driver | `postgresql-42.2.23.jre6.jar` |
 
 ## Dimensões
@@ -68,3 +68,4 @@ JSP (gcom/jsp, scriptlets + taglibs)
 - Customizações por companhia em `descriptors/` e validadores (`validator-compesa.xml`); domínio hard-coded `gsan.cosanpa.pa.gov.br` em filtro de API.
 - Módulos adicionais vs. GSAN público: `spcserasa` (negativação), `portal`, `api`, `fiscal`/NF-e + SPED (schema `fiscal`, `integracao`), mobile/campo (schema `mobile`), atualização cadastral (recadastramento com NIS/Bolsa Água), qualidade da água.
 - Repositório de código parou em 2023-10, mas migrations vão até 2024-06 e o banco contém objetos nomeados até 2026 → **o repositório pode não refletir produção; confirmar antes de qualquer implementação** (dependência bloqueadora da Fase 0).
+- 🆕 **Fase 1 (2026-09-30)** — o legado foi construído e executado a partir deste repositório ([relatório](../ambiente/fase1-ambiente-referencia.md)). Três fatos de runtime que a leitura não mostrava: o código de 2023 mapeia colunas e tabelas que **nenhuma migração cria** (DDL manual de produção); o `FiltroSSO` exige um **serviço SSO externo em toda requisição**; e os EJBs só implantam porque o `mondrian.war` da receita põe o commons-fileupload no repositório unificado de classes.

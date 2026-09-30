@@ -1,0 +1,9 @@
+# Pré-requisito P5 — migrações NÃO APLICÁVEIS numa base nova (ver README.md).
+# Não são executadas; ficam registradas em public.referencia_nao_aplicada. Qualquer
+# outra falha interrompe a aplicação.
+# id	classe	motivo
+20161027190135	historico-inconsistente	DROP SEQUENCE desempenho.seq_contrato_medicao_coeficiente_historico: a sequence foi criada em cadastro (20160726133430) e o SET SCHEMA de 20161013195352 move a tabela, não a sequence. Não aplicar mantém a tabela de histórico de coeficientes e sua sequence.
+20180807124455	ja-satisfeita	ADD COLUMN icac_tmpreaprovacao: a coluna já foi criada por 20180725133250 (migração duplicada).
+20220524164400	seguranca	Insere credenciais OAuth (uid e secret) de aplicações clientes da GSAN-API em public.oauth_applications, tabela que nenhuma migração cria. Segredo versionado = comprometido; não é aplicada (achado de segurança registrado).
+20180831012134	ja-satisfeita	Reinsere as operações retornarArquivosImoveisAFiscalizar/ARevisitar já criadas por 20180827195154 e 20180828151607; a duplicata faz as subconsultas por URL devolverem duas linhas. Não aplicar perde só as concessões dessas operações aos grupos 3, 69 e 73 (grupos de produção, sintéticos aqui).
+20230323191825	ja-satisfeita	Insere os lancamento_item 135 e 136, já inseridos, com o mesmo conteúdo, por 20220913142020 (migração duplicada).

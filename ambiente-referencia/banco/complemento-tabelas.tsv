@@ -1,0 +1,6 @@
+# Pré-requisito P6 — tabelas ausentes que o complemento cria (ver README.md).
+# Só entra aqui tabela mapeada por classe da SessionFactory comercial, ausente de todo o
+# histórico de migrações, com evidência de que existia na instalação e necessária a um módulo
+# que o oráculo exercita. As demais tabelas ausentes ficam transferidas, com classificação.
+# banco	tabela	justificativa
+comercial	cadastro.dmc	QuadraFace (território, núcleo do Cadastro) referencia Dmc por dmc_id; a entidade foi acrescentada em 2023 (commit a9b52f1) sem migração — a Fase 0 já registrou que a tabela deriva de schema (modulos/operacional.md §3)

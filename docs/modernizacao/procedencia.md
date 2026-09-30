@@ -17,6 +17,9 @@ Criado em 2026-09-14 em resposta à crítica de rastreabilidade da revisão exte
 | 🆕 Giswater — repositórios oficiais | [`Giswater/api`](https://github.com/Giswater/api) (lido em 2026-09-29) e protocolo *P16 — mincut basics* em [`Giswater/docs`](https://github.com/Giswater/docs) | Semântica do *mincut* — estados, operações, válvulas, elementos afetados, pré-requisitos ([`paradas-interrupcoes.md §7`](dominio/paradas-interrupcoes.md#7-giswater--o-que-o-mincut-faz)). ⚠️ Lido **diretamente nos repositórios**; o site `docs.giswater.org` estava bloqueado |
 | 🆕 SINISA — Ministério das Cidades | Página do SINISA, Área do Prestador, glossários e manuais por ciclo — consultados em **2026-09-29** ([`sinisa.md`](regulatorio/sinisa.md#fontes)) | Ciclo, glossários, formulários, comprovante × regularidade. ⚠️ Lidos por **resumo de busca** — `www.gov.br` bloqueado; prorrogações só por fonte secundária |
 
+| 🆕 Receita oficial de instalação (Fase 1) | Wiki `prodigasistemas/gsan.wiki` (`d5d75c8`, 2023-03-29); scripts e receitas `prodigasistemas/ti` (`75b1a2f`, 2018-12-28); bibliotecas `prodigasistemas/jboss-libs` (`3002fa1`, 2016-08-31) — lidos em **2026-09-30**, diretamente nos repositórios | Como uma instalação real era montada: JDK 6, JBoss 4.0.1SP1 e suas alterações, locale LATIN1, datasources, MyBatis 3.2.1. Base do [ambiente de referência](../../ambiente-referencia/README.md) |
+| 🆕 Migrações executadas (Fase 1) | `Joao-PSF/gsan-migracoes` `2d6acdb` — idêntico ao `prodigasistemas/gsan-migracoes` na data | A execução numa base nova é **evidência de comportamento do histórico**, não só leitura: [`banco/README.md`](../../ambiente-referencia/banco/README.md) |
+
 ⚠️ **Limitação declarada**: o hash do arquivo DDL não foi registrado na época em que a análise do banco foi feita. Toda afirmação derivada do DDL está marcada como tal e deve ser reconferida contra o arquivo vigente antes de virar decisão. Este é um débito reconhecido, não uma omissão silenciosa.
 
 ---
@@ -94,6 +97,9 @@ Registro das afirmações que foram publicadas erradas e depois corrigidas, para
 | 2026-09-30 🆕 revisão | Módulo instalável **Services** para RA, OS e campo | `arquitetura/modulos-e-perfis-de-implantacao.md`, ADR-0010, cenários MOD-002 e MOD-004, visão §27.5 e demais referências do segundo adendo | **Atendimento** — RA · OS · Campo: *Services* escondia o RA e o fazia parecer assunto do Commercial. Registros históricos com nota de supersessão |
 | 2026-09-30 🆕 revisão | **Estrutura organizacional** na Platform | `arquitetura/modulos-e-perfis-de-implantacao.md` §3, §12, §14; visão §8, §27.5 | Posicionamento de fluxo do RA e da OS — `UnidadeOrganizacional.java:26–76`; usos fora do atendimento também posicionam RA ou OS. Vai para o **Atendimento** (§7.2) |
 | 2026-09-30 🆕 revisão | Ponto de consumo (Metering) e execução (Assets) como provedores **obrigatórios** — perfil inválido sem eles | `arquitetura/modulos-e-perfis-de-implantacao.md` §15–§17; CEN-MOD-004 V4 | **Forte demais**: os dois módulos existem sem eles — parque de hidrômetros; ativos, planos e backlog. Condicionam **capacidade**; 🔴 só consumo e qualidade da água do Commercial (§15.2) |
+
+| 2026-09-30 🆕 Fase 1 | "Datasource JNDI `java:/PostgresDS`" como único datasource | `arquitetura/arquitetura-legada.md` | São **dois**: `PostgresDS` (gsan_comercial) e `PostgresGerencialDS` (gsan_gerencial), cada um com sua SessionFactory em `HibernateUtil` |
+| 2026-09-30 🆕 Fase 1 | O código do repositório pode não refletir produção — *"confirmar antes de qualquer implementação"* | `arquitetura/arquitetura-legada.md` | **Confirmado no sentido inverso**: o código de 2023 mapeia colunas e tabelas que nenhuma migração cria (DDL manual de produção) — ex.: `cadastro.cliente.clie_icrecusasubsidio`, `cadastro.dmc` ([relatório da Fase 1 §7](ambiente/fase1-ambiente-referencia.md#7-hibernate--schema)) |
 
 ---
 

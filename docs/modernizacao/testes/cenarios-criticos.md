@@ -721,6 +721,8 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 
 ⚠️ **O que a Fase 2 precisa fixar antes de capturar**, porque a baseline depende disso: a **variante de companhia** ativa na instância de referência; o **limite de tentativas** e os parâmetros da política de senha; os **parâmetros de faixa** das tarifas; se a **taxa de emissão** está ativa.
 
+🆕 **Da Fase 1 (2026-09-30)** — o [ambiente de referência](../../../ambiente-referencia/README.md) existe e é reproduzível, mas nasce **sem dados de referência de negócio** e com o **catálogo de processos batch** praticamente vazio: a massa dos perfis do §13 inclui esse catálogo. Processos batch exigem a instância em modo **Batch** (`GSAN_TIPO`); a variante fica em `GSAN_VARIANTE`. Concessões do grupo ADMINISTRADOR são só as das migrações — os perfis USR-* definem as do cenário. Pendências completas: [relatório da Fase 1 §17](../ambiente/fase1-ambiente-referencia.md#17-pendências-transferidas-à-fase-2).
+
 ---
 
 ## 16. Rastreabilidade do inventário
