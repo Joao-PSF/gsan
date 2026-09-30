@@ -42,7 +42,7 @@
   - f) situação e referência da conta
 - **Localizadores GSAN**: `gerarConta` (`ControladorFaturamentoFINAL:53545`); `gerarContaCategoria*` (`:53835–54175`); despacho uma vigência × várias (`:3895–3925`); `calculoSimplesUmaTarifa` (🟢 HALF_UP `:4620`); `getCalcularValoresAguaEsgotoHelper` (HALF_UP `:5246/:5250/:5255`); `getCalcularValoresAguaEsgotoBigDecimalHelper` (🟢 **UP** `:5279`; HALF_UP `:5322/:5326/:5331`); `getCalcularValoresAguaEsgotoFaixaBigDecimalHelper` (🟢 **UP** `:5390`); `calculoConsumoDiretoNaFaixa` (tipo 4); `conta_categoria`
 - **Resultado semântico esperado**: 🟢 mínimo = Σ (tarifa mínima × economias) **por categoria**; 🟢 imóvel com várias categorias é faturado **por categoria**, com consumo distribuído **proporcionalmente às economias**; 🟢 faixas progressivas aplicam-se **dentro da categoria**; 🟢 o contexto do cálculo fica **congelado na conta**. ❔ A granularidade das faixas (por economia individual × agregada por categoria) **não está comprovada** — V2/V3 a descobrem
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (Fase 2, lote piloto, 2026-09-30) — V1, V2, V3, V6 e V7 na fronteira [UC0157] Simular Cálculo da Conta, em [`golden/faturamento/CEN-FAT-001/`](../../../../ambiente-referencia/baselines/golden/faturamento/CEN-FAT-001/): observáveis b (por categoria) e d; ⬜ **a capturar** V4 e V5 (origem do consumo) e os observáveis a (por categoria), b (por faixa), c, e, f — fronteira `gerarConta`, lote do faturamento em grupo. 🔵 V2/V3 responderam a dúvida: faixas **por economia individual** ([relatório da Fase 2, F2-01](../fase2/fase2-caracterizacao-baselines.md#11-achados))
 - **Normalizações**: identificadores técnicos da conta e dos registros de categoria
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — **ao centavo**
@@ -64,7 +64,7 @@
 - **Observações semânticas**: parcela do cálculo atribuída a cada vigência · valor por vigência e faixa · total de água · contexto congelado (quais vigências foram usadas)
 - **Localizadores GSAN**: despacho `SF0002 — Cálculo Proporcional Para Mais de Uma Tarifa` (`:3918–3925`); `calculoProporcionalMaisDeUmaTarifa(dataLeituraAtual, dataLeituraAnterior, ...)` — 🟢 **HALF_UP em 9 pontos** (`:5540–5678`), a maior concentração da política no controlador
 - **Resultado semântico esperado**: 🟢 havendo **mais de uma vigência** no período, o cálculo é **proporcional**, parametrizado pelas datas de leitura anterior e atual. ❔ **A base da proporção (dias, consumo ou outra) não está comprovada** — a baseline decide
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (Fase 2, lote piloto, 2026-09-30) — V1, V2 e V3 na fronteira [UC0157] Simular Cálculo da Conta, em [`golden/faturamento/CEN-FAT-002/`](../../../../ambiente-referencia/baselines/golden/faturamento/CEN-FAT-002/): total de água por categoria; ⬜ **a capturar** a parcela por vigência e faixa e o contexto congelado — fronteira `gerarConta`. 🔵 Os três totais são consistentes, ao centavo, com proporção **por dias corridos** ([F2-05](../fase2/fase2-caracterizacao-baselines.md#11-achados))
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — **ao centavo**

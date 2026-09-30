@@ -129,6 +129,8 @@ services:
       GSAN_MIGRACOES_COMMIT: ${GSAN_MIGRACOES_COMMIT}
       GSAN_VARIANTE: ${GSAN_VARIANTE:-}
       GSAN_TIPO: ${GSAN_TIPO:-Online}
+      # Procedência gravada em cada baseline da Fase 2.
+      GSAN_COMMIT_LEGADO: ${GSAN_COMMIT_LEGADO}
     volumes:
       - ./scripts:/referencia/scripts:ro
       - ./banco:/referencia/banco:ro
@@ -137,6 +139,9 @@ services:
       - migracoes:/migracoes:ro
       - jboss-log:/jboss-log:ro
       - ./.saida:/saida
+      # Fase 2: massas, cenários executáveis e ferramentas de baseline. Gravável só porque
+      # `baseline.sh capturar` escreve as baselines em baselines/golden (nada mais escreve aqui).
+      - ./baselines:/referencia/baselines
     networks: [interna]
 
 networks:

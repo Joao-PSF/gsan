@@ -135,6 +135,13 @@ OAuth2/OIDC apenas se houver infraestrutura de identidade; não é pré-requisit
 
 ✅ **Fase 0 concluída em 2026-09-29** — [auditoria final](auditoria/auditoria-final-fase0.md).
 
-✅ **Fase 1 concluída em 2026-09-30** — [relatório](ambiente/fase1-ambiente-referencia.md): o GSAN legado é construído e implantado do zero seguindo só a documentação ([`ambiente-referencia/`](../../ambiente-referencia/README.md)), com reprodução limpa verificada. Desvios de premissa desta tabela registrados no relatório: a base de referência vem do histórico de migrações **mais uma camada explícita de pré-requisitos** (o histórico sozinho não reconstrói uma base), e a massa sintética da Fase 1 é só de **verificação** — a massa de caracterização é da Fase 2. Próxima: **Fase 2 — Rede de segurança**, não iniciada.
+✅ **Fase 1 concluída em 2026-09-30** — [relatório](ambiente/fase1-ambiente-referencia.md): o GSAN legado é construído e implantado do zero seguindo só a documentação ([`ambiente-referencia/`](../../ambiente-referencia/README.md)), com reprodução limpa verificada. Desvios de premissa desta tabela registrados no relatório: a base de referência vem do histórico de migrações **mais uma camada explícita de pré-requisitos** (o histórico sozinho não reconstrói uma base), e a massa sintética da Fase 1 é só de **verificação** — a massa de caracterização é da Fase 2.
+
+🟡 **Fase 2 em andamento desde 2026-09-30** — [relatório](testes/fase2/fase2-caracterizacao-baselines.md): os 103 cenários
+classificados por script (74 exigem baseline do GSAN, 6 só registro de divergência, 1 com evidência estática, 22 nativos);
+mecanismo de captura e verificação com estado limpo por execução; **lote piloto** capturado e verificado. Desvio desta
+tabela: a "massa congelada" é massa SQL versionada (base + deltas, cada arquivo por sha256) sobre o banco pós-migração
+congelado como modelo — não um *dump*. Critério de aceite ainda não atingido: "cobre os comportamentos priorizados" é dos
+próximos lotes; a baseline de performance não começou.
 
 O controle vivo de atividades, backlog e pendências está em [`MODERNIZACAO_GSAN.md`](../../MODERNIZACAO_GSAN.md). A lista de "primeiro ciclo" que ocupava esta seção foi removida: ela pressupunha produção, DBA e acesso a banco real — nada disso existe neste projeto, e o que restava de válido já está no backlog da Fase 0.

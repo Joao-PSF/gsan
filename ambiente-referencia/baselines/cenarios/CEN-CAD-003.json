@@ -1,0 +1,76 @@
+{
+  "cenario": "CEN-CAD-003",
+  "titulo": "Composição de economias por categoria e subcategoria",
+  "dominio": "cadastro-atendimento",
+  "lote": "piloto",
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-CAD-003",
+  "oraculo": "1 — por mapeamento semântico (composição → total)",
+  "fronteira": "[UC0472] Consultar Imóvel, aba Dados Cadastrais (consultarImovelWizardAction?action=exibirConsultarImovelDadosCadastraisAction): a composição vem de pesquisarCategoriasImovel (imovel_subcategoria, RepositorioImovelHBM:10961) e o total de economias é somado pelo JSP (imovel_consultar_cadastro.jsp:383-502) a partir dela.",
+  "roteiro": "consultar_imovel_dados_cadastrais",
+  "precondicoes": [],
+  "efeitos": [
+    {
+      "tabela": "cadastro.imovel",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "cadastro.imovel_subcategoria",
+      "modo": "conteudo"
+    }
+  ],
+  "observaveis": {
+    "campos": [
+      "resultado",
+      "composicao[categoria,subcategoria,economias]",
+      "total_economias_exibido"
+    ],
+    "fora_desta_fronteira": {
+      "categoria principal": "não é exibida na aba Dados Cadastrais",
+      "coerência do denormalizado": "com massa gravada por SQL, imov_qteconomia e a categoria principal são os da massa; se o legado os mantém coerentes é pergunta do caminho de escrita (Inserir/Manter Imóvel) — próximo lote de Cadastro"
+    }
+  },
+  "normalizacoes": [
+    {
+      "caminho": "composicao",
+      "regra": "ordem_sem_semantica",
+      "chaves": [
+        "categoria",
+        "subcategoria"
+      ],
+      "justificativa": "a consulta não tem ORDER BY (RepositorioImovelHBM:10961-10987): a ordem exibida é a física do banco, sem significado de negócio"
+    }
+  ],
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01 (matrícula 100013) — residencial, 1 economia",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql"
+      ],
+      "entrada": {
+        "matricula": 100013
+      }
+    },
+    "V2": {
+      "descricao": "IMV-02 (matrícula 100021) — 3 economias numa subcategoria residencial",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql"
+      ],
+      "entrada": {
+        "matricula": 100021
+      }
+    },
+    "V3": {
+      "descricao": "IMV-03 (matrícula 100030) — residencial em duas subcategorias (1 + 1) e comercial 1",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql"
+      ],
+      "entrada": {
+        "matricula": 100030
+      }
+    }
+  },
+  "fora_do_lote": {}
+}

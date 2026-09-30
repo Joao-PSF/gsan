@@ -1,0 +1,109 @@
+{
+  "cenario": "CEN-FAT-002",
+  "titulo": "Mudança de vigência tarifária dentro do período de leitura",
+  "dominio": "faturamento",
+  "lote": "piloto",
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-002",
+  "oraculo": "1 — ao centavo",
+  "fronteira": "[UC0157] Simular Cálculo da Conta (exibirSimularCalculoContaAction → adicionarCategoriaContaAction → simularCalculoContaAction): obterConsumoMinimoLigacao (UC0105) + calcularValoresAguaEsgoto (UC0120), o mesmo cálculo que gerarConta usa por imóvel (ControladorFaturamentoFINAL:52919). Sem cronograma de leitura, o período é o mês da referência inteiro.",
+  "roteiro": "simular_calculo_conta",
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_historico",
+    "faturamento.debito_a_cobrar",
+    "micromedicao.consumo_historico"
+  ],
+  "observaveis": {
+    "campos": [
+      "resultado",
+      "mensagem",
+      "por_categoria[categoria,valor_agua]",
+      "total_agua",
+      "consumo_faturado_agua_exibido"
+    ],
+    "fora_desta_fronteira": {
+      "parcela por vigência": "a tela mostra o valor por categoria, não a parcela atribuída a cada vigência nem por faixa",
+      "contexto congelado": "quais vigências foram usadas fica na conta gerada — a simulação não gera conta"
+    }
+  },
+  "normalizacoes": [],
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-18 — 2ª vigência da TAR-01 (2026-07-16) no meio do período 2026-07-01 a 2026-07-31; residencial, 1 economia, 27 m³",
+      "entrada": {
+        "referencia": "07/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "vigência que começa no dia da leitura atual (2026-08-31, período 2026-08-01 a 2026-08-31); residencial, 1 economia, 27 m³",
+      "massa": [
+        "massas/deltas/tar01-vigencia-no-dia-da-leitura.sql"
+      ],
+      "entrada": {
+        "referencia": "08/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "duas mudanças de vigência dentro do período (2026-09-10 e 2026-09-20; período 2026-09-01 a 2026-09-30); residencial, 1 economia, 27 m³",
+      "massa": [
+        "massas/deltas/tar01-duas-mudancas-no-periodo.sql"
+      ],
+      "entrada": {
+        "referencia": "09/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    }
+  },
+  "fora_do_lote": {}
+}

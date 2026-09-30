@@ -25,6 +25,8 @@ for banco in comercial gerencial; do
   verificar "$((aplicadas + nao))" "$esperados" "gsan_$banco: migrações aplicadas ($aplicadas) + não aplicáveis ($nao) = scripts do repositório"
 done
 verificar "$(sql postgres "select pg_tablespace_location(oid) from pg_tablespace where spcname = 'indices'")" "/opt/pgsql/indices" "tablespace indices"
+verificar "$(sql postgres "select count(*) from pg_database where datname in ('gsan_comercial_ref', 'gsan_gerencial_ref') and datistemplate and not datallowconn")" \
+  "2" "modelos congelados da Fase 2 (gsan_*_ref: só origem, sem conexão)"
 verificar "$(sql gsan_comercial "select count(*) from public.referencia_complemento where sha256 = '$(sha256sum /referencia/banco/complemento-comercial.sql | cut -d' ' -f1)'")" \
   "1" "complemento estrutural P6 versionado aplicado"
 

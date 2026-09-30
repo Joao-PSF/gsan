@@ -77,7 +77,10 @@ bash scripts/referencia.sh banco
    uma base do zero;
 5. aplica o **complemento estrutural P6** (objetos mapeados pelo código e criados fora do histórico);
 6. pós-migração: rotação das senhas dos papéis versionados, senha do `admin`, parâmetros da instância e a massa mínima de
-   verificação.
+   verificação;
+7. 🆕 (Fase 2) **congela** os dois bancos, exatamente como saem daqui, nos modelos `gsan_comercial_ref` e
+   `gsan_gerencial_ref` (`scripts/estado-base.sh`) — o estado de partida de toda execução de baseline. O JBoss é parado
+   no início do passo: nenhuma conexão sobrevive de uma subida anterior.
 
 Tudo explicado, item a item, em [`banco/README.md`](banco/README.md). Logs em `.saida/migracoes-*.log`, `.saida/pos-migracao.log`,
 `.saida/mapeamento.tsv`. Cerca de 2 minutos. Qualquer falha não prevista interrompe o processo.
@@ -103,6 +106,17 @@ complementar aberta**; senha do `admin` diferente da versionada; rede interna se
 implantado sem implantação incompleta, as duas SessionFactory construídas; tela de login; tela principal negada sem sessão;
 login do `admin` com menu; **consulta de domínio** (Manter Cliente encontra o cliente de verificação pela pilha inteira);
 **negação** de funcionalidade não concedida pelo gate de autorização do legado.
+
+## 6a. Baselines (Fase 2)
+
+```bash
+bash scripts/baseline.sh capturar --lote piloto     # 2 execuções idênticas por variação → baselines/golden/
+bash scripts/baseline.sh verificar --lote piloto    # nova execução comparada com a baseline; não escreve
+```
+
+Cada execução recria os bancos dos modelos, aplica a massa sintética da variação, sobe o JBoss do zero e executa a
+operação pelas telas do legado. Depois de uma captura, o banco de trabalho fica com a massa da **última** execução.
+Tudo em [`baselines/README.md`](baselines/README.md).
 
 ## 7. Parar
 

@@ -2,3 +2,4 @@
 .env
 # Saídas locais (inventário do EAR, logs copiados, evidências de execução).
 .saida/
+__pycache__/

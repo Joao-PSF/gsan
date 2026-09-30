@@ -723,6 +723,8 @@ As especificações são **neutras à interface**: nenhuma descreve tela, rota o
 
 🆕 **Da Fase 1 (2026-09-30)** — o [ambiente de referência](../../../ambiente-referencia/README.md) existe e é reproduzível, mas nasce **sem dados de referência de negócio** e com o **catálogo de processos batch** praticamente vazio: a massa dos perfis do §13 inclui esse catálogo. Processos batch exigem a instância em modo **Batch** (`GSAN_TIPO`); a variante fica em `GSAN_VARIANTE`. Concessões do grupo ADMINISTRADOR são só as das migrações — os perfis USR-* definem as do cenário. Pendências completas: [relatório da Fase 1 §17](../ambiente/fase1-ambiente-referencia.md#17-pendências-transferidas-à-fase-2).
 
+🆕 **Da Fase 2 (2026-09-30, em andamento)** — as 103 especificações foram **classificadas por script** em A (baseline do GSAN necessária, 74), B (evidência estática suficiente, 1), C (divergência aprovada, 6) e N (requisito nativo, 22): [matriz de caracterização](fase2/matriz-caracterizacao.md). 80 exigem executar o legado; 234 variações a capturar. O mecanismo de captura (massa base + deltas, estado limpo por execução, captura × verificação) e o **lote piloto** estão no [relatório da Fase 2](fase2/fase2-caracterizacao-baselines.md); a cobertura corrente, em [`fase2/cobertura-baselines.md`](fase2/cobertura-baselines.md) — gerada, nunca editada à mão.
+
 ---
 
 ## 16. Rastreabilidade do inventário
@@ -1001,4 +1003,4 @@ Restam para fechar a Fase 0:
 1. ~~**ADR-0007 — arquitetura de interface.**~~ ✅ **Aceita em 2026-09-29** — sem efeito sobre os observáveis (§14).
 2. ~~**Auditoria final e encerramento da Fase 0.**~~ ✅ **Concluída em 2026-09-29** — [`auditoria-final-fase0.md`](../auditoria/auditoria-final-fase0.md): oito especificações acrescentadas (§4.3), dois bloqueios resolvidos (§10.1), a D-18 com cenário e o oráculo N para requisitos nativos.
 
-🆕 **Depois do encerramento — adendo pós-Fase 0 (2026-09-29)**: nove requisitos nativos de PCM, Paradas e SINISA (§4.5), sem reabrir a Fase 0 ([registro](../alteracoes/2026-09-29-adendo-pos-fase0.md)). 🆕 **Segundo adendo (2026-09-29)**: sete cenários de modularidade e perfis de implantação ([registro](../alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md)). Próximo estágio: **Fase 1**.
+🆕 **Depois do encerramento — adendo pós-Fase 0 (2026-09-29)**: nove requisitos nativos de PCM, Paradas e SINISA (§4.5), sem reabrir a Fase 0 ([registro](../alteracoes/2026-09-29-adendo-pos-fase0.md)). 🆕 **Segundo adendo (2026-09-29)**: sete cenários de modularidade e perfis de implantação ([registro](../alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md)). ~~Próximo estágio: **Fase 1**~~ 🆕 Fase 1 concluída em 2026-09-30; **Fase 2 em andamento** (§15).

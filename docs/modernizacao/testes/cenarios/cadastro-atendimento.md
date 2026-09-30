@@ -71,7 +71,7 @@
 - **Observações semânticas**: economias por categoria · economias por subcategoria · total · categoria principal
 - **Localizadores GSAN**: `imovel_subcategoria`; `imov_qteconomia`; `imov_idcategoriaprincipal`, `imov_idsubcategoriaprincipal`
 - **Resultado semântico esperado**: 🟢 as economias **agregadas por subcategoria** governam a tarifa; a individualização é informativa. O total e a categoria principal do OpenGSAN são **derivados** da composição
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 — ⚠️ inclusive **se os valores denormalizados no Imóvel coincidem com a composição**
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (Fase 2, lote piloto, 2026-09-30) — IMV-01, IMV-02 e IMV-03 (V1–V3) na fronteira [UC0472] Consultar Imóvel, aba Dados Cadastrais, em [`golden/cadastro-atendimento/CEN-CAD-003/`](../../../../ambiente-referencia/baselines/golden/cadastro-atendimento/CEN-CAD-003/): economias por subcategoria (e categoria) e total — 🔵 o total exibido é **somado da composição**, não lido do denormalizado ([F2-09](../fase2/fase2-caracterizacao-baselines.md#11-achados)); ⬜ **a capturar** a categoria principal (não exibida nesta aba) e ⚠️ **se os valores denormalizados no Imóvel coincidem com a composição** — pergunta do caminho de escrita (Inserir/Manter Imóvel), que massa gravada por SQL não responde
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma aprovada. ⚠️ **CAND-01**: se o legado tiver total ou categoria principal **defasados**, o valor derivado divergirá — decisão registrada, nunca aceita em silêncio
 - **Oráculo**: **1** — por mapeamento semântico (composição → total)

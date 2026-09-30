@@ -3,7 +3,7 @@
 #
 #   referencia.sh preparar [--sem-cache]   .env (senhas geradas se vazias) e imagens
 #   referencia.sh build      EAR pelo build.xml original, a partir do commit fixado
-#   referencia.sh banco      bancos, migrações e pós-migração
+#   referencia.sh banco      bancos, migrações, pós-migração e modelo congelado (Fase 2)
 #   referencia.sh subir      JBoss + proxy; espera o GSAN responder
 #   referencia.sh verificar  verificação do ambiente
 #   referencia.sh tudo [--sem-cache]       preparar, build, banco, subir, verificar
@@ -72,6 +72,8 @@ build() {
 }
 
 banco() {
+  # O JBoss de uma subida anterior não pode manter conexões com o banco que se refaz.
+  dc stop gsan > /dev/null 2>&1 || true
   msg "Subindo o PostgreSQL"
   dc up -d --wait db
   msg "Obtendo as migrações"
@@ -86,6 +88,10 @@ banco() {
   dc --profile ferramentas run --rm -T ferramentas bash /referencia/scripts/complementar.sh
   msg "Pós-migração"
   dc --profile ferramentas run --rm -T ferramentas bash /referencia/scripts/pos-migracao.sh
+  # Estado de partida de toda execução da Fase 2 (scripts/baseline.sh): o banco exatamente como
+  # sai daqui, antes de qualquer login pela aplicação.
+  msg "Congelando o modelo do banco (gsan_*_ref)"
+  dc --profile ferramentas run --rm -T ferramentas bash /referencia/scripts/estado-base.sh congelar
 }
 
 subir() {

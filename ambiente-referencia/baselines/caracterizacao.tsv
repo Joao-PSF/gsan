@@ -1,0 +1,104 @@
+cenario	dominio	prioridade	oraculo	classe	execucao	massas	variacoes	justificativa
+CEN-ARR-001	Arrecadação	P1	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-002	Arrecadação	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-003	Arrecadação	P0	1	A	Sim	5	5	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-004	Arrecadação	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-005	Arrecadação	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-006	Arrecadação	P0	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-ARR-007	Arrecadação	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-008	Arrecadação	P0	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-009	Arrecadação	P1	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-010	Arrecadação	P0	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-ARR-011	Arrecadação	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ARR-012	Arrecadação	P1	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-ARR-013	Arrecadação	P1	N	N	Não — sem equivalente no GSAN público	0	4	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-BAT-001	Batch, relatórios e integrações	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-BAT-002	Batch, relatórios e integrações	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-BAT-003	Batch, relatórios e integrações	P0	PENDENTE	A	Sim	1	0	oráculo decidido pela própria baseline; entrada única (sem variações declaradas); a própria baseline decide entre oráculo 1 e divergência
+CEN-BAT-004	Batch, relatórios e integrações	P0	PENDENTE	A	Sim	2	2	oráculo decidido pela própria baseline; a própria baseline decide entre oráculo 1 e divergência
+CEN-BAT-005	Batch, relatórios e integrações	P0	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-REL-001	Batch, relatórios e integrações	P0	1+2	A	Sim	1	3	oráculo 1: o resultado concreto só existe executando o GSAN; variações sob oráculo 2 (só registro): V2, V3
+CEN-REL-002	Batch, relatórios e integrações	P1	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-INT-001	Batch, relatórios e integrações	P0	1+2	A	Sim	3	4	oráculo 1: o resultado concreto só existe executando o GSAN; variações sob oráculo 2 (só registro): V4
+CEN-INT-002	Batch, relatórios e integrações	P1	1+2	A	Sim	2	3	oráculo 1: o resultado concreto só existe executando o GSAN; variações sob oráculo 2 (só registro): V3
+CEN-INT-003	Batch, relatórios e integrações	P0	2	C	Sim — só registro do comportamento de que se diverge (não é oráculo)	3	3	esperado vem da divergência aprovada; igualdade com o legado seria o defeito
+CEN-INT-004	Batch, relatórios e integrações	P1	1+2	A	Sim	2	5	oráculo 1: o resultado concreto só existe executando o GSAN; variações sob oráculo 2 (só registro): V2, V4, V5
+CEN-INT-005	Batch, relatórios e integrações	P0	2	C	Sim — só registro do comportamento de que se diverge (não é oráculo)	3	3	esperado vem da divergência aprovada; igualdade com o legado seria o defeito
+CEN-INT-006	Batch, relatórios e integrações	P1	2	C	Sim — só registro do comportamento de que se diverge (não é oráculo)	1	0	esperado vem da divergência aprovada; igualdade com o legado seria o defeito
+CEN-INT-007	Batch, relatórios e integrações	P1	1+2	A	Sim	3	4	oráculo 1: o resultado concreto só existe executando o GSAN; variações sob oráculo 2 (só registro): V4
+CEN-CAD-001	Cadastro e atendimento	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-CAD-002	Cadastro e atendimento	P0	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-CAD-003	Cadastro e atendimento	P0	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-CAD-004	Cadastro e atendimento	P0	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-CAD-005	Cadastro e atendimento	P1	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-ATE-001	Cadastro e atendimento	P1	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-ATE-002	Cadastro e atendimento	P1	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ATE-003	Cadastro e atendimento	P1	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ATE-004	Cadastro e atendimento	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ATE-005	Cadastro e atendimento	P1	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ATE-006	Cadastro e atendimento	P1	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ATE-007	Cadastro e atendimento	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-ATE-008	Cadastro e atendimento	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-COB-001	Cobrança	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-COB-002	Cobrança	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-COB-003	Cobrança	P1	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-COB-004	Cobrança	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-COB-005	Cobrança	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-COB-006	Cobrança	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-COB-007	Cobrança	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-001	Faturamento	P0	1	A	Sim	7	7	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-002	Faturamento	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-003	Faturamento	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-004	Faturamento	P0	1	A	Sim	5	5	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-005	Faturamento	P0	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-006	Faturamento	P0	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-007	Faturamento	P0	1+2	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN; oráculo 2 só em observáveis, não em variações
+CEN-FAT-008	Faturamento	P0	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-009	Faturamento	P1	1	A	Sim	7	7	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FAT-010	Faturamento	P1	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-FAT-011	Faturamento	P1	1+2	A	Sim	1	2	oráculo 1: o resultado concreto só existe executando o GSAN; variações sob oráculo 2 (só registro): V2
+CEN-FAT-012	Faturamento	P0	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-FIN-001	Financeiro e operacional	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FIN-002	Financeiro e operacional	P0	1	A	Sim	4	4	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FIN-003	Financeiro e operacional	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FIN-004	Financeiro e operacional	P1	1	A	Sim	2	2	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-FIN-005	Financeiro e operacional	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-OPE-001	Financeiro e operacional	P1	1	A	Sim	5	5	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-OPE-002	Financeiro e operacional	P1	1	A	Sim	5	5	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-OPE-003	Financeiro e operacional	P1	1 · PENDENTE	A	Sim	6	6	oráculo 1: o resultado concreto só existe executando o GSAN; em V5, a própria baseline decide entre oráculo 1 e divergência
+CEN-FIS-001	Fiscal	P0	N	N	Não — sem equivalente no GSAN público	0	3	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-FIS-002	Fiscal	P0	N	N	Não — sem equivalente no GSAN público	0	3	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-FIS-003	Fiscal	P0	N	N	Não — sem equivalente no GSAN público	0	3	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-MIC-001	Micromedição	P0	1	A	Sim	5	5	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-MIC-002	Micromedição	P0	1	A	Sim	6	6	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-MIC-003	Micromedição	P0	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-MIC-004	Micromedição	P1	1	A	Sim	5	5	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-MIC-005	Micromedição	P1	1	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-MOD-001	Modularidade	P1	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-MOD-002	Modularidade	P1	N	N	Não — sem equivalente no GSAN público	0	6	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-MOD-003	Modularidade	P0	N	N	Não — sem equivalente no GSAN público	0	6	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-MOD-004	Modularidade	P1	N	N	Não — sem equivalente no GSAN público	0	4	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-MOD-005	Modularidade	P1	N	N	Não — sem equivalente no GSAN público	0	4	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-MOD-006	Modularidade	P0	N	N	Não — sem equivalente no GSAN público	0	6	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-MOD-007	Modularidade	P1	N	N	Não — sem equivalente no GSAN público	0	4	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-PCM-001	PCM e paradas	P1	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-PAR-001	PCM e paradas	P1	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-PAR-002	PCM e paradas	P1	N	N	Não — sem equivalente no GSAN público	0	3	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-PAR-003	PCM e paradas	P1	N	N	Não — sem equivalente no GSAN público	0	4	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-REG-001	Regulatório	P0	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-REG-002	Regulatório	P0	N	N	Não — sem equivalente no GSAN público	0	4	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-REG-003	Regulatório	P0	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-REG-004	Regulatório	P0	N	N	Não — sem equivalente no GSAN público	0	5	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-REG-005	Regulatório	P1	N	N	Não — sem equivalente no GSAN público	0	4	esperado derivado da norma, do leiaute ou da decisão registrada — nunca do legado
+CEN-SEG-001	Segurança	P0	1+2	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas); oráculo 2 só em observáveis, não em variações
+CEN-SEG-002	Segurança	P0	1 · PENDENTE	A	Sim	3	3	oráculo 1: o resultado concreto só existe executando o GSAN; decisão pendente em V3 — capturar informa a decisão
+CEN-SEG-003	Segurança	P1	1	A	Sim	6	6	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-SEG-004	Segurança	P0	1	A	Sim	7	7	oráculo 1: o resultado concreto só existe executando o GSAN
+CEN-SEG-005	Segurança	P0	PENDENTE	A	Sim	1	0	oráculo decidido pela própria baseline; entrada única (sem variações declaradas); a própria baseline decide entre oráculo 1 e divergência
+CEN-SEG-006	Segurança	P0	1	A	Sim	2	3	oráculo 1: o resultado concreto só existe executando o GSAN; não comparadas: V3
+CEN-SEG-007	Segurança	P0	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-SEG-008	Segurança	P1	1	A	Sim	1	0	oráculo 1: o resultado concreto só existe executando o GSAN; entrada única (sem variações declaradas)
+CEN-SEG-009	Segurança	P1	2	C	Sim — só registro do comportamento de que se diverge (não é oráculo)	1	0	esperado vem da divergência aprovada; igualdade com o legado seria o defeito
+CEN-SEG-010	Segurança	P1	2	C	Sim — só registro do comportamento de que se diverge (não é oráculo)	2	2	esperado vem da divergência aprovada; igualdade com o legado seria o defeito
+CEN-SEG-011	Segurança	P0	2	B	Não — o observável é artefato versionado, já lido	0	0	baseline JÁ COMPROVADA na Fase 0: ler o artefato é observá-lo; oráculo 2: o OpenGSAN deve divergir
+CEN-SEG-012	Segurança	P1	2	C	Sim — só registro do comportamento de que se diverge (não é oráculo)	3	3	esperado vem da divergência aprovada; igualdade com o legado seria o defeito

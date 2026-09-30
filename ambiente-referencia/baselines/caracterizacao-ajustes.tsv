@@ -1,0 +1,2 @@
+# Ajustes manuais à classificação derivada (caracterizacao.py). Um por linha, separados por TAB:
+# cenario	classe (A|B|C|N)	massas (vazio = manter a derivada)	justificativa (obrigatória)

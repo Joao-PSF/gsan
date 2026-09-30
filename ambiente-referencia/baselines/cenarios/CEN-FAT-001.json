@@ -1,0 +1,154 @@
+{
+  "cenario": "CEN-FAT-001",
+  "titulo": "Valor de água por economias, categorias e origem do consumo",
+  "dominio": "faturamento",
+  "lote": "piloto",
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-001",
+  "oraculo": "1 — ao centavo",
+  "fronteira": "[UC0157] Simular Cálculo da Conta (exibirSimularCalculoContaAction → adicionarCategoriaContaAction → simularCalculoContaAction): obterConsumoMinimoLigacao (UC0105) + calcularValoresAguaEsgoto (UC0120), o mesmo cálculo que gerarConta usa por imóvel (ControladorFaturamentoFINAL:52919). Sem cronograma de leitura, o período é o mês da referência inteiro.",
+  "roteiro": "simular_calculo_conta",
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_historico",
+    "faturamento.debito_a_cobrar",
+    "micromedicao.consumo_historico"
+  ],
+  "observaveis": {
+    "campos": [
+      "resultado",
+      "mensagem",
+      "por_categoria[categoria,valor_agua]",
+      "total_agua",
+      "consumo_faturado_agua_exibido"
+    ],
+    "fora_desta_fronteira": {
+      "a": "a tela mostra só o consumo faturado TOTAL (soma das categorias), não o consumo por categoria; a origem do consumo vem da Micromedição — lote do faturamento em grupo",
+      "b": "o valor POR FAIXA não é exibido (só por categoria); fica para a conta gerada",
+      "c": "o mínimo aplicado por categoria não é exibido — em V6 aparece só como valor",
+      "e": "contexto congelado na conta — a simulação não gera conta",
+      "f": "situação e referência da conta — idem"
+    }
+  },
+  "normalizacoes": [],
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01 — residencial, 1 economia; consumo real 27 m³, acima do mínimo, atravessando duas faixas",
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "IMV-02 — 3 economias na mesma categoria; consumo 47 m³ (excesso não divisível pelas economias)",
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 47,
+        "consumo_esgoto": 47,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 3
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "IMV-03 — várias categorias: residencial 2 economias + comercial 1; consumo 58 m³",
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 58,
+        "consumo_esgoto": 58,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 2
+          },
+          {
+            "categoria": 2,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V6": {
+      "descricao": "IMV-01 — consumo 7 m³, ABAIXO do mínimo de 10 m³",
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 7,
+        "consumo_esgoto": 7,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V7": {
+      "descricao": "IMV-01 com tarifa de tipo de cálculo 4 (TAR-04: mesmo mínimo e faixas da TAR-01); consumo 27 m³",
+      "massa": [
+        "massas/deltas/tar04-calculo-direto-na-faixa.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 4,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    }
+  },
+  "fora_do_lote": {
+    "V4": "consumo POR MÉDIA vem da Micromedição sobre imóvel com histórico (IMV-12a) — fronteira gerarConta, lote do faturamento em grupo",
+    "V5": "taxa mínima por situação especial PARALISAR_LEITURA_FATURAR_TAXA_MINIMA (IMV-12b) — idem"
+  }
+}

@@ -80,6 +80,8 @@ Um cenário está **ESPECIFICADO NA FASE 0** quando estão fechados: **o que exe
 - **Localizadores GSAN**: tabela.coluna / saída / arquivo, quando conhecidos
 - **Resultado semântico esperado**: regra ou invariante comprovado — testável
 - **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 | 🟢 JÁ COMPROVADA | ➖ NÃO APLICÁVEL (requisito nativo)
+                                   🆕 (Fase 2) | 🟢 CAPTURADA — variações e caminho em golden/
+                                   | 🟡 CAPTURADA EM PARTE — o que falta e por quê
 - **Normalizações**: o que se ignora — nunca dinheiro, referência, situação,
                      identidade funcional, ordem com semântica ou arredondamento
 - **Divergência permitida**: D-xx | nenhuma
@@ -118,11 +120,29 @@ A comparação de relatórios é **semântica**, em ordem de preferência:
 5. **Segurança (oráculo 2)** — testes de autorização por funcionalidade (matriz perfil × funcionalidade extraída de `seguranca.*`). ⚠️ **Correção 2026-09-14**: o objetivo **não** é "negar/permitir exatamente como o legado". É preservar as concessões legítimas (união de grupos, abrangência, permissões especiais) e **negar deliberadamente** onde o legado permite por defeito — cada caso constando do registro de divergências aprovadas. Casos conhecidos: acesso ao artefato de relatório (achado 13), `/api/ordem-servico/*` (12), entrada de dados de campo (15), filtros decorativos (14).
 6. 🆕 **Arquitetura e perfis de implantação** (segundo adendo pós-Fase 0 — [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md)) — **testes arquiteturais**: nenhum núcleo importa dependência opcional, nenhum módulo acessa internos de outro, nenhuma comunicação interna usa HTTP; **testes de perfil**: FULL, SINISA, ATENDIMENTO, ASSETS + ATENDIMENTO, ASSETS sem provedor de execução, COMMERCIAL com medição externa e OPERATIONS sem Networks **iniciam**, e perfil inválido **não inicia**. Na fundação, o mecanismo é provado com **módulos-fixture**; cada módulo real acrescenta seu perfil quando nasce (CEN-MOD-001 a 007, [`modulos-e-perfis-de-implantacao.md §21`](../arquitetura/modulos-e-perfis-de-implantacao.md#21-verificação-da-modularidade)).
 
+## 🆕 Cenário, massa, baseline e execução — quatro coisas (Fase 2, 2026-09-30)
+
+A Fase 2 separou o que a Fase 0 tratava junto. Confundir os quatro termos leva a contar errado (103 cenários **não** são 103 baselines) e a comparar errado (uma baseline sem a massa que a produziu não prova nada).
+
+| Termo | Definição | Cardinalidade | Onde |
+| ----- | --------- | ------------- | ---- |
+| **Cenário** | Especificação: o que executar, o que observar (lista fechada), qual oráculo decide | 103 | [`cenarios/`](cenarios/) |
+| **Variação** | Uma entrada concreta do cenário (V1…Vn), com a massa que exige | 326 declaradas; 234 a capturar (matriz) | `ambiente-referencia/baselines/cenarios/*.json` |
+| **Massa** | Estado de dados sintético: **base** comum + **deltas** por variação; cada arquivo identificado por sha256 | < variações — variações que só diferem na entrada compartilham a massa efetiva | `ambiente-referencia/baselines/massas/` |
+| **Baseline** | O que o GSAN produziu para **uma** variação, normalizado — função de *(massa, operação, entrada, versão do legado)*, e grava os quatro | uma por variação | `ambiente-referencia/baselines/golden/` |
+| **Execução** | Uma rodada estado limpo → massa → operação → observação. **Evidência**, nunca baseline | ≥ 2 por baseline na captura, 1 por verificação | `.saida/` (não versionado) |
+
+🔴 Regras que decorrem: (1) só se grava baseline depois de **duas execuções idênticas** a partir do estado limpo; (2) a verificação nunca escreve baseline; (3) mudar a massa de uma baseline a invalida — a verificação acusa a massa, não o comportamento; (4) o que a fronteira executável **não exibe** fica registrado em `fora_desta_fronteira` da baseline, nunca é deduzido do código. Mecanismo e resultados: [relatório da Fase 2](fase2/fase2-caracterizacao-baselines.md); classificação A/B/C/N dos 103 cenários: [matriz](fase2/matriz-caracterizacao.md); cobertura: [gerada por script](fase2/cobertura-baselines.md).
+
+### Testes parametrizados a partir das baselines (Fase 4 em diante)
+
+Cada cenário vira **um** teste de equivalência do OpenGSAN, **parametrizado pelas variações**: o teste enumera `golden/<domínio>/<CEN>/*.json`, reconstrói no OpenGSAN a mesma massa (pelo mapeamento GSAN → OpenGSAN), aplica a mesma entrada da baseline e compara **só os observáveis da lista fechada**, pelo oráculo do cenário — igualdade ao centavo no oráculo 1, divergência esperada no 2. Acrescentar uma variação é acrescentar um arquivo de baseline, não um teste. Explosão combinatória (`categoria × situação × tipo × …`) continua proibida ([`cenarios-criticos.md §13.7`](cenarios-criticos.md)): parametrização é sobre casos base e de fronteira, não sobre o produto cartesiano.
+
 ## Massa de dados
 
 - Origem: **sintética representativa**, construída para o projeto (situação padrão — não há produção aqui), ou derivada de uma base GSAN de referência que venha a ser obtida. Qualquer dado real recebido será **anonimizado** (nomes, CPF/CNPJ, NIS, endereços, e-mails, telefones, documentos em `bytea`), preservando distribuições e casos extremos.
 - Deve conter obrigatoriamente: contas normais/retificadas/canceladas/parceladas/vencidas, pagamentos, devoluções, créditos, débitos, parcelamentos (ativos e desfeitos), hidrômetros e leituras (incluindo consumo por média), cortes/religações, OS abertas/encerradas, usuários com perfis variados e permissões especiais.
-- Congelada e versionada (dump identificado por hash) para que golden files sejam reproduzíveis.
+- ~~Congelada e versionada (dump identificado por hash)~~ 🆕 **Como ficou na Fase 2**: não um *dump* único, mas **arquivos SQL versionados** (base + deltas), cada um identificado por sha256 gravado em toda baseline que o usa; o estado de partida é o banco pós-migração **congelado como modelo** (`gsan_*_ref`) ao fim do passo `banco` da Fase 1, recriado a cada execução. Identificadores fixados por constante do legado vêm dessa constante; o resto é declarado SINTÉTICO.
 
 ## Priorização da baseline (Fase 2)
 
@@ -137,6 +157,8 @@ A comparação de relatórios é **semântica**, em ordem de preferência:
 | 7 | Resumos financeiros de conferência — `RelatorioResumoFaturamento` e `RelatorioResumoArrecadacao` | Conferência gerencial/regulatória. ⚠️ **Corrigido em 2026-09-28**: a versão anterior citava os resumos `sp*_gerar_res_*`, que o inventário do banco classifica como **customizações permanentes da instalação de referência** ([`banco/estrutura-atual.md`](../banco/estrutura-atual.md)) — não GSAN público. Baseline de caracterização se faz sobre o núcleo |
 
 🔵 A ordem acima é da **captura** na Fase 2. A relação de cada cenário com as etapas de implementação e seus gates está em [`cenarios-criticos.md`](cenarios-criticos.md).
+
+🆕 **Lote piloto (2026-09-30)** — por decisão do responsável, o piloto seguiu uma **cadeia vertical** Cadastro → Faturamento individual (itens 2 e 5 acima) em vez de começar pelo item 1: provar o mecanismo sobre cálculo financeiro ao centavo, o caso mais exigente de determinismo. Autenticação e autorização (item 1) são o **próximo lote** ([relatório da Fase 2 §12](fase2/fase2-caracterizacao-baselines.md#12-próximos-lotes)).
 
 ## Performance (baseline antes de substituir qualquer comportamento)
 
