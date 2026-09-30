@@ -241,7 +241,7 @@ necessidade de manutenção
 | --- | --------------- | ---- |
 | **Gestão Operacional** | Unidade operacional ↔ localização funcional | Operacional (unidade) · Ativos (posição e peça) |
 | **Redes / GIS** | Geometria e topologia do ativo linear ou pontual | **Redes/GIS** (espacial) · Ativos (identidade) — matriz por atributo em [`gis-redes-ativos.md`](../arquitetura/gis-redes-ativos.md) |
-| **Atendimento e Execução** | Necessidade → OS → resultado | Ativos solicita · **Atendimento executa** · Ativos aplica — 🆕 ou um **sistema externo de OS**, por contrato, quando o módulo *Services* não está no perfil (ADR-0010) |
+| **Atendimento e Execução** | Necessidade → OS → resultado | Ativos solicita · **Atendimento executa** · Ativos aplica — 🆕 ou um **sistema externo de OS**, por contrato, quando o módulo *Atendimento* não está no perfil (ADR-0010) |
 | **Micromedição** | Hidrômetro comercial | **Micromedição** — Ativos só referencia |
 | **Contabilização / ERP** | Custo técnico; número patrimonial | Ativos (custo técnico) · **ERP** (imobilizado) |
 | **Telemetria** (futuro) | Ponto de medição ↔ instrumento | Ativos (instrumento) · Telemetria (série de medições) |

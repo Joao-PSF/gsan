@@ -41,7 +41,7 @@ opengsan (repositório próprio — nome físico PENDENTE, ADR-0003)
  ├── seguranca
  ├── relatorios
  ├── batch
- ├── integracoes        (bancos/arrecadadores, SPC/Serasa, fiscal/SPED, mobile, GIS, UPA)
+ ├── integracoes        (infraestrutura de integração — os adapters ficam nos módulos donos; ver nota)
  └── shared             (tipos comuns, utilidades, convenções de persistência)
 ```
 
@@ -49,9 +49,11 @@ Cada módulo com separação `domain / application / infrastructure / web` **qua
 
 🆕 **Canais (ADR-0007)**: `web` e `api` são **adaptadores de canal** do módulo; os casos de uso (`application`) existem **sem HTTP** e concentram autorização, validação e auditoria. Módulos conversam por **contratos internos em Java** — nunca por HTTP. Uma tela que compõe dados de vários módulos chama os contratos de cada um, nunca o repositório alheio.
 
-🆕 **Módulos acrescentados pela revisão de escopo (2026-09-28)**: `contabilizacao` e `operacional` (Gestão Operacional) — domínio GSAN a recuperar; Gestão de Ativos e Redes seguem a **trilha estrutural** ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)). 🆕 **Auditoria final (2026-09-29)**: `fiscal` — documento fiscal de água e saneamento (NFAg), requisito nativo com ciclo próprio; **Conta ≠ NFAg**; o adapter do ambiente autorizador fica em `integracoes` ([`modulos/fiscal.md`](../modulos/fiscal.md)). Nenhum módulo `regulacao`, `pagamentos` ou `tarifasocial`: são regra, parâmetro regulado, integração ou capacidade transversal.
+🆕 **Módulos acrescentados pela revisão de escopo (2026-09-28)**: `contabilizacao` e `operacional` (Gestão Operacional) — domínio GSAN a recuperar; Gestão de Ativos e Redes seguem a **trilha estrutural** ([ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md)). 🆕 **Auditoria final (2026-09-29)**: `fiscal` — documento fiscal de água e saneamento (NFAg), requisito nativo com ciclo próprio; **Conta ≠ NFAg**; o adapter do ambiente autorizador é do Fiscal, sobre a infraestrutura de `integracoes` ([`modulos/fiscal.md`](../modulos/fiscal.md)). Nenhum módulo `regulacao`, `pagamentos` ou `tarifasocial`: são regra, parâmetro regulado, integração ou capacidade transversal.
 
-🆕 **Suíte modular (ADR-0010, especializa a ADR-0001)**: os módulos de domínio acima são **agrupados** em módulos instaláveis — **Platform · Commercial · Metering · Services · Assets · Operations · Networks · SINISA · Analytics** — habilitados por **perfil de implantação**. Um código, uma versão, um processo por instalação. Dependência entre módulos instaláveis opcionais só por **contrato do consumidor** — nunca *import* direto, nunca HTTP. Módulo desligado não registra nada; atualização de versão não ativa módulo. Estrutura Maven e de pacotes, mecanismo de ativação e migrations de módulo desabilitado: **Etapa 0**. ⚠️ Módulo Maven ≠ microserviço.
+🆕 **Suíte modular (ADR-0010, especializa a ADR-0001)**: os módulos de domínio acima são **agrupados** em módulos instaláveis — **Platform · Commercial · Metering · Atendimento · Assets · Operations · Networks · SINISA · Analytics** — habilitados por **perfil de implantação**. Um código, uma versão, um processo por instalação. Dependência entre módulos instaláveis opcionais só por **contrato do consumidor** — nunca *import* direto, nunca HTTP. Módulo desligado não registra nada; atualização de versão não ativa módulo. Estrutura Maven e de pacotes, mecanismo de ativação e migrations de módulo desabilitado: **Etapa 0**. ⚠️ Módulo Maven ≠ microserviço.
+
+🆕 **Revisão consolidada (2026-09-30) — onde fica cada adapter.** `integracoes` é **infraestrutura** da Platform — convenções, identidade de sistema, idempotência, erro durável, segredo fora do código —, **não** dona das integrações. Cada adapter é do módulo que integra e só existe com ele ativo: bancos e arrecadadores, PSP Pix, birôs de crédito, ambiente autorizador da NFAg, bases de elegibilidade e exportação contábil → **Commercial**; coleta móvel de leitura e AMI → **Metering**; aplicativo de campo e executante terceirizado (UPA/SAM) → **Atendimento**; Giswater e QGIS → **Networks**; arquivo oficial do SINISA, se existir → **SINISA**. A lista do diagrama acima registra a origem dessas capacidades no GSAN, não a posição dos adapters ([`modulos-e-perfis-de-implantacao.md §14`](modulos-e-perfis-de-implantacao.md#14-platform--pequena-e-transversal)).
 
 ## Modelo de dados evolutivo e continuidade conceitual GSAN → OpenGSAN (ADRs 0005/0006)
 

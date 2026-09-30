@@ -2,6 +2,8 @@
 
 > Parte de [`cenarios-criticos.md`](../cenarios-criticos.md). Modelo e regras em [`estrategia-testes.md`](../estrategia-testes.md). Criado no **segundo adendo pós-Fase 0** (2026-09-29) — [registro](../../alteracoes/2026-09-29-adendo-2-perfis-de-implantacao.md).
 >
+> 🆕 **Revisão consolidada (2026-09-30)**: o instalável *Services* passou a chamar-se **Atendimento** — textos de MOD-002 e MOD-004 ajustados; o comportamento só mudou em **MOD-004 V4**, pela re-auditoria da obrigatoriedade ([`modulos-e-perfis-de-implantacao.md §15.2`](../../arquitetura/modulos-e-perfis-de-implantacao.md#152--re-auditoria-da-obrigatoriedade--revisão-consolidada-2026-09-30)).
+>
 > 🔴 **Requisitos nativos arquiteturais — oráculo N.** O GSAN não tem perfis de implantação. O resultado esperado vem da [ADR-0010](../../decisoes/0010-monolito-modular-perfis-de-implantacao.md) e de [`modulos-e-perfis-de-implantacao.md`](../../arquitetura/modulos-e-perfis-de-implantacao.md). Onde o cenário passa por comportamento que o GSAN tem — o cálculo da conta, por exemplo —, **essa parte** continua sob o oráculo 1 no cenário que já a cobre.
 
 🔵 **Leitura da área**: dois cenários provam o **mecanismo** com módulos-fixture já na fundação — ativação e fronteira; cinco provam que cada módulo independente **sobe sem o vizinho**, no momento em que o módulo nasce. Sem eles, dependência acidental só aparece quando alguém tenta instalar um perfil parcial — tarde demais.
@@ -30,13 +32,13 @@
 
 ---
 
-## CEN-MOD-002 — Services opera sem Commercial, com referência externa e snapshot
+## CEN-MOD-002 — Atendimento opera sem Commercial, com referência externa e snapshot
 
 - **Criticidade**: P1
 - **Etapa OpenGSAN**: 2 — Atendimento e execução
 - **Conceitos relacionados**: OS com origem externa (requisito nativo) · RA ≠ OS (C1) · referência externa e snapshot
-- **Objetivo**: verificar que o Services sobe e executa OS sem o Commercial, recebendo cliente, unidade e origem de um sistema externo, e que a OS guarda o snapshot mínimo para ser interpretada depois
-- **Pré-condições**: PRF-01 (perfil SERVICES com adapter externo); EXT-01 (sistema comercial externo sintético — cliente, unidade usuária, ligação); ESP-02 (especificação que gera OS)
+- **Objetivo**: verificar que o Atendimento sobe, registra RA e executa OS sem o Commercial, recebendo cliente, unidade e origem de um sistema externo, e que a OS guarda o snapshot mínimo para ser interpretada depois
+- **Pré-condições**: PRF-01 (perfil ATENDIMENTO com adapter externo); EXT-01 (sistema comercial externo sintético — cliente, unidade usuária, ligação); ESP-02 (especificação que gera OS)
 - **Entrada**: V1 — RA de um cliente externo gera OS; V2 — o sistema externo abre OS diretamente, por contrato permitido, sem RA; V3 — execução e encerramento; V4 — o sistema externo altera o endereço da unidade depois da execução; V5 — tipo de serviço com efeito sobre a ligação; V6 — sistema externo sem autorização tenta abrir OS
 - **Operação GSAN**: não aplicável — a origem de OS sem RA existe no GSAN (Localizadores), mas o cenário prova a modularidade, não equivalência
 - **Operação conceitual OpenGSAN**: registrar demanda; solicitar execução; executar; encerrar
@@ -47,7 +49,7 @@
 - **Normalizações**: identificadores, endereços e horários sintéticos
 - **Divergência permitida**: não aplicável
 - **Oráculo**: **N** — requisito nativo; esperado derivado da ADR-0010 (itens 4 e 5) e de [`modulos-e-perfis-de-implantacao.md`](../../arquitetura/modulos-e-perfis-de-implantacao.md) §7–§8
-- **Gate que este cenário protege**: 2 → 3 — *o Services sobe sem o Commercial*
+- **Gate que este cenário protege**: 2 → 3 — *o Atendimento sobe sem o Commercial*
 - **Evidência**: [`modulos-e-perfis-de-implantacao.md`](../../arquitetura/modulos-e-perfis-de-implantacao.md) §7, §8; [`atendimento.md §12`](../../modulos/atendimento.md#12-ra--os-cardinalidade-real); ATE-02
 
 ---
@@ -79,20 +81,20 @@
 - **Criticidade**: P1
 - **Etapa OpenGSAN**: T — trilha estrutural
 - **Conceitos relacionados**: provedor externo de execução (requisito nativo) · necessidade de manutenção e backlog do PCM
-- **Objetivo**: verificar que o Assets sobe sem o Services e fecha o ciclo de manutenção por um sistema externo de OS, sem criar ordem de trabalho própria
+- **Objetivo**: verificar que o Assets sobe sem o Atendimento e fecha o ciclo de manutenção por um sistema externo de OS, sem criar ordem de trabalho própria — e que, sem provedor de execução, só a capacidade de execução falta
 - **Pré-condições**: PRF-01 (perfil ASSETS com adapter de OS externa); EXT-01 (OS/CMMS externo sintético); ATV-01
-- **Entrada**: V1 — necessidade programada enviada ao sistema externo; V2 — estado e resultado chegam do sistema externo; V3 — OS externa encerrada sem execução; V4 — perfil sem Services e sem adapter de execução
+- **Entrada**: V1 — necessidade programada enviada ao sistema externo; V2 — estado e resultado chegam do sistema externo; V3 — OS externa encerrada sem execução; V4 — perfil sem Atendimento e sem adapter de execução
 - **Operação GSAN**: não aplicável — sem PCM no GSAN público
 - **Operação conceitual OpenGSAN**: programar necessidade; solicitar execução externa; controlar resultado
-- **Observações semânticas**: solicitação de execução e sua referência à necessidade · estado da necessidade × estado externo · mapeamento declarado no adapter · resultado aplicado ao histórico do ativo · entidades de trabalho existentes
+- **Observações semânticas**: solicitação de execução e sua referência à necessidade · estado da necessidade × estado externo · mapeamento declarado no adapter · resultado aplicado ao histórico do ativo · entidades de trabalho existentes · inventário do perfil e capacidades registradas
 - **Localizadores GSAN**: não aplicável
-- **Resultado semântico esperado**: V1 — solicitação enviada com referência à necessidade; **nenhuma** OS interna nem ordem de trabalho paralela. V2 — estado da necessidade derivado do estado externo pelo mapeamento declarado; o **Assets aplica** o resultado ao histórico. V3 — a necessidade volta ao backlog, com motivo. V4 — **inicialização recusada**: execução é contrato obrigatório do Assets
+- **Resultado semântico esperado**: V1 — solicitação enviada com referência à necessidade; **nenhuma** OS interna nem ordem de trabalho paralela. V2 — estado da necessidade derivado do estado externo pelo mapeamento declarado; o **Assets aplica** o resultado ao histórico. V3 — a necessidade volta ao backlog, com motivo. V4 — **sobe**; o inventário mostra a execução *ausente*; ativos, planos, backlog e planejamento operam; a necessidade **não é programada nem enviada** à execução, e **nada** no Assets registra execução — nenhuma ordem paralela (revisão consolidada de 2026-09-30: a execução condiciona a capacidade, não o módulo)
 - **Baseline concreta do legado**: ➖ NÃO APLICÁVEL — requisito nativo
 - **Normalizações**: identificadores e datas
 - **Divergência permitida**: não aplicável
-- **Oráculo**: **N** — requisito nativo; esperado derivado da ADR-0010 e de [`modulos-e-perfis-de-implantacao.md`](../../arquitetura/modulos-e-perfis-de-implantacao.md) §9
-- **Gate que este cenário protege**: trilha estrutural — *o Assets opera sem o Services interno*
-- **Evidência**: [`pcm.md`](../../dominio/pcm.md) §6–§7; [`modulos-e-perfis-de-implantacao.md`](../../arquitetura/modulos-e-perfis-de-implantacao.md) §9
+- **Oráculo**: **N** — requisito nativo; esperado derivado da ADR-0010 e de [`modulos-e-perfis-de-implantacao.md`](../../arquitetura/modulos-e-perfis-de-implantacao.md) §9 e §15.2
+- **Gate que este cenário protege**: trilha estrutural — *o Assets opera sem o Atendimento interno*
+- **Evidência**: [`pcm.md`](../../dominio/pcm.md) §6–§7; [`modulos-e-perfis-de-implantacao.md`](../../arquitetura/modulos-e-perfis-de-implantacao.md) §9, §15.2
 
 ---
 

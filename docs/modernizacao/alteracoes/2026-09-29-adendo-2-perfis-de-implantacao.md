@@ -1,6 +1,8 @@
 # [2026-09-29] Segundo adendo pós-Fase 0 — monólito modular e suíte modular
 
 > **SEGUNDO ADENDO PÓS-FASE 0 — refinamento arquitetural antes da Fase 1.** A Fase 0 foi encerrada em 29/09/2026 e **continua encerrada**. PCM, Paradas, SINISA e Analytics **não foram refeitos**; a ADR-0001 **não foi alterada** — a ADR-0010 a especializa.
+>
+> 🆕 **Nota de supersessão (2026-09-30)** — registro histórico, não reescrito. A [revisão final consolidada](../auditoria/revisao-final-consolidada-pos-adendos.md) renomeou o instalável *Services* para **Atendimento** (RA · OS · Campo), levou a estrutura organizacional da Platform para o Atendimento e deixou só no Commercial os provedores obrigatórios — o ponto de consumo do Metering e a execução do Assets passaram a condicionar capacidade ([registro](2026-09-30-revisao-final-consolidada.md)).
 
 - **Motivo**: o OpenGSAN tinha fronteiras de módulo de domínio, mas nenhuma de **implantação**. Uma companhia que já tem ERP, sistema comercial, CMMS ou GIS não conseguiria adotar parte da suíte, e dependência acidental entre módulos só apareceria quando alguém tentasse — tarde, e caro.
 - **Impacto**: nove **módulos instaláveis** sobre o mesmo monólito; **perfis de implantação**; dependências REQUIRED/OPTIONAL/EXTERNALIZABLE, a opcional só por contrato; Commercial coeso; **OS não exige RA**; capacidade GIS no Networks; restrição transversal na ordem e decisões técnicas na Etapa 0; sete cenários arquiteturais.

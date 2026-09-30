@@ -912,7 +912,7 @@ Sem etapa própria ([`gerencial-analytics.md §12`](../analytics/gerencial-analy
 - 🔴 **Efeito aplicado pelo dono**, com a tentativa de escrita cruzada **reprovada pela verificação de fronteira**.
 - Escopo territorial aplicado **por construção**: uma consulta nova sem tratamento explícito **não** vaza dados fora do escopo (é o que D-17 propõe e o que o legado falha).
 - Artefato de relatório inacessível a quem não é dono (D-03).
-- 🆕 O **Services sobe sem o Commercial**, com referência externa e snapshot (CEN-MOD-002).
+- 🆕 O **Atendimento sobe sem o Commercial**, com referência externa e snapshot (CEN-MOD-002).
 
 ### 3 → 4
 

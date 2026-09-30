@@ -14,7 +14,7 @@
 
 🆕 **Adendo pós-Fase 0 (2026-09-29)** — sem reabrir a Fase 0: [PCM](../dominio/pcm.md) (capacidade da Gestão de Ativos), [Paradas](../dominio/paradas-interrupcoes.md) (Gestão Operacional), [Workspace SINISA manual](../regulatorio/sinisa.md) (módulo *Prestação de Informações*, [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)) e [Gerencial & Analytics](../analytics/gerencial-analytics.md). Não são mapas funcionais: não há comportamento GSAN a mapear.
 
-🆕 **Segundo adendo pós-Fase 0 (2026-09-29)** — os módulos de domínio destes mapas agrupam-se em **módulos instaláveis** (Commercial, Metering, Services…) habilitados por **perfil de implantação**, sobre o mesmo monólito modular ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md); [`modulos-e-perfis-de-implantacao.md`](../arquitetura/modulos-e-perfis-de-implantacao.md)). A ordem abaixo **não muda**: cada módulo nasce respeitando sua fronteira de implantação, e a Etapa 0 decide ativação, estrutura Maven e de pacotes, testes de fronteira e migrations de módulo desabilitado.
+🆕 **Segundo adendo pós-Fase 0 (2026-09-29)** — os módulos de domínio destes mapas agrupam-se em **módulos instaláveis** (Commercial, Metering, Atendimento…) habilitados por **perfil de implantação**, sobre o mesmo monólito modular ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md); [`modulos-e-perfis-de-implantacao.md`](../arquitetura/modulos-e-perfis-de-implantacao.md)). A ordem abaixo **não muda**: cada módulo nasce respeitando sua fronteira de implantação, e a Etapa 0 decide ativação, estrutura Maven e de pacotes, testes de fronteira e migrations de módulo desabilitado.
 
 **Além dos treze mapas** (doze do GSAN e o Fiscal), esta pasta contém:
 

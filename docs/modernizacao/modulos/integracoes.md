@@ -385,3 +385,5 @@ usuario = (Usuario) getControladorUtil().pesquisar(...).iterator().next();
 | 🆕 **SINISA** — ~~prestação por adapter~~ **nenhum adapter na V1**: preenchimento e submissão **manuais** (adendo pós-Fase 0, [ADR-0009](../decisoes/0009-sinisa-preenchimento-manual.md)); se existir arquivo oficial — **pendente por fonte** —, adapter acionado por pessoa | **Prestação de Informações** — Workspace SINISA | Só com mecanismo oficial confirmado |
 
 Detalhe em [`auditoria/completude-funcional-regulatoria.md`](../auditoria/completude-funcional-regulatoria.md) e [`fiscal.md`](fiscal.md).
+
+🆕 **Revisão consolidada (2026-09-30)**: a *camada com política única* do §13 é **infraestrutura da Platform**; cada adapter é **do módulo instalável dono do efeito** — o da tabela acima — e só existe quando ele está ativo. Nenhuma camada central de integração é dona de regra ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md); [`modulos-e-perfis-de-implantacao.md §14`](../arquitetura/modulos-e-perfis-de-implantacao.md#14-platform--pequena-e-transversal)).

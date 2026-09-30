@@ -54,7 +54,7 @@ necessidade ──► backlog ──► planejamento ──► programação ─
 
 ## 4. Planejamento
 
-Cada necessidade planejada vira um **pacote de trabalho planejado** — conceito do PCM, **não** uma ordem de trabalho:
+Planejar uma necessidade é completar o seu **pacote de trabalho planejado** — atributos **da própria necessidade**, não objeto emitido: não é distribuído, não é executado e não tem estado de execução; quem executa é a OS (§7). É conceito do PCM, **não** uma ordem de trabalho:
 
 | Conceito | Significado | Dono |
 | -------- | ----------- | ---- |
@@ -80,7 +80,7 @@ Cada necessidade planejada vira um **pacote de trabalho planejado** — conceito
 | Representa | Observação |
 | ---------- | ---------- |
 | Data · turno · janela | A janela pode depender de **parada aprovada** |
-| Equipe · capacidade · disponibilidade | Capacidade em horas por equipe e período |
+| Equipe · capacidade · disponibilidade | Capacidade em horas por equipe e período. 🆕 A **equipe** é do Atendimento — ou do sistema externo de execução —; o PCM **lê** capacidade e disponibilidade por contrato e não cadastra equipe |
 | Sequência · dependências | Ordem entre trabalhos do mesmo ativo ou da mesma área |
 | **Conflito** | Mesma equipe, mesmo ativo, janelas sobrepostas, **paradas sobrepostas na mesma área** |
 | Ativo · parada necessária | Referências — não cópias |
@@ -141,7 +141,7 @@ PCM ──programa──► OS ──► Atendimento e Execução ──► resu
 
 Mesmo contrato da [visão conceitual §14.3](visao-conceitual-opengsan.md) — *solicita × aplica* — já fixado na [ADR-0008](../decisoes/0008-gestao-de-ativos-nativa.md).
 
-🆕 **Perfis (ADR-0010)**: a execução é **contrato**. Com o módulo *Services*, a OS é a do OpenGSAN — caminho preferencial. Sem ele, a solicitação vai a um **sistema externo de OS ou CMMS**; o estado da necessidade deriva do estado externo por **mapeamento declarado no adapter**, e o resultado volta para o Assets aplicar. Continua valendo: nenhuma ordem de trabalho paralela ([`modulos-e-perfis-de-implantacao.md §9`](../arquitetura/modulos-e-perfis-de-implantacao.md#9-assets--pcm); CEN-MOD-004).
+🆕 **Perfis (ADR-0010)**: a execução é **contrato**. Com o módulo *Atendimento*, a OS é a do OpenGSAN — caminho preferencial. Sem ele, a solicitação vai a um **sistema externo de OS ou CMMS**; o estado da necessidade deriva do estado externo por **mapeamento declarado no adapter**, e o resultado volta para o Assets aplicar. Continua valendo: nenhuma ordem de trabalho paralela ([`modulos-e-perfis-de-implantacao.md §9`](../arquitetura/modulos-e-perfis-de-implantacao.md#9-assets--pcm); CEN-MOD-004).
 
 ---
 

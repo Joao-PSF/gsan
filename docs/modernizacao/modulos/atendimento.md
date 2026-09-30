@@ -4,6 +4,8 @@ Elaborado em 2026-08-14 (Fase 0). Fontes: código GSAN (`gcom.atendimentopublico
 
 **Convenção de confiança**: 🟢 fato comprovado (código/DDL) · 🔵 interpretação funcional sustentada por evidência · 🟡 hipótese · ❔ não compreendido (§32).
 
+🆕 **Revisão consolidada (2026-09-30)**: na suíte, este domínio é o módulo instalável **Atendimento** — RA · OS · Campo —, que também guarda as **unidades de atendimento**, a estrutura organizacional do fluxo ([`modulos-e-perfis-de-implantacao.md §7`](../arquitetura/modulos-e-perfis-de-implantacao.md#7-atendimento--ra-os-e-campo)). O RA **não** pertence ao Commercial.
+
 ## 1. Responsabilidade
 
 O Atendimento é o **domínio da demanda e da sua execução**: recebe solicitações e reclamações (de clientes, de terceiros ou geradas internamente), classifica-as, define quem responde, controla prazo e tramitação, e — quando a demanda exige ação da companhia — gera e acompanha **Ordens de Serviço** até o encerramento. É o **ponto de entrada de mudanças nos outros domínios**: ligações, hidrômetros, situações cadastrais e vários lançamentos financeiros nascem de um RA/OS.

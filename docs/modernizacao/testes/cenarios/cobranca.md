@@ -80,9 +80,9 @@
 
 - **Operação GSAN**: ação de corte com OS do tipo de serviço da ação; `religarImovelCortado`
 - **Operação conceitual OpenGSAN**: a Cobrança solicita a execução; o Atendimento executa; o Cadastro aplica o efeito
-- **Observações semânticas**: OS gerada e vínculo com o documento · situação da ligação depois do corte · datas registradas na ligação · religação autorizada/negada · situação da ligação depois da religação · débito de taxa de religação
-- **Localizadores GSAN**: `orse.cbdo_id`; `ControladorCobranca.religarImovelCortado(id, situacaoAguaLigado, dataReligacaoAgua)`; `obterDebitoImovelOuCliente`
-- **Resultado semântico esperado**: 🟢 a execução da OS **atualiza a situação da ligação** (CORTADO/SUPRIMIDO); 🟢 a verificação para religar usa **a mesma posição de dívida**, e **parcelamento vigente conta como regularização**. V3 — ❔ **a capturar**
+- **Observações semânticas**: OS gerada e vínculo com o documento · 🆕 **ausência de RA** na OS gerada pela ação (ATE-02) · situação da ligação depois do corte · datas registradas na ligação · religação autorizada/negada · situação da ligação depois da religação · débito de taxa de religação
+- **Localizadores GSAN**: `orse.cbdo_id`; 🆕 `orse.rgat_id` nulo — OS inserida sem RA (`ControladorCobranca:24135–24142` → `ControladorOrdemServicoSEJB:1032–1086`); `ControladorCobranca.religarImovelCortado(id, situacaoAguaLigado, dataReligacaoAgua)`; `obterDebitoImovelOuCliente`
+- **Resultado semântico esperado**: 🟢 a OS da ação nasce **sem RA**, com origem no documento de cobrança — *OS sem RA* é comportamento do GSAN a preservar; 🟢 a execução da OS **atualiza a situação da ligação** (CORTADO/SUPRIMIDO); 🟢 a verificação para religar usa **a mesma posição de dívida**, e **parcelamento vigente conta como regularização**. V3 — ❔ **a capturar**
 - **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
 - **Normalizações**: numeração técnica da OS
 - **Divergência permitida**: nenhuma

@@ -182,7 +182,7 @@ Arrecadação   FATO FINANCEIRO  "entrou R$ 187,43 em 14/03, aplicado a esta con
 
 🔵 **Por que plataforma e não módulo de negócio**: as quatro são **usadas por todos** e **não possuem conceitos de negócio próprios** além dos seus instrumentos. Um relatório de faturamento pertence ao Faturamento; o motor que o executa pertence à plataforma.
 
-🆕 **Segundo adendo pós-Fase 0**: o mesmo critério — *todo perfil usa, sem conceito de negócio próprio, sem depender de módulo funcional* — define o módulo instalável **Platform**, que reúne também notificação, documentos e evidências, contexto institucional, estrutura organizacional e o registro de módulos. A **capacidade GIS** não passa no critério — um perfil só SINISA não a usa — e vai para o módulo **Networks** ([`modulos-e-perfis-de-implantacao.md §14`](../arquitetura/modulos-e-perfis-de-implantacao.md#14-platform--pequena-e-transversal)).
+🆕 **Segundo adendo pós-Fase 0**: o mesmo critério — *todo perfil usa, sem conceito de negócio próprio, sem depender de módulo funcional* — define o módulo instalável **Platform**, que reúne também notificação, documentos e evidências, contexto institucional e o registro de módulos — 🆕 a **estrutura organizacional**, posicionamento de fluxo do RA e da OS, ficou no **Atendimento** na revisão consolidada de 2026-09-30. A **capacidade GIS** não passa no critério — um perfil só SINISA não a usa — e vai para o módulo **Networks** ([`modulos-e-perfis-de-implantacao.md §14`](../arquitetura/modulos-e-perfis-de-implantacao.md#14-platform--pequena-e-transversal)).
 
 ---
 
@@ -928,6 +928,8 @@ CAPACIDADES TRANSVERSAIS (sem módulo) — Notificação · Documentos e evidên
 CANAIS (ADR-0007) — backoffice · portal · integrações · campo · GIS
 ```
 
+🆕 **Revisão consolidada (2026-09-30) — este agrupamento é anterior à suíte e não define dono nem módulo instalável.** Onde ele sugere o contrário, vale o §27.5: a Micromedição está no *Metering*; o **Atendimento e Execução** — RA · OS · Campo — é o instalável **Atendimento**, e o **RA não pertence ao Commercial**, embora apareça sob *Gestão Comercial* acima; Notificação e Documentos são infraestrutura da *Platform*; Gerencial & Analytics é o instalável *Analytics*.
+
 🔴 **Três ciclos distintos que não se fundem**:
 
 | Módulo | Responde a | Não responde a |
@@ -984,19 +986,19 @@ GERENCIAL acompanha
 
 🔴 **A semântica prevalece sobre o nome.**
 
-### 27.5 🆕 Suíte OpenGSAN — módulos instaláveis sobre um único monólito modular (2026-09-29)
+### 27.5 🆕 Suíte OpenGSAN — módulos instaláveis sobre um único monólito modular (2026-09-29, revisada em 2026-09-30)
 
 Segundo adendo pós-Fase 0 — [ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md), que **especializa** a ADR-0001. *Módulo de domínio ≠ módulo instalável ≠ microserviço.*
 
 ```text
 OpenGSAN Suite                                   ── internamente: UM monólito modular,
 │                                                   uma versão, um processo por instalação
-├─ Platform     identidade · autorização · auditoria · contexto institucional · estrutura organizacional ·
-│               documentos · notificação · processamento · relatórios · integrações · registro de módulos
+├─ Platform     identidade · autorização · auditoria · contexto institucional · documentos · notificação ·
+│               processamento · relatórios · infraestrutura de integração · registro de módulos
 │
 ├─ Commercial   Cadastro · Faturamento · Cobrança · Arrecadação (Pagamentos) · Contabilização · Fiscal — coeso
 ├─ Metering     Micromedição (+ telemedição/AMI)
-├─ Services     Atendimento e Execução — RA · OS · campo
+├─ Atendimento  Atendimento e Execução — RA · OS · Campo (+ unidades de atendimento)
 ├─ Assets       Gestão de Ativos (+ PCM)
 ├─ Operations   Gestão Operacional (+ Paradas)
 ├─ Networks     Redes/GIS (+ capacidade GIS)
@@ -1009,7 +1011,8 @@ OpenGSAN Suite                                   ── internamente: UM monóli
 | **Perfil de implantação** = módulos habilitados + provedores externos declarados | Adoção total, incremental ou em coexistência — **mesmo código**, sem fork nem edição |
 | REQUIRED dos módulos funcionais: **só a Platform** | O resto é OPTIONAL ou EXTERNALIZABLE — por **contrato do consumidor**, nunca por *import* direto nem HTTP |
 | **Commercial não se fragmenta** | Faturamento, Cobrança, Arrecadação, Pix e Fiscal dependem demais uns dos outros |
-| **OS não exige RA** — comportamento do próprio GSAN | O Services opera sem o Commercial, com referência externa e snapshot |
+| **OS não exige RA** — comportamento do próprio GSAN | O Atendimento opera sem o Commercial, com referência externa e snapshot |
+| 🆕 **RA é do Atendimento** — revisão consolidada (2026-09-30) | RA, OS e Campo num só instalável; o Commercial é origem de OS e dono de efeitos, nunca do RA |
 | Módulo desligado não registra nada; perfil inválido falha cedo; atualização não ativa módulo | Verificado por teste arquitetural e de perfil desde a Etapa 0 |
 
 Matriz de dependências, contratos e perfis: [`modulos-e-perfis-de-implantacao.md`](../arquitetura/modulos-e-perfis-de-implantacao.md). 🔵 **Agrupar não é criar domínio**: os módulos instaláveis reúnem os módulos de domínio que já existiam; nenhum bounded context foi inventado.

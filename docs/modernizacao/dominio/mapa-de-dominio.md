@@ -6,7 +6,7 @@
 >
 > 🆕 **Adendo pós-Fase 0 (2026-09-29)**: PCM, Parada, Prestação de Informações (SINISA) e Gerencial & Analytics são conceitos **do OpenGSAN** — não há domínio GSAN a consolidar aqui além das sementes marcadas no §3; decisões na [visão conceitual §27.4](visao-conceitual-opengsan.md#274--adendo-pós-fase-0--pcm-paradas-sinisa-e-gerencial-2026-09-29).
 >
-> 🆕 **Segundo adendo pós-Fase 0 (2026-09-29)**: os módulos de domínio aqui consolidados passam a ser **agrupados** em módulos instaláveis — Commercial, Metering, Services e os demais ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md)). ⚠️ Agrupar **não** cria bounded context: as fronteiras são as deste mapa. Um achado toca o §13: a OS **não depende de RA** — a ação de cobrança a gera a partir do documento de cobrança ([`modulos-e-perfis-de-implantacao.md §7`](../arquitetura/modulos-e-perfis-de-implantacao.md#7-services--ra-os-e-campo)).
+> 🆕 **Segundo adendo pós-Fase 0 (2026-09-29)**: os módulos de domínio aqui consolidados passam a ser **agrupados** em módulos instaláveis — Commercial, Metering, Atendimento e os demais ([ADR-0010](../decisoes/0010-monolito-modular-perfis-de-implantacao.md)). ⚠️ Agrupar **não** cria bounded context: as fronteiras são as deste mapa. Um achado toca o §13: a OS **não depende de RA** — a ação de cobrança a gera a partir do documento de cobrança ([`modulos-e-perfis-de-implantacao.md §7`](../arquitetura/modulos-e-perfis-de-implantacao.md#7-atendimento--ra-os-e-campo)).
 >
 > **Este documento não projeta o OpenGSAN.** Não há tabelas, entidades JPA, schemas, APIs nem classificação `PRESERVAR/MODERNIZAR/REESTRUTURAR/NÃO TRANSPORTAR` — isso é a próxima atividade. Aqui consolida-se **como o domínio do GSAN funciona e se relaciona**.
 

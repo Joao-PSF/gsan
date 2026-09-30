@@ -68,7 +68,7 @@ NFAg (documento fiscal: chave, série, número, protocolo, eventos)
 | **Fiscal** | Documento fiscal · identidade fiscal (chave, série, número) · **determinação tributária vigente** (classificação, base, alíquotas, reduções — como política com vigência) · autorização e rejeição · **eventos** · cancelamento fiscal · contingência · DANFAG · guarda fiscal · devolução personalizada (§8) | Valor tarifário, consumo, recebimento |
 | **Arrecadação** | Pagamento, recebimento, conciliação — e os **fatos de pagamento** que a vinculação pagamento–documento fiscal possa exigir (§7) | O documento fiscal |
 | **Contabilização** | Lançamentos a partir de fatos comerciais **e** fiscais, sem duplicar valores (§9) | Documento fiscal; apuração |
-| **Integrações** | **Adapter técnico** com o ambiente autorizador (SVRS): transporte, assinatura de mensagem, uso do certificado, retentativa, idempotência, erro durável | 🔴 **A regra fiscal** — o adapter traduz e entrega; quem decide é o Fiscal |
+| **Integrações** | **Adapter técnico** com o ambiente autorizador (SVRS): transporte, assinatura de mensagem, uso do certificado, retentativa, idempotência, erro durável — 🆕 o adapter é **do Fiscal**, no Commercial; a Platform dá a infraestrutura (revisão consolidada, 2026-09-30) | 🔴 **A regra fiscal** — o adapter traduz e entrega; quem decide é o Fiscal |
 
 🔴 **Não acoplar a regra fiscal ao Faturamento.** O Faturamento **pergunta** ao Fiscal a tributação vigente para compor o documento (§8) e **publica** o fato tributável; o Fiscal traduz para a obrigação vigente. Assim, mudança de leiaute, de alíquota, de classificação, de validação ou de evento **não toca o motor tarifário**.
 

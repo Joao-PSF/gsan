@@ -303,7 +303,7 @@ preenchimento ──► validação ──► aprovação ──► exportação
 
 🔴 **[DEC] Submissão não automatizada por padrão.** O usuário transcreve ou envia no sistema oficial e registra o **comprovante** como evidência. **[DEC]** A credencial do prestador no sistema oficial **não é guardada** pelo OpenGSAN na V1 — nada a guardar sem envio automático; se um dia houver adapter, credencial **por ambiente e fora do código**.
 
-**[PEND] PENDENTE POR FONTE** — o mecanismo oficial encontrado é o **formulário online** do sistema de coleta. Nenhum leiaute oficial de importação ou exportação por arquivo apareceu nas fontes consultadas. **Se existir**: adapter em Integrações, acionado por pessoa; **o leiaute nunca entra no domínio**. O que a V1 exporta é a **declaração aprovada em formato próprio** — para transcrição e guarda —, não um leiaute oficial.
+**[PEND] PENDENTE POR FONTE** — o mecanismo oficial encontrado é o **formulário online** do sistema de coleta. Nenhum leiaute oficial de importação ou exportação por arquivo apareceu nas fontes consultadas. **Se existir**: adapter **do módulo SINISA**, sobre a infraestrutura de integração da Platform, acionado por pessoa; **o leiaute nunca entra no domínio**. O que a V1 exporta é a **declaração aprovada em formato próprio** — para transcrição e guarda —, não um leiaute oficial.
 
 ---
 
@@ -410,7 +410,7 @@ DADOS INTERNOS ──► GERENCIAL / ANALYTICS ──► servem como referência
 | Guarda das evidências | Documentos e evidências — a capacidade guarda; o Workspace decide |
 | Métricas de referência | **Gerencial & Analytics** — consultadas, nunca donas do valor declarado |
 | Dados primários | Os módulos donos — inalterado |
-| Arquivo oficial, se existir | Adapter em **Integrações** |
+| Arquivo oficial, se existir | Adapter **do módulo SINISA**, sobre a infraestrutura de integração da Platform |
 | Mapeamento futuro | **A companhia** — configuração com responsável e aprovação |
 | Canal | Backoffice server-driven (ADR-0007) |
 

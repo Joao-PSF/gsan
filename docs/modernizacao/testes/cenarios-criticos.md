@@ -138,7 +138,7 @@ A cifra "~110" circulava em seis documentos — inclusive no roteiro desta execu
 | [CEN-FIS-002](cenarios/fiscal.md) — Contingência e transmissão posterior | 🆕 Auditoria final — **requisito nativo**: NFAg, contingência |
 | [CEN-FIS-003](cenarios/fiscal.md) — Retificação e cancelamento de conta com NFAg autorizada | 🆕 Auditoria final — **requisito nativo**: NFAg × retificação e cancelamento |
 | [CEN-MOD-001](cenarios/modularidade.md) — SINISA inicia somente com a Platform | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: SINISA só com a Platform (ADR-0010) |
-| [CEN-MOD-002](cenarios/modularidade.md) — Services opera sem Commercial, com referência externa e snapshot | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Services sem Commercial, com referência externa |
+| [CEN-MOD-002](cenarios/modularidade.md) — Atendimento opera sem Commercial, com referência externa e snapshot | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Atendimento sem Commercial, com referência externa |
 | [CEN-MOD-003](cenarios/modularidade.md) — Commercial fatura com medição externa | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Commercial com medição externa |
 | [CEN-MOD-004](cenarios/modularidade.md) — Assets fecha o ciclo de manutenção com OS externa | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Assets com OS externa |
 | [CEN-MOD-005](cenarios/modularidade.md) — Operations opera sem Networks | 🆕 2º adendo pós-Fase 0 — **requisito nativo arquitetural**: Operations sem Networks |
@@ -273,7 +273,7 @@ NFAg (CEN-FIS-001 a 003), Pix Cobrança (CEN-ARR-012), Pix Automático (CEN-ARR-
 | [CEN-REG-004](cenarios/regulatorio.md) | Prestação de Informações | Mapeamento futuro nunca ativado automaticamente | P0 | R | nativo | N | ➖ não aplicável | automação SINISA |
 | [CEN-REG-005](cenarios/regulatorio.md) | Prestação de Informações | Override futuro auditado | P1 | R | nativo | N | ➖ não aplicável | automação SINISA |
 | [CEN-MOD-001](cenarios/modularidade.md) | Modularidade | SINISA inicia somente com a Platform | P1 | R | nativo | N | ➖ não aplicável | 1º ciclo SINISA |
-| [CEN-MOD-002](cenarios/modularidade.md) | Modularidade | Services opera sem Commercial, com referência externa e snapshot | P1 | 2 | nativo/C1 | N | ➖ não aplicável | 2 → 3 |
+| [CEN-MOD-002](cenarios/modularidade.md) | Modularidade | Atendimento opera sem Commercial, com referência externa e snapshot | P1 | 2 | nativo/C1 | N | ➖ não aplicável | 2 → 3 |
 | [CEN-MOD-003](cenarios/modularidade.md) | Modularidade | Commercial fatura com medição externa | P0 | 4 | nativo/C1 | N | ➖ não aplicável | 4 → 5 |
 | [CEN-MOD-004](cenarios/modularidade.md) | Modularidade | Assets fecha o ciclo de manutenção com OS externa | P1 | T | nativo | N | ➖ não aplicável | trilha estrutural |
 | [CEN-MOD-005](cenarios/modularidade.md) | Modularidade | Operations opera sem Networks | P1 | T | nativo | N | ➖ não aplicável | trilha estrutural |
@@ -410,7 +410,7 @@ Dos P0, os que mais protegem — escolhidos pelo dano que a falha causaria e pel
 | --------- | --------------------- | --------------------- |
 | **0 → 1** | SEG-001 · SEG-002 · SEG-006 · SEG-010 · SEG-011 · 🆕 MOD-006 · MOD-007 | Autenticação contra hash moderno · bloqueio por tentativas · escrita auditada · cada filtro barra · CI reprova segredo · 🆕 módulo desligado não registra nada · fronteira de implantação verificável |
 | **1 → 2** | SEG-004 · ATE-001 · ATE-002 · ATE-003 · ATE-004 · CAD-002 · 🆕 SEG-012 | **Negação provada** (🆕 inclusive a restrição por usuário) · consulta autorizada · RA governado por dado · encerramento · tramitação · cliente por papel · 🆕 requisição forjada recusada |
-| **2 → 3** | ATE-007 · SEG-007 · CAD-003 · CAD-004 · REL-001 · 🆕 MOD-002 | **Efeito aplicado pelo dono** · escopo territorial · economias · faturabilidade · artefato protegido · 🆕 Services sobe sem Commercial |
+| **2 → 3** | ATE-007 · SEG-007 · CAD-003 · CAD-004 · REL-001 · 🆕 MOD-002 | **Efeito aplicado pelo dono** · escopo territorial · economias · faturabilidade · artefato protegido · 🆕 Atendimento sobe sem Commercial |
 | **3 → 4** | MIC-001 · MIC-002 · MIC-003 · INT-001 | Consumo com **origem declarada** · mínimo · troca · leitura rejeitada sem dispositivo identificado |
 | **4 → 5** | FAT-001 · FAT-002 · FAT-003 · FAT-005 · FAT-006 · FAT-007 · 🆕 FIS-001 · FAT-012 · 🆕 MOD-003 | **Ao centavo** · as cinco políticas caracterizadas · retificação pela operação da Micromedição · 🆕 documento fiscal autorizado ou rejeição rastreável · Tarifa Social pela regra vigente · 🆕 medição externa com origem, sem gravar consumo |
 | **5 → 6** | ARR-002 · ARR-003 · ARR-005 · ARR-006 · COB-001 · 🆕 ARR-012 | Baixa · **nada descartado** · identidade documental · identidade do pagamento · posição derivada · 🆕 confirmação Pix idempotente |
@@ -608,7 +608,7 @@ Território: duas gerências regionais, unidades de negócio, elos/polos, locali
 | **RED-01** 🆕 | Rede sintética em L1: uma área com **topologia íntegra**, válvulas classificadas (uma **inacessível**), entradas de água configuradas e ligações vinculadas a unidades usuárias; outra área **sem topologia** |
 | **SIN-01** 🆕 | Dois ciclos SINISA **fictícios** — N e N+1, glossários vN e vN+1: campo X com definição alterada **sob o mesmo código**, Y inalterado, Z removido, W novo; campos numéricos e de escolha |
 | **MET-01** 🆕 | Métrica interna com nome **idêntico** ao de um campo de SIN-01 e valor calculado no período |
-| **PRF-01** 🆕 | Perfis de referência para teste — FULL, SINISA, SERVICES, COMMERCIAL com medição externa, ASSETS com OS externa, OPERATIONS sem Networks —, cada um com os módulos habilitados e os provedores declarados |
+| **PRF-01** 🆕 | Perfis de referência para teste — FULL, SINISA, ATENDIMENTO, COMMERCIAL com medição externa, ASSETS com OS externa e sem provedor de execução, OPERATIONS sem Networks —, cada um com os módulos habilitados e os provedores declarados |
 | **EXT-01** 🆕 | Sistemas externos **sintéticos**, por contrato: comercial (cliente, unidade usuária, ligação), leitura/AMI (consumo com origem) e OS/CMMS (execução e resultado) — sem credencial real |
 | **FXM-01** 🆕 | Módulos-fixture da fundação: A (REQUIRED Platform), B (REQUIRED A) e C (OPTIONAL de A, por contrato) |
 

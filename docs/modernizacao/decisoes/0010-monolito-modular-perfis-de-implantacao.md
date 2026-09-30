@@ -2,6 +2,7 @@
 
 - **Status: Aceita** (decisão do responsável do projeto) · Data: 2026-09-29 · Segundo adendo pós-Fase 0 — refinamento arquitetural antes da Fase 1
 - **Especializa a [ADR-0001](0001-monolito-modular-spring-boot.md)** — não a contradiz nem a substitui
+- 🆕 **Revisão de 2026-09-30** (revisão final consolidada — [registro](../auditoria/revisao-final-consolidada-pos-adendos.md)): **nenhuma decisão mudou**. O instalável *Services* passou a chamar-se **Atendimento** (item 12); os critérios dos itens 4 e 7 foram **aplicados** — ver [Revisão](#revisão-de-2026-09-30)
 
 ## Contexto
 
@@ -20,7 +21,7 @@ A evidência do domínio mostra onde as fronteiras aguentam e onde não ([`modul
 ## Decisão
 
 1. **O OpenGSAN continua monólito modular** (ADR-0001): um código, **uma versão da suíte**, **um processo por instalação**. ❌ Microserviços, *service mesh*, HTTP entre módulos internos, banco por serviço, deploy independente por processo e fila interna obrigatória.
-2. **Suíte modular na implantação**: *módulo de domínio ≠ módulo instalável ≠ microserviço*. Os módulos instaláveis são **Platform, Commercial, Metering, Services, Assets, Operations, Networks, SINISA e Analytics**, cada um reunindo módulos de domínio.
+2. **Suíte modular na implantação**: *módulo de domínio ≠ módulo instalável ≠ microserviço*. Os módulos instaláveis são **Platform, Commercial, Metering, Atendimento, Assets, Operations, Networks, SINISA e Analytics**, cada um reunindo módulos de domínio.
 3. **Perfil de implantação** = módulos habilitados + provedores externos declarados. **Perfis de referência** enumerados e testados; outra combinação é permitida se a validação passar, mas não é garantida. ❌ Fork, *branch* ou edição por perfil — nenhum `if edition == …`.
 4. **Toda dependência é declarada** como **REQUIRED**, **OPTIONAL** ou **EXTERNALIZABLE** — esta com marca de provedor obrigatório quando o módulo não opera sem ela. O único REQUIRED dos módulos funcionais é a **Platform**.
 5. **Dependência opcional nunca é *import* direto**: passa por **contrato do consumidor**, atendido por adapter interno — a ponte, que só existe com os dois módulos ativos — ou por **adapter externo**. Dentro do monólito, contrato em Java, nunca HTTP.
@@ -30,7 +31,7 @@ A evidência do domínio mostra onde as fronteiras aguentam e onde não ([`modul
 9. **Perfil inválido falha na inicialização**, com diagnóstico.
 10. **Atualização de versão nunca ativa módulo**: módulo novo nasce desabilitado.
 11. **Coexistência** é integração operacional por contrato entre sistemas vivos — **não** é migração, sincronização massiva nem *cutover*, que continuam fora do projeto (ADR-0005).
-12. **Nomenclatura**: módulo instalável com nome de produto; módulo de domínio com o nome do domínio em português; ferramenta — QGIS, Giswater — nunca é nome de módulo.
+12. **Nomenclatura**: módulo instalável com nome que **revela o conteúdo** a quem implanta; módulo de domínio com o nome do domínio em português; ferramenta — QGIS, Giswater — nunca é nome de módulo. O instalável do RA, da OS e do campo é o **Atendimento**.
 
 **Esta ADR não decide**: mecanismo de ativação, formato de configuração, estrutura Maven ou de pacotes, adoção de Spring Modulith, ferramenta de teste arquitetural, estratégia de migrations dos módulos desabilitados, interfaces Java, tabelas, mensageria — tudo para a **Etapa 0**, antes da primeira funcionalidade.
 
@@ -38,7 +39,7 @@ A evidência do domínio mostra onde as fronteiras aguentam e onde não ([`modul
 
 - (+) Adoção total, incremental ou em coexistência, **com o mesmo código**.
 - (+) Fronteiras que eram convenção passam a ter **prova**: perfil que sobe sem o vizinho, teste arquitetural que reprova *import* indevido.
-- (+) Módulos que atendem sistemas de terceiros — Metering, Services, SINISA, Analytics — viram porta de entrada do projeto.
+- (+) Módulos que atendem sistemas de terceiros — Metering, Atendimento, Assets, SINISA, Analytics — viram porta de entrada do projeto.
 - (+) A Platform fica pequena por critério, não por intenção.
 - (−) Contratos a mais onde bastaria uma chamada direta; pontes entre módulos para manter.
 - (−) Mais combinações para testar — contidas pelos perfis de referência.
@@ -72,3 +73,15 @@ A evidência do domínio mostra onde as fronteiras aguentam e onde não ([`modul
 ## Rollback
 
 Decisão conceitual, sem código. Revertê-la exige nova ADR que diga como a suíte seria adotada sem perfis — ou que decida separar processos, o que reabre a ADR-0001.
+
+## Revisão de 2026-09-30
+
+Revisão final consolidada, depois dos dois adendos. Nenhum item da decisão foi revertido; três pontos foram corrigidos **dentro** dela:
+
+| Ponto | Antes | Depois | Base |
+| ----- | ----- | ------ | ---- |
+| Nome do instalável do RA, da OS e do campo | *Services* | **Atendimento** — RA · OS · Campo | Item 12: *Services* escondia o RA e o fazia parecer assunto do Commercial |
+| Estrutura organizacional | Na Platform | No **Atendimento** — posicionamento de fluxo do RA e da OS | Item 7: nem todo perfil a usa e ela tem dono de negócio melhor |
+| Provedores obrigatórios | Consumo e qualidade (Commercial) · ponto de consumo (Metering) · execução (Assets) | **Só** consumo e qualidade da água do Commercial; os demais condicionam uma capacidade | Item 4: a marca vale só quando o módulo **não opera** sem a dependência |
+
+Detalhe em [`modulos-e-perfis-de-implantacao.md`](../arquitetura/modulos-e-perfis-de-implantacao.md) §3, §7.2 e §15.2.
