@@ -144,6 +144,21 @@ services:
       - ./baselines:/referencia/baselines
     networks: [interna]
 
+  # Acesso remoto temporário (Quick Tunnel da Cloudflare com autenticação por e-mail). Só para a
+  # instância de INSPEÇÃO — `referencia.sh compartilhar` recusa a instância das baselines. Binário
+  # oficial conferido por SHA-256 (versoes.env), fora do Git; a origem é o proxy (só /gsan).
+  tunel:
+    <<: *imagem-ferramentas
+    profiles: [compartilhamento]
+    entrypoint: ["sh", "/referencia/scripts/tunel.sh"]
+    environment:
+      CLOUDFLARED_ALLOWED_EMAILS: ${CLOUDFLARED_ALLOWED_EMAILS:-}
+    volumes:
+      - ./scripts:/referencia/scripts:ro
+      - ./.ferramentas/cloudflared:/usr/local/bin/cloudflared:ro
+    networks: [externa]
+    depends_on: [proxy]
+
 networks:
   interna:
     internal: true

@@ -118,6 +118,57 @@ Cada execução recria os bancos dos modelos, aplica a massa sintética da varia
 operação pelas telas do legado. Depois de uma captura, o banco de trabalho fica com a massa da **última** execução.
 Tudo em [`baselines/README.md`](baselines/README.md).
 
+## 6b. Acesso remoto temporário
+
+Para abrir o GSAN legado no navegador de **outro computador**, sem abrir porta no roteador: *Quick Tunnel* da Cloudflare
+(`cloudflared`) **com autenticação por e-mail** — a Cloudflare pede o e-mail, envia um código de uso único e só então
+repassa a requisição. Nunca há túnel sem essa proteção: sem e-mail configurado, o túnel não abre.
+
+```text
+navegador → Cloudflare (e-mail + código) → cloudflared (contêiner) → proxy da instância (só /gsan) → JBoss
+```
+
+🔴 **Só a instância de inspeção é compartilhada.** A instância padrão (`gsan-referencia`, porta 8080) é a das baselines
+da Fase 2: navegação humana mudaria o estado que a caracterização controla. A de inspeção (`gsan-inspecao`, porta
+8090) usa as mesmas imagens e a mesma receita, com projeto Docker, banco, EAR, rede e porta próprios.
+`referencia.sh compartilhar` recusa a instância das baselines, e `baseline.sh` recusa capturar se houver túnel nela.
+
+**Pré-requisitos**: o ambiente da Fase 1 preparado (`preparar`). No `.env` (local, nunca versionado):
+
+```bash
+CLOUDFLARED_ALLOWED_EMAILS=nome@exemplo.com      # vários: separados por vírgula; domínio inteiro: *@exemplo.com
+GSAN_INSPECAO_PORTA_HTTP=8090
+```
+
+**Primeira vez** — a instância de inspeção, com os comandos de sempre (~10 min):
+
+```bash
+GSAN_INSTANCIA=inspecao bash scripts/referencia.sh build
+GSAN_INSTANCIA=inspecao bash scripts/referencia.sh banco
+GSAN_INSTANCIA=inspecao bash scripts/referencia.sh subir
+```
+
+**Iniciar, consultar, encerrar**:
+
+```bash
+GSAN_INSTANCIA=inspecao bash scripts/referencia.sh compartilhar             # imprime https://<aleatório>.trycloudflare.com/gsan
+GSAN_INSTANCIA=inspecao bash scripts/referencia.sh status-compartilhamento
+GSAN_INSTANCIA=inspecao bash scripts/referencia.sh parar-compartilhamento   # só o túnel deste projeto
+```
+
+No outro computador: abrir a URL impressa, informar o e-mail autorizado, digitar o código recebido e, na tela do GSAN,
+entrar com `admin` e a senha de `GSAN_ADMIN_SENHA`. `compartilhar` baixa, na primeira vez, o `cloudflared` oficial fixado
+em `versoes.env` (release do GitHub da Cloudflare, SHA-256 conferido) para `.ferramentas/` (ignorado pelo Git) e o executa
+no contêiner `tunel` da imagem `ferramentas`. URL e estado ficam em `.saida/` (ignorado).
+
+**Limitações**: o Quick Tunnel é para desenvolvimento e testes — URL aleatória, **muda a cada abertura**, sem garantia de
+disponibilidade. ⚠️ **É um sistema legado com falhas de segurança conhecidas** (senha em SHA-1 sem salt, sessão sem
+proteção contra requisição forjada, achados 1–25): compartilhe só enquanto for usar, só com e-mails seus, e encerre ao
+terminar. O proxy só roteia `/gsan` — `jmx-console`, `web-console`, `mondrian` e demais aplicações do JBoss respondem 404
+mesmo para quem passou pela autenticação. O proxy devolve redirecionamentos relativos (o Tomcat 5 montaria `http://`
+absoluto atrás do HTTPS da Cloudflare); nada no GSAN foi alterado. Para ver dados, a instância de inspeção pode receber a
+massa sintética da Fase 2 com `scripts/estado-base.sh restaurar` (ver [`baselines/README.md`](baselines/README.md)).
+
 ## 7. Parar
 
 ```bash

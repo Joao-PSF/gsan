@@ -18,7 +18,8 @@ export MSYS_NO_PATHCONV=1
 
 AQUI=$(cd "$(dirname "$0")/.." && pwd)
 cd "$AQUI"
-dc() { docker compose --env-file versoes.env --env-file .env -f docker-compose.yml "$@"; }
+# Sempre a instância das baselines (gsan-referencia), qualquer que seja GSAN_INSTANCIA no ambiente.
+dc() { docker compose -p gsan-referencia --env-file versoes.env --env-file .env -f docker-compose.yml "$@"; }
 fer() { dc --profile ferramentas run --rm -T ferramentas "$@" 2> >(grep -v -E '^ ?Container .*(Creat|Start)' >&2); }
 EXEC=/referencia/baselines/ferramentas/executor.py
 falhar() { echo "baseline.sh: $*" >&2; exit 1; }
@@ -39,13 +40,15 @@ executar_uma() {  # cenário variação diretório-no-contêiner
   dc stop gsan > /dev/null 2>&1 || true
   mapfile -t massa < <(fer python3 "$EXEC" massa "$cen" "$var" | tr -d '\r')
   fer bash /referencia/scripts/estado-base.sh restaurar "${massa[@]}"
-  bash scripts/referencia.sh subir > "$SAIDA_HOST/subir-$cen-$var-$(basename "$dir").log" 2>&1 \
+  GSAN_INSTANCIA=referencia bash scripts/referencia.sh subir > "$SAIDA_HOST/subir-$cen-$var-$(basename "$dir").log" 2>&1 \
     || { tail -20 "$SAIDA_HOST/subir-$cen-$var-$(basename "$dir").log" >&2; falhar "o JBoss não subiu"; }
   fer python3 "$EXEC" executar "$cen" "$var" "$dir"
 }
 
 rodar() {
   local modo=$1; shift
+  # A caracterização não recebe interação humana: nenhum túnel pode apontar para esta instância.
+  [ -z "$(dc --profile compartilhamento ps -q tunel 2> /dev/null)" ] \n    || falhar "há um túnel de acesso remoto na instância das baselines — encerre-o antes de capturar/verificar"
   local reps="" substituir="" alvos=()
   while [ "$#" -gt 0 ]; do
     case "$1" in

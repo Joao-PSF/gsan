@@ -3,3 +3,5 @@
 # Saídas locais (inventário do EAR, logs copiados, evidências de execução).
 .saida/
 __pycache__/
+# Binários locais baixados por scripts (cloudflared), conferidos por checksum.
+.ferramentas/
