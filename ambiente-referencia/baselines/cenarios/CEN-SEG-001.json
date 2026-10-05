@@ -1,0 +1,94 @@
+{
+  "cenario": "CEN-SEG-001",
+  "titulo": "Autenticação legítima e forma da credencial armazenada",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-001",
+  "oraculo": "1 (a–e) · 2 (f)",
+  "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+  "usuarios": {
+    "seg.usr01": "senha-um",
+    "seg.usr01b": "senha-um"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {
+      "concessoes no contexto (c)": "o contexto expõe os grupos e o menu; a lista completa de concessões é observada em CEN-SEG-004"
+    }
+  },
+  "ressalvas": {
+    "oraculo f (D-01)": "os dois valores comparados são GRAVADOS PELO GSAN (cada usuário troca a própria senha para a MESMA senha nova, pela tela do legado). A igualdade é a característica de que o OpenGSAN DEVE divergir (D-01): SHA-1 sem salt; nunca é golden master a reproduzir. O VALOR do hash não é gravado — só a forma e a igualdade"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "USR-01 autentica com credencial correta; USR-01 e USR-01B trocam a senha, pelo GSAN, para a MESMA senha nova (D-01)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "contexto",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "contadores",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr01",
+            "nova": "senha-nova"
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01b"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01b",
+            "senha": "correta"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr01b",
+            "nova": "senha-nova"
+          },
+          {
+            "passo": "credenciais",
+            "usuarios": [
+              "seg.usr01",
+              "seg.usr01b"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    }
+  ],
+  "precondicoes": []
+}

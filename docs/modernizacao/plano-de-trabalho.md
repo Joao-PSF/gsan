@@ -142,6 +142,6 @@ classificados por script (74 exigem baseline do GSAN, 6 só registro de divergê
 mecanismo de captura e verificação com estado limpo por execução; **lote piloto** capturado e verificado. Desvio desta
 tabela: a "massa congelada" é massa SQL versionada (base + deltas, cada arquivo por sha256) sobre o banco pós-migração
 congelado como modelo — não um *dump*. Critério de aceite ainda não atingido: "cobre os comportamentos priorizados" é dos
-próximos lotes; a baseline de performance não começou.
+próximos lotes; a baseline de performance não começou. 🆕 **2026-10-05 — lote de Segurança** (autenticação e autorização): 19 baselines; P0 da classe A **7 de 42**; achados de segurança 26–29 ([relatório §16](testes/fase2/fase2-caracterizacao-baselines.md#16-lote-2--autenticação-e-autorização-2026-10-05)).
 
 O controle vivo de atividades, backlog e pendências está em [`MODERNIZACAO_GSAN.md`](../../MODERNIZACAO_GSAN.md). A lista de "primeiro ciclo" que ocupava esta seção foi removida: ela pressupunha produção, DBA e acesso a banco real — nada disso existe neste projeto, e o que restava de válido já está no backlog da Fase 0.

@@ -177,6 +177,23 @@ def credencial_efemera():
     return senha
 
 
+def credenciais_efemeras(usuarios):
+    """{login: rótulo} → {login: senha}. Uma senha aleatória por RÓTULO (logins com o mesmo rótulo recebem a
+    mesma senha, como o perfil USR-01B exige); só o hash, no formato do legado, vai ao banco."""
+    por_rotulo, senhas, args, comandos = {}, {}, [], []
+    for i, (login, rotulo) in enumerate(sorted(usuarios.items())):
+        if not re.fullmatch(r'[a-z0-9.]{1,11}', login):
+            raise SystemExit(f'login inválido no cenário: {login!r}')
+        senha = por_rotulo.setdefault(rotulo, secrets.token_urlsafe(18))
+        senhas[login] = senha
+        args += ['-v', f'h{i}=' + base64.b64encode(hashlib.sha1(senha.encode('utf-8')).digest()).decode()]
+        comandos.append(f"UPDATE seguranca.usuario SET usur_nmsenha = :'h{i}' WHERE usur_nmlogin = '{login}';")
+    if comandos:
+        subprocess.run(['psql', '-X', '-q', '-v', 'ON_ERROR_STOP=1', '-d', 'gsan_comercial'] + args,
+                       input='\n'.join(comandos), text=True, check=True, capture_output=True)
+    return senhas
+
+
 def executar(ident, variacao, saida):
     c = cenario(ident)
     v = c['variacoes'][variacao]
@@ -193,24 +210,40 @@ def executar(ident, variacao, saida):
 
     vigiadas = c.get('efeitos', [])
     antes = medir(vigiadas)
-    sessao = Sessao(GSAN)
-    senha = credencial_efemera()
-    login = sessao.entrar(OPERADOR, senha)
-    del senha
-    versao = re.search(r'Vers[ãa]o:\s*([^<]*?)\s*(?:<|\d{2}/\d{2}/\d{4})', texto_visivel(login) + '<')
+    roteiro = roteiros.ROTEIROS[v.get('roteiro', c.get('roteiro'))]
     erro = None
-    try:
-        bruto = roteiros.ROTEIROS[v.get('roteiro', c.get('roteiro'))](sessao, v['entrada'])
-    except Exception as e:  # a execução falhou: vira evidência, nunca baseline
-        bruto, erro = None, f'{type(e).__name__}: {e}'
+    if c.get('autenticacao') == 'roteiro':
+        # Segurança: o próprio roteiro autentica os usuários SINTÉTICOS do cenário; o operador não entra.
+        ctx = roteiros.Contexto(GSAN, credenciais_efemeras(c.get('usuarios', {})), sql)
+        try:
+            bruto = roteiro(ctx, v['entrada'])
+        except Exception as e:  # a execução falhou: vira evidência, nunca baseline
+            bruto, erro = None, f'{type(e).__name__}: {e}'
+        del ctx._senhas, ctx._novas
+        respostas = ctx.respostas()
+    else:
+        sessao = Sessao(GSAN)
+        senha = credencial_efemera()
+        sessao.entrar(OPERADOR, senha)
+        del senha
+        try:
+            bruto = roteiro(sessao, v['entrada'])
+        except Exception as e:  # a execução falhou: vira evidência, nunca baseline
+            bruto, erro = None, f'{type(e).__name__}: {e}'
+        respostas = sessao.respostas
+    versao = None
+    for r in respostas:
+        versao = re.search(r'Vers[ãa]o:\s*([^<]*?)\s*(?:<|\d{2}/\d{2}/\d{4})', texto_visivel(r['html']) + '<')
+        if versao:
+            break
     depois = medir(vigiadas)
 
     evid = os.path.join(saida, 'evidencias')
-    for i, r in enumerate(sessao.respostas):
+    for i, r in enumerate(respostas):
         nome = f'{i:02d}-{r["metodo"]}-{re.sub(r"[^A-Za-z0-9]+", "_", r["caminho"].split("?")[0])}.html'
         gravar(os.path.join(evid, nome), r['html'])
     gravar(os.path.join(evid, 'requisicoes.json'),
-           canonico([{k: r[k] for k in ('metodo', 'caminho', 'parametros', 'estado')} for r in sessao.respostas]))
+           canonico([{k: r[k] for k in ('metodo', 'caminho', 'parametros', 'estado')} for r in respostas]))
     gravar(os.path.join(evid, 'bruto.json'), canonico(bruto))
     manifesto = {
         'cenario': ident, 'variacao': variacao, 'inicio': inicio.isoformat(timespec='seconds'),
@@ -240,6 +273,11 @@ def executar(ident, variacao, saida):
         'efeitos_no_banco': {t: efeito(antes[t], depois[t]) for t in antes},
         'fora_desta_fronteira': c['observaveis'].get('fora_desta_fronteira', {}),
     }
+    # Só em cenários que as declaram (as baselines anteriores não mudam de forma).
+    if c.get('ressalvas'):
+        resultado['ressalvas'] = c['ressalvas']
+    if c.get('usuarios'):
+        resultado['usuarios_sinteticos'] = sorted(c['usuarios'])
     gravar(os.path.join(saida, 'resultado.json'), canonico(resultado))
     print(f'{ident} {variacao}: executado — {saida}')
 

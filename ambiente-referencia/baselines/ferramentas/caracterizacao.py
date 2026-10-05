@@ -117,7 +117,8 @@ def classificar(c, ajustes):
             notas.append('oráculo 2: o OpenGSAN deve divergir')
     elif tipo == '2':
         classe = 'C'
-        if 'A CAPTURAR' in baseline:
+        # A CAPTURAR (Fase 0) ou CAPTURADA (Fase 2): a execução do legado existe para registrar a divergência.
+        if 'A CAPTURAR' in baseline or 'CAPTURADA' in baseline:
             execucao = 'Sim — só registro do comportamento de que se diverge (não é oráculo)'
             massas = len(variacoes) or 1
         else:

@@ -1,0 +1,73 @@
+{
+  "cenario": "CEN-SEG-010",
+  "descricao": "requisição com sessão criada (carregarParametros) mas sem usuário autenticado",
+  "efeitos_no_banco": {
+    "seguranca.usuario": "inalterado"
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-010",
+  "fora_desta_fronteira": {
+    "qual elo nega (internamente)": "observável pela decisão final; a existência de elo sem efeito é leitura de código (D-07), não runtime"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-usuarios.sql",
+      "sha256": "76db9bf94ce149bb6a31f79774ea160b1d323283fc92bb79ac9e8485dc2fbb5c"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "passos": [
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "conteudo": "html",
+        "decisao": "negado_funcionalidade",
+        "http": 200,
+        "passo": "acessar",
+        "rotulo": "F1 com sessao sem usuario",
+        "set_cookie_sessao": false
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "passos": [
+        {
+          "carregar": true,
+          "passo": "sessao"
+        },
+        {
+          "passo": "acessar",
+          "rotulo": "F1 com sessao sem usuario",
+          "url": "exibirConsultarImovelAction.do?menu=sim"
+        }
+      ]
+    },
+    "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana. Requisição a rota protegida sem sessão autenticada; a cadeia é FiltroSSO → FiltroSessaoExpirada → FiltroSegurancaAcesso.",
+    "roteiro": "seguranca"
+  },
+  "oraculo": "2",
+  "ressalvas": {
+    "oraculo 2 (D-07)": "registro da divergência: dois elos do legado não barram nada. Não se compara por igualdade; captura-se a evidência de que o acesso é negado (pelo último elo)"
+  },
+  "titulo": "Cadeia de filtros sem elo decorativo",
+  "variacao": "V2"
+}

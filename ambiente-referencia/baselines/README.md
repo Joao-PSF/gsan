@@ -57,7 +57,21 @@ python3 baselines/ferramentas/cobertura.py gerar        # cobertura de baselines
 
 Cada execução de cada variação: **para o JBoss → recria os bancos dos modelos → aplica a massa efetiva →
 sobe o JBoss do zero → autentica o operador sintético → executa a operação pelas telas → observa**. Nada
-passa de uma execução à outra: nem banco, nem sessão HTTP, nem cache estático do JBoss (~1 min por execução).
+passa de uma execução à outra: nem banco, nem sessão HTTP, nem cache estático do JBoss (~1 min por execução;
+~2–3 min com a instância de inspeção também no ar).
+
+⚠️ Capturas longas (dezenas de execuções) passam do limite de tempo de comandos em segundo plano de algumas
+sessões de agente: rode-as como processo independente e acompanhe pelo log. A interrupção não deixa baseline
+parcial — a gravação só acontece depois das execuções da variação.
+
+### Cenários de Segurança — o roteiro por passos
+
+Nos cenários com `"autenticacao": "roteiro"`, o operador da caracterização não entra: o roteiro `seguranca`
+autentica os **usuários sintéticos do próprio cenário** (`"usuarios": {"login": "rótulo"}` — uma senha efêmera por
+rótulo; logins com o mesmo rótulo recebem a mesma) e executa os **passos** declarados na variação: `sessao`,
+`login` (senha `correta`, `errada` ou um rótulo de senha nova), `contexto`, `situacao`, `contadores`, `acessar`
+(com `marca` e `procurar`), `trocar_senha`, `credenciais` (só igualdade e forma — o valor do hash nunca sai do
+executor) e `cookie`. Uma fronteira, muitos cenários: variar é mudar passos e massa, não escrever teste.
 
 ## Regras
 
@@ -69,8 +83,9 @@ passa de uma execução à outra: nem banco, nem sessão HTTP, nem cache estáti
    mudar um arquivo de massa invalida as baselines que o usam (a verificação acusa).
 3. **Só dados sintéticos.** Nenhum dado real de cliente ou produção. Identificadores por constante do
    legado quando o código os fixa (evidência no comentário); o resto é declarado SINTÉTICO.
-4. **Sem segredo.** O operador `fase2.oper` nasce sem senha; cada execução gera uma senha aleatória, grava
-   só o hash no formato do legado e a descarta. Evidências registram o login **sem** o corpo da requisição.
+4. **Sem segredo.** O operador `fase2.oper` e os usuários de Segurança nascem sem senha; cada execução gera
+   senhas aleatórias, grava só o hash no formato do legado e as descarta. Evidências registram login e troca de
+   senha **sem** o corpo da requisição; nenhuma baseline contém senha, hash ou identificador de sessão.
 5. **Normalização mínima e declarada** (`normalizacoes` no JSON): `identificador_tecnico`,
    `carimbo_tempo`, `data_execucao` e `ordem_sem_semantica` (só para lista que o legado devolve sem
    `ORDER BY`). O executor **recusa** normalizar caminho de dinheiro, estado, referência, consumo,
@@ -81,6 +96,9 @@ passa de uma execução à outra: nem banco, nem sessão HTTP, nem cache estáti
    **corrente** do servidor; a massa só tem vigências passadas e o executor confere isso (relógio).
 8. **Evidência ≠ baseline.** HTML de cada resposta, requisições, saída bruta e manifesto (horários,
    tabelas antes/depois) ficam em `.saida/baselines/<id>/`, fora do versionamento.
+9. **Vulnerabilidade não vira golden master funcional.** Cenários de oráculo 2 e comportamentos candidatos a
+   divergência levam `ressalvas` na baseline: ela registra **o que o GSAN faz**, para sustentar a divergência —
+   nunca o que o OpenGSAN deve fazer igual.
 
 ## Acrescentar um cenário
 

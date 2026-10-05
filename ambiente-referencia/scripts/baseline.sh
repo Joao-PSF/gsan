@@ -48,7 +48,9 @@ executar_uma() {  # cenário variação diretório-no-contêiner
 rodar() {
   local modo=$1; shift
   # A caracterização não recebe interação humana: nenhum túnel pode apontar para esta instância.
-  [ -z "$(dc --profile compartilhamento ps -q tunel 2> /dev/null)" ] \n    || falhar "há um túnel de acesso remoto na instância das baselines — encerre-o antes de capturar/verificar"
+  if [ -n "$(dc --profile compartilhamento ps -q tunel 2> /dev/null)" ]; then
+    falhar "há um túnel de acesso remoto na instância das baselines — encerre-o antes de capturar/verificar"
+  fi
   local reps="" substituir="" alvos=()
   while [ "$#" -gt 0 ]; do
     case "$1" in

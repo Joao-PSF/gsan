@@ -1,0 +1,179 @@
+{
+  "cenario": "CEN-SEG-001",
+  "descricao": "USR-01 autentica com credencial correta; USR-01 e USR-01B trocam a senha, pelo GSAN, para a MESMA senha nova (D-01)",
+  "efeitos_no_banco": {
+    "seguranca.usuario": "alterado"
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-001",
+  "fora_desta_fronteira": {
+    "concessoes no contexto (c)": "o contexto expõe os grupos e o menu; a lista completa de concessões é observada em CEN-SEG-004"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-usuarios.sql",
+      "sha256": "76db9bf94ce149bb6a31f79774ea160b1d323283fc92bb79ac9e8485dc2fbb5c"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "passos": [
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "login",
+        "resultado": "tela_principal",
+        "senha": "correta",
+        "usuario": "seg.usr01"
+      },
+      {
+        "autenticado": true,
+        "grupos_exibidos": "SEG GRUPO A (SINTETICO)",
+        "http": 200,
+        "menu": [
+          "Gsan > Atendimento ao Publico > Consultar Imovel"
+        ],
+        "passo": "contexto",
+        "usuario_exibido": "seg.usr01"
+      },
+      {
+        "passo": "situacao",
+        "situacao": "ATIVO",
+        "usuario": "seg.usr01"
+      },
+      {
+        "acessos": "1",
+        "bloqueios": "nulo",
+        "passo": "contadores",
+        "ultimo_acesso_preenchido": true,
+        "usuario": "seg.usr01"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "trocar_senha",
+        "sucesso": true,
+        "usuario": "seg.usr01"
+      },
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "login",
+        "resultado": "tela_principal",
+        "senha": "correta",
+        "usuario": "seg.usr01b"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "trocar_senha",
+        "sucesso": true,
+        "usuario": "seg.usr01b"
+      },
+      {
+        "formatos": [
+          "base64 de 20 bytes",
+          "base64 de 20 bytes"
+        ],
+        "passo": "credenciais",
+        "usuarios": [
+          "seg.usr01",
+          "seg.usr01b"
+        ],
+        "valores_iguais": true
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "passos": [
+        {
+          "passo": "sessao",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "login",
+          "senha": "correta",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "contexto",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "situacao",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "contadores",
+          "usuario": "seg.usr01"
+        },
+        {
+          "nova": "senha-nova",
+          "passo": "trocar_senha",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "sessao",
+          "usuario": "seg.usr01b"
+        },
+        {
+          "passo": "login",
+          "senha": "correta",
+          "usuario": "seg.usr01b"
+        },
+        {
+          "nova": "senha-nova",
+          "passo": "trocar_senha",
+          "usuario": "seg.usr01b"
+        },
+        {
+          "passo": "credenciais",
+          "usuarios": [
+            "seg.usr01",
+            "seg.usr01b"
+          ]
+        }
+      ]
+    },
+    "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+    "roteiro": "seguranca"
+  },
+  "oraculo": "1 (a–e) · 2 (f)",
+  "ressalvas": {
+    "oraculo f (D-01)": "os dois valores comparados são GRAVADOS PELO GSAN (cada usuário troca a própria senha para a MESMA senha nova, pela tela do legado). A igualdade é a característica de que o OpenGSAN DEVE divergir (D-01): SHA-1 sem salt; nunca é golden master a reproduzir. O VALOR do hash não é gravado — só a forma e a igualdade"
+  },
+  "titulo": "Autenticação legítima e forma da credencial armazenada",
+  "usuarios_sinteticos": [
+    "seg.usr01",
+    "seg.usr01b"
+  ],
+  "variacao": "V1"
+}

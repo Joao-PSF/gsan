@@ -1,0 +1,74 @@
+{
+  "cenario": "CEN-SEG-012",
+  "titulo": "Sessão e requisição forjada",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-012",
+  "oraculo": "2",
+  "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana. Cookie de sessão e submissão de Action que altera estado sem token.",
+  "usuarios": {
+    "seg.usr01": "senha-um"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {
+      "origem cruzada real": "o servidor não distingue origem; o ponto é a ausência de token — a submissão sem token é aceita"
+    }
+  },
+  "ressalvas": {
+    "oraculo 2 (D-18)": "registro: GSAN aceita requisição que altera estado sem token e o cookie não tem HttpOnly/Secure/SameSite. OpenGSAN deve recusar V1 e emitir cookie com os três atributos. Não é golden master a reproduzir",
+    "estado alterado": "a operação que altera estado usada como demonstração é a troca de senha do próprio usuário sintético (efetuarAlteracaoSenhaSimplificadaAction); nenhuma senha vai ao resultado"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "submissão que altera estado (troca de senha) sem token, com a sessão do usuário: aceita, com efeito",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "cookie",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr01",
+            "nova": "senha-nova"
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "senha-nova"
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    }
+  ],
+  "precondicoes": []
+}

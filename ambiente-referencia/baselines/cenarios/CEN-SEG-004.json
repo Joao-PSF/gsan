@@ -1,0 +1,341 @@
+{
+  "cenario": "CEN-SEG-004",
+  "titulo": "Matriz de autorização: concessão por união de grupos e negação",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-004",
+  "oraculo": "1 — por mapeamento semântico funcionalidade ↔ caso de uso",
+  "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+  "usuarios": {
+    "seg.usr01": "senha-um",
+    "seg.usr02": "senha-um",
+    "seg.usr03": "senha-um"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {
+      "unidade de concessão": "comparação pela FUNCIONALIDADE, não pela URL (a rota vira identificador de domínio no OpenGSAN)"
+    }
+  },
+  "ressalvas": {
+    "V6, V7c": "PENDENTES na especificação: a baseline decide (dependência entre funcionalidades; composição do filtro de restrições, CAND-05)",
+    "V5b (CAND-06)": "a negação da operação Débitos é contornada pela entrada da funcionalidade: o encaminhamento interno do Struts não é refiltrado. Comportamento a NÃO reproduzir — candidato a divergência CAND-06; a baseline registra o legado"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "USR-01 (grupo A) acessa F1",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 (USR-01)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "USR-02 (grupos A e B) acessa F1 e F2 (união)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr02"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr02",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 (USR-02)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F2 (USR-02)",
+            "url": "exibirSimularCalculoContaAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "USR-01 acessa F2 (não concedida ao grupo A)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F2 (USR-01)",
+            "url": "exibirSimularCalculoContaAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "USR-03 (sem concessão) acessa F1 digitando o endereço direto",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr03"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr03",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 (USR-03 direto)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V5": {
+      "descricao": "USR-01 abre F1 (entrada do caso de uso) e executa O1 (concedida) e depois O2 (não concedida)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 (entrada do caso de uso)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "O1 (Dados Cadastrais, concedida)",
+            "url": "consultarImovelWizardAction.do?action=exibirConsultarImovelDadosCadastraisAction",
+            "marca": "idImovelDadosCadastrais"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "O2 (Debitos, nao concedida)",
+            "url": "consultarImovelWizardAction.do?action=exibirConsultarImovelDebitosAction"
+          }
+        ]
+      }
+    },
+    "V6": {
+      "descricao": "USR-01 acessa F4 (Manter Cliente), dependente de F1, tendo apenas F1",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F4 (dependente)",
+            "url": "exibirFiltrarClienteAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V7a": {
+      "descricao": "USR-01 com restrição sobre O1 pelo grupo A (único caminho): esperado negado",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-restricao-usr01.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 restrita (USR-01)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V7b": {
+      "descricao": "USR-02 com restrição sobre O1 pelo grupo A, com B também concedendo: esperado permitido",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-restricao-usr02.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr02"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr02",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 restrita por A (USR-02)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V7c": {
+      "descricao": "grupo A concede duas operações de F1; USR-01 num só grupo (composição do filtro, CAND-05)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-grupo-a-duas-operacoes.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 duas operacoes (USR-01)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V7c2": {
+      "descricao": "V7(c) com restrição: grupo A concede duas operações de F1 e USR-01 tem restrição em UMA delas — pela regra (restrições < concessões) esperado permitido; é o caso em que a composição do filtro pesa (CAND-05)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-grupo-a-duas-operacoes.sql",
+        "massas/deltas/seguranca-restricao-usr01.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 duas operacoes, uma restrita (USR-01)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V5b": {
+      "descricao": "USR-01 sem a operação Débitos (O2) abre a entrada da funcionalidade F1 com a matrícula na URL: o encaminhamento interno à aba Débitos não passa de novo pelo filtro",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/clientes-imovel-imv03.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "O2 direto, com imovel",
+            "url": "consultarImovelWizardAction.do?action=exibirConsultarImovelDebitosAction&idImovelDebitos=100030",
+            "procurar": [
+              "100030",
+              "CLIENTE SINTETICO DE VERIFICACAO",
+              "RUA SINTETICA A"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 entrada com imovel (aba Debitos)",
+            "url": "exibirConsultarImovelAction.do?menu=sim&idImovelDebitos=100030",
+            "procurar": [
+              "100030",
+              "CLIENTE SINTETICO DE VERIFICACAO",
+              "RUA SINTETICA A"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    }
+  ],
+  "precondicoes": []
+}

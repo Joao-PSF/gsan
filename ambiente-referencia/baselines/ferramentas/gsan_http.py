@@ -6,6 +6,7 @@ A senha nunca é registrada: o login é gravado sem o corpo da requisição.
 """
 import http.cookiejar
 import re
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -19,27 +20,40 @@ class Sessao:
         self.abridor = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.jar))
         self.respostas = []
 
-    def _pedir(self, caminho, dados=None, registrar_corpo=True):
+    def _pedir(self, caminho, dados=None, registrar_corpo=True, cabecalhos=None):
         url = f'{self.base}/{caminho.lstrip("/")}'
         corpo = None
         if dados is not None:
             corpo = urllib.parse.urlencode(dados, encoding=CODIFICACAO).encode('ascii')
-        pedido = urllib.request.Request(url, data=corpo)
-        with self.abridor.open(pedido, timeout=300) as r:
-            texto = r.read().decode(CODIFICACAO)
-            estado = r.status
+        pedido = urllib.request.Request(url, data=corpo, headers=cabecalhos or {})
+        # Erro HTTP (ex.: 500 do legado) é resultado observável, não falha do roteiro.
+        try:
+            with self.abridor.open(pedido, timeout=300) as r:
+                texto = r.read().decode(CODIFICACAO)
+                estado = r.status
+                self.cabecalhos = r.headers
+        except urllib.error.HTTPError as e:
+            texto = e.read().decode(CODIFICACAO, errors='replace')
+            estado = e.code
+            self.cabecalhos = e.headers
+        self.ultimo_estado = estado
         self.respostas.append({
             'metodo': 'POST' if dados is not None else 'GET', 'caminho': caminho,
             'parametros': (dados if registrar_corpo else '(omitido)') if dados is not None else None,
             'estado': estado, 'html': texto,
+            'set_cookie': self.cabecalhos.get_all('Set-Cookie') or [] if self.cabecalhos else [],
         })
         return texto
 
     def get(self, caminho):
         return self._pedir(caminho)
 
-    def post(self, caminho, dados):
-        return self._pedir(caminho, dados)
+    def post(self, caminho, dados, registrar_corpo=True, cabecalhos=None):
+        return self._pedir(caminho, dados, registrar_corpo=registrar_corpo, cabecalhos=cabecalhos)
+
+    def tentar_login(self, login, senha):
+        """Uma tentativa de login, sem registrar o corpo (a senha). Devolve o HTML da resposta."""
+        return self._pedir('efetuarLoginAction.do', {'login': login, 'senha': senha}, registrar_corpo=False)
 
     def entrar(self, login, senha):
         self.get('carregarParametrosAction.do')

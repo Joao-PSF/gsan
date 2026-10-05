@@ -1,0 +1,177 @@
+{
+  "cenario": "CEN-SEG-002",
+  "titulo": "Credencial inválida e bloqueio por tentativas",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-002",
+  "oraculo": "1 (V1, V2) · PENDENTE DE DECISÃO (V3)",
+  "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+  "usuarios": {
+    "seg.usr01": "senha-um"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {}
+  },
+  "ressalvas": {
+    "limite de tentativas": "parm_nnmaximologinfalho é NULO na base reconstruída (nenhuma migração o define). FIXADO em 3 (SINTÉTICO) por seguranca-limite-tentativas.sql para tornar o bloqueio caracterizável; o valor de uma instalação real é desconhecido. Com o parâmetro NULO, a 1ª senha errada derruba o login (NPE 500) — achado F2-13",
+    "V3 (PENDENTE)": "o contador vive na sessão; tentativas distribuídas em sessões distintas não bloqueiam. Não é oráculo 2 (D-01 cobre só o hash): a baseline informa a decisão, não a antecipa (CAND-03)",
+    "V2 (CAND-07)": "depois do bloqueio, a senha correta exibe a mensagem de situação inválida MAS a sessão fica autenticada (EfetuarLoginAction grava usuarioLogado na sessão mesmo quando a situação é recusada): o bloqueio não bloqueia. Comportamento a NÃO reproduzir — candidato a divergência CAND-07"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "uma senha errada, depois a correta, na mesma sessão",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-limite-tentativas.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr01"
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "senhas erradas até exceder o limite (3), na mesma sessão; depois a correta",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-limite-tentativas.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "contexto",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 depois do bloqueio",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "senhas erradas distribuídas em sessões diferentes, somando mais que o limite",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-limite-tentativas.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "errada"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr01"
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    }
+  ],
+  "precondicoes": []
+}

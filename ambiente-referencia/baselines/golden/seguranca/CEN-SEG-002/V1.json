@@ -1,0 +1,111 @@
+{
+  "cenario": "CEN-SEG-002",
+  "descricao": "uma senha errada, depois a correta, na mesma sessão",
+  "efeitos_no_banco": {
+    "seguranca.usuario": "alterado"
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-002",
+  "fora_desta_fronteira": {},
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-usuarios.sql",
+      "sha256": "76db9bf94ce149bb6a31f79774ea160b1d323283fc92bb79ac9e8485dc2fbb5c"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-limite-tentativas.sql",
+      "sha256": "caf7e4f6e20d9757dc2300a0da50edfb8c1b19efbae679e578f6d7de41b0bc13"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "passos": [
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "http": 200,
+        "mensagem": "Por favor, verifique seu usuário e senha.",
+        "passo": "login",
+        "resultado": "tela_login",
+        "senha": "errada",
+        "usuario": "seg.usr01"
+      },
+      {
+        "passo": "situacao",
+        "situacao": "ATIVO",
+        "usuario": "seg.usr01"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "login",
+        "resultado": "tela_principal",
+        "senha": "correta",
+        "usuario": "seg.usr01"
+      },
+      {
+        "passo": "situacao",
+        "situacao": "ATIVO",
+        "usuario": "seg.usr01"
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "passos": [
+        {
+          "passo": "sessao",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "login",
+          "senha": "errada",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "situacao",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "login",
+          "senha": "correta",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "situacao",
+          "usuario": "seg.usr01"
+        }
+      ]
+    },
+    "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+    "roteiro": "seguranca"
+  },
+  "oraculo": "1 (V1, V2) · PENDENTE DE DECISÃO (V3)",
+  "ressalvas": {
+    "V2 (CAND-07)": "depois do bloqueio, a senha correta exibe a mensagem de situação inválida MAS a sessão fica autenticada (EfetuarLoginAction grava usuarioLogado na sessão mesmo quando a situação é recusada): o bloqueio não bloqueia. Comportamento a NÃO reproduzir — candidato a divergência CAND-07",
+    "V3 (PENDENTE)": "o contador vive na sessão; tentativas distribuídas em sessões distintas não bloqueiam. Não é oráculo 2 (D-01 cobre só o hash): a baseline informa a decisão, não a antecipa (CAND-03)",
+    "limite de tentativas": "parm_nnmaximologinfalho é NULO na base reconstruída (nenhuma migração o define). FIXADO em 3 (SINTÉTICO) por seguranca-limite-tentativas.sql para tornar o bloqueio caracterizável; o valor de uma instalação real é desconhecido. Com o parâmetro NULO, a 1ª senha errada derruba o login (NPE 500) — achado F2-13"
+  },
+  "titulo": "Credencial inválida e bloqueio por tentativas",
+  "usuarios_sinteticos": [
+    "seg.usr01"
+  ],
+  "variacao": "V1"
+}

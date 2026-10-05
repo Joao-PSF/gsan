@@ -1,0 +1,89 @@
+{
+  "cenario": "CEN-SEG-005",
+  "titulo": "Rota excepcionada por substring no filtro de autorização",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-005",
+  "oraculo": "PENDENTE DE CARACTERIZAÇÃO",
+  "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana. A amostra excepcionada casa url.contains(\"pesquisar\"/\"relatorio\") (FiltroSegurancaAcesso:451-456).",
+  "usuarios": {
+    "seg.usr03": "senha-um"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {}
+  },
+  "ressalvas": {
+    "oraculo": "PENDENTE: se a Action tiver controle próprio (nega/vazio), oráculo 1; se retornar dado sem concessão, a proteção no OpenGSAN exige divergência (CAND-04). A baseline decide",
+    "dado sintético": "os dados procurados são só os SINTÉTICOS da massa (matrícula 100030 e a inscrição), nunca dado real"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "USR-03 (sem concessão) chama Actions excepcionadas por substring: consulta de imóvel, pesquisa de imóvel e relatório de dados cadastrais",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/clientes-imovel-imv03.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr03"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr03",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "controle: F1 (nao excepcionada)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "exibirPesquisarImovelAction (popup)",
+            "url": "exibirPesquisarImovelAction.do"
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "pesquisarImovelAction (dados)",
+            "url": "pesquisarImovelAction.do",
+            "dados": {
+              "idLocalidade": "1"
+            },
+            "procurar": [
+              "100030",
+              "CLIENTE SINTETICO DE VERIFICACAO",
+              "RUA SINTETICA A"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "gerarRelatorioDadosCadastraisImovelAction HTML",
+            "url": "gerarRelatorioDadosCadastraisImovelAction.do?tipoRelatorio=4&idImovelDadosCadastrais=100030",
+            "procurar": [
+              "100030",
+              "CLIENTE SINTETICO DE VERIFICACAO",
+              "RUA SINTETICA A"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    }
+  ],
+  "precondicoes": []
+}

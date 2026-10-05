@@ -1,0 +1,70 @@
+{
+  "cenario": "CEN-SEG-010",
+  "titulo": "Cadeia de filtros sem elo decorativo",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-010",
+  "oraculo": "2",
+  "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana. Requisição a rota protegida sem sessão autenticada; a cadeia é FiltroSSO → FiltroSessaoExpirada → FiltroSegurancaAcesso.",
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {
+      "qual elo nega (internamente)": "observável pela decisão final; a existência de elo sem efeito é leitura de código (D-07), não runtime"
+    }
+  },
+  "ressalvas": {
+    "oraculo 2 (D-07)": "registro da divergência: dois elos do legado não barram nada. Não se compara por igualdade; captura-se a evidência de que o acesso é negado (pelo último elo)"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "requisição a rota protegida sem sessão prévia",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "carregar": false
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 sem sessao",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "requisição com sessão criada (carregarParametros) mas sem usuário autenticado",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "carregar": true
+          },
+          {
+            "passo": "acessar",
+            "rotulo": "F1 com sessao sem usuario",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    }
+  ],
+  "precondicoes": []
+}

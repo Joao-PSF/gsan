@@ -1,0 +1,120 @@
+{
+  "cenario": "CEN-SEG-004",
+  "descricao": "USR-01 abre F1 (entrada do caso de uso) e executa O1 (concedida) e depois O2 (não concedida)",
+  "efeitos_no_banco": {
+    "seguranca.usuario": "alterado"
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-004",
+  "fora_desta_fronteira": {
+    "unidade de concessão": "comparação pela FUNCIONALIDADE, não pela URL (a rota vira identificador de domínio no OpenGSAN)"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-usuarios.sql",
+      "sha256": "76db9bf94ce149bb6a31f79774ea160b1d323283fc92bb79ac9e8485dc2fbb5c"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "passos": [
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "login",
+        "resultado": "tela_principal",
+        "senha": "correta",
+        "usuario": "seg.usr01"
+      },
+      {
+        "conteudo": "html",
+        "decisao": "permitido",
+        "http": 200,
+        "passo": "acessar",
+        "rotulo": "F1 (entrada do caso de uso)",
+        "set_cookie_sessao": false
+      },
+      {
+        "conteudo": "html",
+        "decisao": "permitido",
+        "http": 200,
+        "passo": "acessar",
+        "recurso_executado": true,
+        "rotulo": "O1 (Dados Cadastrais, concedida)",
+        "set_cookie_sessao": false
+      },
+      {
+        "conteudo": "html",
+        "decisao": "negado_operacao",
+        "http": 200,
+        "passo": "acessar",
+        "rotulo": "O2 (Debitos, nao concedida)",
+        "set_cookie_sessao": false
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "passos": [
+        {
+          "passo": "sessao",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "login",
+          "senha": "correta",
+          "usuario": "seg.usr01"
+        },
+        {
+          "passo": "acessar",
+          "rotulo": "F1 (entrada do caso de uso)",
+          "url": "exibirConsultarImovelAction.do?menu=sim"
+        },
+        {
+          "marca": "idImovelDadosCadastrais",
+          "passo": "acessar",
+          "rotulo": "O1 (Dados Cadastrais, concedida)",
+          "url": "consultarImovelWizardAction.do?action=exibirConsultarImovelDadosCadastraisAction"
+        },
+        {
+          "passo": "acessar",
+          "rotulo": "O2 (Debitos, nao concedida)",
+          "url": "consultarImovelWizardAction.do?action=exibirConsultarImovelDebitosAction"
+        }
+      ]
+    },
+    "fronteira": "Login (efetuarLoginAction.do) e o filtro de acesso (FiltroSegurancaAcesso → ControladorAcessoSEJB.verificarAcessoPermitidoFuncionalidade/Operacao), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+    "roteiro": "seguranca"
+  },
+  "oraculo": "1 — por mapeamento semântico funcionalidade ↔ caso de uso",
+  "ressalvas": {
+    "V5b (CAND-06)": "a negação da operação Débitos é contornada pela entrada da funcionalidade: o encaminhamento interno do Struts não é refiltrado. Comportamento a NÃO reproduzir — candidato a divergência CAND-06; a baseline registra o legado",
+    "V6, V7c": "PENDENTES na especificação: a baseline decide (dependência entre funcionalidades; composição do filtro de restrições, CAND-05)"
+  },
+  "titulo": "Matriz de autorização: concessão por união de grupos e negação",
+  "usuarios_sinteticos": [
+    "seg.usr01",
+    "seg.usr02",
+    "seg.usr03"
+  ],
+  "variacao": "V5"
+}

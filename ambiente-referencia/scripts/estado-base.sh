@@ -16,8 +16,14 @@ BANCOS="gsan_comercial gsan_gerencial"
 psql_p() { psql -X -q -v ON_ERROR_STOP=1 -d postgres "$@"; }
 existe() { [ "$(psql -X -At -d postgres -c "select count(*) from pg_database where datname = '$1'")" = "1" ]; }
 sem_conexoes() {
-  psql -X -At -d postgres -c "select count(*) from pg_stat_activity where datname = '$1'" | grep -qx 0 \
-    || { echo "estado-base: $1 tem conexões abertas — pare o JBoss (baseline.sh faz isso)" >&2; exit 1; }
+  # Depois de parar o JBoss, o PostgreSQL pode levar alguns segundos para encerrar os backends dele
+  # (máquina carregada). Espera até 60 s; conexão que não sai é recusada — nunca é derrubada à força.
+  for _ in $(seq 1 30); do
+    psql -X -At -d postgres -c "select count(*) from pg_stat_activity where datname = '$1'" | grep -qx 0 && return 0
+    sleep 2
+  done
+  echo "estado-base: $1 tem conexões abertas — pare o JBoss (baseline.sh faz isso)" >&2
+  exit 1
 }
 
 congelar() {

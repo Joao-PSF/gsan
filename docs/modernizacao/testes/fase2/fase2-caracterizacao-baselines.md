@@ -5,8 +5,9 @@
 > Mecanismo: [`ambiente-referencia/baselines/`](../../../../ambiente-referencia/baselines/README.md). Gerados por script:
 > [matriz de caracterização](matriz-caracterizacao.md) · [cobertura de baselines](cobertura-baselines.md).
 >
-> ⚠️ **FASE 2 — EM ANDAMENTO.** Esta primeira execução classificou os 103 cenários, construiu o mecanismo e capturou o
-> **lote piloto**. A fase não está concluída: a cobertura dos comportamentos priorizados é o trabalho dos próximos lotes (§12).
+> ⚠️ **FASE 2 — EM ANDAMENTO.** A 1ª execução classificou os 103 cenários, construiu o mecanismo e capturou o **lote
+> piloto** (§9–§11); a 2ª capturou o **lote de Segurança** (§16). A fase não está concluída: a cobertura dos
+> comportamentos priorizados é o trabalho dos próximos lotes (§12).
 > 🔴 Nada do OpenGSAN foi implementado; nenhuma linha do legado foi alterada.
 
 ## 0. Estado de entrada
@@ -271,6 +272,8 @@ Classificação: 🔵 **caracterização** (resposta a uma dúvida da especifica
 | F2-11 | O schema pressupõe a linha 0 (DISPONÍVEL) em `situacao_atlz_cadastral` (`imovel.siac_id DEFAULT 0` + chave estrangeira), e nenhuma migração a cria: inserir imóvel falha numa base nova | Erro de chave estrangeira na primeira aplicação da massa | ⚙️ | A massa cria a linha, com evidência (`SituacaoAtualizacaoCadastral.DISPONIVEL`). Mesma família dos pré-requisitos P3 da Fase 1 |
 | F2-12 | A consulta com matrícula inexistente não dá erro: preenche a inscrição com "IMÓVEL INEXISTENTE" | Execução exploratória | 🔵 | O roteiro trata como `nao_encontrado`; entra como variação de CEN-CAD-001 |
 
+Achados do lote de Segurança: **F2-13 a F2-25**, em [§16.8](#168-achados).
+
 ## 12. Próximos lotes
 
 Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#priorização-da-baseline-fase-2), agrupada por
@@ -278,7 +281,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 
 | Lote | Cenários | Fronteira / modo | Massa nova |
 | ---- | -------- | ---------------- | ---------- |
-| **2 — Autenticação e autorização** | SEG-001, 002, 004, 006, 007, 008 (A) + registro de SEG-009, 010, 012 (C); SEG-005 decide o próprio oráculo | Login, filtro de acesso, telas protegidas — Online | Perfis USR-01…USR-11 em delta de concessões; parâmetros da política de senha e de tentativas, fixados antes de capturar ([índice §15](../cenarios-criticos.md#15-o-que-a-fase-2-recebe)) |
+| ~~2 — Autenticação e autorização~~ ✅ **capturado em 2026-10-05** (§16) | SEG-001, 002, 004, 005 (A) + registro de SEG-010, 012 (C) | Login e filtro de acesso — Online | Usuários e grupos sintéticos; limite de tentativas sintético; catálogos de situação e de auditoria |
+| **2b — Segurança restante** (recomendado a seguir) | **SEG-006** (P0, auditoria — reaproveita a troca de senha, já registrada, como operação sensível; precisa de um campo anotado), **SEG-007** (P0, abrangência — estende o território com L2 e duas gerências), SEG-003 e SEG-008 (P1); SEG-009 (C) só com o EAR em Batch | Telas que escrevem; consultas com verificação de abrangência — Online | USR-04…USR-10; território L2; massa de auditoria já existente |
 | 3 — Cadastro e faturamento online | CAD-001, CAD-004, CAD-005, FAT-003 (percentual padrão pela simulação), FAT-011 V1 | Consultar Imóvel, simulação — Online | Perfis IMV-04, 11a, 15, 17; situações de ligação restantes |
 | 4 — Atendimento e consumo mínimo | ATE-001…008, MIC-002 (valor obtido na tela de consumo mínimo) | RA → OS → encerramento — Online | ESP-01…06, SRV-01…03, UNI-01/02, OS com imóvel |
 | 5 — Faturamento em grupo e Micromedição | BAT-001…005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005 | Processos batch — **EAR em modo Batch** (`GSAN_TIPO=Batch`, novo build) | Cronograma, rotas, leituras, históricos (IMV-05…10, 12a/b, 16, 18) |
@@ -297,6 +301,12 @@ registram horários, mas nenhuma medição foi tratada como baseline.
   as baselines valem para essa configuração, gravada em cada uma.
 - **Modo do EAR**: o piloto é todo Online. Lotes batch exigem rebuild em Batch — um EAR por modo.
 - **Custo por execução** (~1 min) é dominado pela subida do JBoss; é o preço do isolamento total e foi mantido.
+- **Catálogos que a base reconstruída não tem** (situações do usuário, ações e tipos de alteração da auditoria, tipos
+  de relação cliente × imóvel) entram pela massa, com os ids das constantes do código: a caracterização mostra o
+  legado com o dado de referência que uma instalação teria. Sem eles, o legado **falha** (F2-15, F2-17) — o que também é
+  registrado.
+- **Limite de tentativas sintético** (3): o valor de uma instalação real é desconhecido; a baseline caracteriza o
+  **mecanismo**, não o número.
 - **Bloqueios**: nenhum para o próximo lote. BLQ-01 e BLQ-03 (D-17) continuam bloqueando os cenários que dependem deles.
 
 ## 14. Volume projetado
@@ -305,7 +315,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | ------ | ----- | ---- |
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
-| Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução — batch será maior (processo + modo Batch) | Piloto |
+| Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução — batch será maior (processo + modo Batch). Com a instância de inspeção no ar, ~2–3 min por execução | Piloto; lote de Segurança |
+| Já capturado | **30 variações** de 9 cenários (piloto 11 + Segurança 19) — 13% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -315,8 +326,150 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado no piloto** — 11 de 11 variações idênticas nas 2 execuções de captura e conferidas numa 3ª, de verificação; o teste negativo acusa 1 centavo |
-| Cobre os comportamentos priorizados | ⬜ 3 de 42 P0 da classe A — [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11 e Segurança 19/19 idênticas nas 2 execuções de captura; verificação independente Segurança 19/19 com comportamento idêntico numa 3ª execução e piloto 11/11 conferido de novo depois das mudanças do executor; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **7 de 42** P0 da classe A — autenticação/autorização (4) e conta individual (2) e cadastro (1); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
+
+## 16. Lote 2 — Autenticação e autorização (2026-10-05)
+
+Segundo lote, o primeiro item da [ordem de captura](../estrategia-testes.md#priorização-da-baseline-fase-2). Agrupado
+pela **mesma fronteira** — login (`efetuarLoginAction`) e filtro de acesso (`FiltroSegurancaAcesso` →
+`ControladorAcessoSEJB`) — e pela **mesma massa** de usuários sintéticos.
+
+### 16.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Por que agora |
+| ------- | ------ | - | --------- | ------------- |
+| CEN-SEG-001 — autenticação e forma da credencial | A (1 + 2) | P0 | V1 | Porta de entrada; D-01 |
+| CEN-SEG-002 — credencial inválida e bloqueio | A (1 · PENDENTE) | P0 | V1, V2, V3 | Bloqueio; CAND-03 |
+| CEN-SEG-004 — matriz de autorização | A (1) | P0 | V1–V6, V5b, V7a, V7b, V7c, V7c2 | Negação provada; CAND-05; contorno CAND-06 (V5b) |
+| CEN-SEG-005 — exceção por substring | A (PENDENTE) | P0 | V1 | CAND-04 |
+| CEN-SEG-010 — cadeia de filtros | C (2) | P1 | V1, V2 | D-07 — só registro |
+| CEN-SEG-012 — sessão e requisição forjada | C (2) | P1 | V1 | D-18 — só registro |
+
+**Fora do lote, com motivo** (mesmo domínio, outra fronteira ou outra massa):
+CEN-SEG-003 (ciclo de vida da credencial: USR-04…07, histórico, senhas proibidas — massa própria) ·
+CEN-SEG-006 (auditoria: exige operação de negócio que **escreve** e campos anotados — e o catálogo de auditoria, ver F2-17) ·
+CEN-SEG-007 (abrangência: hierarquia territorial completa e lista de superfícies que chamam a verificação; BLQ-01 nas demais) ·
+CEN-SEG-008 (permissão especial: operações que dependem de OS) ·
+CEN-SEG-009 (tokens dos servlets auxiliares — modo Batch) ·
+CEN-SEG-011 (classe B, já comprovada).
+
+### 16.2 Política de segurança — parâmetros da instância
+
+| Parâmetro (`cadastro.sistema_parametros`) | Valor na base reconstruída | Uso no código (EVIDÊNCIA) | Na caracterização |
+| ----------------------------------------- | -------------------------- | ------------------------- | ----------------- |
+| `parm_nnmaximologinfalho` — tentativas de login | **NULO** | `EfetuarLoginAction:108,141` compara tentativas da **sessão** com o valor | **Fixado em 3 (SINTÉTICO)** por delta, para o bloqueio ser caracterizável; nulo derruba o login (F2-13) |
+| `parm_icsenhaforte` | 2 | `ControladorAcessoSEJB:2411` — só valida senha forte se = 1 | Inalterado (troca de senha sem regra de força) |
+| `parm_icbloqueiosenhasantes` | 2 | `:2213`, `:2422` — histórico de senhas só se = 1 | Inalterado |
+| `parm_icdiasexpiracaosenhagrupo` | 2 | `:2103`, `:2139` — expiração por grupo só se = 1 | Inalterado |
+| `parm_nndiasexpiracaoacesso`, `parm_nndiasmsgexpiracao` | NULOS | `:2056-2058` — tratados como 0 na troca de senha | Inalterados — a troca grava expiração **no próprio dia** (INFERÊNCIA do código; observável em CEN-SEG-003) |
+| `parm_icloginunico` | 0 | `SessaoHttpListener:55` | Inalterado |
+
+Os valores vêm do banco (evidência); o significado vem do trecho de código citado (evidência). A única decisão
+nossa é o limite **3**, declarado sintético: nenhum valor de instalação real é conhecido.
+
+### 16.3 Massa
+
+| Delta | Conteúdo | Evidência dos ids |
+| ----- | -------- | ----------------- |
+| `seguranca-usuarios.sql` | Situações PENDENTE SENHA/BLOQUEADA/INATIVO; grupos A, B, sem concessão; USR-01, USR-01B, USR-02, USR-03; concessões F1/O1 e F2; dependência F4 → F1 | `UsuarioSituacao`; catálogo de funcionalidades/operações das migrações |
+| `seguranca-limite-tentativas.sql` | `parm_nnmaximologinfalho = 3` | — (sintético, declarado) |
+| `seguranca-auditoria.sql` | Catálogo da trilha de auditoria: ações do usuário (EFETUOU OPERACAO, RESPONSAVEL INFORMACAO) e tipos de alteração (ALTERACAO, INCLUSAO, EXCLUSAO) — a troca de senha os exige | `UsuarioAcao`, `AlteracaoTipo` |
+| `seguranca-restricao-usr01.sql`, `-usr02.sql` | Restrições por usuário (V7) | — |
+| `seguranca-grupo-a-duas-operacoes.sql` | Segunda operação de F1 no grupo A (V7c) | catálogo |
+| `clientes-imovel-imv03.sql` | Tipos de relação cliente × imóvel e um vínculo (CEN-SEG-005) | `ClienteRelacaoTipo` |
+
+Usuários **separados** do operador da caracterização: bloquear ou restringir um usuário de cenário nunca afeta o
+executor. Senhas **efêmeras** por execução, uma por rótulo (USR-01 e USR-01B recebem a mesma, como o perfil exige);
+nenhuma senha, hash ou identificador de sessão vai à baseline — só o que o legado decidiu e a **forma** da credencial.
+
+### 16.4 Mecanismo — o que mudou
+
+- Roteiro `seguranca` **por passos** declarados na variação (sessão, login, contexto, situação, contadores, acesso,
+  troca de senha, credenciais, cookie): uma fronteira, muitos cenários, parametrizados pela massa e pelos passos.
+- O executor ganhou `autenticacao: roteiro` (o próprio roteiro autentica os usuários do cenário) e senhas por rótulo;
+  o caminho do piloto não mudou — as 11 baselines do piloto seguem conferindo (§16.7).
+- O cliente HTTP registra respostas de erro (4xx/5xx) como **resultado observável**, não como falha.
+
+### 16.5 Baselines do lote
+
+Em [`golden/seguranca/`](../../../../ambiente-referencia/baselines/golden/seguranca/) — **6 cenários, 19 baselines** (16 A + 3 C).
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| SEG-001 V1 | Autenticado; contexto: usuário `seg.usr01`, grupo A, menu "Consultar Imovel"; situação ATIVO; `usur_nnacessos` = 1; troca de senha **pelo GSAN** para USR-01 e USR-01B → valores gravados **iguais**, Base64 de 20 bytes (D-01) |
+| SEG-002 V1 | Errada → "Por favor, verifique seu usuário e senha." (ATIVO); correta → tela principal |
+| SEG-002 V2 | 3 erradas recusadas; a 4ª → "Números de tentativas de acesso excedeu o permitido. Senha bloqueada." (SENHA BLOQUEADA); correta → "situação correspondente a BLOQUE"… **e** `contexto` autenticado, F1 **permitida** |
+| SEG-002 V3 | 2 + 2 erradas em sessões distintas → continua ATIVO; correta → tela principal |
+| SEG-004 V1, V2 | F1 (e F2 para USR-02) **permitidas** |
+| SEG-004 V3, V4 | F2 para USR-01 e F1 para USR-03 **negadas** ("Acesso a funcionalidade negado") |
+| SEG-004 V5 | F1 permitida → O1 permitida e **executada** → O2 **negada** ("Acesso a operação negado") |
+| SEG-004 V5b | O2 direta, com matrícula → negada; F1 com `idImovelDebitos` → **permitida, com cliente e endereço** |
+| SEG-004 V6 | F4 (dependente de F1) **negada** — a dependência não concede |
+| SEG-004 V7a / V7b | Negado (única concessão restrita) / permitido (outro grupo concede) |
+| SEG-004 V7c / V7c2 | Permitido / permitido — duas concessões num grupo, sem e com uma restrição |
+| SEG-005 V1 | Usuário sem concessão: F1 negada; `exibirPesquisarImovel` permitido; `pesquisarImovelAction` → **matrícula, cliente, endereço**; relatório de dados cadastrais gerado (ZIP/HTML, só a matrícula) |
+| SEG-010 V1 / V2 | Sem sessão → HTTP 500 na página de negação / sessão sem usuário → "Acesso a funcionalidade negado" |
+| SEG-012 V1 | Cookie sem `HttpOnly`/`Secure`/`SameSite`; troca de senha sem token aceita, com efeito |
+
+`efeitos_no_banco`: `seguranca.usuario` **alterado** sempre que houve login com sucesso (o legado grava o último acesso
+e o contador) ou troca de senha; **inalterado** no SEG-010 (nenhum login).
+
+### 16.6 Determinismo
+
+- **Captura**: 19 de 19 variações com as duas execuções **idênticas byte a byte**.
+- **Verificação independente** (3ª execução, do estado limpo): 19 de 19 com **comportamento idêntico** ao da captura. 9 conferem byte a byte; 10 divergiram **só** no metadado `ressalvas` — acrescentado ao cenário depois de capturadas (V5b e a ressalva CAND-07) —, com **zero** linhas de diferença de comportamento (`20261005T174608Z-verificar`). Essas 10 foram regravadas com `--substituir` (§16.7).
+- **Regressão do piloto** — o executor, o cliente HTTP e os roteiros mudaram neste lote: **11 de 11 `CONFERE`** (`20261005T180928Z-verificar`) — as mudanças do mecanismo não alteraram nenhuma baseline do piloto.
+- Sem normalização: os passos foram desenhados para não expor carimbo de tempo, identificador de sessão nem valor
+  de senha/hash — só decisões do legado, mensagens e formas.
+
+### 16.7 Baselines substituídas — justificativa (`--substituir`)
+
+Nenhuma substituição esconde comportamento do legado; todas corrigem **o roteiro ou a massa**, e as anteriores ficam
+nas evidências da 1ª captura (`.saida/baselines/20260930T235854Z-capturar/`).
+
+| Baseline | Primeira captura | Por que mudou |
+| -------- | ---------------- | ------------- |
+| SEG-001 V1 | (f) comparava hashes **gravados pelo executor** | Observável errado: passou a comparar os valores **gravados pelo GSAN** na troca de senha — o que D-01 descreve |
+| SEG-002 V2 | Media a mensagem depois do bloqueio, não a sessão | Observável incompleto: acrescentados `contexto` e acesso a F1 depois do bloqueio (revelou F2-14) |
+| SEG-004 V5 | O1 por URL que não é rota Struts (HTTP 400) e, depois, sem a entrada do caso de uso (HTTP 500) | Roteiro: O1 e O2 pela URL real do wizard, depois da entrada F1 |
+| SEG-005 V1 | Procurava só a matrícula | Observável incompleto: "quais dados" — cliente e endereço |
+| SEG-012 V1 | Troca de senha falhava (catálogo de auditoria ausente) | Massa: catálogo de auditoria (F2-17) |
+| SEG-002 V1, V3 · SEG-004 V1–V4, V6, V7a, V7b, V7c | Sem as ressalvas acrescentadas depois (CAND-07, V5b) | **Só metadado**: a verificação mostrou comportamento idêntico; regravadas para que a baseline carregue as ressalvas vigentes do cenário |
+
+### 16.8 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-13 | Base reconstruída **sem limite de tentativas**: com `parm_nnmaximologinfalho` nulo, a 1ª senha errada dá HTTP 500 (NPE) e nunca há bloqueio | `EfetuarLoginAction:141`; execução exploratória | ⚙️ 🔴 | Achado de segurança 29; massa fixa 3 (sintético) |
+| F2-14 | **O bloqueio não bloqueia a sessão**: a senha correta depois do bloqueio mostra a recusa, mas autentica | SEG-002 V2; `EfetuarLoginAction:154-200` | 🔴 | Achado 26; **CAND-07** |
+| F2-15 | Catálogo `usuario_situacao` só com ATIVO: o bloqueio falha por chave estrangeira (HTTP 500) e não acontece | Erro `fk3_usuario` | ⚙️ | Massa cria PENDENTE/BLOQUEADA/INATIVO pelas constantes |
+| F2-16 | Tentativas **distribuídas em sessões** não bloqueiam (contador na sessão) | SEG-002 V3 | 🟡 | Sustenta **CAND-03** |
+| F2-17 | Catálogo de auditoria vazio (`usuario_acao`, `alteracao_tipo`): toda operação que registra auditoria — a troca de senha incluída — falha com "Erro de acesso ao banco de dados" | Erros `fk1_usuario_alteracao`, `fk2_tabela_linha_alteracao` | ⚙️ | Massa cria pelas constantes; pré-requisito de CEN-SEG-006 |
+| F2-18 | A troca de senha grava **o mesmo valor** para a mesma senha (Base64 de SHA-1, sem salt) | SEG-001 V1 (gravado pelo GSAN) | 🔵 | Registro de D-01 |
+| F2-19 | Exceção por substring **devolve dado**: matrícula, cliente e endereço a usuário sem concessão | SEG-005 V1 | 🔴 | Achado 28; sustenta **CAND-04**; decide o oráculo pendente |
+| F2-20 | Negação por operação **contornada** pela entrada da funcionalidade (encaminhamento interno não refiltrado); a entrada de F1 já abre na aba Débitos | SEG-004 V5b | 🔴 | Achado 27; **CAND-06** |
+| F2-21 | A dependência entre funcionalidades **não participa** da decisão de acesso | SEG-004 V6 | 🔵 | Responde o pendente de V6 |
+| F2-22 | A anomalia de composição do filtro de restrições **não muda a decisão** nas composições testadas | SEG-004 V7c, V7c2 | 🔵 | CAND-05 não confirmado (outras composições não testadas) |
+| F2-23 | Quem nega é o **último elo** da cadeia; sem sessão prévia, a página de negação quebra (HTTP 500) | SEG-010 V1/V2; `FiltroSegurancaAcesso:287`, `FiltroSSO:20-28` | 🔵 | Registro de D-07 |
+| F2-24 | Cookie de sessão sem atributos; requisição que altera estado aceita sem token | SEG-012 V1 | 🔵 | Registro de D-18 |
+| F2-25 | Operação de wizard chamada sem a entrada do caso de uso na sessão → HTTP 500 | Exploração (1ª captura de V5) | 🔵 | Roteiros abrem a entrada antes da operação |
+
+### 16.9 Mecanismo — lições operacionais
+
+- **Comandos longos**: o limite de tempo dos comandos em segundo plano desta sessão interrompeu uma recaptura no meio
+  (nenhuma baseline parcial: a gravação só ocorre depois das duas execuções). Capturas longas passaram a rodar como
+  processo independente, acompanhadas pelo log.
+- **Conexões depois de parar o JBoss**: com a máquina carregada, o PostgreSQL levou segundos para encerrar os backends
+  e a guarda recusou recriar o banco. A guarda passou a **esperar** até 60 s — e continua recusando conexão que não sai.
+- **Duas instâncias**: com a de inspeção no ar, a subida do JBoss das baselines foi de ~30 s para ~2 min; nenhum efeito
+  sobre os resultados.
+- **Verificação do ambiente no fim do lote: 21 de 23.** As duas falhas (login do `admin` e a consulta de domínio que
+  depende dele) têm uma causa só: o `.env` foi alterado em 2026-09-30 às 19:08, **depois** do congelamento dos modelos, e a
+  `GSAN_ADMIN_SENHA` atual não corresponde mais ao hash gravado no modelo (comparação feita dentro do contêiner, sem
+  ler o valor). **Nenhuma baseline usa o `admin`** — todas as 30 conferem. Para o ambiente voltar a 23/23: restaurar o
+  valor anterior no `.env` ou recriar o banco (`referencia.sh recriar-banco --sim`, que recongela o modelo com a senha
+  atual) e, por segurança, verificar de novo as baselines.
