@@ -50,5 +50,5 @@ Nenhum foi aprovado aqui: aprovar é registro em [`divergencias-aprovadas.md`](.
 
 ## 5. Veredito
 
-**FASE 2 — EM ANDAMENTO.** Lote de Segurança capturado com determinismo; P0 da classe A: 3 → **7 de 42**. Próximo
+**FASE 2 — EM ANDAMENTO.** Lote de Segurança capturado com determinismo; depois da recriação do banco com a senha atual do `admin`, ambiente 23/23 e as 30 baselines (piloto e Segurança) conferidas contra o novo modelo; P0 da classe A: 3 → **7 de 42**. Próximo
 lote recomendado: **Segurança restante** — auditoria (SEG-006) e abrangência (SEG-007), ambas P0.

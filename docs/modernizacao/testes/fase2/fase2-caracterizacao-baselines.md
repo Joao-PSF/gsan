@@ -467,9 +467,9 @@ nas evidências da 1ª captura (`.saida/baselines/20260930T235854Z-capturar/`).
   e a guarda recusou recriar o banco. A guarda passou a **esperar** até 60 s — e continua recusando conexão que não sai.
 - **Duas instâncias**: com a de inspeção no ar, a subida do JBoss das baselines foi de ~30 s para ~2 min; nenhum efeito
   sobre os resultados.
-- **Verificação do ambiente no fim do lote: 21 de 23.** As duas falhas (login do `admin` e a consulta de domínio que
-  depende dele) têm uma causa só: o `.env` foi alterado em 2026-09-30 às 19:08, **depois** do congelamento dos modelos, e a
-  `GSAN_ADMIN_SENHA` atual não corresponde mais ao hash gravado no modelo (comparação feita dentro do contêiner, sem
-  ler o valor). **Nenhuma baseline usa o `admin`** — todas as 30 conferem. Para o ambiente voltar a 23/23: restaurar o
-  valor anterior no `.env` ou recriar o banco (`referencia.sh recriar-banco --sim`, que recongela o modelo com a senha
-  atual) e, por segurança, verificar de novo as baselines.
+- **Verificação do ambiente — senha do `admin`.** No fim do lote a verificação deu 21 de 23: o `.env` havia sido alterado
+  depois do congelamento dos modelos, e a `GSAN_ADMIN_SENHA` não correspondia mais ao hash do modelo (comparação feita
+  dentro do contêiner, sem ler o valor); nenhuma baseline usa o `admin`. **Resolvido em 2026-10-05**: banco recriado
+  (`referencia.sh recriar-banco --sim`), modelos recongelados com a senha atual, ambiente **23 de 23**, e as **30
+  baselines conferidas contra o novo modelo** — piloto 11/11 (`20261005T224553Z-verificar`) e Segurança 19/19
+  (`20261005T230208Z-verificar`). A reconstrução do banco pelas migrações é reprodutível: nenhuma baseline mudou.
