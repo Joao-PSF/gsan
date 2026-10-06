@@ -62,6 +62,10 @@ rodar() {
     esac
   done
   [ "${#alvos[@]}" -gt 0 ] || falhar "informe ao menos um alvo"
+  # O banco precisa estar no ar antes da restauração (a instância pode ter sido parada por referencia.sh parar).
+  dc up -d db > /dev/null 2>&1 || falhar "o banco da instância das baselines não subiu"
+  for _ in $(seq 1 60); do dc exec -T db pg_isready -q > /dev/null 2>&1 && break; sleep 2; done
+  dc exec -T db pg_isready -q > /dev/null 2>&1 || falhar "o banco da instância das baselines não respondeu"
   if [ "$modo" = capturar ]; then reps=${reps:-2}; [ "$reps" -ge 2 ] || falhar "captura exige --repeticoes ≥ 2"
   else reps=${reps:-1}; fi
   mapfile -t lista < <(expandir "${alvos[@]}")

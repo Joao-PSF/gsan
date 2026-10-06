@@ -488,6 +488,8 @@ Registrados para a auditoria, com o motivo:
 
 ⚠️ **Nenhum aprovado.** São comportamentos que talvez devam mudar e **não estão registrados**. Os dois primeiros vêm da execução anterior; CAND-03 e CAND-04, da especificação dos cenários; 🆕 CAND-05, da auditoria final. ⚠️ A auditoria **não** aprovou CAND-03 nem CAND-04: não há decisão explícita nem caracterização que as sustente.
 
+🆕 **Fase 2, lote 4 — Atendimento (2026-10-06)** — revelou **CAND-10** (controle de tela sem verificação no servidor); [relatório §19](fase2/fase2-caracterizacao-baselines.md#19-lote-4--atendimento-efeitos-da-os-e-consumo-mínimo-2026-10-06); achados 33–34.
+
 🆕 **Fase 2, Segurança restante (2026-10-06)** — a caracterização revelou **CAND-08** (redefinição de senha para valor fixo) e **CAND-09** (troca imposta que não restringe a sessão); [relatório §17](fase2/fase2-caracterizacao-baselines.md#17-lote-2b--segurança-restante-2026-10-06); achados 30–32.
 
 🆕 **Fase 2, lote de Segurança (2026-10-05)** — a caracterização agora **sustenta** CAND-03 e CAND-04, **não confirma** efeito de CAND-05 nas composições testadas e revelou **CAND-06** e **CAND-07**. Continuam **candidatos**: aprovar é decisão registrada em [`divergencias-aprovadas.md`](../compatibilidade/divergencias-aprovadas.md), não efeito da baseline. Evidência: [relatório da Fase 2 §16](fase2/fase2-caracterizacao-baselines.md#16-lote-2--autenticação-e-autorização-2026-10-05); achados 26–29 de [`riscos-identificados.md`](../seguranca/riscos-identificados.md).
@@ -503,6 +505,7 @@ Registrados para a auditoria, com o motivo:
 | 🆕 **CAND-07** | **Bloqueio de senha que não bloqueia a sessão** | Fase 2 (2026-10-05) | 🟢 **Caracterizado**: depois do bloqueio, a senha correta mostra a recusa **mas autentica a sessão** — tela principal e funcionalidades concedidas abrem (CEN-SEG-002 V2; achado 26). ⚠️ Toca a regra 4 do registro (*nenhuma divergência pode reduzir bloqueio*): aqui a divergência **reforça** o bloqueio |
 | 🆕 **CAND-08** | **Redefinição de senha para valor fixo** | Fase 2 (2026-10-06) | 🟢 **Caracterizado**: a operação 818 grava, como senha de qualquer login, um valor literal versionado, sem impor troca (CEN-SEG-006 V1; achado 30). Proposta: redefinição gera credencial aleatória de uso único, com troca obrigatória — nunca um valor conhecido |
 | 🆕 **CAND-09** | **Troca de senha imposta que não restringe a sessão** | Fase 2 (2026-10-06) | 🟢 **Caracterizado**: PENDENTE e expirado veem a troca imposta, mas a funcionalidade concedida abre sem trocar (CEN-SEG-003 V2, V3; achado 32). Mesmo padrão de CAND-07. ⚠️ Regra 4: a divergência **reforça** a expiração |
+| 🆕 **CAND-10** | **Controle de tela sem verificação no servidor** | Fase 2 (2026-10-06) | 🟢 **Caracterizado**: a permissão especial de ligação de água sem RA e as regras de cobrança do serviço (parcelas, valor, percentual, motivo de não cobrança) só existem na tela — o POST com outros valores é aceito (CEN-SEG-008 V2, CEN-ATE-008 V1b/V3b; achados 33–34). Proposta: toda permissão e regra de cobrança avaliada no servidor |
 
 ---
 

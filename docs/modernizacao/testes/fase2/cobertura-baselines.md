@@ -9,10 +9,10 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 14 | 14 | 221 | 58 | 58 |
+| **A** | 74 | 18 | 18 | 221 | 75 | 75 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 12 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 16.
+**P0 da classe A com baseline**: 15 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 20.
 
 ## Por domínio (classe A)
 
@@ -20,17 +20,19 @@
 | ------- | ---------- | ------------ | ------------------ |
 | Arrecadação | 11 | 0 | 0 |
 | Batch, relatórios e integrações | 11 | 0 | 0 |
-| Cadastro e atendimento | 13 | 4 | 17 |
+| Cadastro e atendimento | 13 | 6 | 25 |
 | Cobrança | 7 | 0 | 0 |
 | Faturamento | 11 | 3 | 10 |
 | Financeiro e operacional | 8 | 0 | 0 |
-| Micromedição | 5 | 0 | 0 |
-| Segurança | 8 | 7 | 31 |
+| Micromedição | 5 | 1 | 7 |
+| Segurança | 8 | 8 | 33 |
 
 ## Cenários com definição executável
 
 | Cenário | Prioridade | Lote | Variações definidas | Baselines | Fora do lote | Fora desta fronteira |
 | ------- | ---------- | ---- | ------------------- | --------- | ------------ | -------------------- |
+| CEN-ATE-007 | P0 | atendimento | V1 | V1 | — | situação derivada do imóvel, V2 religação e V3 ligação de esgoto, o encerramento não é gatilho |
+| CEN-ATE-008 | P0 | atendimento | V1, V1b, V2, V3, V3b, V4, V5 | V1, V1b, V2, V3, V3b, V4, V5 | — | valor de cada parcela e distribuição de centavos |
 | CEN-CAD-001 | P1 | cadastro-faturamento | V1, V2, V3 | V1, V2, V3 | — | matrícula nunca reaproveitada, DV na digitação |
 | CEN-CAD-002 | P0 | cadastro-faturamento | V1, V2, V3, V4 | V1, V2, V3, V4 | — | cliente de um papel NUMA DATA, aba Dados Cadastrais do Consultar Imóvel |
 | CEN-CAD-003 | P0 | piloto | V1, V2, V3 | V1, V2, V3 | — | categoria principal, coerência do denormalizado |
@@ -38,6 +40,7 @@
 | CEN-FAT-001 | P0 | piloto | V1, V2, V3, V6, V7 | V1, V2, V3, V6, V7 | V4, V5 | a, b, c, e, f |
 | CEN-FAT-002 | P0 | piloto | V1, V2, V3 | V1, V2, V3 | — | parcela por vigência, contexto congelado |
 | CEN-FAT-003 | P0 | cadastro-faturamento | V1, V1b | V1, V1b | V2, V3 | percentuais fotografados na conta, composição do volume de esgoto pelo consumo da ligação |
+| CEN-MIC-002 | P0 | atendimento | V1, V2, V3, V4, V5, V6, V7 | V1, V2, V3, V4, V5, V6, V7 | — | precedência no faturamento, tipo de consumo quando o mínimo é faturado |
 | CEN-SEG-001 | P0 | seguranca | V1 | V1 | — | concessoes no contexto (c) |
 | CEN-SEG-002 | P0 | seguranca | V1, V2, V3 | V1, V2, V3 | — | — |
 | CEN-SEG-003 | P1 | seguranca | V1, V2, V3, V4, V5, V5b, V6 | V1, V2, V3, V4, V5, V5b, V6 | — | valor das senhas e do histórico, troca obrigatória pela tela completa |
@@ -45,5 +48,6 @@
 | CEN-SEG-005 | P0 | seguranca | V1 | V1 | — | — |
 | CEN-SEG-006 | P0 | seguranca | V1, V2, V3 | V1, V2, V3 | — | leitura da trilha pela aplicação, valor da senha redefinida (V1) |
 | CEN-SEG-007 | P0 | seguranca | V1, V2, V3, V4, V5 | V1, V2, V3, V4, V5 | — | outras superfícies que chamam a verificação, superfícies sem verificação, RA, conta exibida |
+| CEN-SEG-008 | P1 | atendimento | V1, V2 | V1, V2 | — | demais permissões da especificação, usuários distintos |
 | CEN-SEG-010 | P1 | seguranca | V1, V2 | V1, V2 | — | qual elo nega (internamente) |
 | CEN-SEG-012 | P1 | seguranca | V1 | V1 | — | origem cruzada real |

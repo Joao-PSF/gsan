@@ -1,0 +1,195 @@
+{
+  "dominio": "atendimento",
+  "lote": "atendimento",
+  "fronteira": "Efetuar Ligação de Água a partir de uma OS encerrada e executada (exibirEfetuarLigacaoAguaAction → efetuarLigacaoAguaAction → ControladorAtendimentoPublicoSEJB.efetuarLigacaoAgua → ControladorOrdemServicoSEJB.gerarDebitoOrdemServico), pela tela do legado, com o operador da caracterização; o que a operação grava (imóvel, ligação, OS, débito a cobrar e débito por categoria) é lido do banco.",
+  "roteiro": "efetuar_ligacao_agua",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [],
+  "efeitos": [
+    {
+      "tabela": "cadastro.imovel",
+      "modo": "conteudo"
+    },
+    "atendimentopublico.ligacao_agua",
+    {
+      "tabela": "atendimentopublico.ordem_servico",
+      "modo": "conteudo"
+    },
+    "faturamento.debito_a_cobrar",
+    "faturamento.deb_a_cobrar_catg",
+    "seguranca.operacao_efetuada"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-ATE-008",
+  "titulo": "Efeito financeiro do serviço executado",
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-ATE-008",
+  "oraculo": "1 — ao centavo",
+  "observaveis": {
+    "campos": [
+      "tela",
+      "enviado",
+      "http",
+      "resultado",
+      "mensagem",
+      "antes",
+      "depois"
+    ],
+    "fora_desta_fronteira": {
+      "valor de cada parcela e distribuição de centavos": "o débito a cobrar guarda o valor TOTAL e o número de prestações; o valor de cada prestação é decidido quando ela entra numa conta — faturamento em grupo (lote 5)"
+    }
+  },
+  "ressalvas": {
+    "V1b e V3b — o servidor confia no cliente": "a tela fixa 1 parcela (sem a permissão especial) e não deixa editar o valor (serviço que não permite); o POST com outros valores é aceito — registro do que o GSAN faz, não comportamento a reproduzir"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "SRV-01 cobrado (R$ 100,00, sem juros), operador COM a permissão de motivo de não cobrança, 3 parcelas",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql",
+        "massas/deltas/atendimento-permissao-motivo-nao-cobranca.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200,
+        "enviar": {
+          "parcelas": 3
+        }
+      }
+    },
+    "V1b": {
+      "descricao": "o mesmo POST de 3 parcelas por operador SEM a permissão — a tela mostrou 1 parcela, fixa",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200,
+        "enviar": {
+          "parcelas": 3
+        }
+      }
+    },
+    "V2": {
+      "descricao": "serviço NÃO cobrado: motivo de não cobrança informado (operador com a permissão)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql",
+        "massas/deltas/atendimento-permissao-motivo-nao-cobranca.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200,
+        "enviar": {
+          "motivo_nao_cobranca": 1
+        }
+      }
+    },
+    "V3": {
+      "descricao": "SRV-03 permite alterar o valor: valor alterado para R$ 80,00",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql",
+        "massas/deltas/atendimento-srv-permite-alterar-valor.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200,
+        "enviar": {
+          "valor_debito": "80,00"
+        }
+      }
+    },
+    "V3b": {
+      "descricao": "serviço que NÃO permite alterar o valor, com R$ 80,00 enviado mesmo assim",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200,
+        "enviar": {
+          "valor_debito": "80,00"
+        }
+      }
+    },
+    "V4": {
+      "descricao": "percentual de cobrança parcial 50% (operador com a permissão)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql",
+        "massas/deltas/atendimento-permissao-motivo-nao-cobranca.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200,
+        "enviar": {
+          "percentual_cobranca": "50"
+        }
+      }
+    },
+    "V5": {
+      "descricao": "serviço que cobra juros, 3 parcelas, com a taxa de juros de financiamento da instância NULA",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql",
+        "massas/deltas/atendimento-permissao-motivo-nao-cobranca.sql",
+        "massas/deltas/atendimento-srv-cobra-juros.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200,
+        "enviar": {
+          "parcelas": 3
+        }
+      }
+    }
+  }
+}

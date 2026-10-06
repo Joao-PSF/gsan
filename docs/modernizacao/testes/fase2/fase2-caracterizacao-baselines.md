@@ -7,7 +7,7 @@
 >
 > ⚠️ **FASE 2 — EM ANDAMENTO.** A 1ª execução classificou os 103 cenários, construiu o mecanismo e capturou o **lote
 > piloto** (§9–§11); a 2ª capturou o **lote de Segurança** (§16); a 3ª, a **Segurança restante** (§17); a 4ª, o **lote 3
-> — cadastro e faturamento online** (§18). A fase não está concluída: a cobertura dos
+> — cadastro e faturamento online** (§18); a 5ª, o **lote 4 — Atendimento** (§19). A fase não está concluída: a cobertura dos
 > comportamentos priorizados é o trabalho dos próximos lotes (§12).
 > 🔴 Nada do OpenGSAN foi implementado; nenhuma linha do legado foi alterada.
 
@@ -285,8 +285,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~2 — Autenticação e autorização~~ ✅ **capturado em 2026-10-05** (§16) | SEG-001, 002, 004, 005 (A) + registro de SEG-010, 012 (C) | Login e filtro de acesso — Online | Usuários e grupos sintéticos; limite de tentativas sintético; catálogos de situação e de auditoria |
 | ~~2b — Segurança restante~~ ✅ **capturado em 2026-10-06** (§17) | SEG-006 (P0), SEG-007 (P0), SEG-003 (P1). **Ficam**: SEG-008 (P1) → lote 4, porque as ações condicionadas exigem OS/RA/comando de cobrança; SEG-009 (C) → lote 5 (Batch) | Login, filtro, troca de senha; Manter Conta (abrangência) — Online | USR-04…USR-08; território em degraus; níveis de abrangência |
 | ~~3 — Cadastro e faturamento online~~ ✅ **capturado em 2026-10-06** (§18) | CAD-001, CAD-002 (entrou), CAD-004 (parte online), FAT-003 V1. **Saíram** para o lote 5, com evidência: CAD-005 (rotas só nos processos), FAT-011 V1 (`faturarImovel` só no faturamento em grupo), FAT-003 V2/V3 | Consultar Imóvel; Consultar Relação Cliente e Imóvel; simulação — Online | Fronteiras do DV; papéis e vigências do IMV-01; situações sintéticas |
-| **4 — Atendimento e consumo mínimo** (recomendado a seguir: P0 ATE-007, ATE-008 e MIC-002; o ciclo RA → OS é a dependência comum) | ATE-001…008, MIC-002 (valor obtido na tela de consumo mínimo), SEG-008 (permissões especiais sobre OS/RA), 🆕 CAD-004 (situação derivada e tipos de solicitação habilitados, na abertura de RA) | RA → OS → encerramento — Online | ESP-01…06, SRV-01…03, UNI-01/02, OS com imóvel |
-| 5 — Faturamento em grupo e Micromedição | BAT-001…005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005, 🆕 CAD-005, FAT-011 V1, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial) | Processos batch — **EAR em modo Batch** (`GSAN_TIPO=Batch`, novo build) | Cronograma, rotas, leituras, históricos (IMV-05…10, 11a/b, 12a/b, 16, 17, 18) |
+| ~~4 — Atendimento e consumo mínimo~~ ✅ **capturado em parte em 2026-10-06** (§19) | ATE-007 V1, ATE-008, MIC-002 (nesta superfície), SEG-008 (ligação sem RA). **Ficam**: ATE-001…006 (fluxos de RA: abertura, encerramento, tramitação, espera, ciclo da OS), ATE-007 V2/V3 (religação, ligação de esgoto), as demais permissões de SEG-008, CAD-004 na abertura de RA | Efetuar Ligação de Água a partir de OS encerrada; Atualizar Consumo Mínimo (exibição) — Online | Catálogos de Atendimento; RA e OS encerradas; overrides de consumo mínimo |
+| **5 — Faturamento em grupo e Micromedição** (recomendado a seguir: os P0 que faltam são quase todos processos) | BAT-001…005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005, CAD-005, FAT-011 V1, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial), 🆕 MIC-002 (a precedência das fontes de mínimo ao faturar), ATE-008 (valor de cada prestação na conta) | Processos batch — **EAR em modo Batch** (`GSAN_TIPO=Batch`, novo build) | Cronograma, rotas, leituras, históricos (IMV-05…10, 11a/b, 12a/b, 16, 17, 18) |
 | 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -314,6 +314,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 - **Bloqueios**: nenhum para o próximo lote. BLQ-01 e BLQ-03 (D-17) continuam bloqueando os cenários que dependem deles.
   🆕 **F2-42**: a semântica do valor 4 da situação de água e a completude de `imovel_situacao` exigem **dado de
   instalação** — a base reconstruída não tem nenhum dos dois, e a Fase 2 não usa dado real (CEN-CAD-004 fica em parte).
+- **OS pela massa**: no lote 4, o RA e a OS nascem por SQL no estado em que o encerramento os deixaria — o objeto é o
+  efeito da operação sobre a OS, não a abertura nem o encerramento (CEN-ATE-002…006, a capturar).
 
 ## 14. Volume projetado
 
@@ -322,7 +324,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução — batch será maior (processo + modo Batch). Com a instância de inspeção no ar ou a máquina ocupada por outros contêineres, ~2–3 min por execução | Piloto; lotes de Segurança |
-| Já capturado | **61 variações** de 16 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16) — 26% das 234 | Cobertura |
+| Já capturado | **78 variações** de 20 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17) — 33% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -332,8 +334,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **12 de 42** P0 da classe A — Segurança (6), cadastro (3: composição, vínculos por papel, faturabilidade pela situação) e faturamento individual (3: água, vigência, esgoto); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **15 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), atendimento (2: efeito cadastral e financeiro da OS) e micromedição (1: consumo mínimo); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -680,3 +682,90 @@ imóvel e vínculos inalterados).
 | F2-41 | **Borda do mínimo**: consumo **igual** ao mínimo da situação é recusado pela validação da simulação com a mensagem "menor que" — a regra é "menor ou igual"; o cálculo (`permiteFaturamentoParaAgua`) aceitaria a igualdade | CAD-004 V4; `verificarConsumoFaturadoAgua:36725` (`<=`) × `:1957` (`<=` no sentido oposto) | 🔵 | Registrar; a validação decide antes do cálculo |
 | F2-42 | A base reconstruída **não tem** situações de ligação nem `imovel_situacao`: a semântica do **valor 4** (LIGADO_A_REVELIA × LIGADO_EM_ANALISE) e a completude da tabela paramétrica são **dado de instalação** | Base; catálogo da massa é todo sintético | ⚙️ | **Bloqueado** sem dado real — que a Fase 2 não usa |
 | F2-43 | Na simulação, o esgoto é a tarifa de água aplicada ao volume de esgoto vezes o percentual (100% → igual à água) | FAT-003 V1/V1b | 🔵 | Registro do cálculo; o volume de esgoto exibido segue F2-08 |
+
+## 19. Lote 4 — Atendimento: efeitos da OS e consumo mínimo (2026-10-06)
+
+Quinto lote: os P0 do Atendimento e da Micromedição que rodam online — o **efeito** da execução de uma OS (cadastral e
+financeiro) e o consumo mínimo que a tela da OS exibe — mais a permissão especial que a mesma tela consulta.
+
+### 19.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Fronteira |
+| ------- | ------ | - | --------- | --------- |
+| CEN-ATE-007 — efeito cadastral da OS | A (1, mapeamento) | P0 | V1 (ligação de água) | Efetuar Ligação de Água, a partir de OS encerrada |
+| CEN-ATE-008 — efeito financeiro do serviço | A (1, ao centavo) | P0 | V1, V1b, V2, V3, V3b, V4, V5 | idem — `gerarDebitoOrdemServico` |
+| CEN-MIC-002 — consumo mínimo e overrides | A (1) | P0 | V1–V7 | Atualizar Consumo Mínimo da Ligação de Água (exibição) |
+| CEN-SEG-008 — permissão especial nomeada | A (1) | P1 | V1, V2 (ligação de água sem RA) | Efetuar Ligação de Água, pela matrícula |
+
+**Fora do lote, com motivo**: ATE-007 V2 (religação) e V3 (ligação de esgoto) — operações próprias, outras telas, a
+mesma massa de OS serve; ATE-001…006 (consulta sob autorização, abertura e encerramento de RA, tramitação, espera, ciclo
+de vida da OS) — fluxos de RA que este lote não exercita: a OS chega **encerrada pela massa**; as demais permissões
+especiais de SEG-008 (hidrômetro e esgoto sem RA, replicar cobrança, encerrar comando).
+
+### 19.2 Massa
+
+A base reconstruída **não tem nenhum catálogo de Atendimento** (F2-44). A massa os cria pelas constantes do código,
+SINTÉTICOS no resto:
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `atendimento-catalogos.sql` | Tipo de categoria (as categorias das sementes não têm); UNI-01; meio de solicitação; situação de água FACTÍVEL; diâmetro, material, perfil e local do ramal; origem da ligação; motivo de não cobrança; motivo de encerramento com execução; situação de débito NORMAL (0) e forma de cobrança EM CONTA (1); tipo de débito; tipo de serviço 619 (`TIPO_LIGACAO_AGUA`), ligado à operação 257; tipo e especificação de solicitação; concessões do operador |
+| `atendimento-os-ligacao-agua.sql` | IMV-A01 100200 com água FACTÍVEL, numa quadra **com rede**; cliente usuário; RA e OS de ligação **encerrada e executada**, comercial ainda não atualizado |
+| `atendimento-srv-*.sql` | O **mesmo** tipo de serviço com outro dado: sem tipo de débito / permite alterar valor / cobra juros |
+| `atendimento-permissao-*.sql` | Permissões especiais 30 (informar motivo de não cobrança) e 65 (ligação de água sem RA) — **inexistentes** no catálogo da base |
+| `atendimento-os-consumo-minimo.sql` | Tipo de serviço 690 (`TIPO_CALCULAR_CONSUMO_MINIMO_AGUA`) com a operação 393; ligação de água do IMV-01 e do IMV-03; OS encerradas para cada um |
+| `mic-*.sql` | Overrides de consumo mínimo: na ligação (30), na situação LIGADO (15), por área (25), e fator de economias da categoria (3) |
+
+⚠️ **Ressalva de massa**: a quadra 1 de `territorio-l1.sql` grava `qdra_icredeagua = 1`, que pela constante é **SEM
+REDE** (`Quadra.SEM_REDE = 1`) — o autor da massa leu "1" como "sim". As baselines anteriores não dependem desse
+indicador; o imóvel do Atendimento fica numa quadra nova, com rede. `territorio-l1.sql` não muda.
+
+### 19.3 Mecanismo — o que mudou
+
+- Roteiro `efetuar_ligacao_agua`, autenticado pelo próprio roteiro (operador com senha efêmera): abre a OS (ou a
+  matrícula, sem OS), **envia o formulário como o navegador** — exatamente os campos que a tela renderizou, mais as
+  escolhas do usuário — e lê do banco o que a operação gravou: situação do imóvel, a ligação, os indicadores da OS e o
+  débito a cobrar com a divisão por categoria. Ids sequenciais não saem; a referência contábil sai como "é o mês
+  corrente". O que a variação **forja** (um valor que a tela não deixaria) fica explícito em `enviado`.
+- Roteiro `consultar_consumo_minimo_ligacao_agua`: a exibição da tela de consumo mínimo, com o valor obtido e o fixado.
+- `baseline.sh` sobe o banco da instância se ele estiver parado (antes, uma cadeia com a instância parada falhava na
+  restauração).
+
+### 19.4 Baselines do lote
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| ATE-007 V1 | Água FACTÍVEL → **LIGADO**; ligação criada (data da ligação = encerramento da OS, 05/09/2026; diâmetro, material, perfil); esgoto inalterado; serviço sem tipo de débito → **nenhum débito** e a OS **não** fica "comercial atualizado" |
+| ATE-008 V1 | Débito de **R$ 100,00 em 3 prestações** (operador com a permissão): tipo do serviço, referência 201410, cobrança 201411, situação NORMAL, em conta, ligado à OS e ao RA; por categoria: residencial, 1 economia, 100,00; OS "comercial atualizado" |
+| ATE-008 V1b | Sem a permissão a tela **fixa 1 parcela** — o POST com 3 é **aceito**: o mesmo débito em 3 prestações |
+| ATE-008 V2 | Motivo de não cobrança informado → **nenhum débito**; a OS guarda o motivo |
+| ATE-008 V3 | Serviço que permite alterar valor, R$ 80,00 → débito **80,00** |
+| ATE-008 V3b | Serviço que **não** permite — a tela não deixa editar; R$ 80,00 enviado é **aceito** → débito 80,00 |
+| ATE-008 V4 | Percentual 50% → débito **50,00** |
+| ATE-008 V5 | Serviço que cobra juros, 3 parcelas, taxa de financiamento **nula** na base → débito de **R$ 0,00** em 3 prestações |
+| MIC-002 V1 / V2 | Valor obtido **10** (IMV-01: 10 × 1) / **40** (IMV-03: residencial 10 × 2 + comercial 20 × 1) |
+| MIC-002 V3–V6 | Overrides na ligação (30), na situação (15), por área (25) e os três juntos: valor obtido **10** em todos — nenhum entra no cálculo desta tela; o fixado na ligação aparece em campo **separado** |
+| MIC-002 V7 | Fator de economias 3 na categoria residencial → **50** (10 × 3 + 20): o fator **substitui** o número de economias |
+| SEG-008 V1 / V2 | Com a permissão, a tela habilita a matrícula e a ligação sem OS é efetuada; **sem a permissão, a tela não habilita — e o mesmo POST é efetuado** |
+
+### 19.5 Determinismo
+
+- **Captura**: **17 de 17** variações com as duas execuções **idênticas byte a byte** (`20261006T203748Z-capturar`). Antes, rodadas exploratórias por variação revelaram, uma a uma, os catálogos ausentes da base (F2-44), a quadra sem rede da massa do território, o defeito da validação do tipo de serviço (F2-46) e as exceções engolidas (F2-45) — e um defeito do próprio roteiro (enviava "valor do débito" vazio que a tela não renderiza), corrigido ao passar a enviar o formulário como o navegador.
+- **Verificação independente** (3ª execução): lote 4 **17/17** conferem (`20261006T211339Z-verificar`). **Regressão do piloto** — o `baseline.sh` mudou: **11/11** (`20261006T213134Z-verificar`). Os roteiros existentes não mudaram (o lote só acrescentou funções).
+
+### 19.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-44 | Base sem **nenhum** catálogo de Atendimento; categorias **sem tipo** — e a falta de tipo aparece como "imóvel sem subcategoria" | Exploração; `RepositorioImovelHBM.pesquisarObterQuantidadeEconomiasCategoria` (inner join com o tipo) | ⚙️ | Massa cria pelas constantes |
+| F2-45 | **Exceções engolidas**: quatro métodos de `ControladorImovelSEJB` criam a exceção do repositório e não a lançam — a falha vira "não cadastrado" | `ControladorImovelSEJB:1424, 1488, 1552, 8750` | ⚙️ | Diagnóstico enganoso (como F2-39) |
+| F2-46 | Validação do tipo de serviço na ligação **inoperante**: a ordem dos operandos chama `idOperacao.intValue()` antes de testar nulo — com operação, nunca confere o serviço; sem operação, NPE | `ControladorAtendimentoPublicoSEJB:380` | 🔵 | Registro |
+| F2-47 | Fora do encerramento, a operação só aceita OS **encerrada, executada e sem atualização comercial**; o efeito cadastral vem da **operação**, não do encerramento | `validaOrdemServicoDiasAditivoPrazo:13840`; ATE-007 V1 | 🟢 | Confirma a especificação |
+| F2-48 | A Action aplica a ligação **duas vezes** por requisição: o bloco da matrícula (sem OS) e o bloco da OS — a tela sempre envia a matrícula | `EfetuarLigacaoAguaAction:106-173` e `:177-304` | 🔵 | O estado final é o de uma ligação; registro |
+| F2-49 | Permissão especial **só na tela**: sem EFETUAR_LIGACAO_DE_AGUA_SEM_RA a matrícula vem desabilitada, mas o POST com ela efetua a ligação **sem OS** | SEG-008 V2; a Action não consulta a permissão | 🔴 | Achado de segurança 33 |
+| F2-50 | Parcelas, valor e motivo de não cobrança **aceitos do cliente**: a tela fixa 1 parcela e não deixa editar o valor; o servidor não confere | ATE-008 V1b, V3b; `ExibirEfetuarLigacaoAguaAction:428-437`, `EfetuarLigacaoAguaAction:282-292` | 🔴 | Achado de segurança 34 |
+| F2-51 | Serviço que cobra juros, com a taxa de financiamento **nula** (como na base reconstruída), gera débito de **R$ 0,00** — receita perdida em silêncio | ATE-008 V5; `calcularValorPrestacaoAtendimentoPublico:13106-13121` | 🔴 | Parametrização obrigatória numa instalação |
+| F2-52 | `valorPrestacao.setScale(2, HALF_UP)` tem o resultado **descartado** (BigDecimal é imutável): a prestação segue sem arredondar e o total volta exato (100,00 em 3) | `ControladorRegistroAtendimentoSEJB:13121`; ATE-008 V1 | 🔵 | A distribuição dos centavos fica para a conta (lote 5) |
+| F2-53 | Serviço **sem tipo de débito**: a OS não é marcada "comercial atualizado" — continua apta a outra operação comercial | ATE-007 V1; `ControladorAtendimentoPublicoSEJB:303-308` | 🟡 | Registro |
+| F2-54 | A operação 257 é marcada para registro de transação, mas a ligação **não deixa trilha** de auditoria | ATE-007/008 (registros de operação: 0) | 🟡 | Contraste com CEN-SEG-006 |
+| F2-55 | O "Valor Obtido" do consumo mínimo ignora os overrides de ligação, situação e área; o fator de economias da categoria **substitui** as economias | MIC-002 V3–V7; `ControladorMicromedicao.obterConsumoMinimoLigacaoPorCategoria` | 🟢 | Responde, para esta superfície, a "ordem fina" pendente; a precedência ao faturar fica para o lote 5 |

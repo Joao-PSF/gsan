@@ -70,7 +70,7 @@
 - **Observações semânticas**: consumo mínimo resultante · fonte que prevaleceu · tipo de consumo quando o mínimo é faturado
 - **Localizadores GSAN**: `obterConsumoMinimoLigacao`; `calcularConsumoMinimo` (🟢 **HALF_UP**, `ControladorFaturamentoFINAL:57367`); `ConsumoTipo` CONSUMO_MINIMO_FIXADO(7)
 - **Resultado semântico esperado**: V1/V2 — 🟢 mínimo = **Σ por categoria (mínimo da tarifa vigente × economias)**, calculado pela Micromedição a serviço do Faturamento. V3–V6 — ❔ **a ordem fina entre overrides não está comprovada**: é o que este cenário descobre
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** nesta superfície (2026-10-06) — V1–V7 em [`golden/micromedicao/CEN-MIC-002/`](../../../../ambiente-referencia/baselines/golden/micromedicao/CEN-MIC-002/), pelo "Valor Obtido" da tela Atualizar Consumo Mínimo da Ligação de Água (`obterConsumoMinimoLigacao`). V1 **10** (residencial 10 × 1); V2 **40** (residencial 10 × 2 + comercial 20 × 1) — 🟢 Σ por categoria do mínimo da tarifa vigente × economias. V3–V6: overrides na ligação (30), na situação (15), por área (25) e os três juntos → **10** em todos — 🔵 **nenhum override entra neste cálculo**; o fixado na ligação aparece em campo separado. V7: fator de economias 3 na categoria → **50** — o fator **substitui** as economias (F2-55). A precedência entre as fontes **ao faturar** (e o tipo de consumo CONSUMO_MINIMO_FIXADO) é do faturamento em grupo — lote 5. [relatório §19](../fase2/fase2-caracterizacao-baselines.md#19-lote-4--atendimento-efeitos-da-os-e-consumo-mínimo-2026-10-06)
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**

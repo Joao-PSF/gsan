@@ -1,0 +1,174 @@
+{
+  "cenario": "CEN-ATE-008",
+  "descricao": "SRV-03 permite alterar o valor: valor alterado para R$ 80,00",
+  "efeitos_no_banco": {
+    "atendimentopublico.ligacao_agua": 1,
+    "atendimentopublico.ordem_servico": "alterado",
+    "cadastro.imovel": "alterado",
+    "faturamento.deb_a_cobrar_catg": 1,
+    "faturamento.debito_a_cobrar": 1,
+    "seguranca.operacao_efetuada": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-ATE-008",
+  "fora_desta_fronteira": {
+    "valor de cada parcela e distribuição de centavos": "o débito a cobrar guarda o valor TOTAL e o número de prestações; o valor de cada prestação é decidido quando ela entra numa conta — faturamento em grupo (lote 5)"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/clientes-imovel-imv03.sql",
+      "sha256": "2eecba85687e62c11beaaba5ec9819cdfbd0345c165c70c4eb3d40153875ff86"
+    },
+    {
+      "arquivo": "massas/deltas/atendimento-catalogos.sql",
+      "sha256": "c833a67d7ea3661f50d20bec96772fada02d4a4a277ccb1e8476a7ab122bbf5e"
+    },
+    {
+      "arquivo": "massas/deltas/atendimento-os-ligacao-agua.sql",
+      "sha256": "234f638abe911de137a2a8d0c7e1ea2c0fb85c4211e8b55024da2bff76446564"
+    },
+    {
+      "arquivo": "massas/deltas/atendimento-srv-permite-alterar-valor.sql",
+      "sha256": "513e6076b39c1d704322a681a355a9237bce9416be3802e2ff7b2ad018e011a9"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "antes": {
+      "debitos": [],
+      "imovel": {
+        "situacao_agua": "FACTIVEL",
+        "situacao_esgoto": "POTENCIAL"
+      },
+      "ligacao_agua": null,
+      "ordem_servico": {
+        "atualiza_agua": 2,
+        "comercial_atualizado": 2,
+        "motivo_nao_cobranca": null,
+        "percentual_cobranca": null,
+        "situacao": 2,
+        "valor_atual": "100.00"
+      },
+      "registros_de_operacao": 0
+    },
+    "depois": {
+      "debitos": [
+        {
+          "cobradas": 0,
+          "cobranca": 201411,
+          "forma": "COBRANCA EM CONTA",
+          "ligado_a_os": true,
+          "ligado_ao_ra": true,
+          "por_categoria": [
+            {
+              "categoria": "RESIDENCIAL",
+              "economias": 1,
+              "valor": "80.00"
+            }
+          ],
+          "prestacoes": 1,
+          "referencia": 201410,
+          "referencia_contabil_mes_corrente": true,
+          "situacao": "NORMAL",
+          "taxa_juros": "0.00",
+          "tipo": "LIGACAO DE AGUA (SINTETICO)",
+          "valor": "80.00"
+        }
+      ],
+      "imovel": {
+        "situacao_agua": "LIGADO",
+        "situacao_esgoto": "POTENCIAL"
+      },
+      "ligacao_agua": {
+        "consumo_minimo": null,
+        "data_ligacao": "05/09/2026",
+        "diametro": "3/4 POL (SINTETICO)",
+        "material": "PVC (SINTETICO)",
+        "origem": 1,
+        "perfil": "NORMAL (SINTETICO)",
+        "ramal_local": 1
+      },
+      "ordem_servico": {
+        "atualiza_agua": 2,
+        "comercial_atualizado": 1,
+        "motivo_nao_cobranca": null,
+        "percentual_cobranca": "100.00",
+        "situacao": 2,
+        "valor_atual": "80.00"
+      },
+      "registros_de_operacao": 0
+    },
+    "enviado": {
+      "valor_debito": "80,00"
+    },
+    "http": 200,
+    "mensagem": null,
+    "resultado": "efetuada",
+    "tela": {
+      "dataLigacao": "05/09/2026",
+      "http": 200,
+      "idTipoDebito": "3001",
+      "matriculaImovel": "100200",
+      "matricula_habilitada_sem_ra": false,
+      "mensagem": null,
+      "nomeOrdemServico": "LIGACAO DE AGUA (SINTETICO)",
+      "permite_motivo_nao_cobranca": false,
+      "quantidadeParcelas": "1",
+      "situacaoLigacaoAgua": "FACTIVEL",
+      "valorDebito": "100,00",
+      "valorParcelas": "100,00"
+    }
+  },
+  "operacao": {
+    "entrada": {
+      "enviar": {
+        "valor_debito": "80,00"
+      },
+      "imovel": 100200,
+      "ordem_servico": 1,
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Efetuar Ligação de Água a partir de uma OS encerrada e executada (exibirEfetuarLigacaoAguaAction → efetuarLigacaoAguaAction → ControladorAtendimentoPublicoSEJB.efetuarLigacaoAgua → ControladorOrdemServicoSEJB.gerarDebitoOrdemServico), pela tela do legado, com o operador da caracterização; o que a operação grava (imóvel, ligação, OS, débito a cobrar e débito por categoria) é lido do banco.",
+    "roteiro": "efetuar_ligacao_agua"
+  },
+  "oraculo": "1 — ao centavo",
+  "ressalvas": {
+    "V1b e V3b — o servidor confia no cliente": "a tela fixa 1 parcela (sem a permissão especial) e não deixa editar o valor (serviço que não permite); o POST com outros valores é aceito — registro do que o GSAN faz, não comportamento a reproduzir"
+  },
+  "titulo": "Efeito financeiro do serviço executado",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V3"
+}

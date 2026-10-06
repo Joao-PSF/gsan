@@ -1,0 +1,66 @@
+{
+  "dominio": "atendimento",
+  "lote": "atendimento",
+  "fronteira": "Efetuar Ligação de Água a partir de uma OS encerrada e executada (exibirEfetuarLigacaoAguaAction → efetuarLigacaoAguaAction → ControladorAtendimentoPublicoSEJB.efetuarLigacaoAgua → ControladorOrdemServicoSEJB.gerarDebitoOrdemServico), pela tela do legado, com o operador da caracterização; o que a operação grava (imóvel, ligação, OS, débito a cobrar e débito por categoria) é lido do banco.",
+  "roteiro": "efetuar_ligacao_agua",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [],
+  "efeitos": [
+    {
+      "tabela": "cadastro.imovel",
+      "modo": "conteudo"
+    },
+    "atendimentopublico.ligacao_agua",
+    {
+      "tabela": "atendimentopublico.ordem_servico",
+      "modo": "conteudo"
+    },
+    "faturamento.debito_a_cobrar",
+    "faturamento.deb_a_cobrar_catg",
+    "seguranca.operacao_efetuada"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-ATE-007",
+  "titulo": "Efeito cadastral da OS aplicado pelo dono",
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-ATE-007",
+  "oraculo": "1 — por mapeamento semântico",
+  "observaveis": {
+    "campos": [
+      "tela",
+      "enviado",
+      "http",
+      "resultado",
+      "mensagem",
+      "antes",
+      "depois"
+    ],
+    "fora_desta_fronteira": {
+      "situação derivada do imóvel": "imovel_situacao é dado de instalação ausente da base reconstruída (F2-42)",
+      "V2 religação e V3 ligação de esgoto": "operações próprias (efetuarReligacaoAgua, efetuarLigacaoEsgoto) — não exercidas neste lote",
+      "o encerramento não é gatilho": "a OS chega ENCERRADA pela massa; o efeito cadastral só aparece depois da operação específica"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "OS de ligação de água ENCERRADA e executada, tipo de serviço SEM tipo de débito; imóvel com água FACTÍVEL — efetuar a ligação pela operação própria",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql",
+        "massas/deltas/atendimento-srv-sem-debito.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "ordem_servico": 1,
+        "imovel": 100200
+      }
+    }
+  }
+}

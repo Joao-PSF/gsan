@@ -220,7 +220,7 @@
 - **Observações semânticas**: permitido/negado · efeito produzido
 - **Localizadores GSAN**: catálogo de permissões especiais; vínculo usuário × permissão
 - **Resultado semântico esperado**: com a permissão, a ação é executada; sem ela, é negada **mesmo com a funcionalidade concedida**
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (2026-10-06) — V1, V2 em [`golden/seguranca/CEN-SEG-008/`](../../../../ambiente-referencia/baselines/golden/seguranca/CEN-SEG-008/), com a permissão **EFETUAR_LIGACAO_DE_AGUA_SEM_RA** (65): com ela, a tela habilita a matrícula e a ligação sem OS é efetuada; 🔴 **sem ela, a tela não habilita — e o mesmo POST é efetuado** (achado 33, CAND-10): a permissão especial é verificada **só na tela**. As demais permissões da especificação (hidrômetro e esgoto sem RA, replicar cobrança, encerrar comando) têm o mesmo mecanismo, em outras telas — não exercidas. Catálogo: nenhuma das permissões existe na base reconstruída. [relatório §19](../fase2/fase2-caracterizacao-baselines.md#19-lote-4--atendimento-efeitos-da-os-e-consumo-mínimo-2026-10-06)
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**

@@ -279,7 +279,7 @@
 - **Observações semânticas**: situação da ligação antes/depois · datas registradas na ligação · indicadores na OS de que a atualização ocorreu · situação derivada do imóvel depois
 - **Localizadores GSAN**: `orse_iccomercialatualizado`; `orse_icatualizaagua`, `orse_icatualizaesgoto`; situação da ligação
 - **Resultado semântico esperado**: 🟢 o efeito **não é gatilho automático do encerramento** — vem da operação específica. O **estado final** da ligação e da situação derivada deve ser **idêntico** no OpenGSAN
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (Fase 2, lote 4, 2026-10-06) — V1 em [`golden/atendimento/CEN-ATE-007/`](../../../../ambiente-referencia/baselines/golden/atendimento/CEN-ATE-007/): OS de ligação **encerrada e executada** (pela massa) — o imóvel continua FACTÍVEL até a operação **"Efetuar Ligação de Água"**, que o deixa **LIGADO** e cria a ligação (data = encerramento da OS, diâmetro, material, perfil); esgoto inalterado. 🟢 O efeito **não** vem do encerramento — a operação só aceita OS encerrada, executada e ainda sem atualização comercial (F2-47). Serviço sem tipo de débito: nenhum débito e a OS **não** fica "comercial atualizado" (F2-53). ⚠️ A Action aplica a ligação duas vezes por requisição (F2-48). V2 (religação) e V3 (ligação de esgoto): operações próprias, não exercidas. Situação derivada: dado de instalação ausente (F2-42). [relatório §19](../fase2/fase2-caracterizacao-baselines.md#19-lote-4--atendimento-efeitos-da-os-e-consumo-mínimo-2026-10-06)
 - **Normalizações**: nenhuma sobre situação e datas de negócio
 - **Divergência permitida**: nenhuma — ⚠️ a mudança é de **quem aplica**, não do resultado
 - **Oráculo**: **1** — por mapeamento semântico
@@ -303,7 +303,7 @@
 - **Observações semânticas**: débito criado (sim/não) · tipo de débito · valor total · número de parcelas · valor de cada parcela · motivo de não cobrança · valor alterado
 - **Localizadores GSAN**: `gerarDebitoOrdemServico`; `indicadorPermiteAlterarValor`; `calcularValorPrestacao` (🟢 **HALF_UP**, `ControladorFaturamentoFINAL:7027–7056`)
 - **Resultado semântico esperado**: V1 — débito com N parcelas cuja soma é o valor do serviço. V2 — nenhum débito, motivo registrado. V3 — débito com o valor alterado. ⚠️ **A distribuição de centavos entre parcelas é regra de resultado** — capturar, não recalcular
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** (2026-10-06) — V1–V5 e V1b, V3b em [`golden/atendimento/CEN-ATE-008/`](../../../../ambiente-referencia/baselines/golden/atendimento/CEN-ATE-008/), pela execução de uma OS de ligação de água (serviço de R$ 100,00). V1: débito **R$ 100,00 em 3 prestações** (o total guardado; o valor de cada prestação é decidido na conta — lote 5), por categoria, ligado à OS e ao RA. V2: motivo de não cobrança → **nenhum débito**, motivo na OS. V3: valor alterado → débito **80,00**. V4: percentual 50% → **50,00**. V5: serviço que cobra juros com a taxa da instância **nula** → débito **0,00** (F2-51). 🔴 V1b e V3b: parcelas e valor que a tela não permite são **aceitos pelo servidor** (achado 34, CAND-10). O arredondamento da prestação é descartado no código (F2-52). [relatório §19](../fase2/fase2-caracterizacao-baselines.md#19-lote-4--atendimento-efeitos-da-os-e-consumo-mínimo-2026-10-06)
 - **Normalizações**: identificadores técnicos dos lançamentos
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — igualdade **ao centavo**

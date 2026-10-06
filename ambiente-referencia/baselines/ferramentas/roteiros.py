@@ -139,6 +139,137 @@ def consultar_relacao_cliente_imovel(sessao, entrada):
     return {'resultado': 'consultado', 'vinculos': vinculos}
 
 
+def consultar_consumo_minimo_ligacao_agua(sessao, entrada):
+    """Atualizar Consumo Mínimo da Ligação de Água — só a EXIBIÇÃO, a partir de uma OS encerrada e executada
+    (ExibirAtualizarConsumoMinimoLigacaoAguaAction): o "Valor Obtido" é obterConsumoMinimoLigacao(imovel, null)."""
+    sessao.get('exibirAtualizarConsumoMinimoLigacaoAguaAction.do?menu=sim')
+    html = sessao.post('exibirAtualizarConsumoMinimoLigacaoAguaAction.do',
+                       {'idOrdemServico': str(entrada['ordem_servico']), 'veioEncerrarOS': 'false'})
+    if sessao.ultimo_estado >= 400:
+        return {'resultado': 'recusado', 'http': sessao.ultimo_estado, 'mensagem': _mensagem(html) or _atencao(html)}
+    return {
+        'resultado': 'exibido',
+        'matricula': valor_campo(html, 'matriculaImovel'),
+        'situacao_agua': valor_campo(html, 'situacaoLigacaoAgua'),
+        'categoria_exibida': valor_campo(html, 'categoriaImovel'),
+        'economias_exibidas': valor_campo(html, 'qtdeEconomia'),
+        'consumo_minimo_fixado': valor_campo(html, 'consumoMinimoFixado'),
+        'valor_obtido': valor_campo(html, 'valorObtido'),
+    }
+
+
+# --- Atendimento: efeitos da OS -------------------------------------------------------------------
+# A OS chega à operação ENCERRADA e executada (massa); a operação "Efetuar Ligação de Água" é executada pela tela e
+# o que ela grava é lido do banco — situação do imóvel, a ligação, os indicadores da OS e o débito a cobrar. Ids
+# sequenciais não saem; datas que o legado preenche com o relógio saem como "preenchida" ou relativas ao mês corrente.
+
+def _formulario(html, nome):
+    """O que o NAVEGADOR enviaria do formulário `nome`: campos de texto e ocultos com o valor, rádio/caixa marcados, e de
+    cada seletor a opção marcada (ou a primeira). Botões não vão."""
+    m = re.search(r'(?is)<form\b[^>]*name="' + re.escape(nome) + r'"[^>]*>(.*?)</form>', html)
+    corpo = m.group(1) if m else ''
+    dados = {}
+    for tag in re.findall(r'(?is)<input\b[^>]*>', corpo):
+        n = re.search(r'(?i)\bname="([^"]*)"', tag)
+        tipo = (re.search(r'(?i)\btype="([^"]*)"', tag) or [None, 'text'])[1].lower()
+        if not n or tipo in ('button', 'submit', 'reset', 'image'):
+            continue
+        if tipo in ('radio', 'checkbox') and not re.search(r'(?i)\bchecked\b', tag):
+            continue
+        v = re.search(r'(?i)\bvalue="([^"]*)"', tag)
+        dados[n.group(1)] = v.group(1) if v else ''
+    for n, opcoes in re.findall(r'(?is)<select\b[^>]*\bname="([^"]*)"[^>]*>(.*?)</select>', corpo):
+        valores = re.findall(r'(?is)<option\b([^>]*)>', opcoes)
+        escolhida = next((o for o in valores if re.search(r'(?i)\bselected\b', o)), valores[0] if valores else '')
+        v = re.search(r'(?i)\bvalue="([^"]*)"', escolhida)
+        dados[n] = v.group(1) if v else ''
+    return dados
+
+
+def _estado_ligacao_agua(ctx, imovel, os_id):
+    def um(q):
+        v = json.loads(ctx.sql(f"select coalesce(json_agg(x), '[]') from ({q}) x") or '[]')
+        return v[0] if v else None
+
+    def todos(q):
+        return json.loads(ctx.sql(f"select coalesce(json_agg(x), '[]') from ({q}) x") or '[]')
+    return {
+        'imovel': um("select la.last_dsligacaoaguasituacao as situacao_agua, le.lest_dsligacaoesgotosituacao as situacao_esgoto"
+                     " from cadastro.imovel i join atendimentopublico.ligacao_agua_situacao la using (last_id)"
+                     f" join atendimentopublico.ligacao_esgoto_situacao le using (lest_id) where i.imov_id = {int(imovel)}"),
+        'ligacao_agua': um("select to_char(l.lagu_dtligacaoagua, 'DD/MM/YYYY') as data_ligacao, d.lagd_dsligacaoaguadiametro as diametro,"
+                           " m.lagm_dsligacaoaguamaterial as material, p.lapf_dsligacaoaguaperfil as perfil,"
+                           " l.rlin_id as ramal_local, l.lgor_id as origem, l.lagu_nnconsumominimoagua as consumo_minimo"
+                           " from atendimentopublico.ligacao_agua l join atendimentopublico.ligacao_agua_diametro d using (lagd_id)"
+                           " join atendimentopublico.ligacao_agua_material m using (lagm_id)"
+                           f" left join atendimentopublico.ligacao_agua_perfil p using (lapf_id) where l.lagu_id = {int(imovel)}"),
+        'ordem_servico': um("select o.orse_cdsituacao as situacao, o.orse_iccomercialatualizado as comercial_atualizado,"
+                            " o.orse_icatualizaagua as atualiza_agua, o.orse_vlservicoatual::text as valor_atual,"
+                            " o.orse_pcvalorcobranca::text as percentual_cobranca, m.sncm_dsservnaocobmotivo as motivo_nao_cobranca"
+                            " from atendimentopublico.ordem_servico o left join atendimentopublico.servico_nao_cobr_motivo m"
+                            f" using (sncm_id) where o.orse_id = {int(os_id)}"),
+        'debitos': todos("select t.dbtp_dsdebitotipo as tipo, d.dbac_vldebito::text as valor, d.dbac_nnprestacaodebito as prestacoes,"
+                         " d.dbac_nnprestacaocobradas as cobradas, d.dbac_amreferenciadebito as referencia,"
+                         " d.dbac_amcobrancadebito as cobranca, (d.dbac_amreferenciacontabil = to_char(current_date, 'YYYYMM')::int)"
+                         " as referencia_contabil_mes_corrente, s.dcst_dsdebitocreditosituacao as situacao,"
+                         " f.cbfm_dscobrancaforma as forma, d.dbac_pctaxajurosfinanciamento::text as taxa_juros,"
+                         " (d.orse_id is not null) as ligado_a_os, (d.rgat_id is not null) as ligado_ao_ra,"
+                         " (select json_agg(json_build_object('categoria', c.catg_dscategoria, 'economias', k.dbcg_qteconomia,"
+                         "   'valor', k.dbcg_vlcategoria::text) order by c.catg_id) from faturamento.deb_a_cobrar_catg k"
+                         "   join cadastro.categoria c using (catg_id) where k.dbac_id = d.dbac_id) as por_categoria"
+                         " from faturamento.debito_a_cobrar d join faturamento.debito_tipo t using (dbtp_id)"
+                         " join faturamento.debito_credito_situacao s on s.dcst_id = d.dcst_idatual"
+                         f" join cobranca.cobranca_forma f using (cbfm_id) where d.imov_id = {int(imovel)} order by d.dbac_id"),
+        'registros_de_operacao': int(ctx.sql('select count(*) from seguranca.operacao_efetuada')),
+    }
+
+
+def efetuar_ligacao_agua(ctx, entrada):
+    """Efetuar Ligação de Água a partir de uma OS (ExibirEfetuarLigacaoAguaAction → EfetuarLigacaoAguaAction →
+    ControladorAtendimentoPublicoSEJB.efetuarLigacaoAgua → gerarDebitoOrdemServico)."""
+    login = entrada['usuario']
+    ctx.nova_sessao()
+    ctx.atual.tentar_login(login, ctx.senha(login, 'correta'))
+    os_id, imovel = entrada.get('ordem_servico'), entrada['imovel']
+    antes = _estado_ligacao_agua(ctx, imovel, os_id or 0)
+    html = ctx.atual.get('exibirEfetuarLigacaoAguaAction.do?menu=sim')
+    sem_ra_na_tela = 'permissaoAlterarOSsemRA' in html and valor_campo(html, 'permissaoAlterarOSsemRA') == 'true'
+    if os_id:
+        html = ctx.atual.post('exibirEfetuarLigacaoAguaAction.do', {'idOrdemServico': str(os_id), 'veioEncerrarOS': 'false'})
+    else:  # sem OS: o usuário digita a matrícula (a tela só a habilita com a permissão EFETUAR_LIGACAO_DE_AGUA_SEM_RA)
+        html = ctx.atual.post('exibirEfetuarLigacaoAguaAction.do', {'idImovel': str(imovel), 'veioEncerrarOS': 'false'})
+    tela = {'http': ctx.atual.ultimo_estado, 'mensagem': _mensagem(html) or (_atencao(html) if ctx.atual.ultimo_estado >= 400 else None)}
+    for campo in ('nomeOrdemServico', 'matriculaImovel', 'situacaoLigacaoAgua', 'dataLigacao', 'idTipoDebito', 'valorDebito',
+                  'quantidadeParcelas', 'valorParcelas'):
+        tela[campo] = valor_campo(html, campo)
+    tela['permite_motivo_nao_cobranca'] = bool(re.search(r'name="motivoNaoCobranca"', html))
+    tela['matricula_habilitada_sem_ra'] = sem_ra_na_tela
+    if ctx.atual.ultimo_estado >= 400:
+        return {'tela': tela, 'resultado': 'recusado_na_exibicao', 'antes': antes, 'depois': antes}
+    enviado = entrada.get('enviar', {})
+    # O que a tela renderizou, como o navegador enviaria, mais as escolhas do usuário nos seletores e campos obrigatórios.
+    dados = _formulario(html, 'EfetuarLigacaoAguaActionForm')
+    dados.update({'diametroLigacao': '1', 'materialLigacao': '1', 'perfilLigacao': '1', 'ramalLocalInstalacao': '1',
+                  'idLigacaoOrigem': '1', 'profundidadeRamal': '1,00', 'distanciaInstalacaoRamal': '2,00', 'aceitaLacre': '2'})
+    if not os_id:
+        dados.update({'matriculaImovel': str(imovel), 'dataLigacao': entrada['data_ligacao']})
+    if 'percentualCobranca' in dados:
+        dados['percentualCobranca'] = '100'
+    if 'quantidadeParcelas' in dados and not dados['quantidadeParcelas']:
+        dados['quantidadeParcelas'] = '1'
+    # O que a variação digita — ou FORJA, quando a tela não deixaria (o POST é aceito ou não pelo servidor).
+    for chave, campo in (('parcelas', 'quantidadeParcelas'), ('valor_debito', 'valorDebito'),
+                         ('percentual_cobranca', 'percentualCobranca'), ('motivo_nao_cobranca', 'motivoNaoCobranca')):
+        if chave in enviado:
+            dados[campo] = str(enviado[chave])
+    html = ctx.atual.post('efetuarLigacaoAguaAction.do', dados)
+    sucesso = 'efetuada com Sucesso' in texto_visivel(html)
+    return {'tela': tela, 'enviado': enviado, 'http': ctx.atual.ultimo_estado,
+            'resultado': 'efetuada' if sucesso else 'recusada',
+            'mensagem': None if sucesso else (_mensagem(html) or _atencao(html)),
+            'antes': antes, 'depois': _estado_ligacao_agua(ctx, imovel, os_id or 0)}
+
+
 # --- Segurança: autenticação e autorização -------------------------------------------------------
 # Roteiro por PASSOS, declarados na variação: a mesma fronteira (login + filtro de acesso) serve a vários
 # cenários só mudando os passos e a massa. Nenhuma senha, hash ou identificador de sessão vai para o
@@ -436,4 +567,6 @@ ROTEIROS = {
     'consultar_imoveis_matricula': consultar_imoveis_matricula,
     'consultar_relacao_cliente_imovel': consultar_relacao_cliente_imovel,
     'seguranca': seguranca,
+    'efetuar_ligacao_agua': efetuar_ligacao_agua,
+    'consultar_consumo_minimo_ligacao_agua': consultar_consumo_minimo_ligacao_agua,
 }

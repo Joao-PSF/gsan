@@ -1,0 +1,85 @@
+{
+  "dominio": "seguranca",
+  "lote": "atendimento",
+  "fronteira": "Efetuar Ligação de Água SEM OS, pela matrícula (exibirEfetuarLigacaoAguaAction → efetuarLigacaoAguaAction): a permissão especial EFETUAR_LIGACAO_DE_AGUA_SEM_RA (65) habilita a matrícula na tela (ExibirEfetuarLigacaoAguaAction: permissaoAlterarOSsemRA); a Action executa o bloco da matrícula para quem enviá-la.",
+  "roteiro": "efetuar_ligacao_agua",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [],
+  "efeitos": [
+    {
+      "tabela": "cadastro.imovel",
+      "modo": "conteudo"
+    },
+    "atendimentopublico.ligacao_agua",
+    {
+      "tabela": "atendimentopublico.ordem_servico",
+      "modo": "conteudo"
+    },
+    "faturamento.debito_a_cobrar",
+    "faturamento.deb_a_cobrar_catg",
+    "seguranca.operacao_efetuada"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-SEG-008",
+  "titulo": "Permissão especial nomeada",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-008",
+  "oraculo": "1",
+  "observaveis": {
+    "campos": [
+      "tela",
+      "enviado",
+      "http",
+      "resultado",
+      "mensagem",
+      "antes",
+      "depois"
+    ],
+    "fora_desta_fronteira": {
+      "demais permissões da especificação": "instalação de hidrômetro sem RA, ligação de esgoto sem RA, replicar valor de cobrança de serviço e encerrar comando de cobrança por empresa — mesmo mecanismo, outras telas; não exercidas neste lote",
+      "usuários distintos": "a especificação usa USR-09 (com) e USR-01 (sem); aqui é o mesmo operador, com e sem a permissão conforme a massa da variação"
+    }
+  },
+  "ressalvas": {
+    "V2 — permissão só na tela": "se o POST forjado é aceito, a permissão especial é decorativa: registro do que o GSAN faz, não comportamento a reproduzir"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "COM a permissão EFETUAR_LIGACAO_DE_AGUA_SEM_RA: a tela habilita a matrícula; ligação de água sem OS para o imóvel FACTÍVEL",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql",
+        "massas/deltas/atendimento-permissao-ligacao-sem-ra.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "imovel": 100200,
+        "data_ligacao": "05/09/2026"
+      }
+    },
+    "V2": {
+      "descricao": "SEM a permissão: a tela não habilita a matrícula; o mesmo POST, com a matrícula, enviado mesmo assim",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-ligacao-agua.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "imovel": 100200,
+        "data_ligacao": "05/09/2026"
+      }
+    }
+  }
+}

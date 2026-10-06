@@ -1,0 +1,156 @@
+{
+  "cenario": "CEN-MIC-002",
+  "titulo": "Consumo mínimo e precedência de overrides",
+  "dominio": "micromedicao",
+  "lote": "atendimento",
+  "especificacao": "docs/modernizacao/testes/cenarios/micromedicao.md — CEN-MIC-002",
+  "oraculo": "1",
+  "fronteira": "Atualizar Consumo Mínimo da Ligação de Água, exibição a partir de uma OS encerrada e executada (exibirAtualizarConsumoMinimoLigacaoAguaAction → ControladorLigacaoAguaSEJB.validarExibirAtualizarConsumoMinimoLigacaoAgua; \"Valor Obtido\" = ControladorMicromedicao.obterConsumoMinimoLigacao(imovel, null)). A tela exibe também o consumo mínimo FIXADO na ligação, separado.",
+  "roteiro": "consultar_consumo_minimo_ligacao_agua",
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    {
+      "tabela": "atendimentopublico.ligacao_agua",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "atendimentopublico.ordem_servico",
+      "modo": "conteudo"
+    }
+  ],
+  "observaveis": {
+    "campos": [
+      "resultado",
+      "mensagem",
+      "matricula",
+      "situacao_agua",
+      "categoria_exibida",
+      "economias_exibidas",
+      "consumo_minimo_fixado",
+      "valor_obtido"
+    ],
+    "fora_desta_fronteira": {
+      "precedência no faturamento": "qual fonte PREVALECE ao faturar (ligação × situação × área × tarifa) é decidida na determinação do consumo do faturamento em grupo — lote 5; aqui se vê o que esta superfície calcula",
+      "tipo de consumo quando o mínimo é faturado": "ConsumoTipo CONSUMO_MINIMO_FIXADO só existe no histórico de consumo — lote 5"
+    }
+  },
+  "normalizacoes": [],
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01 — residencial, 1 economia, sem hidrômetro (o papel do IMV-04), sem override",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-consumo-minimo.sql"
+      ],
+      "entrada": {
+        "ordem_servico": 2
+      }
+    },
+    "V2": {
+      "descricao": "IMV-03 — residencial 2 economias (duas subcategorias) + comercial 1, sem override",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-consumo-minimo.sql"
+      ],
+      "entrada": {
+        "ordem_servico": 3
+      }
+    },
+    "V3": {
+      "descricao": "IMV-01 com consumo mínimo FIXADO na ligação (30 m³)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-consumo-minimo.sql",
+        "massas/deltas/mic-override-ligacao-30.sql"
+      ],
+      "entrada": {
+        "ordem_servico": 2
+      }
+    },
+    "V4": {
+      "descricao": "IMV-01 com consumo mínimo na SITUAÇÃO LIGADO (15 m³)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-consumo-minimo.sql",
+        "massas/deltas/mic-override-situacao-15.sql"
+      ],
+      "entrada": {
+        "ordem_servico": 2
+      }
+    },
+    "V5": {
+      "descricao": "IMV-01 com consumo mínimo por ÁREA (residencial até 999 m², 25 m³; imóvel com 80 m²)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-consumo-minimo.sql",
+        "massas/deltas/mic-override-area-25.sql"
+      ],
+      "entrada": {
+        "ordem_servico": 2
+      }
+    },
+    "V6": {
+      "descricao": "IMV-01 com os três overrides simultâneos (ligação 30, situação 15, área 25)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-consumo-minimo.sql",
+        "massas/deltas/mic-override-ligacao-30.sql",
+        "massas/deltas/mic-override-situacao-15.sql",
+        "massas/deltas/mic-override-area-25.sql"
+      ],
+      "entrada": {
+        "ordem_servico": 2
+      }
+    },
+    "V7": {
+      "descricao": "IMV-03 com a categoria RESIDENCIAL com fator de economias 3",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/atendimento-catalogos.sql",
+        "massas/deltas/atendimento-os-consumo-minimo.sql",
+        "massas/deltas/mic-categoria-fator-economias.sql"
+      ],
+      "entrada": {
+        "ordem_servico": 3
+      }
+    }
+  }
+}
