@@ -6,8 +6,8 @@
 > [matriz de caracterização](matriz-caracterizacao.md) · [cobertura de baselines](cobertura-baselines.md).
 >
 > ⚠️ **FASE 2 — EM ANDAMENTO.** A 1ª execução classificou os 103 cenários, construiu o mecanismo e capturou o **lote
-> piloto** (§9–§11); a 2ª capturou o **lote de Segurança** (§16); a 3ª, a **Segurança restante** (§17). A fase não está
-> concluída: a cobertura dos
+> piloto** (§9–§11); a 2ª capturou o **lote de Segurança** (§16); a 3ª, a **Segurança restante** (§17); a 4ª, o **lote 3
+> — cadastro e faturamento online** (§18). A fase não está concluída: a cobertura dos
 > comportamentos priorizados é o trabalho dos próximos lotes (§12).
 > 🔴 Nada do OpenGSAN foi implementado; nenhuma linha do legado foi alterada.
 
@@ -284,9 +284,9 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ---- | -------- | ---------------- | ---------- |
 | ~~2 — Autenticação e autorização~~ ✅ **capturado em 2026-10-05** (§16) | SEG-001, 002, 004, 005 (A) + registro de SEG-010, 012 (C) | Login e filtro de acesso — Online | Usuários e grupos sintéticos; limite de tentativas sintético; catálogos de situação e de auditoria |
 | ~~2b — Segurança restante~~ ✅ **capturado em 2026-10-06** (§17) | SEG-006 (P0), SEG-007 (P0), SEG-003 (P1). **Ficam**: SEG-008 (P1) → lote 4, porque as ações condicionadas exigem OS/RA/comando de cobrança; SEG-009 (C) → lote 5 (Batch) | Login, filtro, troca de senha; Manter Conta (abrangência) — Online | USR-04…USR-08; território em degraus; níveis de abrangência |
-| **3 — Cadastro e faturamento online** (recomendado a seguir: P0 CAD-004 e FAT-003; reaproveita a massa IMV-* e a fronteira da simulação do piloto; nenhum modo novo) | CAD-001, CAD-004, CAD-005, FAT-003 (percentual padrão pela simulação), FAT-011 V1 | Consultar Imóvel, simulação — Online | Perfis IMV-04, 11a, 15, 17; situações de ligação restantes |
-| 4 — Atendimento e consumo mínimo | ATE-001…008, MIC-002 (valor obtido na tela de consumo mínimo), 🆕 **SEG-008** (permissões especiais sobre OS/RA) | RA → OS → encerramento — Online | ESP-01…06, SRV-01…03, UNI-01/02, OS com imóvel |
-| 5 — Faturamento em grupo e Micromedição | BAT-001…005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005 | Processos batch — **EAR em modo Batch** (`GSAN_TIPO=Batch`, novo build) | Cronograma, rotas, leituras, históricos (IMV-05…10, 12a/b, 16, 18) |
+| ~~3 — Cadastro e faturamento online~~ ✅ **capturado em 2026-10-06** (§18) | CAD-001, CAD-002 (entrou), CAD-004 (parte online), FAT-003 V1. **Saíram** para o lote 5, com evidência: CAD-005 (rotas só nos processos), FAT-011 V1 (`faturarImovel` só no faturamento em grupo), FAT-003 V2/V3 | Consultar Imóvel; Consultar Relação Cliente e Imóvel; simulação — Online | Fronteiras do DV; papéis e vigências do IMV-01; situações sintéticas |
+| **4 — Atendimento e consumo mínimo** (recomendado a seguir: P0 ATE-007, ATE-008 e MIC-002; o ciclo RA → OS é a dependência comum) | ATE-001…008, MIC-002 (valor obtido na tela de consumo mínimo), SEG-008 (permissões especiais sobre OS/RA), 🆕 CAD-004 (situação derivada e tipos de solicitação habilitados, na abertura de RA) | RA → OS → encerramento — Online | ESP-01…06, SRV-01…03, UNI-01/02, OS com imóvel |
+| 5 — Faturamento em grupo e Micromedição | BAT-001…005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005, 🆕 CAD-005, FAT-011 V1, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial) | Processos batch — **EAR em modo Batch** (`GSAN_TIPO=Batch`, novo build) | Cronograma, rotas, leituras, históricos (IMV-05…10, 11a/b, 12a/b, 16, 17, 18) |
 | 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -312,6 +312,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
   escritas que a chamam nos controladores (imóvel, micromedição, arrecadação, faturamento, cobrança) ficam com os lotes
   dos seus domínios. Os imóveis não têm conta: o "dentro" aparece pela resposta seguinte à verificação.
 - **Bloqueios**: nenhum para o próximo lote. BLQ-01 e BLQ-03 (D-17) continuam bloqueando os cenários que dependem deles.
+  🆕 **F2-42**: a semântica do valor 4 da situação de água e a completude de `imovel_situacao` exigem **dado de
+  instalação** — a base reconstruída não tem nenhum dos dois, e a Fase 2 não usa dado real (CEN-CAD-004 fica em parte).
 
 ## 14. Volume projetado
 
@@ -320,7 +322,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução — batch será maior (processo + modo Batch). Com a instância de inspeção no ar ou a máquina ocupada por outros contêineres, ~2–3 min por execução | Piloto; lotes de Segurança |
-| Já capturado | **45 variações** de 12 cenários (piloto 11 + Segurança 19 + Segurança restante 15) — 19% das 234 | Cobertura |
+| Já capturado | **61 variações** de 16 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16) — 26% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -330,8 +332,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11** — as 45 baselines conferem; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **9 de 42** P0 da classe A — Segurança (6: autenticação, autorização, exceção por substring, auditoria, abrangência), conta individual (2) e cadastro (1); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **12 de 42** P0 da classe A — Segurança (6), cadastro (3: composição, vínculos por papel, faturabilidade pela situação) e faturamento individual (3: água, vigência, esgoto); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -593,3 +595,88 @@ ligado; cada troca aceita registra uma operação.
 | Histórico de senhas (`parm_icbloqueiosenhasantes`) | Valor 2, inalterado | ✅ Efeito medido: com 2, sem histórico; com 1, 3 últimas recusadas |
 | Aviso de dias para expirar | Não observado | ✅ Existe — "Sua senha expira dentro de N dia(s)." na tela principal (`ControladorAcessoSEJB:5471`) |
 | Lista de senhas proibidas | Não observada | 🔴 Nunca consultada (F2-33) |
+
+## 18. Lote 3 — Cadastro e faturamento online (2026-10-06)
+
+Quarto lote, o item 2 da [ordem de captura](../estrategia-testes.md#priorização-da-baseline-fase-2) que roda **online**:
+as fronteiras do piloto (Consultar Imóvel e Simular Cálculo da Conta) e uma tela nova (Consultar Relação Cliente e
+Imóvel), sobre a mesma massa de território e imóveis.
+
+### 18.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Fronteira |
+| ------- | ------ | - | --------- | --------- |
+| CEN-CAD-001 — matrícula e dígito verificador | A (1) | P1 | V1, V2, V3 | Consultar Imóvel, pela matrícula |
+| CEN-CAD-002 — cliente × imóvel por papel e vigência | A (1) | P0 | V1–V4 | 🆕 Consultar Relação Cliente e Imóvel |
+| CEN-CAD-004 — faturabilidade pela situação da ligação | A (1) | P0 | V1–V7 (parte online) | Simular Cálculo da Conta |
+| CEN-FAT-003 — esgoto | A (1, ao centavo) | P0 | V1, V1b (percentual da ligação) | Simular Cálculo da Conta |
+
+**Mudança de plano registrada (§12)**: o lote previa também CAD-005 e FAT-011 V1. **Saem**, com evidência:
+CAD-005 (rotas por finalidade) só se observa nos **processos** de leitura e entrega; FAT-011 V1 (consumo de reserva
+20) está em `faturarImovel`, chamado **só** pelo faturamento em grupo (`ControladorFaturamentoFINAL:1201`, `:52741`;
+`ControladorFaturamento:14226`). Ambos vão para o lote 5 (EAR em modo Batch), com FAT-003 V2 (percentual alternativo,
+decidido na geração da conta) e V3 (poço — a simulação recebe o campo e **não o usa**). Entra **CAD-002** (P0), que o
+piloto deixara de fora por falta de fronteira temporal: a tela de Relação Cliente e Imóvel mostra os vínculos
+**encerrados**, com início, término e motivo.
+
+### 18.2 Massa
+
+| Delta | Conteúdo | Evidência / por quê |
+| ----- | -------- | ------------------- |
+| `imoveis-matricula-dv.sql` | Imóveis nas fronteiras do módulo 11 (restos 0, 1, 10 e 2 → dígitos 0, 0, 1, 9), um **excluído** logicamente e um com **DV inválido** gravado pela massa (100019) | `Util.obterDigitoVerificadorModulo11`; o 100019 responde se a consulta confere o DV |
+| `clientes-papeis-imv01.sql` | Motivo de fim de relação; clientes 2–5; IMV-01 com usuário anterior (encerrado em 15/05/2026, com motivo), usuário atual (desde 16/05/2026), proprietário e responsável | `clim_fim_relacao_motivo` **vazia** na base; troca no meio da referência 05/2026 |
+| `localidade-l1-entidade.sql` | `loca_nnconsumograndeusuario = 0` em L1 | F2-29: sem ele, a tela de Relação carrega `Localidade` e quebra |
+| `ligacao-agua-sit5-*.sql`, `ligacao-esgoto-sit5-*.sql` | A **mesma** situação 5 com dados diferentes: fatura / não fatura / mínimo de 30 m³ | Provar que o **dado** decide, não o id |
+| `concessoes-cadastro-faturamento.sql` | Operador: Consultar Relação Cliente e Imóvel (121/158) | Catálogo das migrações |
+
+### 18.3 Mecanismo — o que mudou
+
+- Roteiros novos: `consultar_imoveis_matricula` (várias matrículas numa sessão, com a marca "(Excluído)") e
+  `consultar_relacao_cliente_imovel` (vínculos com papel, início, término e motivo; filtros de situação e papel).
+- `simular_calculo_conta` passa a distinguir **"calculado sem nada faturável"** (só os totais zerados) de **recusa** —
+  antes, a falta de linhas era tratada como recusa e a tela inteira virava "mensagem". As 11 baselines do piloto não
+  têm esse caso (regressão em §18.5).
+- `baseline.sh` passa a dizer **qual variação** teve a massa recusada pelo banco: antes, um delta inválido (descrição
+  acima de 20 caracteres) encerrou a cadeia sem mensagem do script.
+
+### 18.4 Baselines do lote
+
+Em [`golden/cadastro/`](../../../../ambiente-referencia/baselines/golden/cadastro/) e
+[`golden/faturamento/`](../../../../ambiente-referencia/baselines/golden/faturamento/) — **4 cenários, 16 baselines**.
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| CAD-001 V1 | As 5 matrículas com DV correto encontradas — IMV-01 e as quatro fronteiras (dígitos 0, 0, 1, 9) —, com a inscrição |
+| CAD-001 V2 | DV errado em ids inexistentes → "IMÓVEL INEXISTENTE" (o mesmo de qualquer id ausente); **100019, DV inválido, é encontrado** — a consulta **não confere o DV** |
+| CAD-001 V3 | O excluído logicamente é **encontrado**, com "Dados do Imóvel **(Excluído)**" |
+| CAD-002 V1 | 4 vínculos, na ordem do legado (papel, depois início): proprietário (01/03/2024, vigente) · usuário anterior (01/01/2025 → 15/05/2026, "MUDANCA DE USUARIO") · usuário atual (16/05/2026, vigente) · responsável (01/01/2026, vigente) |
+| CAD-002 V2 / V3 | Vigentes: proprietário, usuário atual, responsável · Encerrados: só o usuário anterior, com término e motivo |
+| CAD-002 V4 | Papel USUÁRIO: a sucessão anterior → atual, sem lacuna nem sobreposição — em cada data há um usuário definido (15/05 o anterior, 16/05 o atual) |
+| CAD-004 V1 / V2 | Situação 5 com indicador ativo → água **110,40** (o mesmo valor do LIGADO em CEN-FAT-001 V1 — o id não pesa); a **mesma** situação com indicador inativo → **nada** faturado (totais 0,00) |
+| CAD-004 V3 / V4 / V5 | Mínimo da situação 30 m³: 27 → **recusa** ("Consumo informado menor que consumo mínimo para situação da ligação de água, valor tem que ser maior que 30."); **30 → a mesma recusa**; 31 → água **133,35** |
+| CAD-004 V6 / V7 | Esgoto na situação 5: indicador ativo → esgoto **110,40** a 100%; inativo → esgoto **0,00** (água 110,40 nos dois) |
+| FAT-003 V1 | Esgoto LIGADO, 27 m³, percentual **100,00%** → esgoto **110,40** (igual à água); total **220,80** |
+| FAT-003 V1b | Percentual **80,00%** → esgoto **88,32** (110,40 × 0,8, exato); total **198,72**; consumo de esgoto exibido 27 |
+
+`efeitos_no_banco`: nenhuma tabela vigiada muda — as consultas e a simulação não escrevem (conta, histórico de consumo,
+imóvel e vínculos inalterados).
+
+### 18.5 Determinismo
+
+- **Captura**: **16 de 16** variações com as duas execuções **idênticas byte a byte** (`20261006T182440Z-capturar`). Antes, duas rodadas exploratórias por variação (evidência, nunca baseline) revelaram o 500 da Relação Cliente e Imóvel (F2-29/F2-39), o limite de 20 caracteres da descrição da situação e um defeito do próprio roteiro (um caractere de controle na expressão que lê a lista de vínculos) — corrigidos antes da captura.
+- **Verificação independente** (3ª execução): lote 3 **16/16** conferem (`20261006T185729Z-verificar`). **Regressão do
+  piloto** — a simulação mudou: **11/11** (`20261006T191420Z-verificar`). Os roteiros de Segurança não mudaram desde a
+  verificação 34/34 de §17.5.
+
+### 18.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-37 | A consulta de imóvel **não confere o dígito verificador**: procura o id como digitado; DV errado só "não encontra" | CAD-001 V2 (100019 encontrado) | 🔵 | A identidade é o id inteiro; o DV não protege a digitação nesta tela |
+| F2-38 | Exclusão **lógica**, tratada de forma diferente por tela: a consulta encontra e marca "(Excluído)"; a Relação Cliente e Imóvel **filtra** excluídos (por código — não executado para o excluído) | CAD-001 V3; `ExibirImovelRelacaoClienteImovelAction.criarFiltroConsultarImovelInformadoUsuario` (`indicadorExclusao ≠ SIM`) | 🔵 | Mapeamento semântico por superfície |
+| F2-39 | **Erro mascarado**: falha de consulta do Hibernate aparece como "setRollbackOnly() not allowed without a transaction" (HTTP 500) — `ControladorUtilSEJB.pesquisar` marca rollback fora de transação e esconde a causa | Exploração de CAD-002; log do servidor (`ControladorUtilSEJB:159`) | ⚙️ | Diagnóstico; a causa real era F2-29 |
+| F2-29 (2ª superfície) | O consumo de grande usuário nulo da localidade também derruba a Relação Cliente e Imóvel | idem | ⚙️ | Delta `localidade-l1-entidade.sql` |
+| F2-40 | A faturabilidade vem do **dado** da situação (indicador, mínimo), não do id — a mesma situação 5 fatura ou não conforme a linha | CAD-004 V1/V2, V6/V7; `permiteFaturamentoParaAgua/Esgoto` | 🟢 | Confirma a especificação |
+| F2-41 | **Borda do mínimo**: consumo **igual** ao mínimo da situação é recusado pela validação da simulação com a mensagem "menor que" — a regra é "menor ou igual"; o cálculo (`permiteFaturamentoParaAgua`) aceitaria a igualdade | CAD-004 V4; `verificarConsumoFaturadoAgua:36725` (`<=`) × `:1957` (`<=` no sentido oposto) | 🔵 | Registrar; a validação decide antes do cálculo |
+| F2-42 | A base reconstruída **não tem** situações de ligação nem `imovel_situacao`: a semântica do **valor 4** (LIGADO_A_REVELIA × LIGADO_EM_ANALISE) e a completude da tabela paramétrica são **dado de instalação** | Base; catálogo da massa é todo sintético | ⚙️ | **Bloqueado** sem dado real — que a Fase 2 não usa |
+| F2-43 | Na simulação, o esgoto é a tarifa de água aplicada ao volume de esgoto vezes o percentual (100% → igual à água) | FAT-003 V1/V1b | 🔵 | Registro do cálculo; o volume de esgoto exibido segue F2-08 |

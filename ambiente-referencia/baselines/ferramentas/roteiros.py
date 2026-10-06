@@ -60,8 +60,9 @@ def simular_calculo_conta(sessao, entrada):
     html = sessao.post('simularCalculoContaAction.do', dados)
 
     linhas, totais = _linhas_resultado(html)
-    if not linhas or not totais:
+    if not totais:
         return {'resultado': 'recusado', 'mensagem': texto_visivel(html)[-600:]}
+    # Calculado sem nenhuma linha (nada faturável): a tabela vem só com os totais zerados.
     return {
         'resultado': 'calculado',
         'por_categoria': [
@@ -93,12 +94,49 @@ def consultar_imovel_dados_cadastrais(sessao, entrada):
     return {
         'resultado': 'encontrado',
         'inscricao': inscricao,
+        # o JSP acrescenta "(Excluído)" ao título quando imov_icexclusao = SIM (ExibirConsultarImovelDadosCadastraisAction:80)
+        'excluido_exibido': bool(re.search(r'Dados do Im.vel\s*\(Exclu', texto_visivel(html))),
         'situacao_agua': valor_campo(html, 'situacaoAguaDadosCadastrais'),
         'situacao_esgoto': valor_campo(html, 'situacaoEsgotoDadosCadastrais'),
         'perfil': valor_campo(html, 'imovelPerfilDadosCadastrais'),
         'composicao': composicao,
         'total_economias_exibido': int(total.group(1)) if total else None,
     }
+
+
+def consultar_imoveis_matricula(sessao, entrada):
+    """[UC0472] Consultar Imóvel pela matrícula, uma consulta por matrícula da lista, na mesma sessão."""
+    consultas = []
+    for matricula in entrada['matriculas']:
+        r = consultar_imovel_dados_cadastrais(sessao, {'matricula': matricula})
+        consultas.append({'matricula': matricula, 'resultado': r['resultado'], 'inscricao': r.get('inscricao'),
+                          'excluido_exibido': r.get('excluido_exibido')})
+    return {'consultas': consultas}
+
+
+def consultar_relacao_cliente_imovel(sessao, entrada):
+    """Consultar Relação Cliente e Imóvel (ConsultarRelacaoClienteImovelAction → ExibirImovelRelacaoClienteImovelAction):
+    TODOS os vínculos do imóvel — vigentes e encerrados —, ordenados pelo legado por tipo de relação e data de início."""
+    sessao.get('ExibirConsultarRelacaoClienteImovelAction.do?menu=sim')
+    filtros = entrada.get('filtros', {})
+    html = sessao.post('ConsultarRelacaoClienteImovelAction.do', {
+        'idImovel': str(entrada['matricula']), 'idCliente': '',
+        'idClienteRelacaoTipo': str(filtros.get('tipo_relacao', '')),
+        'idClienteImovelFimRelacaoMotivo': str(filtros.get('motivo_fim', '')),
+        'periodoInicialDataInicioRelacao': filtros.get('inicio_de', ''), 'periodoFinalDataInicioRelacao': filtros.get('inicio_ate', ''),
+        'periodoInicialDataFimRelacao': filtros.get('fim_de', ''), 'periodoFinalDataFimRelacao': filtros.get('fim_ate', ''),
+        'situacaoRelacao': str(filtros.get('situacao', '3'))})
+    ini = html.find('Clientes Relacionados')
+    if ini < 0:
+        return {'resultado': 'recusado', 'http': sessao.ultimo_estado, 'mensagem': texto_visivel(html)[-400:]}
+    fim = html.find('Dados da(s)', ini)  # a seção seguinte (economias); o cabeçalho da lista é uma tabela própria
+    fim = fim if fim > 0 else len(html)
+    vinculos = []
+    for tr in re.findall(r'(?is)<tr align="left" bgcolor="#(?:FFFFFF|cbe5fe)" height="18">(.*?)</tr>', html[ini:fim]):
+        tds = [texto_visivel(td) or None for td in re.findall(r'(?is)<td\b[^>]*>(.*?)</td>', tr)]
+        if len(tds) == 6:
+            vinculos.append(dict(zip(('cliente', 'nome', 'tipo_relacao', 'inicio', 'fim', 'motivo_fim'), tds)))
+    return {'resultado': 'consultado', 'vinculos': vinculos}
 
 
 # --- Segurança: autenticação e autorização -------------------------------------------------------
@@ -395,5 +433,7 @@ def seguranca(ctx, entrada):
 ROTEIROS = {
     'simular_calculo_conta': simular_calculo_conta,
     'consultar_imovel_dados_cadastrais': consultar_imovel_dados_cadastrais,
+    'consultar_imoveis_matricula': consultar_imoveis_matricula,
+    'consultar_relacao_cliente_imovel': consultar_relacao_cliente_imovel,
     'seguranca': seguranca,
 }

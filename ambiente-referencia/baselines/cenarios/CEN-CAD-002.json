@@ -1,0 +1,100 @@
+{
+  "cenario": "CEN-CAD-002",
+  "titulo": "Cliente × Imóvel por papel e vigência",
+  "dominio": "cadastro",
+  "lote": "cadastro-faturamento",
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-CAD-002",
+  "oraculo": "1",
+  "fronteira": "Consultar Relação Cliente e Imóvel (ExibirConsultarRelacaoClienteImovelAction → ConsultarRelacaoClienteImovelAction → ExibirImovelRelacaoClienteImovelAction): os vínculos do imóvel com cliente, papel, início, término e motivo; filtros de situação (vigente/encerrada/todos) e de papel.",
+  "roteiro": "consultar_relacao_cliente_imovel",
+  "precondicoes": [],
+  "efeitos": [
+    {
+      "tabela": "cadastro.cliente_imovel",
+      "modo": "conteudo"
+    }
+  ],
+  "observaveis": {
+    "campos": [
+      "resultado",
+      "mensagem",
+      "vinculos[cliente,nome,tipo_relacao,inicio,fim,motivo_fim]"
+    ],
+    "fora_desta_fronteira": {
+      "cliente de um papel NUMA DATA": "o legado não tem consulta \"na data\"; a resposta deriva da lista com início e término (V1) — a derivação é do oráculo, não da tela",
+      "aba Dados Cadastrais do Consultar Imóvel": "mostra só vínculos ATIVOS (RepositorioImovelHBM:10872; relatório da Fase 2 §9)"
+    }
+  },
+  "normalizacoes": [],
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01, todos os vínculos (vigentes e encerrados): usuário anterior encerrado em 15/05/2026 (motivo), usuário atual desde 16/05/2026, proprietário e responsável",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-papeis-imv01.sql",
+        "massas/deltas/concessoes-cadastro-faturamento.sql"
+      ],
+      "entrada": {
+        "matricula": 100013,
+        "filtros": {
+          "situacao": 3
+        }
+      }
+    },
+    "V2": {
+      "descricao": "IMV-01, só vínculos VIGENTES",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-papeis-imv01.sql",
+        "massas/deltas/concessoes-cadastro-faturamento.sql"
+      ],
+      "entrada": {
+        "matricula": 100013,
+        "filtros": {
+          "situacao": 1
+        }
+      }
+    },
+    "V3": {
+      "descricao": "IMV-01, só vínculos ENCERRADOS",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-papeis-imv01.sql",
+        "massas/deltas/concessoes-cadastro-faturamento.sql"
+      ],
+      "entrada": {
+        "matricula": 100013,
+        "filtros": {
+          "situacao": 2
+        }
+      }
+    },
+    "V4": {
+      "descricao": "IMV-01, papel USUÁRIO, todos os vínculos — a sucessão de usuários",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-papeis-imv01.sql",
+        "massas/deltas/concessoes-cadastro-faturamento.sql"
+      ],
+      "entrada": {
+        "matricula": 100013,
+        "filtros": {
+          "situacao": 3,
+          "tipo_relacao": 2
+        }
+      }
+    }
+  }
+}

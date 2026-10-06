@@ -23,7 +23,7 @@
 - **Observações semânticas**: imóvel localizado (sim/não) · DV aceito/recusado · tratamento do excluído logicamente · matrícula nunca reaproveitada
 - **Localizadores GSAN**: `imov_id` com dígito módulo 11; `imov_icexclusao`
 - **Resultado semântico esperado**: 🟢 a identidade é estável e **nunca reaproveitada**; o DV é módulo 11; exclusão é **lógica**
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** (Fase 2, lote 3, 2026-10-06) — V1–V3 em [`golden/cadastro/CEN-CAD-001/`](../../../../ambiente-referencia/baselines/golden/cadastro/CEN-CAD-001/), pelo Consultar Imóvel. V1: as matrículas nas fronteiras do módulo 11 (restos 0, 1, 10, 2 → dígitos 0, 0, 1, 9) são encontradas. V2: DV errado em id inexistente → "IMÓVEL INEXISTENTE", **o mesmo de qualquer id ausente**; um imóvel gravado pela massa com DV **inválido** (100019) **é encontrado** — 🔵 a consulta **não confere o DV**, procura o id (F2-37). V3: o excluído logicamente é encontrado e marcado "(Excluído)"; outras telas o filtram (F2-38). "Nunca reaproveitada" é do caminho de escrita (Inserir Imóvel) — não exercido. [relatório §18](../fase2/fase2-caracterizacao-baselines.md#18-lote-3--cadastro-e-faturamento-online-2026-10-06)
 - **Normalizações**: nenhuma — a matrícula é identidade funcional
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**
@@ -47,7 +47,7 @@
 - **Observações semânticas**: cliente por papel e data · vínculos ativos (fim nulo) × encerrados · motivo do encerramento
 - **Localizadores GSAN**: `ClienteImovel` (papel, data de início, data de fim, motivo)
 - **Resultado semântico esperado**: 🟢 o vínculo tem **papel, vigência e motivo** — nunca se reduz a uma chave simples; em cada data há um cliente definido por papel
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** (2026-10-06) — V1–V4 em [`golden/cadastro/CEN-CAD-002/`](../../../../ambiente-referencia/baselines/golden/cadastro/CEN-CAD-002/), pela tela **Consultar Relação Cliente e Imóvel** (a aba Dados Cadastrais do Consultar Imóvel só mostra vínculos ativos). IMV-01: proprietário, responsável, usuário anterior encerrado em 15/05/2026 com motivo e usuário atual desde 16/05/2026 — 🟢 cada vínculo tem **papel, vigência e motivo**; filtros de situação (vigente/encerrada) e papel. O legado **não consulta "na data"**: o cliente de um papel numa data deriva da lista (V4: anterior até 15/05, atual a partir de 16/05, sem lacuna). Pré-requisito: motivo de fim de relação (catálogo vazio na base). [relatório §18](../fase2/fase2-caracterizacao-baselines.md#18-lote-3--cadastro-e-faturamento-online-2026-10-06)
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**
@@ -93,7 +93,7 @@
 - **Observações semânticas**: fatura (sim/não) · forma de faturamento (leitura, média, mínimo) · consumo mínimo aplicável · situação derivada (ATIVO/INATIVO/LIGADO_SO_ESGOTO) · tipos de solicitação habilitados
 - **Localizadores GSAN**: `ligacao_agua_situacao` e seus indicadores; `LigacaoEsgotoSituacao`; `imov.ftst_id`; `imovel_situacao` → `imovel_situacao_tipo`
 - **Resultado semântico esperado**: 🟢 os efeitos vêm de **atributos da situação** (dado), não de regra em código; 🟢 a situação do imóvel é **derivada** por tabela paramétrica
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 — ⚠️ incluindo **a semântica do valor 4** (duas constantes, significado definido por dado da instalação) e **a completude** de `imovel_situacao`
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (2026-10-06) — V1–V7 em [`golden/cadastro/CEN-CAD-004/`](../../../../ambiente-referencia/baselines/golden/cadastro/CEN-CAD-004/), pela simulação: 🟢 **o dado decide** — a mesma situação 5 fatura (indicador ativo: água 110,40) ou não fatura (inativo: 0,00) conforme a linha, na água e no esgoto (F2-40); com mínimo de 30 m³ na situação, 27 **e 30** são recusados ("menor que consumo mínimo… maior que 30" — a igualdade também cai, F2-41) e 31 fatura (133,35). ⚠️ **Bloqueado**: a semântica do **valor 4** e a completude de `imovel_situacao` são dado de instalação — a base reconstruída não tem situação de ligação nem linha da tabela paramétrica (F2-42). **Fora desta fronteira**: forma de faturamento por situação especial (gerarConta — lote 5); situação derivada e tipos de solicitação habilitados (abertura de RA — lote 4). [relatório §18](../fase2/fase2-caracterizacao-baselines.md#18-lote-3--cadastro-e-faturamento-online-2026-10-06)
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — por mapeamento semântico (a situação muda de dono, não de significado)
@@ -115,7 +115,7 @@
 - **Observações semânticas**: rota usada na leitura · rota usada na análise · rota usada na entrega
 - **Localizadores GSAN**: quadra → rota; `rota_identrega`; `rota_idalternativa`
 - **Resultado semântico esperado**: 🟢 as três finalidades são **distintas**; quando definida, a alternativa **prevalece** sobre a da quadra nos processos de leitura/análise
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 — 🆕 fronteira: os **processos** de leitura e entrega (EAR em modo Batch, lote 5); nenhuma tela online resolve a rota por finalidade
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**

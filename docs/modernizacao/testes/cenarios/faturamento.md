@@ -86,7 +86,7 @@
 - **Observações semânticas**: volume de esgoto e sua composição · percentual aplicado · valor de esgoto por categoria · total de esgoto · percentuais **fotografados** na conta
 - **Localizadores GSAN**: despacho com `ConstantesSistema.CALCULAR_ESGOTO` (`:3895–3925`); `percentualEsgoto`; linha de consumo de esgoto em `consumo_historico` (`LigacaoTipo` LIGACAO_ESGOTO=2)
 - **Resultado semântico esperado**: 🟢 esgoto calculado a partir dos percentuais **da ligação, fotografados na conta**; 🟢 poço compõe o volume de esgoto
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (2026-10-06) — V1 em [`golden/faturamento/CEN-FAT-003/`](../../../../ambiente-referencia/baselines/golden/faturamento/CEN-FAT-003/), pela simulação, com o percentual **da ligação** informado: IMV-01, 27 m³ — 100,00% → esgoto **110,40** (igual à água; total 220,80); 80,00% (V1b) → esgoto **88,32** (total 198,72), ao centavo. V2 (percentual alternativo acima do limite) e V3 (poço — a simulação recebe o campo e não o usa) e os percentuais **fotografados na conta** dependem de `gerarConta` — lote 5. [relatório §18](../fase2/fase2-caracterizacao-baselines.md#18-lote-3--cadastro-e-faturamento-online-2026-10-06)
 - **Normalizações**: nenhuma
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — **ao centavo**
@@ -288,7 +288,7 @@
 - **Observações semânticas**: consumo usado · valor da conta · se algum registro de consumo é **persistido** · efeito de alterar o parâmetro (V2)
 - **Localizadores GSAN**: `ControladorFaturamentoFINAL:1875/:1893` (`new ConsumoHistorico()` só quando `obterUltimoConsumoImovel` devolve nulo); `setNumeroConsumoFaturadoMes(20)` (`:1880/:1897`)
 - **Resultado semântico esperado**: 🟢 no GSAN o consumo de reserva é **20, fixo em código**, usado **em memória e nunca persistido**. 🔴 Para preservar o resultado financeiro, **o valor padrão do parâmetro no OpenGSAN deve ser 20** — do contrário a divergência atingiria cálculo financeiro, o que nenhuma divergência aprovada faz
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 — 🆕 fronteira: `faturarImovel` só é chamado pelo faturamento em grupo (`ControladorFaturamentoFINAL:1201`, `:52741`; `ControladorFaturamento:14226`) — EAR em modo Batch, lote 5
 - **Normalizações**: nenhuma
 - **Divergência permitida**: **D-15** — apenas a **configurabilidade**
 - **Oráculo**: **1** (V1 — valor com o parâmetro em 20) · **2** (V2 — o GSAN não permite alterar; o OpenGSAN deve permitir)

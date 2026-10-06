@@ -1,0 +1,77 @@
+{
+  "cenario": "CEN-CAD-001",
+  "titulo": "Matrícula e dígito verificador",
+  "dominio": "cadastro",
+  "lote": "cadastro-faturamento",
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-CAD-001",
+  "oraculo": "1",
+  "fronteira": "[UC0472] Consultar Imóvel, aba Dados Cadastrais, pela matrícula (consultarImovelWizardAction → ExibirConsultarImovelDadosCadastraisAction → ControladorImovelSEJB.consultarImovelDadosCadastrais), uma consulta por matrícula na mesma sessão.",
+  "roteiro": "consultar_imoveis_matricula",
+  "precondicoes": [],
+  "efeitos": [
+    {
+      "tabela": "cadastro.imovel",
+      "modo": "conteudo"
+    }
+  ],
+  "observaveis": {
+    "campos": [
+      "consultas[matricula,resultado,inscricao,excluido_exibido]"
+    ],
+    "fora_desta_fronteira": {
+      "matrícula nunca reaproveitada": "a atribuição da matrícula é do caminho de escrita (Inserir Imóvel) — não exercido neste lote",
+      "DV na digitação": "a consulta procura o id exatamente como digitado; se a tela valida o DV, o observável o mostra"
+    }
+  },
+  "normalizacoes": [],
+  "variacoes": {
+    "V1": {
+      "descricao": "matrículas com DV correto: IMV-01 e as quatro fronteiras do módulo 11 (resto 0 → 0; resto 1 → 0; resto 10 → 1; resto 2 → 9)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/imoveis-matricula-dv.sql"
+      ],
+      "entrada": {
+        "matriculas": [
+          100013,
+          100080,
+          100170,
+          100161,
+          100099
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "DV INCORRETO: as mesmas bases com o dígito errado (nenhum imóvel tem esses ids) e 100019 — base do IMV-01 com dígito 9, gravada pela massa com DV inválido: a consulta o encontra se não conferir o DV",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/imoveis-matricula-dv.sql"
+      ],
+      "entrada": {
+        "matriculas": [
+          100014,
+          100081,
+          100171,
+          100162,
+          100098,
+          100019
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "matrícula de imóvel EXCLUÍDO logicamente (imov_icexclusao = 1), DV correto",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/imoveis-matricula-dv.sql"
+      ],
+      "entrada": {
+        "matriculas": [
+          100110
+        ]
+      }
+    }
+  }
+}

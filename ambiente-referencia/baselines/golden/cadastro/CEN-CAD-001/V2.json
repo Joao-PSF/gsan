@@ -1,0 +1,100 @@
+{
+  "cenario": "CEN-CAD-001",
+  "descricao": "DV INCORRETO: as mesmas bases com o dígito errado (nenhum imóvel tem esses ids) e 100019 — base do IMV-01 com dígito 9, gravada pela massa com DV inválido: a consulta o encontra se não conferir o DV",
+  "efeitos_no_banco": {
+    "cadastro.imovel": "inalterado"
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-CAD-001",
+  "fora_desta_fronteira": {
+    "DV na digitação": "a consulta procura o id exatamente como digitado; se a tela valida o DV, o observável o mostra",
+    "matrícula nunca reaproveitada": "a atribuição da matrícula é do caminho de escrita (Inserir Imóvel) — não exercido neste lote"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-matricula-dv.sql",
+      "sha256": "6b88af5f05c5ff9d1357e1d32bb7bf319e766cc3ad09a210a37221969773648d"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "consultas": [
+      {
+        "excluido_exibido": null,
+        "inscricao": "IMÓVEL INEXISTENTE",
+        "matricula": 100014,
+        "resultado": "nao_encontrado"
+      },
+      {
+        "excluido_exibido": null,
+        "inscricao": "IMÓVEL INEXISTENTE",
+        "matricula": 100081,
+        "resultado": "nao_encontrado"
+      },
+      {
+        "excluido_exibido": null,
+        "inscricao": "IMÓVEL INEXISTENTE",
+        "matricula": 100171,
+        "resultado": "nao_encontrado"
+      },
+      {
+        "excluido_exibido": null,
+        "inscricao": "IMÓVEL INEXISTENTE",
+        "matricula": 100162,
+        "resultado": "nao_encontrado"
+      },
+      {
+        "excluido_exibido": null,
+        "inscricao": "IMÓVEL INEXISTENTE",
+        "matricula": 100098,
+        "resultado": "nao_encontrado"
+      },
+      {
+        "excluido_exibido": false,
+        "inscricao": "001.001.001.0009.000",
+        "matricula": 100019,
+        "resultado": "encontrado"
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "matriculas": [
+        100014,
+        100081,
+        100171,
+        100162,
+        100098,
+        100019
+      ]
+    },
+    "fronteira": "[UC0472] Consultar Imóvel, aba Dados Cadastrais, pela matrícula (consultarImovelWizardAction → ExibirConsultarImovelDadosCadastraisAction → ControladorImovelSEJB.consultarImovelDadosCadastrais), uma consulta por matrícula na mesma sessão.",
+    "roteiro": "consultar_imoveis_matricula"
+  },
+  "oraculo": "1",
+  "titulo": "Matrícula e dígito verificador",
+  "variacao": "V2"
+}

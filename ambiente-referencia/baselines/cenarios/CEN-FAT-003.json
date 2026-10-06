@@ -1,0 +1,89 @@
+{
+  "cenario": "CEN-FAT-003",
+  "titulo": "Esgoto: percentual padrão, alternativo e poço",
+  "dominio": "faturamento",
+  "lote": "cadastro-faturamento",
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-003",
+  "oraculo": "1 — ao centavo",
+  "fronteira": "[UC0157] Simular Cálculo da Conta (exibirSimularCalculoContaAction → adicionarCategoriaContaAction → simularCalculoContaAction): verificarConsumoFaturadoAgua/Esgoto, obterConsumoMinimoLigacao (UC0105) e calcularValoresAguaEsgoto (UC0120) → permiteFaturamentoParaAgua/Esgoto, o mesmo cálculo que gerarConta usa por imóvel. Sem cronograma de leitura, o período é o mês da referência inteiro. O percentual de esgoto é o da LIGAÇÃO (lesg_pcesgoto) — na simulação, informado na tela.",
+  "roteiro": "simular_calculo_conta",
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_historico",
+    "faturamento.debito_a_cobrar",
+    "micromedicao.consumo_historico"
+  ],
+  "observaveis": {
+    "campos": [
+      "resultado",
+      "mensagem",
+      "por_categoria[categoria,valor_agua,valor_esgoto]",
+      "total_agua",
+      "total_esgoto",
+      "total_geral",
+      "consumo_faturado_esgoto_exibido"
+    ],
+    "fora_desta_fronteira": {
+      "percentuais fotografados na conta": "a simulação não gera conta — lote do faturamento em grupo",
+      "composição do volume de esgoto pelo consumo da ligação": "o volume é informado na simulação; a composição vem de consumo_historico (LIGACAO_ESGOTO) — gerarConta"
+    }
+  },
+  "fora_do_lote": {
+    "V2": "percentual ALTERNATIVO acima do limite (IMV-11a): decidido sobre a ligação na geração da conta — gerarConta, lote do faturamento em grupo",
+    "V3": "poço compondo o volume (IMV-11b): a simulação recebe o campo do poço mas não o usa (SimularCalculoContaAction) — gerarConta"
+  },
+  "normalizacoes": [],
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01 — residencial, 1 economia; água LIGADO 27 m³; esgoto LIGADO 27 m³ com o percentual da ligação 100,00%",
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 3,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": "100,00",
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V1b": {
+      "descricao": "idem, percentual da ligação 80,00% — proporcionalidade e arredondamento",
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 3,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": "80,00",
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    }
+  }
+}

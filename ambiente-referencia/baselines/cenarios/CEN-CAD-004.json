@@ -1,0 +1,217 @@
+{
+  "cenario": "CEN-CAD-004",
+  "titulo": "Situações da ligação: faturabilidade e situação derivada do imóvel",
+  "dominio": "cadastro",
+  "lote": "cadastro-faturamento",
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-CAD-004",
+  "oraculo": "1 — por mapeamento semântico",
+  "fronteira": "[UC0157] Simular Cálculo da Conta (exibirSimularCalculoContaAction → adicionarCategoriaContaAction → simularCalculoContaAction): verificarConsumoFaturadoAgua/Esgoto, obterConsumoMinimoLigacao (UC0105) e calcularValoresAguaEsgoto (UC0120) → permiteFaturamentoParaAgua/Esgoto, o mesmo cálculo que gerarConta usa por imóvel. Sem cronograma de leitura, o período é o mês da referência inteiro.",
+  "roteiro": "simular_calculo_conta",
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_historico",
+    "faturamento.debito_a_cobrar",
+    "micromedicao.consumo_historico"
+  ],
+  "observaveis": {
+    "campos": [
+      "resultado",
+      "mensagem",
+      "por_categoria[categoria,valor_agua,valor_esgoto]",
+      "total_agua",
+      "total_esgoto"
+    ],
+    "fora_desta_fronteira": {
+      "semântica do valor 4 e completude de imovel_situacao": "dado da INSTALAÇÃO: a base reconstruída pelas migrações não tem situação de ligação nem linha de imovel_situacao; caracterizar exige dado real, que a Fase 2 não usa — bloqueado",
+      "forma de faturamento (leitura, média, mínimo) por situação especial": "gerarConta sobre imóvel com histórico — lote do faturamento em grupo",
+      "situação derivada do imóvel e tipos de solicitação habilitados": "imovel_situacao é consultada na abertura de RA (especificação × situação) — lote de Atendimento"
+    }
+  },
+  "normalizacoes": [],
+  "ressalvas": {
+    "situações sintéticas": "a situação 5 (constante CORTADO na água, LIG_FORA_DE_USO no esgoto) recebe dados SINTÉTICOS diferentes por variação: o que se caracteriza é o MECANISMO — o dado decide, não o id —, não o significado de uma situação numa instalação real"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "água na situação 5 com indicador de faturamento ATIVO, 27 m³ (esgoto POTENCIAL)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/ligacao-agua-sit5-fatura.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 5,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": null,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "a MESMA situação 5 com indicador de faturamento INATIVO, 27 m³",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/ligacao-agua-sit5-nao-fatura.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 5,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": null,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "situação 5 que fatura, com consumo mínimo de faturamento 30 m³; consumo informado 27 (abaixo)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/ligacao-agua-sit5-minimo-30.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 5,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": null,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "idem, consumo informado 30 (igual ao mínimo)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/ligacao-agua-sit5-minimo-30.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 5,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 30,
+        "consumo_esgoto": null,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V5": {
+      "descricao": "idem, consumo informado 31 (acima do mínimo)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/ligacao-agua-sit5-minimo-30.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 5,
+        "ligacao_esgoto_situacao": 1,
+        "consumo_agua": 31,
+        "consumo_esgoto": null,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V6": {
+      "descricao": "esgoto na situação 5 com indicador ATIVO: água LIGADO 27 m³, esgoto 27 m³ a 100,00%",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/ligacao-esgoto-sit5-fatura.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 5,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": "100,00",
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    },
+    "V7": {
+      "descricao": "a MESMA situação de esgoto 5 com indicador INATIVO: água LIGADO 27 m³, esgoto 27 m³, sem percentual",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/ligacao-esgoto-sit5-nao-fatura.sql"
+      ],
+      "entrada": {
+        "referencia": "05/2026",
+        "grupo": 1,
+        "tarifa": 1,
+        "ligacao_agua_situacao": 3,
+        "ligacao_esgoto_situacao": 5,
+        "consumo_agua": 27,
+        "consumo_esgoto": 27,
+        "percentual_esgoto": null,
+        "categorias": [
+          {
+            "categoria": 1,
+            "economias": 1
+          }
+        ]
+      }
+    }
+  }
+}
