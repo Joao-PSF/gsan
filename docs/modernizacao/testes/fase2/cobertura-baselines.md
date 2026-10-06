@@ -9,10 +9,10 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 7 | 7 | 221 | 27 | 27 |
+| **A** | 74 | 10 | 10 | 221 | 42 | 42 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 7 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 9.
+**P0 da classe A com baseline**: 9 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 12.
 
 ## Por domínio (classe A)
 
@@ -25,7 +25,7 @@
 | Faturamento | 11 | 2 | 8 |
 | Financeiro e operacional | 8 | 0 | 0 |
 | Micromedição | 5 | 0 | 0 |
-| Segurança | 8 | 4 | 16 |
+| Segurança | 8 | 7 | 31 |
 
 ## Cenários com definição executável
 
@@ -36,7 +36,10 @@
 | CEN-FAT-002 | P0 | piloto | V1, V2, V3 | V1, V2, V3 | — | parcela por vigência, contexto congelado |
 | CEN-SEG-001 | P0 | seguranca | V1 | V1 | — | concessoes no contexto (c) |
 | CEN-SEG-002 | P0 | seguranca | V1, V2, V3 | V1, V2, V3 | — | — |
+| CEN-SEG-003 | P1 | seguranca | V1, V2, V3, V4, V5, V5b, V6 | V1, V2, V3, V4, V5, V5b, V6 | — | valor das senhas e do histórico, troca obrigatória pela tela completa |
 | CEN-SEG-004 | P0 | seguranca | V1, V2, V3, V4, V5, V6, V7a, V7b, V7c, V7c2, V5b | V1, V2, V3, V4, V5, V5b, V6, V7a, V7b, V7c, V7c2 | — | unidade de concessão |
 | CEN-SEG-005 | P0 | seguranca | V1 | V1 | — | — |
+| CEN-SEG-006 | P0 | seguranca | V1, V2, V3 | V1, V2, V3 | — | leitura da trilha pela aplicação, valor da senha redefinida (V1) |
+| CEN-SEG-007 | P0 | seguranca | V1, V2, V3, V4, V5 | V1, V2, V3, V4, V5 | — | outras superfícies que chamam a verificação, superfícies sem verificação, RA, conta exibida |
 | CEN-SEG-010 | P1 | seguranca | V1, V2 | V1, V2 | — | qual elo nega (internamente) |
 | CEN-SEG-012 | P1 | seguranca | V1 | V1 | — | origem cruzada real |

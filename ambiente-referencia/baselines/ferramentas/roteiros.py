@@ -6,6 +6,7 @@ estado só muda pelo que a operação do GSAN fizer.
 """
 import base64
 import io
+import json
 import re
 import secrets
 import zipfile
@@ -112,6 +113,7 @@ class Contexto:
         self.base = base
         self._senhas = dict(senhas)
         self._novas = {}
+        self._marcas = {}  # credencial gravada antes da operação: só para comparar, nunca sai daqui
         self.sql = sql
         self.sessoes = []
         self.atual = None
@@ -150,6 +152,12 @@ def _mensagem(html):
     if 'Erro de Sistema' in t and m:
         return 'Erro de Sistema: ' + m.group(1)[:200].strip()
     m = re.search(r'Aten..o\s+(.*?)\s+(?:Voltar|GSAN -|Banco:)', t)
+    return m.group(1).strip() if m else None
+
+
+def _atencao(html):
+    """Mensagem da página de "Atenção" sem rodapé (quando _mensagem não a reconhece)."""
+    m = re.search(r'Aten..o\s+(.{1,300}?)\s*$', texto_visivel(html))
     return m.group(1).strip() if m else None
 
 
@@ -196,6 +204,64 @@ def _menu(html):
     return sorted(folhas)
 
 
+CARIMBO = re.compile(r'\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}')
+
+
+def _auditoria(ctx):
+    """Registro de operação e trilha por linha/coluna gravados pelo legado (Interceptador/RegistradorOperacao).
+
+    Os identificadores sequenciais dos registros de auditoria não saem: a correlação vira a posição na ordem de
+    gravação. Identificadores de usuário são da massa e saem com o login. O IP do cliente (rede do laboratório)
+    sai só como "preenchido". Valor de senha nunca sai, mesmo que um dia apareça na trilha."""
+    def consulta(q):
+        return json.loads(ctx.sql(f"select coalesce(json_agg(x), '[]') from ({q}) x") or '[]')
+
+    def login(id_):
+        if id_ in (None, ''):
+            return None
+        v = ctx.sql(f"select usur_nmlogin from seguranca.usuario where usur_id::text = '{int(id_)}'")
+        return v or None
+
+    ops = consulta("select o.opef_id, p.oper_id, p.oper_dsoperacao, o.opef_cnargumento, o.opef_dsdadosadicionais,"
+                   " o.opef_tmultimaalteracao is not null as momento, o.atgr_id from seguranca.operacao_efetuada o"
+                   " join seguranca.operacao p using (oper_id) order by o.opef_id")
+    pos_op = {o['opef_id']: i + 1 for i, o in enumerate(ops)}
+    autores = consulta("select a.tref_id, a.usis_id, c.usac_dsusuarioacao, a.empr_id, a.usac_nnip is not null as ip,"
+                       " a.usat_tmultimaalteracao is not null as momento from seguranca.usuario_alteracao a"
+                       " join seguranca.usuario_acao c using (usac_id) order by a.usat_id")
+    linhas = consulta("select l.tbla_id, l.tref_id, t.tabe_nmtabela, k.altp_dsalteracaotipo, l.tbla_id1, l.tbla_id2,"
+                      " l.tbla_icprincipal, l.tbla_tmultimaalteracao is not null as momento"
+                      " from seguranca.tabela_linha_alteracao l join seguranca.tabela t using (tabe_id)"
+                      " join seguranca.alteracao_tipo k using (altp_id) order by l.tbla_id")
+    pos_linha = {l['tbla_id']: i + 1 for i, l in enumerate(linhas)}
+    colunas = consulta("select c.tbla_id, k.tbco_nmcoluna, c.tbca_cncolunaanterior, c.tbca_cncolunaatual,"
+                       " c.tbca_icatualizada from seguranca.tab_linha_col_alteracao c"
+                       " join seguranca.tabela_coluna k using (tbco_id) order by c.tbca_id")
+    comuns, carimbos = [], []
+    for c in colunas:
+        item = {'linha': pos_linha.get(c['tbla_id']), 'coluna': c['tbco_nmcoluna'],
+                'anterior': c['tbca_cncolunaanterior'], 'atual': c['tbca_cncolunaatual'],
+                'atualizada': c['tbca_icatualizada']}
+        if c['tbco_nmcoluna'] == 'usur_nmsenha':
+            item['anterior'] = item['atual'] = '<valor de senha omitido>'
+        (carimbos if CARIMBO.fullmatch(c['tbca_cncolunaatual'] or '') else comuns).append(item)
+    return {
+        'operacoes': [{'operacao': o['oper_id'], 'descricao': o['oper_dsoperacao'], 'argumento': o['opef_cnargumento'],
+                       'argumento_login': login(o['opef_cnargumento']), 'dados_adicionais': o['opef_dsdadosadicionais'],
+                       'atributo_grupo': o['atgr_id'], 'momento_preenchido': o['momento']} for o in ops],
+        'autores': [{'operacao': pos_op.get(a['tref_id']), 'usuario': login(a['usis_id']),
+                     'acao': a['usac_dsusuarioacao'], 'empresa': a['empr_id'], 'ip_preenchido': a['ip'],
+                     'momento_preenchido': a['momento']} for a in autores],
+        'linhas': [{'operacao': pos_op.get(l['tref_id']), 'tabela': l['tabe_nmtabela'], 'tipo': l['altp_dsalteracaotipo'],
+                    'id1': l['tbla_id1'], 'id1_login': login(l['tbla_id1']) if l['tabe_nmtabela'] == 'seguranca.usuario'
+                    else None, 'id2': l['tbla_id2'], 'principal': l['tbla_icprincipal'],
+                    'momento_preenchido': l['momento']} for l in linhas],
+        'colunas': comuns,
+        'carimbos': carimbos,
+        'coluna_senha_na_trilha': any(c['tbco_nmcoluna'] == 'usur_nmsenha' for c in colunas),
+    }
+
+
 def seguranca(ctx, entrada):
     resultados = []
     for passo in entrada['passos']:
@@ -210,11 +276,12 @@ def seguranca(ctx, entrada):
         elif tipo == 'login':
             html = ctx.atual.tentar_login(login, ctx.senha(login, passo['senha']))
             r.update(usuario=login, senha=passo['senha'], http=ctx.atual.ultimo_estado,
+                     # a troca de senha imposta vem DENTRO do leiaute (com o link de logoff): testada antes
                      resultado=('erro_http' if ctx.atual.ultimo_estado >= 400 else
-                                'tela_principal' if 'efetuarLogoffAction' in html else
                                 'alterar_senha' if 'novaSenha' in html else
+                                'tela_principal' if 'efetuarLogoffAction' in html else
                                 'tela_login' if 'efetuarLoginAction' in html else 'outra'),
-                     mensagem=_mensagem(html))
+                     mensagem=_mensagem(html) or (_atencao(html) if ctx.atual.ultimo_estado >= 400 else None))
         elif tipo == 'contexto':
             html = ctx.atual.get('telaPrincipal.do')
             t = texto_visivel(html)
@@ -248,19 +315,24 @@ def seguranca(ctx, entrada):
             if 'procurar' in passo:
                 r['dados_encontrados'] = [d for d in passo['procurar'] if d in texto]
             if r['decisao'] == 'erro_http':
-                r['mensagem'] = _mensagem(html)
+                # Exceção de negócio não tratada (ActionServletException): o legado devolve a página de "Atenção"
+                # com HTTP 500 — a mensagem é o que ele decidiu.
+                r['mensagem'] = _mensagem(html) or _atencao(html)
             r['set_cookie_sessao'] = any('JSESSIONID' in c for c in ctx.atual.respostas[-1].get('set_cookie', []))
         elif tipo == 'trocar_senha':
             ctx.atual.get('exibirEfetuarAlteracaoSenhaSimplificadaAction.do')
+            if 'nova_literal' in passo:  # valor de teste declarado no cenário — nunca uma credencial real
+                passo = dict(passo, nova='literal:' + passo['nova_literal'])
+                ctx._novas[passo['nova']] = passo['nova_literal']
             nova = ctx.senha(login, passo['nova'])
             html = ctx.atual.post('efetuarAlteracaoSenhaSimplificadaAction.do', {
                 'senha': ctx.senha(login, 'correta'), 'novaSenha': nova, 'confirmacaoNovaSenha': nova,
-                'lembreteSenha': 'LEMBRETE SINTETICO'}, registrar_corpo=False)
+                'lembreteSenha': passo.get('lembrete', 'LEMBRETE SINTETICO')}, registrar_corpo=False)
             sucesso = 'Senha alterada com sucesso' in texto_visivel(html)
             if sucesso:
                 ctx.trocou(login, passo['nova'])
             r.update(usuario=login, http=ctx.atual.ultimo_estado, sucesso=sucesso,
-                     mensagem=None if sucesso else _mensagem(html))
+                     mensagem=None if sucesso else _mensagem(html) or _atencao(html))
         elif tipo == 'credenciais':
             valores = [ctx.sql(f"select coalesce(usur_nmsenha, '') from seguranca.usuario where usur_nmlogin = '{u}'")
                        for u in passo['usuarios']]
@@ -272,6 +344,40 @@ def seguranca(ctx, entrada):
                     formatos.append('outro')
             r.update(usuarios=passo['usuarios'], valores_iguais=len(set(valores)) == 1, formatos=formatos)
             del valores
+        elif tipo == 'redefinir_senha':
+            # Operação 818 (EfetuarAlteracaoSenhaPorMatriculaAction): o usuário da sessão redefine a senha de
+            # OUTRO login. O valor gravado é fixo no código do legado e não é observado aqui.
+            alvo = passo['alvo']
+            if not LOGIN_VALIDO.fullmatch(alvo):
+                raise ValueError(f'login inválido no cenário: {alvo!r}')
+            html = ctx.atual.get('exibirEfetuarAlteracaoSenhaPorMatriculaAction.do?limparForm=ok')
+            decisao_entrada = _decisao(ctx.atual, html)
+            html = ctx.atual.post('efetuarAlteracaoSenhaPorMatriculaAction.do', {'login': alvo})
+            t = texto_visivel(html)
+            sucesso = 'gerada com sucesso' in t
+            r.update(alvo=alvo, entrada=decisao_entrada, http=ctx.atual.ultimo_estado, decisao=_decisao(ctx.atual, html),
+                     sucesso=sucesso, mensagem=_mensagem(html) if not sucesso else
+                     re.search(r'Senha padr.o para o login: \S+ gerada com sucesso\.', t).group(0))
+        elif tipo == 'guardar_credencial':
+            for u in passo['usuarios']:
+                ctx._marcas[u] = ctx.sql(f"select coalesce(usur_nmsenha, '') from seguranca.usuario where usur_nmlogin = '{u}'")
+            r.update(usuarios=passo['usuarios'])
+        elif tipo == 'credencial_alterada':
+            r.update(alterada={u: ctx.sql(f"select coalesce(usur_nmsenha, '') from seguranca.usuario"
+                                          f" where usur_nmlogin = '{u}'") != ctx._marcas[u] for u in passo['usuarios']})
+        elif tipo == 'datas':
+            # Datas de acesso relativas ao dia da execução (dias a partir de hoje; nulo = não definida).
+            linha = ctx.sql("select coalesce((usur_dtexpiracaoacesso - current_date)::text, 'nulo') || '|' ||"
+                            " coalesce((usur_dtprazomsgexpiracao - current_date)::text, 'nulo') from seguranca.usuario"
+                            f" where usur_nmlogin = '{login}'").split('|')
+            r.update(usuario=login, expiracao_acesso_dias=None if linha[0] == 'nulo' else int(linha[0]),
+                     prazo_aviso_dias=None if linha[1] == 'nulo' else int(linha[1]))
+        elif tipo == 'historico':
+            r.update(usuario=login, senhas_no_historico=int(ctx.sql(
+                "select count(*) from seguranca.usuario_senha_historico h join seguranca.usuario u using (usur_id)"
+                f" where u.usur_nmlogin = '{login}'")))
+        elif tipo == 'auditoria':
+            r.update(_auditoria(ctx))
         elif tipo == 'cookie':
             cookies = [c for c in (ctx.atual.respostas[0].get('set_cookie', []) if ctx.atual.respostas else [])
                        if c.startswith('JSESSIONID=')]

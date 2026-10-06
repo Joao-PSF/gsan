@@ -1,0 +1,172 @@
+{
+  "cenario": "CEN-SEG-006",
+  "titulo": "Auditoria em dois níveis",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-006",
+  "oraculo": "1 (V1, V2) · V3 não comparado",
+  "fronteira": "Operações registradas do legado pelas telas — troca da própria senha (operação 52, efetuarAlteracaoSenhaSimplificadaAction) e redefinição da senha de outro login (operação 818, efetuarAlteracaoSenhaPorMatriculaAction) — e o que o RegistradorOperacao e o Interceptador do Hibernate gravam: seguranca.operacao_efetuada, usuario_alteracao, tabela_linha_alteracao e tab_linha_col_alteracao. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+  "usuarios": {
+    "seg.usr01": "senha-um",
+    "seg.usr02": "senha-dois"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {
+      "leitura da trilha pela aplicação": "a consulta de operações efetuadas pelas telas do legado não é exercida; a trilha é lida das tabelas que o próprio legado grava",
+      "valor da senha redefinida (V1)": "fixo no código do legado (achado de segurança 30); não é observado nem transcrito — a baseline registra só que a credencial mudou"
+    }
+  },
+  "ressalvas": {
+    "oraculo 1 é semântico": "compara autor, operação, objeto e momento do registro e, na trilha, coluna, valor anterior e valor novo — não o leiaute das tabelas do legado. A linha de ALTERACAO gravada com id1 = 0 e a linha principal tipada INCLUSAO numa alteração (F2-26, F2-27) são achados, não requisito do OpenGSAN",
+    "V3 (acréscimo)": "auditar a senha (campo não anotado) no OpenGSAN é acréscimo permitido; o que nunca pode aparecer na trilha é o VALOR da credencial",
+    "V1 (achado 30)": "a operação 818 redefine a senha de qualquer login para um valor fixo no código; a baseline registra a auditoria da operação, não um comportamento a reproduzir"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "operação sensível com autor ≠ objeto: USR-02 (grupo B, concessão 607/818) redefine a senha de USR-01 pela operação 818 \"Alterar Senha Usuario pelo Login\"",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-redefinir-senha.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "guardar_credencial",
+            "usuarios": [
+              "seg.usr01"
+            ]
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr02"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr02",
+            "senha": "correta"
+          },
+          {
+            "passo": "redefinir_senha",
+            "usuario": "seg.usr02",
+            "alvo": "seg.usr01"
+          },
+          {
+            "passo": "credencial_alterada",
+            "usuarios": [
+              "seg.usr01"
+            ]
+          },
+          {
+            "passo": "auditoria"
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "alteração de campo ANOTADO: USR-01 troca a própria senha (operação 52) e preenche o lembrete, vazio na massa (lembreteSenha tem @ControleAlteracao para a operação 52)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "guardar_credencial",
+            "usuarios": [
+              "seg.usr01"
+            ]
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr01",
+            "nova": "senha-nova",
+            "lembrete": "LEMBRETE SINTETICO"
+          },
+          {
+            "passo": "credencial_alterada",
+            "usuarios": [
+              "seg.usr01"
+            ]
+          },
+          {
+            "passo": "auditoria"
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "alteração de campo NÃO ANOTADO: USR-01 troca a própria senha (operação 52) submetendo o lembrete já gravado — muda a senha (usur_nmsenha, sem @ControleAlteracao) e o carimbo de última alteração",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-lembrete-usr01.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "guardar_credencial",
+            "usuarios": [
+              "seg.usr01"
+            ]
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr01"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr01",
+            "senha": "correta"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr01",
+            "nova": "senha-nova",
+            "lembrete": "LEMBRETE SINTETICO"
+          },
+          {
+            "passo": "credencial_alterada",
+            "usuarios": [
+              "seg.usr01"
+            ]
+          },
+          {
+            "passo": "auditoria"
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [
+    {
+      "caminho": "passos[*].carimbos[*].atual",
+      "regra": "carimbo_tempo"
+    }
+  ],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    },
+    "seguranca.operacao_efetuada",
+    "seguranca.usuario_alteracao",
+    "seguranca.tabela_linha_alteracao",
+    "seguranca.tab_linha_col_alteracao"
+  ],
+  "precondicoes": []
+}

@@ -1,0 +1,333 @@
+{
+  "cenario": "CEN-SEG-003",
+  "titulo": "Ciclo de vida da credencial: situação, expiração e política de senha",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-003",
+  "oraculo": "1",
+  "fronteira": "Login (efetuarLoginAction.do), o filtro de acesso e a troca da própria senha (efetuarAlteracaoSenhaSimplificadaAction.do → ControladorAcessoSEJB.efetuarAlteracaoSenha/validarNovaSenha), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+  "usuarios": {
+    "seg.usr04": "senha-quatro",
+    "seg.usr05": "senha-cinco",
+    "seg.usr06a": "senha-seis-a",
+    "seg.usr06b": "senha-seis-b",
+    "seg.usr07": "senha-sete"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {
+      "valor das senhas e do histórico": "nunca observado: o histórico sai como contagem; as senhas, como rótulos",
+      "troca obrigatória pela tela completa": "a troca usada é a simplificada (a mesma de CEN-SEG-001/006); a tela para onde o login encaminha (exibirEfetuarAlteracaoSenhaAction) só é registrada como destino"
+    }
+  },
+  "ressalvas": {
+    "controles desligados na instância": "V5 e V6 caracterizam a instância como está: histórico de senhas desligado (parâmetro 2 — F2-34) e lista de senhas proibidas nunca consultada (F2-33). Não são comportamento a reproduzir: regra 4 do registro de divergências — nenhuma divergência pode reduzir expiração, bloqueio ou histórico; o OpenGSAN pode ser mais estrito",
+    "sessão nos fluxos impostos": "em V2 e V3 o legado mostra a troca de senha imposta, mas o usuário já está na sessão e a funcionalidade concedida abre (F2-35) — mesmo padrão de CAND-07; candidato CAND-09, não golden master",
+    "expiração no próprio dia": "com os parâmetros de validade nulos da base, a troca grava a expiração para o próprio dia e o login seguinte já cai na troca imposta (F2-36) — registrado em V5/V5b, não requisito"
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "USR-04 (INATIVO) tenta autenticar com a senha correta",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-ciclo-credencial.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr04"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr04",
+            "senha": "correta"
+          },
+          {
+            "passo": "contexto",
+            "usuario": "seg.usr04"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr04",
+            "rotulo": "F1 Consultar Imovel (concedida ao grupo A)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr04"
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "USR-05 (PENDENTE SENHA) autentica com a senha correta",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-ciclo-credencial.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr05"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr05",
+            "senha": "correta"
+          },
+          {
+            "passo": "contexto",
+            "usuario": "seg.usr05"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr05",
+            "rotulo": "F1 Consultar Imovel (concedida ao grupo A)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr05"
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "USR-06A (acesso expirado ontem) autentica com a senha correta",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-ciclo-credencial.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr06a"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr06a",
+            "senha": "correta"
+          },
+          {
+            "passo": "contexto",
+            "usuario": "seg.usr06a"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr06a",
+            "rotulo": "F1 Consultar Imovel (concedida ao grupo A)",
+            "url": "exibirConsultarImovelAction.do?menu=sim"
+          },
+          {
+            "passo": "datas",
+            "usuario": "seg.usr06a"
+          }
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "USR-06B (acesso expira em 5 dias; prazo de aviso aberto desde ontem) autentica — procura-se o aviso de dias restantes",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-ciclo-credencial.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr06b"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr06b",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr06b",
+            "rotulo": "tela principal (aviso de expiração?)",
+            "url": "telaPrincipal.do",
+            "procurar": [
+              "Sua senha expira dentro de 5 dia(s)."
+            ]
+          },
+          {
+            "passo": "datas",
+            "usuario": "seg.usr06b"
+          }
+        ]
+      }
+    },
+    "V5": {
+      "descricao": "USR-07 troca a senha A → B → A (volta para uma senha já usada) com o parâmetro da instância (controle de senhas anteriores = 2); depois autentica de novo",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-ciclo-credencial.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr07",
+            "senha": "correta"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr07",
+            "nova": "senha-a"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr07",
+            "nova": "senha-b"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr07",
+            "nova": "senha-a"
+          },
+          {
+            "passo": "historico",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "datas",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr07",
+            "senha": "correta"
+          },
+          {
+            "passo": "contexto",
+            "usuario": "seg.usr07"
+          }
+        ]
+      }
+    },
+    "V5b": {
+      "descricao": "como V5, com o controle de senhas anteriores LIGADO (parâmetro = 1, sintético): o mecanismo",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-ciclo-credencial.sql",
+        "massas/deltas/seguranca-historico-senha.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr07",
+            "senha": "correta"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr07",
+            "nova": "senha-a"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr07",
+            "nova": "senha-b"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr07",
+            "nova": "senha-a"
+          },
+          {
+            "passo": "historico",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "situacao",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "datas",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr07",
+            "senha": "correta"
+          },
+          {
+            "passo": "contexto",
+            "usuario": "seg.usr07"
+          }
+        ]
+      }
+    },
+    "V6": {
+      "descricao": "USR-07 troca a senha para um valor presente na lista de senhas proibidas (seguranca.senha_invalida, coluna de 6 caracteres; termo de teste SINTÉTICO)",
+      "massa": [
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/seguranca-ciclo-credencial.sql",
+        "massas/deltas/seguranca-senha-proibida.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr07"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr07",
+            "senha": "correta"
+          },
+          {
+            "passo": "trocar_senha",
+            "usuario": "seg.usr07",
+            "nova_literal": "PROIB6"
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    },
+    "seguranca.usuario_senha_historico",
+    "seguranca.operacao_efetuada"
+  ],
+  "precondicoes": []
+}

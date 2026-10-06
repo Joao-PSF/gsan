@@ -1,0 +1,398 @@
+{
+  "cenario": "CEN-SEG-007",
+  "titulo": "Abrangência territorial onde o legado a verifica",
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-007",
+  "oraculo": "1",
+  "fronteira": "Manter Conta (exibirManterContaAction.do, funcionalidade 44) — a superfície de consulta em que a GUI chama verificarAcessoAbrangencia (ExibirManterContaAction:125-128, ControladorAcessoSEJB:4153). Usuários sintéticos do próprio cenário, um por nível; nenhuma navegação humana.",
+  "usuarios": {
+    "seg.usr08e": "senha-estado",
+    "seg.usr08g": "senha-gerencia",
+    "seg.usr08u": "senha-unidade",
+    "seg.usr08p": "senha-elo",
+    "seg.usr08l": "senha-localidade"
+  },
+  "observaveis": {
+    "campos": [
+      "passos"
+    ],
+    "fora_desta_fronteira": {
+      "outras superfícies que chamam a verificação": "os controladores a chamam em escritas (inserir/atualizar/remover imóvel, economias, doação; micromedição, arrecadação, faturamento, cobrança) — não exercidas neste lote",
+      "superfícies sem verificação": "BLQ-01, bloqueado até a decisão sobre D-17 (a especificação as exclui)",
+      "RA": "objeto RA da especificação: nenhuma superfície de RA chama a verificação na GUI; RA fica para quando houver massa de atendimento",
+      "conta exibida": "os imóveis não têm conta (massa sem faturamento): o imóvel dentro da abrangência aparece pela resposta do passo seguinte à verificação — a consulta das contas do imóvel (\"não possui nenhuma conta\"), com a matrícula"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "USR-08 com abrangência GERÊNCIA REGIONAL (G1), lotado em G1/U1/elo L1/L1, consulta Manter Conta de um imóvel em cada degrau do território — especificação: dentro: L1, L3, L4, L5 (G1); fora: L2 (G2)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/territorio-abrangencia.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-imoveis-abrangencia.sql",
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-abrangencia.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr08g"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr08g",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08g",
+            "rotulo": "Manter Conta — imóvel 100013 em L1",
+            "url": "exibirManterContaAction.do?idImovel=100013",
+            "procurar": [
+              "100013"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08g",
+            "rotulo": "Manter Conta — imóvel 100048 em L3",
+            "url": "exibirManterContaAction.do?idImovel=100048",
+            "procurar": [
+              "100048"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08g",
+            "rotulo": "Manter Conta — imóvel 100056 em L4",
+            "url": "exibirManterContaAction.do?idImovel=100056",
+            "procurar": [
+              "100056"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08g",
+            "rotulo": "Manter Conta — imóvel 100064 em L5",
+            "url": "exibirManterContaAction.do?idImovel=100064",
+            "procurar": [
+              "100064"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08g",
+            "rotulo": "Manter Conta — imóvel 100072 em L2",
+            "url": "exibirManterContaAction.do?idImovel=100072",
+            "procurar": [
+              "100072"
+            ]
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "USR-08 com abrangência UNIDADE DE NEGÓCIO (U1), lotado em G1/U1/elo L1/L1, consulta Manter Conta de um imóvel em cada degrau do território — especificação: dentro: L1, L3, L4 (U1); fora: L5 (U2), L2",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/territorio-abrangencia.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-imoveis-abrangencia.sql",
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-abrangencia.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr08u"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr08u",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08u",
+            "rotulo": "Manter Conta — imóvel 100013 em L1",
+            "url": "exibirManterContaAction.do?idImovel=100013",
+            "procurar": [
+              "100013"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08u",
+            "rotulo": "Manter Conta — imóvel 100048 em L3",
+            "url": "exibirManterContaAction.do?idImovel=100048",
+            "procurar": [
+              "100048"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08u",
+            "rotulo": "Manter Conta — imóvel 100056 em L4",
+            "url": "exibirManterContaAction.do?idImovel=100056",
+            "procurar": [
+              "100056"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08u",
+            "rotulo": "Manter Conta — imóvel 100064 em L5",
+            "url": "exibirManterContaAction.do?idImovel=100064",
+            "procurar": [
+              "100064"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08u",
+            "rotulo": "Manter Conta — imóvel 100072 em L2",
+            "url": "exibirManterContaAction.do?idImovel=100072",
+            "procurar": [
+              "100072"
+            ]
+          }
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "USR-08 com abrangência ELO/POLO (elo L1), lotado em G1/U1/elo L1/L1, consulta Manter Conta de um imóvel em cada degrau do território — especificação: dentro: L1, L3 (elo L1); fora: L4, L5, L2",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/territorio-abrangencia.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-imoveis-abrangencia.sql",
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-abrangencia.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr08p"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr08p",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08p",
+            "rotulo": "Manter Conta — imóvel 100013 em L1",
+            "url": "exibirManterContaAction.do?idImovel=100013",
+            "procurar": [
+              "100013"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08p",
+            "rotulo": "Manter Conta — imóvel 100048 em L3",
+            "url": "exibirManterContaAction.do?idImovel=100048",
+            "procurar": [
+              "100048"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08p",
+            "rotulo": "Manter Conta — imóvel 100056 em L4",
+            "url": "exibirManterContaAction.do?idImovel=100056",
+            "procurar": [
+              "100056"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08p",
+            "rotulo": "Manter Conta — imóvel 100064 em L5",
+            "url": "exibirManterContaAction.do?idImovel=100064",
+            "procurar": [
+              "100064"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08p",
+            "rotulo": "Manter Conta — imóvel 100072 em L2",
+            "url": "exibirManterContaAction.do?idImovel=100072",
+            "procurar": [
+              "100072"
+            ]
+          }
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "USR-08 com abrangência LOCALIDADE (L1), lotado em G1/U1/elo L1/L1, consulta Manter Conta de um imóvel em cada degrau do território — especificação: dentro: L1; fora: L3, L4, L5, L2",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/territorio-abrangencia.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-imoveis-abrangencia.sql",
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-abrangencia.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr08l"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr08l",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08l",
+            "rotulo": "Manter Conta — imóvel 100013 em L1",
+            "url": "exibirManterContaAction.do?idImovel=100013",
+            "procurar": [
+              "100013"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08l",
+            "rotulo": "Manter Conta — imóvel 100048 em L3",
+            "url": "exibirManterContaAction.do?idImovel=100048",
+            "procurar": [
+              "100048"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08l",
+            "rotulo": "Manter Conta — imóvel 100056 em L4",
+            "url": "exibirManterContaAction.do?idImovel=100056",
+            "procurar": [
+              "100056"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08l",
+            "rotulo": "Manter Conta — imóvel 100064 em L5",
+            "url": "exibirManterContaAction.do?idImovel=100064",
+            "procurar": [
+              "100064"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08l",
+            "rotulo": "Manter Conta — imóvel 100072 em L2",
+            "url": "exibirManterContaAction.do?idImovel=100072",
+            "procurar": [
+              "100072"
+            ]
+          }
+        ]
+      }
+    },
+    "V5": {
+      "descricao": "USR-08 com abrangência ESTADO (controle), lotado em G1/U1/elo L1/L1, consulta Manter Conta de um imóvel em cada degrau do território — especificação: tudo dentro",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/territorio-abrangencia.sql",
+        "massas/deltas/clientes-imovel-imv03.sql",
+        "massas/deltas/clientes-imoveis-abrangencia.sql",
+        "massas/deltas/seguranca-usuarios.sql",
+        "massas/deltas/seguranca-abrangencia.sql"
+      ],
+      "entrada": {
+        "passos": [
+          {
+            "passo": "sessao",
+            "usuario": "seg.usr08e"
+          },
+          {
+            "passo": "login",
+            "usuario": "seg.usr08e",
+            "senha": "correta"
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08e",
+            "rotulo": "Manter Conta — imóvel 100013 em L1",
+            "url": "exibirManterContaAction.do?idImovel=100013",
+            "procurar": [
+              "100013"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08e",
+            "rotulo": "Manter Conta — imóvel 100048 em L3",
+            "url": "exibirManterContaAction.do?idImovel=100048",
+            "procurar": [
+              "100048"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08e",
+            "rotulo": "Manter Conta — imóvel 100056 em L4",
+            "url": "exibirManterContaAction.do?idImovel=100056",
+            "procurar": [
+              "100056"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08e",
+            "rotulo": "Manter Conta — imóvel 100064 em L5",
+            "url": "exibirManterContaAction.do?idImovel=100064",
+            "procurar": [
+              "100064"
+            ]
+          },
+          {
+            "passo": "acessar",
+            "usuario": "seg.usr08e",
+            "rotulo": "Manter Conta — imóvel 100072 em L2",
+            "url": "exibirManterContaAction.do?idImovel=100072",
+            "procurar": [
+              "100072"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "dominio": "seguranca",
+  "lote": "seguranca",
+  "autenticacao": "roteiro",
+  "roteiro": "seguranca",
+  "normalizacoes": [],
+  "efeitos": [
+    {
+      "tabela": "seguranca.usuario",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "cadastro.imovel",
+      "modo": "conteudo"
+    },
+    "faturamento.conta"
+  ],
+  "precondicoes": [],
+  "ressalvas": {
+    "oraculo 1 é a decisão por nível": "compara, para cada nível, quais imóveis são acessíveis e quais são negados e o que é devolvido. O HTTP 500 com que o legado entrega tanto a negação por abrangência quanto a ausência de conta (exceção de negócio não tratada — F2-30) não é requisito: no OpenGSAN a negação é uma resposta de negação",
+    "massa": "L1 recebe loca_nnconsumograndeusuario = 0 (SINTÉTICO): com o valor nulo da base, carregar a entidade Localidade falha e nenhum usuário lotado em L1 entra (F2-29)"
+  }
+}

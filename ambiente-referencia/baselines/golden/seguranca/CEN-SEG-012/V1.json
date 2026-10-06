@@ -72,7 +72,7 @@
         "http": 200,
         "mensagem": null,
         "passo": "login",
-        "resultado": "tela_principal",
+        "resultado": "alterar_senha",
         "senha": "senha-nova",
         "usuario": "seg.usr01"
       }

@@ -69,9 +69,12 @@ parcial — a gravação só acontece depois das execuções da variação.
 Nos cenários com `"autenticacao": "roteiro"`, o operador da caracterização não entra: o roteiro `seguranca`
 autentica os **usuários sintéticos do próprio cenário** (`"usuarios": {"login": "rótulo"}` — uma senha efêmera por
 rótulo; logins com o mesmo rótulo recebem a mesma) e executa os **passos** declarados na variação: `sessao`,
-`login` (senha `correta`, `errada` ou um rótulo de senha nova), `contexto`, `situacao`, `contadores`, `acessar`
-(com `marca` e `procurar`), `trocar_senha`, `credenciais` (só igualdade e forma — o valor do hash nunca sai do
-executor) e `cookie`. Uma fronteira, muitos cenários: variar é mudar passos e massa, não escrever teste.
+`login` (senha `correta`, `errada` ou um rótulo de senha nova), `contexto`, `situacao`, `contadores`, `datas`
+(expiração e aviso em dias a partir de hoje), `acessar` (com `marca` e `procurar`), `trocar_senha` (com `lembrete`;
+`nova_literal` só para termo de teste sintético, ex.: da lista proibida), `redefinir_senha` (operação 818, sobre outro
+login), `historico` (contagem), `credenciais`, `guardar_credencial`/`credencial_alterada` (só igualdade e forma — o
+valor do hash nunca sai do executor), `auditoria` (registro de operação e trilha, sem ids sequenciais nem IP) e
+`cookie`. Uma fronteira, muitos cenários: variar é mudar passos e massa, não escrever teste.
 
 ## Regras
 

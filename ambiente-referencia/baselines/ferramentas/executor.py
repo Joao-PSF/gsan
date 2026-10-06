@@ -219,7 +219,7 @@ def executar(ident, variacao, saida):
             bruto = roteiro(ctx, v['entrada'])
         except Exception as e:  # a execução falhou: vira evidência, nunca baseline
             bruto, erro = None, f'{type(e).__name__}: {e}'
-        del ctx._senhas, ctx._novas
+        del ctx._senhas, ctx._novas, ctx._marcas
         respostas = ctx.respostas()
     else:
         sessao = Sessao(GSAN)

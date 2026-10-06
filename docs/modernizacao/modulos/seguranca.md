@@ -40,7 +40,7 @@ A Segurança responde por quatro eixos **distintos** que o GSAN mantém separado
 
 🟢 **Algoritmo do login: SHA-1** — `Criptografia.encriptarSenha` usa `MessageDigest.getInstance("SHA")` (`gcom/util/Criptografia.java:17`), sem salt. 🟢 O **MD5** de `Util` **não é usado no login**: aparece na geração de tokens de acesso a servlets auxiliares (`AcessarOperacionalServlet:48`, `AcessarNovoBatchServlet:98`, com `md5(nomeUsuario + timestamp)`). 🔵 Isso corrige uma leitura possível do diagnóstico preliminar: os dois algoritmos existem, mas em papéis distintos — **SHA-1 para senha, MD5 para token efêmero de acesso a módulos auxiliares**.
 
-🟢 Após validar, o RA de segurança é a sessão: `usuarioLogado` é colocado na `HttpSession` e é a base de tudo depois (§6). ❔ Não comprovei existência de fluxo de redefinição/recuperação autônoma de senha nem política de complexidade.
+🟢 Após validar, o RA de segurança é a sessão: `usuarioLogado` é colocado na `HttpSession` e é a base de tudo depois (§6). ❔ Não comprovei existência de fluxo de redefinição/recuperação autônoma de senha nem política de complexidade. 🆕 *Fase 2 (2026-10-06)*: há **redefinição administrativa** — a operação 818 "Alterar Senha Usuario pelo Login" grava um valor fixo no código como senha de qualquer login ([achado 30](../seguranca/riscos-identificados.md); CEN-SEG-006 V1); a complexidade só é verificada com `parm_icsenhaforte = 1` (a base nasce com 2: só o mínimo de 4 caracteres).
 
 ## 5. Senhas
 
@@ -80,6 +80,8 @@ FiltroSegurancaAcesso
 ```
 
 🔵 Três consequências funcionais que a formulação anterior escondia: (a) **funcionalidade e operação são caminhos alternativos** (a URL é classificada como um ou outro), não etapas encadeadas; (b) a **abrangência é verificada condicionalmente** — apenas no ramo "operação" e apenas quando há contexto de abrangência na requisição; (c) **URL não catalogada é negada** (`tipoURL == null` → acesso negado), o que é um padrão *fail-closed* para o que passa pelo bloco.
+
+🆕 **Fase 2 (2026-10-06)** — o "contexto de abrangência na requisição" **nunca existe**: o filtro o lê de `request.getAttribute(Abrangencia.ABRANGENCIA)` (`FiltroSegurancaAcesso:102`) **antes** de a Action rodar, e nenhum código de `src/` grava esse atributo. O ramo (:253-258) é inalcançável; a abrangência só é aplicada onde a Action ou o controlador chama `verificarAcessoAbrangencia` — caracterizada em [CEN-SEG-007](../testes/cenarios/seguranca.md#cen-seg-007--abrangência-territorial-onde-o-legado-a-verifica) (achado F2-32 do [relatório da Fase 2](../testes/fase2/fase2-caracterizacao-baselines.md#17-lote-2b--segurança-restante-2026-10-06)).
 
 🟢 **URL direta (calibrado)**: para **rotas protegidas e não excepcionadas**, digitar o endereço direto **continua passando pelo filtro** — a autorização não depende do menu. Porém, **rotas explicitamente excepcionadas** pelo próprio filtro **não passam por esse bloco**, e **superfícies fora de `*.do`** (servlets, APIs — §22) seguem mecanismos próprios. 🔵 Ou seja: o filtro é o **principal gate transversal identificado para rotas web protegidas**, mas **não constitui, sozinho, uma política universal de autorização de todas as superfícies do GSAN** — controles internos nas Actions/controladores (permissões especiais, abrangência, regras de negócio) completam o quadro.
 

@@ -6,7 +6,8 @@
 > [matriz de caracterização](matriz-caracterizacao.md) · [cobertura de baselines](cobertura-baselines.md).
 >
 > ⚠️ **FASE 2 — EM ANDAMENTO.** A 1ª execução classificou os 103 cenários, construiu o mecanismo e capturou o **lote
-> piloto** (§9–§11); a 2ª capturou o **lote de Segurança** (§16). A fase não está concluída: a cobertura dos
+> piloto** (§9–§11); a 2ª capturou o **lote de Segurança** (§16); a 3ª, a **Segurança restante** (§17). A fase não está
+> concluída: a cobertura dos
 > comportamentos priorizados é o trabalho dos próximos lotes (§12).
 > 🔴 Nada do OpenGSAN foi implementado; nenhuma linha do legado foi alterada.
 
@@ -282,9 +283,9 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | Lote | Cenários | Fronteira / modo | Massa nova |
 | ---- | -------- | ---------------- | ---------- |
 | ~~2 — Autenticação e autorização~~ ✅ **capturado em 2026-10-05** (§16) | SEG-001, 002, 004, 005 (A) + registro de SEG-010, 012 (C) | Login e filtro de acesso — Online | Usuários e grupos sintéticos; limite de tentativas sintético; catálogos de situação e de auditoria |
-| **2b — Segurança restante** (recomendado a seguir) | **SEG-006** (P0, auditoria — reaproveita a troca de senha, já registrada, como operação sensível; precisa de um campo anotado), **SEG-007** (P0, abrangência — estende o território com L2 e duas gerências), SEG-003 e SEG-008 (P1); SEG-009 (C) só com o EAR em Batch | Telas que escrevem; consultas com verificação de abrangência — Online | USR-04…USR-10; território L2; massa de auditoria já existente |
-| 3 — Cadastro e faturamento online | CAD-001, CAD-004, CAD-005, FAT-003 (percentual padrão pela simulação), FAT-011 V1 | Consultar Imóvel, simulação — Online | Perfis IMV-04, 11a, 15, 17; situações de ligação restantes |
-| 4 — Atendimento e consumo mínimo | ATE-001…008, MIC-002 (valor obtido na tela de consumo mínimo) | RA → OS → encerramento — Online | ESP-01…06, SRV-01…03, UNI-01/02, OS com imóvel |
+| ~~2b — Segurança restante~~ ✅ **capturado em 2026-10-06** (§17) | SEG-006 (P0), SEG-007 (P0), SEG-003 (P1). **Ficam**: SEG-008 (P1) → lote 4, porque as ações condicionadas exigem OS/RA/comando de cobrança; SEG-009 (C) → lote 5 (Batch) | Login, filtro, troca de senha; Manter Conta (abrangência) — Online | USR-04…USR-08; território em degraus; níveis de abrangência |
+| **3 — Cadastro e faturamento online** (recomendado a seguir: P0 CAD-004 e FAT-003; reaproveita a massa IMV-* e a fronteira da simulação do piloto; nenhum modo novo) | CAD-001, CAD-004, CAD-005, FAT-003 (percentual padrão pela simulação), FAT-011 V1 | Consultar Imóvel, simulação — Online | Perfis IMV-04, 11a, 15, 17; situações de ligação restantes |
+| 4 — Atendimento e consumo mínimo | ATE-001…008, MIC-002 (valor obtido na tela de consumo mínimo), 🆕 **SEG-008** (permissões especiais sobre OS/RA) | RA → OS → encerramento — Online | ESP-01…06, SRV-01…03, UNI-01/02, OS com imóvel |
 | 5 — Faturamento em grupo e Micromedição | BAT-001…005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005 | Processos batch — **EAR em modo Batch** (`GSAN_TIPO=Batch`, novo build) | Cronograma, rotas, leituras, históricos (IMV-05…10, 12a/b, 16, 18) |
 | 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
@@ -302,11 +303,14 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 - **Modo do EAR**: o piloto é todo Online. Lotes batch exigem rebuild em Batch — um EAR por modo.
 - **Custo por execução** (~1 min) é dominado pela subida do JBoss; é o preço do isolamento total e foi mantido.
 - **Catálogos que a base reconstruída não tem** (situações do usuário, ações e tipos de alteração da auditoria, tipos
-  de relação cliente × imóvel) entram pela massa, com os ids das constantes do código: a caracterização mostra o
-  legado com o dado de referência que uma instalação teria. Sem eles, o legado **falha** (F2-15, F2-17) — o que também é
-  registrado.
+  de relação cliente × imóvel, níveis de abrangência) entram pela massa, com os ids das constantes do código: a caracterização mostra o
+  legado com o dado de referência que uma instalação teria. Sem eles, o legado **falha** (F2-15, F2-17, F2-29, F2-31) — o
+  que também é registrado.
 - **Limite de tentativas sintético** (3): o valor de uma instalação real é desconhecido; a baseline caracteriza o
-  **mecanismo**, não o número.
+  **mecanismo**, não o número. O mesmo vale para o histórico de senhas ligado em CEN-SEG-003 V5b.
+- **Abrangência numa superfície**: CEN-SEG-007 cobre a consulta da GUI que chama a verificação (Manter Conta); as
+  escritas que a chamam nos controladores (imóvel, micromedição, arrecadação, faturamento, cobrança) ficam com os lotes
+  dos seus domínios. Os imóveis não têm conta: o "dentro" aparece pela resposta seguinte à verificação.
 - **Bloqueios**: nenhum para o próximo lote. BLQ-01 e BLQ-03 (D-17) continuam bloqueando os cenários que dependem deles.
 
 ## 14. Volume projetado
@@ -315,8 +319,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | ------ | ----- | ---- |
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
-| Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução — batch será maior (processo + modo Batch). Com a instância de inspeção no ar, ~2–3 min por execução | Piloto; lote de Segurança |
-| Já capturado | **30 variações** de 9 cenários (piloto 11 + Segurança 19) — 13% das 234 | Cobertura |
+| Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução — batch será maior (processo + modo Batch). Com a instância de inspeção no ar ou a máquina ocupada por outros contêineres, ~2–3 min por execução | Piloto; lotes de Segurança |
+| Já capturado | **45 variações** de 12 cenários (piloto 11 + Segurança 19 + Segurança restante 15) — 19% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -326,8 +330,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11 e Segurança 19/19 idênticas nas 2 execuções de captura; verificação independente Segurança 19/19 com comportamento idêntico numa 3ª execução e piloto 11/11 conferido de novo depois das mudanças do executor; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **7 de 42** P0 da classe A — autenticação/autorização (4) e conta individual (2) e cadastro (1); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11** — as 45 baselines conferem; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **9 de 42** P0 da classe A — Segurança (6: autenticação, autorização, exceção por substring, auditoria, abrangência), conta individual (2) e cadastro (1); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -365,7 +369,7 @@ CEN-SEG-011 (classe B, já comprovada).
 | `parm_icsenhaforte` | 2 | `ControladorAcessoSEJB:2411` — só valida senha forte se = 1 | Inalterado (troca de senha sem regra de força) |
 | `parm_icbloqueiosenhasantes` | 2 | `:2213`, `:2422` — histórico de senhas só se = 1 | Inalterado |
 | `parm_icdiasexpiracaosenhagrupo` | 2 | `:2103`, `:2139` — expiração por grupo só se = 1 | Inalterado |
-| `parm_nndiasexpiracaoacesso`, `parm_nndiasmsgexpiracao` | NULOS | `:2056-2058` — tratados como 0 na troca de senha | Inalterados — a troca grava expiração **no próprio dia** (INFERÊNCIA do código; observável em CEN-SEG-003) |
+| `parm_nndiasexpiracaoacesso`, `parm_nndiasmsgexpiracao` | NULOS | `:2056-2058` — tratados como 0 na troca de senha | Inalterados — a troca grava expiração **no próprio dia** (INFERÊNCIA do código; 🆕 ✅ **confirmada** por execução em CEN-SEG-003 V5 — §17.8) |
 | `parm_icloginunico` | 0 | `SessaoHttpListener:55` | Inalterado |
 
 Os valores vêm do banco (evidência); o significado vem do trecho de código citado (evidência). A única decisão
@@ -473,3 +477,119 @@ nas evidências da 1ª captura (`.saida/baselines/20260930T235854Z-capturar/`).
   (`referencia.sh recriar-banco --sim`), modelos recongelados com a senha atual, ambiente **23 de 23**, e as **30
   baselines conferidas contra o novo modelo** — piloto 11/11 (`20261005T224553Z-verificar`) e Segurança 19/19
   (`20261005T230208Z-verificar`). A reconstrução do banco pelas migrações é reprodutível: nenhuma baseline mudou.
+
+## 17. Lote 2b — Segurança restante (2026-10-06)
+
+Terceiro lote, o restante do domínio de Segurança que cabe na fronteira Online. Agrupado pela **mesma fronteira** do
+lote 2 — login, filtro de acesso, troca de senha — mais **uma** superfície nova (Manter Conta, para a abrangência), e
+pela **mesma massa** de usuários sintéticos, ampliada.
+
+### 17.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Por que agora |
+| ------- | ------ | - | --------- | ------------- |
+| CEN-SEG-006 — auditoria em dois níveis | A (1; V3 não comparado) | P0 | V1, V2, V3 | Gate 0 → 1; o catálogo de auditoria já estava na massa (F2-17) |
+| CEN-SEG-007 — abrangência onde o legado a verifica | A (1) | P0 | V1–V5 (um nível por variação) | Gate 2 → 3; ramo do filtro a esclarecer |
+| CEN-SEG-003 — ciclo de vida da credencial | A (1) | P1 | V1–V6, V5b | Mesma fronteira e massa do lote 2: custo marginal baixo; regra 4 do registro |
+
+**Fora do lote, com motivo**: CEN-SEG-008 (permissões especiais — as ações condicionadas são instalação de hidrômetro e
+ligação de esgoto **sem RA**, replicar cobrança de serviço e encerrar comando de cobrança: exigem OS, RA e comando —
+massa do lote de Atendimento) · CEN-SEG-009 (tokens dos servlets auxiliares — EAR em modo Batch) · CEN-SEG-011
+(classe B, já comprovada).
+
+### 17.2 Massa
+
+| Delta | Conteúdo | Evidência dos ids / por quê |
+| ----- | -------- | --------------------------- |
+| `seguranca-redefinir-senha.sql` | Grupo B concede a funcionalidade 607 com a operação 818 | Catálogo das migrações; `oper_icregistratransacao = 1` |
+| `seguranca-lembrete-usr01.sql` | USR-01 já tem o lembrete que a troca submete (V3) | Isola o campo **não anotado** |
+| `territorio-abrangencia.sql` | Território em degraus: L3 (mesmo elo de L1), L4 (outro elo, mesma unidade), L5 (outra unidade, mesma gerência), L2 (outra gerência); um imóvel em cada (100048, 100056, 100064, 100072) | `verificarAcessoAbrangencia` (`ControladorAcessoSEJB:4153`); matrículas pelo dígito módulo 11 |
+| `clientes-imoveis-abrangencia.sql` | Cliente usuário de cada imóvel | Sem ele, Manter Conta para em "nenhum cliente do tipo usuário" |
+| `seguranca-abrangencia.sql` | Níveis de abrangência GERÊNCIA, ELO, LOCALIDADE, UNIDADE; grupo com Manter Conta (44/57); USR-08 — **um usuário por nível**, todos lotados em G1/U1/elo L1/L1 | Constantes de `UsuarioAbrangencia`; só o nível muda entre eles |
+| `seguranca-ciclo-credencial.sql` | USR-04 INATIVO, USR-05 PENDENTE, USR-06A expirado ontem, USR-06B a expirar em 5 dias (aviso aberto), USR-07 | Datas **relativas** a `current_date` — o arquivo não muda de um dia para o outro |
+| `seguranca-historico-senha.sql` | `parm_icbloqueiosenhasantes = 1` (V5b) | Sintético: o mecanismo com o controle ligado |
+| `seguranca-senha-proibida.sql` | Um termo de teste na lista de senhas proibidas | Sintético; a coluna tem 6 caracteres |
+
+Pré-requisitos que a base reconstruída não tem e que **falham** sem a massa (registrados): níveis de abrangência (só
+ESTADO — F2-31) e `loca_nnconsumograndeusuario` da localidade (nulo derruba a carga da entidade — F2-29).
+
+### 17.3 Mecanismo — o que mudou
+
+- **Passos novos** no roteiro `seguranca`: `redefinir_senha` (818), `guardar_credencial`/`credencial_alterada` (a
+  credencial mudou? — só igualdade, o valor não sai do executor), `auditoria`, `datas` (dias a partir de hoje),
+  `historico` (contagem); `trocar_senha` aceita `lembrete` e, só para termo de teste sintético, `nova_literal`.
+- **Auditoria sem identificador técnico**: os ids sequenciais dos registros não saem — a correlação é a **posição** na
+  ordem de gravação; ids de usuário saem com o login (são da massa); o IP do cliente sai como "preenchido"; um valor de
+  senha nunca sai, mesmo se aparecesse na trilha. Única normalização do lote, declarada: `carimbo_tempo` em
+  `passos[*].carimbos[*].atual` (o carimbo de última alteração gravado pela operação).
+- **Mensagem de "Atenção" com HTTP 500**: exceção de negócio não tratada (ex.: negação por abrangência, usuário
+  inativo, senha anterior recusada) — a mensagem passa a ser lida também nessas páginas.
+- **Correção de classificação no login**: a troca de senha imposta vem **dentro do leiaute** (com o link de logoff) e
+  era classificada como tela principal — o teste de `novaSenha` passou a vir antes (§17.6).
+
+### 17.4 Baselines do lote
+
+Em [`golden/seguranca/`](../../../../ambiente-referencia/baselines/golden/seguranca/) — **3 cenários, 15 baselines**.
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| SEG-006 V1 | USR-02 redefine a senha de USR-01 (818): credencial de USR-01 alterada; `operacao_efetuada` com a operação 818, argumento = USR-01, dados adicionais com o nome; autor **USR-02** (EFETUOU OPERACAO), momento e IP preenchidos; trilha: carimbo de última alteração e descrição do objeto |
+| SEG-006 V2 | Troca da própria senha (52) preenchendo o lembrete: trilha com `usur_dslembretesenha` vazio → `LEMBRETE SINTETICO` |
+| SEG-006 V3 | Troca mantendo o lembrete: o lembrete **não** aparece; a senha mudou e `usur_nmsenha` **não** aparece na trilha |
+| SEG-007 V1 (gerência) | L1, L3, L4, L5 dentro · L2 negado |
+| SEG-007 V2 (unidade) | L1, L3, L4 dentro · L5, L2 negados |
+| SEG-007 V3 (elo) | L1, L3 dentro · L4, L5, L2 negados |
+| SEG-007 V4 (localidade) | L1 dentro · L3, L4, L5, L2 negados |
+| SEG-007 V5 (estado, controle) | Todos dentro |
+| SEG-003 V1 | INATIVO: HTTP 500 "O usuário seg.usr04 está inativo."; sem sessão; F1 negada |
+| SEG-003 V2 | PENDENTE: login cai na **troca imposta**, mas a sessão existe — contexto autenticado e **F1 permitida** |
+| SEG-003 V3 | Expirado ontem: idem V2 — troca imposta, F1 **permitida** |
+| SEG-003 V4 | A expirar: tela principal com "Sua senha expira dentro de 5 dia(s)." |
+| SEG-003 V5 | Parâmetro da instância (2): A → B → A **aceitas**; histórico vazio; depois da troca, expiração = **hoje**, e o login seguinte cai na troca imposta |
+| SEG-003 V5b | Controle ligado (1): A → B aceitas; a volta para A é **recusada** com HTTP 500: "Senha já informada anteriormente para o usuário. Informe uma nova senha diferente das 3 anteriores."; 2 senhas no histórico |
+| SEG-003 V6 | Termo da lista proibida: troca **aceita** — a lista nunca é consultada |
+
+Dentro da abrangência, o legado segue para as contas do imóvel ("O imóvel de matrícula … não possui nenhuma conta.");
+fora, "Acesso a operação negado devido a abrangência do usuário." — **ambas com HTTP 500** (F2-30). Unidade e gerência
+do imóvel são as do **elo** da sua localidade.
+
+`efeitos_no_banco`: SEG-006 — 1 registro de operação, 1 autor, 2 linhas e 2 ou 3 colunas de trilha por variação;
+SEG-007 — imóveis e contas **inalterados** (a consulta não escreve); SEG-003 — histórico só cresce com o controle
+ligado; cada troca aceita registra uma operação.
+
+### 17.5 Determinismo
+
+- **Captura**: **15 de 15** variações com as duas execuções **idênticas byte a byte** — SEG-006 (`20261006T133115Z-capturar`), SEG-007 (`20261006T134346Z-capturar`), SEG-003 (`20261006T141654Z-capturar`); SEG-012 V1 recapturada (`20261006T143116Z-capturar`, §17.6). Antes de cada captura, uma execução exploratória por variação conferiu os observáveis — evidência, nunca baseline.
+- **Verificação independente** (3ª execução) e **regressão** — o roteiro mudou depois da captura de SEG-006 e SEG-007: **Segurança 34/34** conferem (`20261006T143318Z-verificar` — as 15 novas e as 19 do lote 2) e **piloto 11/11** (`20261006T150701Z-verificar`).
+- Uma única regressão: a primeira cadeia de verificação foi **interrompida de propósito** logo depois da captura de SEG-007, para incluir o SEG-003 (que mudaria o roteiro de novo) antes de verificar tudo. Interromper uma verificação não deixa resíduo: ela nunca escreve em `golden/`.
+
+### 17.6 Baseline substituída — justificativa (`--substituir`)
+
+| Baseline | Captura anterior | Por que mudou |
+| -------- | ---------------- | ------------- |
+| SEG-012 V1 | O login com a senha nova registrado como `tela_principal` | **Classificação errada do roteiro**: a página era a **troca de senha imposta** (a troca grava expiração para o mesmo dia — F2-36), servida dentro do leiaute com o link de logoff, que o classificador testava primeiro. Comportamento do legado inalterado; o observável passou a dizê-lo (`alterar_senha`) |
+
+### 17.7 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-26 | A linha de ALTERACAO da trilha grava **`id1 = 0`**: a linha alterada não é identificada nela. Causa: `Usuario` declara o **nome** como chave primária para a trilha (`retornaCamposChavePrimaria` → `nomeUsuario`); sem id inteiro, `getIds` devolve 0 | SEG-006 V1–V3; `Usuario.java:521-523`; `Interceptador:158-162`, `:1122-1124` | 🔵 | Objeto recuperável só pela operação e pela linha principal |
+| F2-27 | A linha **principal** da trilha é sempre tipada **INCLUSAO**, mesmo numa alteração; a "chave" declarada (o nome) é gravada como coluna mesmo inalterada | SEG-006; `Interceptador:1745`, `:226-249` | 🔵 | Leiaute do legado, não requisito (oráculo semântico) |
+| F2-28 | A operação 818 **redefine a senha de qualquer login para um valor fixo no código**, sem impor troca | SEG-006 V1; `EfetuarAlteracaoSenhaPorMatriculaAction:78-79` | 🔴 | Achado de segurança 30; **CAND-08**. Valor não transcrito |
+| F2-29 | `loca_nnconsumograndeusuario` nulo (permitido pelo schema) derruba a carga da entidade `Localidade` (int primitivo): usuário lotado na localidade não entra | Execução exploratória; `Localidade.hbm.xml:21` | ⚙️ | Massa fixa 0 ("não informado") |
+| F2-30 | Negação por abrangência entregue como **exceção não tratada (HTTP 500)** — a mesma forma da ausência de conta | SEG-007 | 🔵 | Não requisito: no OpenGSAN, resposta de negação |
+| F2-31 | Catálogo `usuario_abrangencia` só com ESTADO: nenhum usuário pode ter abrangência restrita | Base reconstruída | ⚙️ | Massa cria os níveis pelas constantes |
+| F2-32 | O ramo de abrangência do **filtro** é **inalcançável**: lê um atributo de requisição que nenhum código grava | `FiltroSegurancaAcesso:102, 253-258`; busca em `src/` | 🔵 | A abrangência só existe onde a Action/controlador a chama — reforça D-17/BLQ-01 |
+| F2-33 | A lista de senhas proibidas **nunca é consultada** | SEG-003 V6; `pesquisarSenhasInvalidas` sem chamador | 🔴 | Achado de segurança 31 |
+| F2-34 | Histórico de senhas **desligado** na base (parâmetro 2); ligado, recusa a volta a uma das 3 últimas | SEG-003 V5, V5b | 🟡 | Achado 31; parâmetro registrado como evidência |
+| F2-35 | **Troca de senha imposta não restringe a sessão**: PENDENTE e expirado entram em funcionalidade concedida | SEG-003 V2, V3; `EfetuarLoginAction:187-190` | 🔴 | Achado de segurança 32; **CAND-09** |
+| F2-36 | Com a validade nula da base, a troca grava a **expiração para o próprio dia**: o login seguinte já cai na troca imposta | SEG-003 V5; `ControladorAcessoSEJB:2071-2076` | 🟡 | Confirma por execução a inferência de §16.2 |
+
+### 17.8 Política de senha — o que mudou de estado
+
+| Item (§16.2) | Antes | Agora |
+| ------------ | ----- | ----- |
+| Expiração gravada pela troca com validade nula | INFERÊNCIA do código | ✅ **EVIDÊNCIA** — SEG-003 V5: expiração = hoje (F2-36) |
+| Histórico de senhas (`parm_icbloqueiosenhasantes`) | Valor 2, inalterado | ✅ Efeito medido: com 2, sem histórico; com 1, 3 últimas recusadas |
+| Aviso de dias para expirar | Não observado | ✅ Existe — "Sua senha expira dentro de N dia(s)." na tela principal (`ControladorAcessoSEJB:5471`) |
+| Lista de senhas proibidas | Não observada | 🔴 Nunca consultada (F2-33) |

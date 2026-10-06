@@ -1,0 +1,211 @@
+{
+  "cenario": "CEN-SEG-007",
+  "descricao": "USR-08 com abrangência UNIDADE DE NEGÓCIO (U1), lotado em G1/U1/elo L1/L1, consulta Manter Conta de um imóvel em cada degrau do território — especificação: dentro: L1, L3, L4 (U1); fora: L5 (U2), L2",
+  "efeitos_no_banco": {
+    "cadastro.imovel": "inalterado",
+    "faturamento.conta": 0,
+    "seguranca.usuario": "alterado"
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-007",
+  "fora_desta_fronteira": {
+    "RA": "objeto RA da especificação: nenhuma superfície de RA chama a verificação na GUI; RA fica para quando houver massa de atendimento",
+    "conta exibida": "os imóveis não têm conta (massa sem faturamento): o imóvel dentro da abrangência aparece pela resposta do passo seguinte à verificação — a consulta das contas do imóvel (\"não possui nenhuma conta\"), com a matrícula",
+    "outras superfícies que chamam a verificação": "os controladores a chamam em escritas (inserir/atualizar/remover imóvel, economias, doação; micromedição, arrecadação, faturamento, cobrança) — não exercidas neste lote",
+    "superfícies sem verificação": "BLQ-01, bloqueado até a decisão sobre D-17 (a especificação as exclui)"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-abrangencia.sql",
+      "sha256": "1dc9cda237b7eabe36f70efd94954022d32a57eae782d9c3cb007f5a9c911fab"
+    },
+    {
+      "arquivo": "massas/deltas/clientes-imovel-imv03.sql",
+      "sha256": "2eecba85687e62c11beaaba5ec9819cdfbd0345c165c70c4eb3d40153875ff86"
+    },
+    {
+      "arquivo": "massas/deltas/clientes-imoveis-abrangencia.sql",
+      "sha256": "a516ee930b80a5b881aadc72e820f83aaa60eb1e5459745fe980231048858eea"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-usuarios.sql",
+      "sha256": "76db9bf94ce149bb6a31f79774ea160b1d323283fc92bb79ac9e8485dc2fbb5c"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-abrangencia.sql",
+      "sha256": "933041c33aa2655b37fa686c14e0043e89155eeb41e17bfb30e97b3b2e89ce05"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "passos": [
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "login",
+        "resultado": "tela_principal",
+        "senha": "correta",
+        "usuario": "seg.usr08u"
+      },
+      {
+        "conteudo": "html",
+        "dados_encontrados": [
+          "100013"
+        ],
+        "decisao": "erro_http",
+        "http": 500,
+        "mensagem": "O imóvel de matrícula 100013 não possui nenhuma conta.",
+        "passo": "acessar",
+        "rotulo": "Manter Conta — imóvel 100013 em L1",
+        "set_cookie_sessao": false
+      },
+      {
+        "conteudo": "html",
+        "dados_encontrados": [
+          "100048"
+        ],
+        "decisao": "erro_http",
+        "http": 500,
+        "mensagem": "O imóvel de matrícula 100048 não possui nenhuma conta.",
+        "passo": "acessar",
+        "rotulo": "Manter Conta — imóvel 100048 em L3",
+        "set_cookie_sessao": false
+      },
+      {
+        "conteudo": "html",
+        "dados_encontrados": [
+          "100056"
+        ],
+        "decisao": "erro_http",
+        "http": 500,
+        "mensagem": "O imóvel de matrícula 100056 não possui nenhuma conta.",
+        "passo": "acessar",
+        "rotulo": "Manter Conta — imóvel 100056 em L4",
+        "set_cookie_sessao": false
+      },
+      {
+        "conteudo": "html",
+        "dados_encontrados": [],
+        "decisao": "erro_http",
+        "http": 500,
+        "mensagem": "Acesso a operação negado devido a abrangência do usuário.",
+        "passo": "acessar",
+        "rotulo": "Manter Conta — imóvel 100064 em L5",
+        "set_cookie_sessao": false
+      },
+      {
+        "conteudo": "html",
+        "dados_encontrados": [],
+        "decisao": "erro_http",
+        "http": 500,
+        "mensagem": "Acesso a operação negado devido a abrangência do usuário.",
+        "passo": "acessar",
+        "rotulo": "Manter Conta — imóvel 100072 em L2",
+        "set_cookie_sessao": false
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "passos": [
+        {
+          "passo": "sessao",
+          "usuario": "seg.usr08u"
+        },
+        {
+          "passo": "login",
+          "senha": "correta",
+          "usuario": "seg.usr08u"
+        },
+        {
+          "passo": "acessar",
+          "procurar": [
+            "100013"
+          ],
+          "rotulo": "Manter Conta — imóvel 100013 em L1",
+          "url": "exibirManterContaAction.do?idImovel=100013",
+          "usuario": "seg.usr08u"
+        },
+        {
+          "passo": "acessar",
+          "procurar": [
+            "100048"
+          ],
+          "rotulo": "Manter Conta — imóvel 100048 em L3",
+          "url": "exibirManterContaAction.do?idImovel=100048",
+          "usuario": "seg.usr08u"
+        },
+        {
+          "passo": "acessar",
+          "procurar": [
+            "100056"
+          ],
+          "rotulo": "Manter Conta — imóvel 100056 em L4",
+          "url": "exibirManterContaAction.do?idImovel=100056",
+          "usuario": "seg.usr08u"
+        },
+        {
+          "passo": "acessar",
+          "procurar": [
+            "100064"
+          ],
+          "rotulo": "Manter Conta — imóvel 100064 em L5",
+          "url": "exibirManterContaAction.do?idImovel=100064",
+          "usuario": "seg.usr08u"
+        },
+        {
+          "passo": "acessar",
+          "procurar": [
+            "100072"
+          ],
+          "rotulo": "Manter Conta — imóvel 100072 em L2",
+          "url": "exibirManterContaAction.do?idImovel=100072",
+          "usuario": "seg.usr08u"
+        }
+      ]
+    },
+    "fronteira": "Manter Conta (exibirManterContaAction.do, funcionalidade 44) — a superfície de consulta em que a GUI chama verificarAcessoAbrangencia (ExibirManterContaAction:125-128, ControladorAcessoSEJB:4153). Usuários sintéticos do próprio cenário, um por nível; nenhuma navegação humana.",
+    "roteiro": "seguranca"
+  },
+  "oraculo": "1",
+  "ressalvas": {
+    "massa": "L1 recebe loca_nnconsumograndeusuario = 0 (SINTÉTICO): com o valor nulo da base, carregar a entidade Localidade falha e nenhum usuário lotado em L1 entra (F2-29)",
+    "oraculo 1 é a decisão por nível": "compara, para cada nível, quais imóveis são acessíveis e quais são negados e o que é devolvido. O HTTP 500 com que o legado entrega tanto a negação por abrangência quanto a ausência de conta (exceção de negócio não tratada — F2-30) não é requisito: no OpenGSAN a negação é uma resposta de negação"
+  },
+  "titulo": "Abrangência territorial onde o legado a verifica",
+  "usuarios_sinteticos": [
+    "seg.usr08e",
+    "seg.usr08g",
+    "seg.usr08l",
+    "seg.usr08p",
+    "seg.usr08u"
+  ],
+  "variacao": "V2"
+}

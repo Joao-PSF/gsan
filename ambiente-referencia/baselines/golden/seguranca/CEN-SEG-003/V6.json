@@ -1,0 +1,109 @@
+{
+  "cenario": "CEN-SEG-003",
+  "descricao": "USR-07 troca a senha para um valor presente na lista de senhas proibidas (seguranca.senha_invalida, coluna de 6 caracteres; termo de teste SINTÉTICO)",
+  "efeitos_no_banco": {
+    "seguranca.operacao_efetuada": 1,
+    "seguranca.usuario": "alterado",
+    "seguranca.usuario_senha_historico": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-003",
+  "fora_desta_fronteira": {
+    "troca obrigatória pela tela completa": "a troca usada é a simplificada (a mesma de CEN-SEG-001/006); a tela para onde o login encaminha (exibirEfetuarAlteracaoSenhaAction) só é registrada como destino",
+    "valor das senhas e do histórico": "nunca observado: o histórico sai como contagem; as senhas, como rótulos"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-usuarios.sql",
+      "sha256": "76db9bf94ce149bb6a31f79774ea160b1d323283fc92bb79ac9e8485dc2fbb5c"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-ciclo-credencial.sql",
+      "sha256": "6c83cec07550f67a1909819b0cba283eed13c4519179a4abb26500aaef175904"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-senha-proibida.sql",
+      "sha256": "7952768b36c0b0ab31ef959ee1a06afee13daf03d48d210171b6eb93dd2673b4"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "passos": [
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "login",
+        "resultado": "tela_principal",
+        "senha": "correta",
+        "usuario": "seg.usr07"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "trocar_senha",
+        "sucesso": true,
+        "usuario": "seg.usr07"
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "passos": [
+        {
+          "passo": "sessao",
+          "usuario": "seg.usr07"
+        },
+        {
+          "passo": "login",
+          "senha": "correta",
+          "usuario": "seg.usr07"
+        },
+        {
+          "nova_literal": "PROIB6",
+          "passo": "trocar_senha",
+          "usuario": "seg.usr07"
+        }
+      ]
+    },
+    "fronteira": "Login (efetuarLoginAction.do), o filtro de acesso e a troca da própria senha (efetuarAlteracaoSenhaSimplificadaAction.do → ControladorAcessoSEJB.efetuarAlteracaoSenha/validarNovaSenha), pelas telas do legado. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+    "roteiro": "seguranca"
+  },
+  "oraculo": "1",
+  "ressalvas": {
+    "controles desligados na instância": "V5 e V6 caracterizam a instância como está: histórico de senhas desligado (parâmetro 2 — F2-34) e lista de senhas proibidas nunca consultada (F2-33). Não são comportamento a reproduzir: regra 4 do registro de divergências — nenhuma divergência pode reduzir expiração, bloqueio ou histórico; o OpenGSAN pode ser mais estrito",
+    "expiração no próprio dia": "com os parâmetros de validade nulos da base, a troca grava a expiração para o próprio dia e o login seguinte já cai na troca imposta (F2-36) — registrado em V5/V5b, não requisito",
+    "sessão nos fluxos impostos": "em V2 e V3 o legado mostra a troca de senha imposta, mas o usuário já está na sessão e a funcionalidade concedida abre (F2-35) — mesmo padrão de CAND-07; candidato CAND-09, não golden master"
+  },
+  "titulo": "Ciclo de vida da credencial: situação, expiração e política de senha",
+  "usuarios_sinteticos": [
+    "seg.usr04",
+    "seg.usr05",
+    "seg.usr06a",
+    "seg.usr06b",
+    "seg.usr07"
+  ],
+  "variacao": "V6"
+}

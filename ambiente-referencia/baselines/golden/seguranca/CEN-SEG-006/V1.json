@@ -1,0 +1,203 @@
+{
+  "cenario": "CEN-SEG-006",
+  "descricao": "operação sensível com autor ≠ objeto: USR-02 (grupo B, concessão 607/818) redefine a senha de USR-01 pela operação 818 \"Alterar Senha Usuario pelo Login\"",
+  "efeitos_no_banco": {
+    "seguranca.operacao_efetuada": 1,
+    "seguranca.tab_linha_col_alteracao": 2,
+    "seguranca.tabela_linha_alteracao": 2,
+    "seguranca.usuario": "alterado",
+    "seguranca.usuario_alteracao": 1
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/seguranca.md — CEN-SEG-006",
+  "fora_desta_fronteira": {
+    "leitura da trilha pela aplicação": "a consulta de operações efetuadas pelas telas do legado não é exercida; a trilha é lida das tabelas que o próprio legado grava",
+    "valor da senha redefinida (V1)": "fixo no código do legado (achado de segurança 30); não é observado nem transcrito — a baseline registra só que a credencial mudou"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Online)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-usuarios.sql",
+      "sha256": "76db9bf94ce149bb6a31f79774ea160b1d323283fc92bb79ac9e8485dc2fbb5c"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-redefinir-senha.sql",
+      "sha256": "e2e398db8e21f3526dd36feaf514cd6a13d4f95b59d73a97a6ecafa5d061f1a4"
+    }
+  ],
+  "normalizacoes": [
+    {
+      "caminho": "passos[*].carimbos[*].atual",
+      "regra": "carimbo_tempo"
+    }
+  ],
+  "observaveis": {
+    "passos": [
+      {
+        "passo": "guardar_credencial",
+        "usuarios": [
+          "seg.usr01"
+        ]
+      },
+      {
+        "carregar": true,
+        "passo": "sessao"
+      },
+      {
+        "http": 200,
+        "mensagem": null,
+        "passo": "login",
+        "resultado": "tela_principal",
+        "senha": "correta",
+        "usuario": "seg.usr02"
+      },
+      {
+        "alvo": "seg.usr01",
+        "decisao": "permitido",
+        "entrada": "permitido",
+        "http": 200,
+        "mensagem": "Senha padrão para o login: seg.usr01 gerada com sucesso.",
+        "passo": "redefinir_senha",
+        "sucesso": true
+      },
+      {
+        "alterada": {
+          "seg.usr01": true
+        },
+        "passo": "credencial_alterada"
+      },
+      {
+        "autores": [
+          {
+            "acao": "EFETUOU OPERACAO",
+            "empresa": 1,
+            "ip_preenchido": true,
+            "momento_preenchido": true,
+            "operacao": 1,
+            "usuario": "seg.usr02"
+          }
+        ],
+        "carimbos": [
+          {
+            "anterior": "01/01/2026 00:00:00",
+            "atual": "<carimbo>",
+            "atualizada": 0,
+            "coluna": "usur_tmultimaalteracao",
+            "linha": 1
+          }
+        ],
+        "coluna_senha_na_trilha": false,
+        "colunas": [
+          {
+            "anterior": "USUARIO SEG 01 (SINTETICO)",
+            "atual": "USUARIO SEG 01 (SINTETICO)",
+            "atualizada": 0,
+            "coluna": "usur_nmusuario",
+            "linha": 1
+          }
+        ],
+        "linhas": [
+          {
+            "id1": 0,
+            "id1_login": null,
+            "id2": null,
+            "momento_preenchido": true,
+            "operacao": 1,
+            "principal": null,
+            "tabela": "seguranca.usuario",
+            "tipo": "ALTERACAO"
+          },
+          {
+            "id1": 2001,
+            "id1_login": "seg.usr01",
+            "id2": null,
+            "momento_preenchido": true,
+            "operacao": 1,
+            "principal": 1,
+            "tabela": "seguranca.usuario",
+            "tipo": "INCLUSAO"
+          }
+        ],
+        "operacoes": [
+          {
+            "argumento": 2001,
+            "argumento_login": "seg.usr01",
+            "atributo_grupo": null,
+            "dados_adicionais": "Nome usuario:USUARIO SEG 01 (SINTETICO)$",
+            "descricao": "Alterar Senha Usuario pelo Login",
+            "momento_preenchido": true,
+            "operacao": 818
+          }
+        ],
+        "passo": "auditoria"
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "passos": [
+        {
+          "passo": "guardar_credencial",
+          "usuarios": [
+            "seg.usr01"
+          ]
+        },
+        {
+          "passo": "sessao",
+          "usuario": "seg.usr02"
+        },
+        {
+          "passo": "login",
+          "senha": "correta",
+          "usuario": "seg.usr02"
+        },
+        {
+          "alvo": "seg.usr01",
+          "passo": "redefinir_senha",
+          "usuario": "seg.usr02"
+        },
+        {
+          "passo": "credencial_alterada",
+          "usuarios": [
+            "seg.usr01"
+          ]
+        },
+        {
+          "passo": "auditoria"
+        }
+      ]
+    },
+    "fronteira": "Operações registradas do legado pelas telas — troca da própria senha (operação 52, efetuarAlteracaoSenhaSimplificadaAction) e redefinição da senha de outro login (operação 818, efetuarAlteracaoSenhaPorMatriculaAction) — e o que o RegistradorOperacao e o Interceptador do Hibernate gravam: seguranca.operacao_efetuada, usuario_alteracao, tabela_linha_alteracao e tab_linha_col_alteracao. Usuários sintéticos do próprio cenário; nenhuma navegação humana.",
+    "roteiro": "seguranca"
+  },
+  "oraculo": "1 (V1, V2) · V3 não comparado",
+  "ressalvas": {
+    "V1 (achado 30)": "a operação 818 redefine a senha de qualquer login para um valor fixo no código; a baseline registra a auditoria da operação, não um comportamento a reproduzir",
+    "V3 (acréscimo)": "auditar a senha (campo não anotado) no OpenGSAN é acréscimo permitido; o que nunca pode aparecer na trilha é o VALOR da credencial",
+    "oraculo 1 é semântico": "compara autor, operação, objeto e momento do registro e, na trilha, coluna, valor anterior e valor novo — não o leiaute das tabelas do legado. A linha de ALTERACAO gravada com id1 = 0 e a linha principal tipada INCLUSAO numa alteração (F2-26, F2-27) são achados, não requisito do OpenGSAN"
+  },
+  "titulo": "Auditoria em dois níveis",
+  "usuarios_sinteticos": [
+    "seg.usr01",
+    "seg.usr02"
+  ],
+  "variacao": "V1"
+}

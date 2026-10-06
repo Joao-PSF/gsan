@@ -16,7 +16,7 @@ Sumário da documentação técnica. A visão executiva do projeto está em [`MO
 >
 > ✅ **Fase 1 concluída (2026-09-30)** — o GSAN legado é construído, implantado e verificado do zero por procedimento único, num laboratório isolado: [relatório](ambiente/fase1-ambiente-referencia.md) · [ambiente](../../ambiente-referencia/README.md).
 >
-> 🆕 ⚠️ **Fase 2 em andamento (2026-09-30)** — 103 cenários classificados A/B/C/N por script, mecanismo de captura e verificação de baselines construído e **lote piloto** capturado com determinismo comprovado; 🆕 **lote de Segurança** (2026-10-05) — P0 da classe A **7 de 42**, achados de segurança 26–29: [relatório](testes/fase2/fase2-caracterizacao-baselines.md) · [matriz](testes/fase2/matriz-caracterizacao.md) · [cobertura](testes/fase2/cobertura-baselines.md) · [mecanismo](../../ambiente-referencia/baselines/README.md).
+> 🆕 ⚠️ **Fase 2 em andamento (2026-09-30)** — 103 cenários classificados A/B/C/N por script, mecanismo de captura e verificação de baselines construído e **lote piloto** capturado com determinismo comprovado; 🆕 **lote de Segurança** (2026-10-05) e **Segurança restante** (2026-10-06) — P0 da classe A **9 de 42**, achados de segurança 26–32: [relatório](testes/fase2/fase2-caracterizacao-baselines.md) · [matriz](testes/fase2/matriz-caracterizacao.md) · [cobertura](testes/fase2/cobertura-baselines.md) · [mecanismo](../../ambiente-referencia/baselines/README.md).
 
 ## Documentos
 
