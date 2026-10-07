@@ -1,0 +1,722 @@
+{
+  "cenario": "CEN-BAT-002",
+  "descricao": "V1, correção da causa e reinício da etapa com erro pela tela",
+  "efeitos_no_banco": {
+    "batch.funcionalidade_iniciada": 1,
+    "batch.processo_iniciado": 1,
+    "batch.unidade_iniciada": 3,
+    "faturamento.conta": 7,
+    "faturamento.conta_categoria": 8,
+    "faturamento.conta_catg_cons_fx": 12,
+    "faturamento.conta_impressao": 7,
+    "faturamento.faturamento_grupo": "alterado",
+    "micromedicao.consumo_historico": 0,
+    "seguranca.operacao_efetuada": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/batch-relatorios-integracoes.md — CEN-BAT-002",
+  "fora_desta_fronteira": {
+    "correção da causa": "aplicada por SQL entre a falha e o reinício (massas/passos/) — a manutenção do imóvel é outra fronteira",
+    "texto técnico da exceção": "só o registro e as chaves de mensagem do legado; a pilha fica nas evidências"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/batch-faturamento-g1-202605.sql",
+      "sha256": "0ed2b2838ce3938407e2e92341ef3e9bd187fd9b98e88f9080bbb74e11c45b28"
+    },
+    {
+      "arquivo": "massas/deltas/batch-rotas-r2-r3.sql",
+      "sha256": "e59767fd734bd92d8725afe4b32cd294bde4e80a6a47c6e769a1dabca039528d"
+    },
+    {
+      "arquivo": "massas/deltas/batch-permissoes-processo.sql",
+      "sha256": "329270da95fe277994a4578cf209638f71817d9d73044099d5036bcda690960a"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "comando": {
+      "realizado": true
+    },
+    "contas": [
+      {
+        "consumo_agua": 27,
+        "matricula": 100013,
+        "referencia": 202605,
+        "rota": 1,
+        "situacao": "NORMAL",
+        "valor_agua": "110.40",
+        "valor_esgoto": "0.00",
+        "valor_total": "110.40"
+      },
+      {
+        "consumo_agua": 47,
+        "matricula": 100021,
+        "referencia": 202605,
+        "rota": 1,
+        "situacao": "NORMAL",
+        "valor_agua": "168.09",
+        "valor_esgoto": "0.00",
+        "valor_total": "168.09"
+      },
+      {
+        "consumo_agua": 58,
+        "matricula": 100030,
+        "referencia": 202605,
+        "rota": 1,
+        "situacao": "NORMAL",
+        "valor_agua": "252.60",
+        "valor_esgoto": "0.00",
+        "valor_total": "252.60"
+      },
+      {
+        "consumo_agua": 15,
+        "matricula": 100218,
+        "referencia": 202605,
+        "rota": 2,
+        "situacao": "NORMAL",
+        "valor_agua": "53.25",
+        "valor_esgoto": "0.00",
+        "valor_total": "53.25"
+      },
+      {
+        "consumo_agua": 18,
+        "matricula": 100226,
+        "referencia": 202605,
+        "rota": 2,
+        "situacao": "NORMAL",
+        "valor_agua": "65.70",
+        "valor_esgoto": "0.00",
+        "valor_total": "65.70"
+      },
+      {
+        "consumo_agua": 22,
+        "matricula": 100234,
+        "referencia": 202605,
+        "rota": 2,
+        "situacao": "NORMAL",
+        "valor_agua": "84.40",
+        "valor_esgoto": "0.00",
+        "valor_total": "84.40"
+      },
+      {
+        "consumo_agua": 33,
+        "matricula": 100242,
+        "referencia": 202605,
+        "rota": 3,
+        "situacao": "NORMAL",
+        "valor_agua": "148.05",
+        "valor_esgoto": "0.00",
+        "valor_total": "148.05"
+      }
+    ],
+    "contas_iniciadas": 7,
+    "funcionalidades": [
+      {
+        "descricao": "Faturar Grupo Faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 63,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "grupo_faturamento": {
+      "referencia_atual": 202606
+    },
+    "passos": [
+      {
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "estado": {
+          "comando": {
+            "realizado": false
+          },
+          "consumos": [
+            {
+              "consumo": 27,
+              "ligacao": "AGUA",
+              "matricula": 100013,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 47,
+              "ligacao": "AGUA",
+              "matricula": 100021,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 58,
+              "ligacao": "AGUA",
+              "matricula": 100030,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 15,
+              "ligacao": "AGUA",
+              "matricula": 100218,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 18,
+              "ligacao": "AGUA",
+              "matricula": 100226,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 22,
+              "ligacao": "AGUA",
+              "matricula": 100234,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 33,
+              "ligacao": "AGUA",
+              "matricula": 100242,
+              "referencia": 202605,
+              "tipo": "REAL"
+            }
+          ],
+          "contas": [
+            {
+              "autor": null,
+              "consumo_agua": 27,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100013,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 27,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 10,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 10,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "41.50"
+                    },
+                    {
+                      "consumo_agua": 7,
+                      "fim": 30,
+                      "inicio": 21,
+                      "tarifa": "5.20",
+                      "valor_agua": "36.40"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "32.50",
+                  "valor_agua": "110.40",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "110.40",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "110.40",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 47,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100021,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 48,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 30,
+                  "economias": 3,
+                  "faixas": [
+                    {
+                      "consumo_agua": 6,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "23.53"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "97.50",
+                  "valor_agua": "168.09",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "168.09",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "168.09",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 58,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100030,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 36,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 20,
+                  "economias": 2,
+                  "faixas": [
+                    {
+                      "consumo_agua": 8,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "31.83"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "65.00",
+                  "valor_agua": "128.66",
+                  "valor_esgoto": "0.00"
+                },
+                {
+                  "categoria": "COMERCIAL",
+                  "consumo_agua": 23,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 15,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 8,
+                      "fim": 30,
+                      "inicio": 16,
+                      "tarifa": "6.85",
+                      "valor_agua": "52.54"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "71.40",
+                  "valor_agua": "123.94",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "252.60",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "252.60",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 15,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100218,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 15,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 10,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 5,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "20.75"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "32.50",
+                  "valor_agua": "53.25",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 2,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "53.25",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "53.25",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 33,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100242,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 33,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 10,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 10,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "41.50"
+                    },
+                    {
+                      "consumo_agua": 10,
+                      "fim": 30,
+                      "inicio": 21,
+                      "tarifa": "5.20",
+                      "valor_agua": "52.00"
+                    },
+                    {
+                      "consumo_agua": 3,
+                      "fim": 50,
+                      "inicio": 31,
+                      "tarifa": "7.35",
+                      "valor_agua": "22.05"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "32.50",
+                  "valor_agua": "148.05",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 3,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "148.05",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "148.05",
+              "vencimento": "10/06/2026"
+            }
+          ],
+          "contas_iniciadas": 5,
+          "funcionalidades": [
+            {
+              "descricao": "Faturar Grupo Faturamento",
+              "erro_chaves": [
+                "atencao.nao_cadastrado.imovel_subcategoria"
+              ],
+              "erro_registrado": true,
+              "funcionalidade": 63,
+              "inicio_registrado": true,
+              "processo": 1,
+              "sequencia": 1,
+              "situacao": "CONCLUIDA COM ERRO",
+              "termino_registrado": true
+            }
+          ],
+          "grupo_faturamento": {
+            "referencia_atual": 202605
+          },
+          "processos": [
+            {
+              "grupo": 1,
+              "inicio_registrado": true,
+              "ordem": 1,
+              "processo": "FATURAR GRUPO FATURAMENTO",
+              "situacao": "CONCLUIDO COM ERRO",
+              "solicitante": "fase2.oper",
+              "termino_registrado": true
+            }
+          ],
+          "totais": {
+            "grupo": {
+              "contas": 5,
+              "valor_total": "732.39"
+            },
+            "por_rota": [
+              {
+                "contas": 3,
+                "rota": 1,
+                "valor_agua": "531.09",
+                "valor_esgoto": "0.00",
+                "valor_total": "531.09"
+              },
+              {
+                "contas": 1,
+                "rota": 2,
+                "valor_agua": "53.25",
+                "valor_esgoto": "0.00",
+                "valor_total": "53.25"
+              },
+              {
+                "contas": 1,
+                "rota": 3,
+                "valor_agua": "148.05",
+                "valor_esgoto": "0.00",
+                "valor_total": "148.05"
+              }
+            ]
+          },
+          "unidades": [
+            {
+              "funcionalidade": 63,
+              "processo": 1,
+              "rota": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true,
+              "tipo_unidade": 1
+            },
+            {
+              "funcionalidade": 63,
+              "processo": 1,
+              "rota": 2,
+              "situacao": "CONCLUIDA COM ERRO",
+              "termino_registrado": true,
+              "tipo_unidade": 1
+            },
+            {
+              "funcionalidade": 63,
+              "processo": 1,
+              "rota": 3,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true,
+              "tipo_unidade": 1
+            }
+          ]
+        },
+        "tipo": "observar"
+      },
+      {
+        "arquivo": "massas/passos/batch-correcao-imovel-r2x.sql",
+        "sha256": "4e79076528a3d5cb1f547112fa48eba185e1aa7c1476654f11a50bf5e2d3e1b8",
+        "tipo": "aplicar"
+      },
+      {
+        "etapas": "com_erro",
+        "etapas_reiniciadas": 1,
+        "http": 200,
+        "mensagem": null,
+        "tela": {
+          "etapas_listadas_para_reinicio": 1,
+          "http": 200
+        },
+        "tipo": "reiniciar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      }
+    ],
+    "processos": [
+      {
+        "grupo": 1,
+        "inicio_registrado": true,
+        "ordem": 1,
+        "processo": "FATURAR GRUPO FATURAMENTO",
+        "situacao": "CONCLUIDO",
+        "solicitante": "fase2.oper",
+        "termino_registrado": true
+      }
+    ],
+    "totais": {
+      "grupo": {
+        "contas": 7,
+        "valor_total": "882.49"
+      },
+      "por_rota": [
+        {
+          "contas": 3,
+          "rota": 1,
+          "valor_agua": "531.09",
+          "valor_esgoto": "0.00",
+          "valor_total": "531.09"
+        },
+        {
+          "contas": 3,
+          "rota": 2,
+          "valor_agua": "203.35",
+          "valor_esgoto": "0.00",
+          "valor_total": "203.35"
+        },
+        {
+          "contas": 1,
+          "rota": 3,
+          "valor_agua": "148.05",
+          "valor_esgoto": "0.00",
+          "valor_total": "148.05"
+        }
+      ]
+    },
+    "unidades": [
+      {
+        "funcionalidade": 63,
+        "processo": 1,
+        "rota": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true,
+        "tipo_unidade": 1
+      },
+      {
+        "funcionalidade": 63,
+        "processo": 1,
+        "rota": 2,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true,
+        "tipo_unidade": 1
+      },
+      {
+        "funcionalidade": 63,
+        "processo": 1,
+        "rota": 3,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true,
+        "tipo_unidade": 1
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "tipo": "observar"
+        },
+        {
+          "arquivo": "massas/passos/batch-correcao-imovel-r2x.sql",
+          "tipo": "aplicar"
+        },
+        {
+          "tipo": "reiniciar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Faturar grupo pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" (exibirInserirProcessoFaturamentoComandadoAction → inserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado) cria o processo iniciado; o verificador do Quartz (a cada minuto) o inicia e despacha uma unidade por rota (MDB batchFaturarGrupoFaturamento → ControladorFaturamentoFINAL.faturarGrupoFaturamento → faturarImovel → determinarFaturamentoImovel → gerarConta). O que o framework e o faturamento gravam é lido do banco, sem ids nem carimbos.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1",
+  "ressalvas": {
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, rotas e consumos chegam pela massa: são o que as etapas anteriores do ciclo gravariam (Inserir Comando de Atividade, Consistir Leituras) e não o objeto deste lote",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução"
+  },
+  "titulo": "Falha de unidade, retomada e reprocessamento",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V2"
+}

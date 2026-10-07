@@ -83,6 +83,16 @@ Observados executando o legado ([relatório da Fase 2 §19](../testes/fase2/fase
 | 33 | **Permissão especial verificada só na tela** — sem EFETUAR_LIGACAO_DE_AGUA_SEM_RA, a tela de Efetuar Ligação de Água não habilita a matrícula; o POST com a matrícula **efetua a ligação sem OS** | `ExibirEfetuarLigacaoAguaAction:133-146` consulta a permissão; `EfetuarLigacaoAguaAction:106-173` não; baseline CEN-SEG-008 V2 | Ligação de água sem RA nem OS por qualquer usuário com a funcionalidade — a exceção nomeada não protege nada | **P0\*** em instalação operante. No OpenGSAN: permissão especial avaliada no servidor, no caso de uso — candidato **CAND-10** |
 | 34 | **Regras de cobrança do serviço decididas no navegador** — sem a permissão de motivo de não cobrança, a tela fixa 100% e 1 parcela; para serviço que não permite alterar valor, o campo não é editável; o servidor aceita parcelas, valor, percentual e motivo enviados | `ExibirEfetuarLigacaoAguaAction:428-437`; `EfetuarLigacaoAguaAction:282-292`; baselines CEN-ATE-008 V1b, V3b | Débito do serviço alterado, parcelado ou anulado (motivo de não cobrança) por quem a regra não autoriza | **P0\*** em instalação operante. No OpenGSAN: regra e autorização no servidor — **CAND-10** |
 
+## Achados de 2026-10-07 (Fase 2 — lote 5, faturamento em grupo em modo Batch)
+
+Observados executando o legado ([relatório da Fase 2 §20](../testes/fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07)). Nada foi corrigido no legado.
+
+| # | Achado | Evidência | Risco | Prioridade / ação |
+| - | ------ | --------- | ----- | ----------------- |
+| 35 | **Pré-condição do faturamento verificada só na tela** — depois de faturado, o comando some da tela "Inserir Processo Faturamento Comandado", mas o POST do mesmo comando é **aceito**: o novo processo fatura a **referência seguinte** do grupo (que nunca foi comandada e não tem leitura nem consumo) pela tarifa mínima e **avança a referência** do grupo | `ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado:2678` não confere a realização do comando; a tarefa leva o grupo como está (`:2892-2893`); baseline CEN-BAT-004 V1b | Integridade do faturamento: quem tem a permissão de disparo gera contas indevidas de um grupo inteiro e desloca o calendário do grupo, sem passar pela tela | **P1** em instalação operante (exige a permissão de disparo; o efeito é massivo e financeiro). No OpenGSAN: o disparo confere, no servidor, comando existente, não realizado e da referência do grupo — candidato **CAND-11** (mesma família de D-19) |
+
+🔵 **Correlatos, não de segurança** (registrados no relatório): as escritas do processamento em lote **não têm autor** (`usur_id` nulo na conta) nem registro de operação (F2-60); o solicitante autoriza o **próprio** processo — a autorização é uma operação distinta, mas sem segregação (F2-61).
+
 ### Defeito funcional correlato (não é segurança, registrado aqui por proximidade)
 
 🟢 `ServicoSMS.getJson:41-58` **ignora o parâmetro `tipoMensagem`** e sempre monta o texto de confirmação de cadastro no Portal. `ControladorFaturamento:15268` solicita aviso de vencimento e o cliente recebe a mensagem errada. `ControladorCobranca:62373` tem o SMS de corte comentado (inativo). Registrado em [`modulos/integracoes.md §8.2`](../modulos/integracoes.md).

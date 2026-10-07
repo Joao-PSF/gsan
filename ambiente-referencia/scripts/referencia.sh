@@ -48,12 +48,25 @@ instancia() {
   fi
 }
 instancia
+# Modo do EAR: Online (padrão, o das baselines online) ou Batch (agendador Quartz: processos batch). Cada modo tem o
+# seu volume de EAR e a sua pasta de saída do build — construir um não apaga o outro. GSAN_TIPO exportado prevalece
+# sobre o .env.
+MODO_PEDIDO=${GSAN_TIPO:-}
+modo() {
+  [ -n "$MODO_PEDIDO" ] && export GSAN_TIPO=$MODO_PEDIDO
+  case "${GSAN_TIPO:-Online}" in
+    Online) export GSAN_EAR=ear GSAN_SAIDA_BUILD=./.saida ;;
+    Batch) export GSAN_EAR=ear-batch GSAN_SAIDA_BUILD=./.saida/build-batch ;;
+    *) falhar "GSAN_TIPO inválido: '$GSAN_TIPO' (Online | Batch)" ;;
+  esac
+}
+modo
 
 dc() { docker compose -p "$PROJETO" --env-file versoes.env --env-file .env -f docker-compose.yml "$@"; }
 # git roda a partir da raiz (sem -C): no Git Bash, com MSYS_NO_PATHCONV, um
 # caminho /c/... passado como argumento não seria convertido.
 git_raiz() { (cd "$RAIZ" && git "$@"); }
-carregar() { set -a; . ./versoes.env; . ./.env; set +a; instancia; }
+carregar() { set -a; . ./versoes.env; . ./.env; set +a; instancia; modo; }
 
 preparar() {
   command -v docker > /dev/null || falhar "docker não encontrado"
@@ -89,8 +102,8 @@ build() {
         ':(exclude)docs' ':(exclude)MODERNIZACAO_GSAN.md' ':(exclude)ambiente-referencia'; then
     falhar "o código legado no HEAD difere de $GSAN_COMMIT_LEGADO — atualize versoes.env conscientemente"
   fi
-  mkdir -p .saida
-  msg "Parando o JBoss (o EAR é reconstruído no volume)"
+  mkdir -p .saida "$GSAN_SAIDA_BUILD"
+  msg "Parando o JBoss (o EAR é reconstruído no volume $GSAN_EAR)"
   dc stop gsan > /dev/null 2>&1 || true
   msg "Build do EAR — commit $GSAN_COMMIT_LEGADO, tipo $GSAN_TIPO"
   git_raiz -c core.autocrlf=false archive --format=tar "$GSAN_COMMIT_LEGADO" \

@@ -1,0 +1,94 @@
+{
+  "dominio": "processamento",
+  "lote": "batch-faturamento",
+  "modo": "Batch",
+  "fronteira": "Faturar grupo pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" (exibirInserirProcessoFaturamentoComandadoAction → inserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado) cria o processo iniciado; o verificador do Quartz (a cada minuto) o inicia e despacha uma unidade por rota (MDB batchFaturarGrupoFaturamento → ControladorFaturamentoFINAL.faturarGrupoFaturamento → faturarImovel → determinarFaturamentoImovel → gerarConta). O que o framework e o faturamento gravam é lido do banco, sem ids nem carimbos.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_catg_cons_fx",
+    "faturamento.conta_impressao",
+    "micromedicao.consumo_historico",
+    "seguranca.operacao_efetuada",
+    {
+      "tabela": "faturamento.faturamento_grupo",
+      "modo": "conteudo"
+    }
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-BAT-005",
+  "titulo": "Faturamento em lote igual à soma dos individuais",
+  "especificacao": "docs/modernizacao/testes/cenarios/batch-relatorios-integracoes.md — CEN-BAT-005",
+  "oraculo": "1 — ao centavo",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, rotas e consumos chegam pela massa: são o que as etapas anteriores do ciclo gravariam (Inserir Comando de Atividade, Consistir Leituras) e não o objeto deste lote"
+  },
+  "observaveis": {
+    "campos": [
+      "contas",
+      "totais",
+      "comando",
+      "grupo_faturamento"
+    ],
+    "fora_desta_fronteira": {
+      "comparação com o individual": "a conta de cada imóvel é comparada com CEN-FAT-001 V1–V3 (a simulação do mesmo consumo) no relatório da Fase 2 — esta baseline grava o lote",
+      "rotas e imóveis de CEN-FAT-002 a 006": "G1 tem uma rota com os imóveis de CEN-FAT-001 V1–V3; os demais perfis entram com os seus lotes",
+      "dados de impressão e e-mail": "etapas acessórias do processo (e-mail da conta, Bolsa Água, boletos) fora de uso na massa"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "G1, rota R1 com IMV-01 (27 m³), IMV-02 (47 m³) e IMV-03 (58 m³) — os consumos das simulações CEN-FAT-001 V1–V3 — faturados em lote",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ]
+      }
+    }
+  }
+}

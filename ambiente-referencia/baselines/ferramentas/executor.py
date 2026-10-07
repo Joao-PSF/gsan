@@ -2,6 +2,7 @@
 """Executor de cenários da Fase 2 — roda no contêiner `ferramentas` (rede interna).
 
   executor.py massa      CENARIO VARIACAO          arquivos da massa efetiva (base + deltas), em ordem
+  executor.py modo       CENARIO                   modo do EAR que o cenário exige (Online | Batch)
   executor.py executar   CENARIO VARIACAO SAIDA    uma execução sobre o estado já restaurado
   executor.py consolidar capturar|verificar CENARIO VARIACAO SAIDA... [--substituir]
   executor.py lista      [LOTE]                    CENARIO:VARIACAO de um lote (ou de todos)
@@ -75,6 +76,14 @@ def dominio(c):
 
 
 # --- massa efetiva -----------------------------------------------------------------------------
+def modo_ear(c):
+    """Modo do EAR que o cenário exige: Online (padrão) ou Batch (agendador de processos)."""
+    m = c.get('modo', 'Online')
+    if m not in ('Online', 'Batch'):
+        raise SystemExit(f'modo inválido em {c["cenario"]}: {m}')
+    return m
+
+
 def massa_efetiva(c, variacao):
     arquivos = sorted(glob.glob(os.path.join(BASE, 'massas', 'base', '*.sql')))
     for delta in c['variacoes'][variacao].get('massa', []):
@@ -237,6 +246,13 @@ def executar(ident, variacao, saida):
         if versao:
             break
     depois = medir(vigiadas)
+    # O rodapé do legado traz o modo gravado no build ("referencia (Online|Batch)"): o EAR no ar tem de ser o que o
+    # cenário exige — uma baseline online capturada no EAR Batch (ou o contrário) não é a mesma baseline.
+    modo = modo_ear(c)
+    if versao and f'({modo})' not in versao.group(1):
+        erro = erro or f'EAR no ar ({versao.group(1).strip()}) não é do modo {modo} que o cenário exige'
+    elif not versao and modo != 'Online':
+        erro = erro or f'modo {modo} exigido e a versão exibida não foi encontrada'
 
     evid = os.path.join(saida, 'evidencias')
     for i, r in enumerate(respostas):
@@ -358,6 +374,8 @@ def main():
         sys.exit(2)
     if a[0] == 'massa':
         print('\n'.join(massa_efetiva(cenario(a[1]), a[2])))
+    elif a[0] == 'modo':
+        print(modo_ear(cenario(a[1])))
     elif a[0] == 'executar':
         executar(a[1], a[2], a[3])
     elif a[0] == 'consolidar':

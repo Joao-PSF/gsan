@@ -2,7 +2,7 @@
 
 > Parte de [`cenarios-criticos.md`](../cenarios-criticos.md). Modelo e regras em [`estrategia-testes.md`](../estrategia-testes.md).
 >
-> ⚠️ **Nenhum valor desta página foi capturado.** Baseline: `⬜ A CAPTURAR NA FASE 2` em todos os cenários.
+> 🆕 **Fase 2**: capturados em parte CEN-FAT-001, 002 e 003 (simulação, lotes piloto e 3) e CEN-FAT-011 V1 (faturamento em grupo, lote 5) — ver cada cenário. Os demais: `⬜ A CAPTURAR NA FASE 2`.
 
 🔴 **Leitura da área**: todo valor monetário aqui é **oráculo 1, igualdade ao centavo**. Nenhum cenário admite "diferença de arredondamento": as cinco políticas do legado são **comportamento**, não dívida técnica. A cobertura das cinco está consolidada no índice (§7).
 
@@ -286,9 +286,9 @@
 - **Operação GSAN**: `faturarImovel`
 - **Operação conceitual OpenGSAN**: motor de conta individual com consumo de reserva **parametrizado**
 - **Observações semânticas**: consumo usado · valor da conta · se algum registro de consumo é **persistido** · efeito de alterar o parâmetro (V2)
-- **Localizadores GSAN**: `ControladorFaturamentoFINAL:1875/:1893` (`new ConsumoHistorico()` só quando `obterUltimoConsumoImovel` devolve nulo); `setNumeroConsumoFaturadoMes(20)` (`:1880/:1897`)
+- **Localizadores GSAN**: `ControladorFaturamentoFINAL:1875/:1893` (`new ConsumoHistorico()` só quando `obterUltimoConsumoImovel` devolve nulo); `setNumeroConsumoFaturadoMes(20)` (`:1880/:1897`) — 🆕 ⚠️ **corrigido pela Fase 2**: essas linhas são de `obterValoresCreditosBolsaAgua` (crédito Bolsa Água); o faturamento do imóvel (`determinarFaturamentoImovel:1427`) usa o consumo da referência e, sem ele, fatura o mínimo
 - **Resultado semântico esperado**: 🟢 no GSAN o consumo de reserva é **20, fixo em código**, usado **em memória e nunca persistido**. 🔴 Para preservar o resultado financeiro, **o valor padrão do parâmetro no OpenGSAN deve ser 20** — do contrário a divergência atingiria cálculo financeiro, o que nenhuma divergência aprovada faz
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2 — 🆕 fronteira: `faturarImovel` só é chamado pelo faturamento em grupo (`ControladorFaturamentoFINAL:1201`, `:52741`; `ControladorFaturamento:14226`) — EAR em modo Batch, lote 5
+- **Baseline concreta do legado**: 🔴 **CAPTURADA — contradiz a premissa** (Fase 2, lote 5, 2026-10-07) — V1 em [`golden/faturamento/CEN-FAT-011/`](../../../../ambiente-referencia/baselines/golden/faturamento/CEN-FAT-011/), pelo faturamento em grupo (`faturarImovel`, EAR Batch): IMV-16, sem nenhum consumo registrado, recebe conta de **0 m³** pela **tarifa mínima** (residencial, 1 economia: **R$ 32,50**, sem faixa), e **nenhum** consumo é gravado. 🔴 **Não há consumo de reserva de 20 m³ no faturamento do imóvel**: as linhas citadas abaixo (`setNumeroConsumoFaturadoMes(20)`) estão em `obterValoresCreditosBolsaAgua` — o cálculo do **crédito Bolsa Água** (etapa fora de uso na massa) —, onde o 20 vale **sempre**, com ou sem consumo anterior. A leitura de D-15 abaixo ("o valor padrão deve ser 20") **não se sustenta** para o faturamento: preservar o resultado financeiro é cobrar o mínimo. [relatório §20](../fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07) — F2-67
 - **Normalizações**: nenhuma
 - **Divergência permitida**: **D-15** — apenas a **configurabilidade**
 - **Oráculo**: **1** (V1 — valor com o parâmetro em 20) · **2** (V2 — o GSAN não permite alterar; o OpenGSAN deve permitir)
@@ -296,6 +296,8 @@
 - **Evidência**: [`modulos/micromedicao.md`](../../modulos/micromedicao.md) §15 dúvida 2; [D-15](../../compatibilidade/divergencias-aprovadas.md) — cenário **derivado** da divergência
 
 ⚠️ **Consequência para o registro**: esta leitura de D-15 — *divergência de configurabilidade, com o valor padrão preservado* — é a única compatível com a regra de que nenhuma divergência atinge cálculo financeiro. Deve ser confirmada na aprovação de D-15.
+
+🆕 ⚠️ **Fase 2 (2026-10-07) — a baseline muda o problema**: no faturamento do imóvel **não existe** consumo de reserva — sem consumo, o GSAN fatura **0 m³ pela tarifa mínima** (V1). O 20 fixo é do **crédito Bolsa Água**. Preservar o resultado financeiro, portanto, **não** é "parâmetro com padrão 20" no motor de conta: é cobrar o mínimo. D-15 (aprovada) continua valendo para a constante, mas o seu **alvo** (consumo de fallback do faturamento × valor do crédito Bolsa Água) precisa de leitura do responsável — nota no [registro](../../compatibilidade/divergencias-aprovadas.md); V2 fica sem objeto até essa leitura.
 
 ---
 

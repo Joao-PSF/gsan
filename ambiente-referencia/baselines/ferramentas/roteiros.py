@@ -5,10 +5,12 @@ já extraído do HTML (dinheiro como texto decimal exato). Não escreve no banco
 estado só muda pelo que a operação do GSAN fizer.
 """
 import base64
+import hashlib
 import io
 import json
 import re
 import secrets
+import time
 import zipfile
 
 from gsan_http import Sessao, moeda, texto_visivel, valor_campo
@@ -268,6 +270,215 @@ def efetuar_ligacao_agua(ctx, entrada):
             'resultado': 'efetuada' if sucesso else 'recusada',
             'mensagem': None if sucesso else (_mensagem(html) or _atencao(html)),
             'antes': antes, 'depois': _estado_ligacao_agua(ctx, imovel, os_id or 0)}
+
+
+# --- Processamento: faturamento em grupo (EAR em modo Batch) ---------------------------------------
+# O comando de FATURAR GRUPO chega pela massa (cronograma, rotas e consumos); a operação é disparada pela tela "Inserir
+# Processo Faturamento Comandado" e executada pelo agendador do EAR Batch (verificador do Quartz a cada minuto → uma
+# unidade por rota). O roteiro espera o processo chegar a um estado terminal e lê do banco o que o framework e o
+# faturamento gravaram. Ids sequenciais e carimbos de tempo não saem: processos pela ordem de criação, unidades pelo
+# código da rota, contas pela matrícula, exceção pelas chaves de mensagem do legado. Única escrita fora do GSAN: o passo
+# `aplicar` de uma variação que corrige a causa de uma falha (arquivo de massas/passos/, com o sha256 no resultado).
+
+PROCESSO_TERMINAL = (2, 6, 7)  # ProcessoSituacao: CONCLUIDO, CONCLUIDO_COM_ERRO, EXECUCAO_CANCELADA
+ESPERA_MAXIMA = 900  # segundos
+
+
+def _linhas(ctx, q):
+    return json.loads(ctx.sql(f"select coalesce(json_agg(x), '[]') from ({q}) x") or '[]')
+
+
+def _contas_entregues(ctx):
+    """Números que a sequência das contas já entregou — não voltam num rollback: medem as contas INICIADAS."""
+    return int(ctx.sql('select case when is_called then last_value else last_value - 1 end from faturamento.seq_conta_geral'))
+
+
+def _estado_faturamento(ctx, contas_no_inicio):
+    processos = _linhas(ctx, "select p.proi_id, pr.proc_dsprocesso as processo, s.prst_dsprocessosituacao as situacao,"
+                             " u.usur_nmlogin as solicitante, p.proi_nngrupo as grupo,"
+                             " (p.proi_tminicio is not null) as inicio_registrado, (p.proi_tmtermino is not null) as termino_registrado"
+                             " from batch.processo_iniciado p join batch.processo pr using (proc_id)"
+                             " join batch.processo_situacao s using (prst_id) left join seguranca.usuario u using (usur_id)"
+                             " order by p.proi_id")
+    ordem = {p.pop('proi_id'): i + 1 for i, p in enumerate(processos)}
+    for i, p in enumerate(processos):
+        p['ordem'] = i + 1
+    funcionalidades = _linhas(ctx, "select f.proi_id, pf.prfn_nnsequencialexecucao as sequencia, pf.fncd_id as funcionalidade,"
+                                   " sf.fncd_dsfuncionalidade as descricao, s.fnst_dsoperacaosituacao as situacao,"
+                                   " (f.fuin_tminicio is not null) as inicio_registrado,"
+                                   " (f.fuin_tmtermino is not null) as termino_registrado, coalesce(f.fuin_dserro, '') as erro"
+                                   " from batch.funcionalidade_iniciada f join batch.processo_funcionalidade pf using (prfn_id)"
+                                   " join batch.funcionalidade_situacao s using (fnst_id)"
+                                   " left join seguranca.funcionalidade sf on sf.fncd_id = pf.fncd_id"
+                                   " order by f.proi_id, pf.prfn_nnsequencialexecucao, f.fuin_id")
+    for f in funcionalidades:
+        f['processo'] = ordem.get(f.pop('proi_id'))
+        erro = f.pop('erro')
+        # O texto técnico (pilha) fica fora; ficam o registro e as chaves de mensagem do legado que ele carrega.
+        f['erro_registrado'] = bool(erro)
+        f['erro_chaves'] = sorted(set(re.findall(r'\b(?:atencao|erro)\.[a-z0-9_.]*[a-z0-9_]', erro)))
+    unidades = _linhas(ctx, "select f.proi_id, pf.fncd_id as funcionalidade, u.unpr_id as tipo_unidade, r.rota_cdrota as rota,"
+                            " s.unst_dsoperacaosituacao as situacao, (u.undi_tmtermino is not null) as termino_registrado"
+                            " from batch.unidade_iniciada u join batch.funcionalidade_iniciada f using (fuin_id)"
+                            " join batch.processo_funcionalidade pf using (prfn_id) join batch.unidade_situacao s using (unst_id)"
+                            " left join micromedicao.rota r on r.rota_id = u.undi_cdidunidadeprocessamento"
+                            " order by f.proi_id, pf.fncd_id, r.rota_cdrota, s.unst_dsoperacaosituacao")
+    for u in unidades:
+        u['processo'] = ordem.get(u.pop('proi_id'))
+    contas = _linhas(ctx, "select c.cnta_id, c.imov_id as matricula, r.rota_cdrota as rota, c.cnta_amreferenciaconta as referencia,"
+                          " s.dcst_dsdebitocreditosituacao as situacao, c.cnta_nnconsumoagua as consumo_agua,"
+                          " c.cnta_nnconsumoesgoto as consumo_esgoto, c.cnta_vlagua::text as valor_agua,"
+                          " c.cnta_vlesgoto::text as valor_esgoto, c.cnta_vldebitos::text as valor_debitos,"
+                          " c.cnta_vlcreditos::text as valor_creditos, coalesce(c.cnta_vlimpostos, 0)::text as valor_impostos,"
+                          " (c.cnta_vlagua + c.cnta_vlesgoto + c.cnta_vldebitos - c.cnta_vlcreditos"
+                          "  - coalesce(c.cnta_vlimpostos, 0))::text as valor_total,"
+                          " to_char(c.cnta_dtvencimentoconta, 'DD/MM/YYYY') as vencimento,"
+                          " to_char(c.cnta_dtvalidadeconta, 'DD/MM/YYYY') as validade,"
+                          " c.cnta_amreferenciacontabil as referencia_contabil, c.cnta_dgverificadorconta as digito_verificador,"
+                          " (c.cnta_dtemissao = current_date) as emitida_na_data_da_execucao, u.usur_nmlogin as autor,"
+                          " t.cttp_dstipoconta as tipo_impressao"
+                          " from faturamento.conta c join faturamento.debito_credito_situacao s on s.dcst_id = c.dcst_idatual"
+                          " left join micromedicao.rota r on r.rota_id = c.rota_id left join seguranca.usuario u using (usur_id)"
+                          " left join faturamento.conta_impressao i using (cnta_id) left join faturamento.conta_tipo t using (cttp_id)"
+                          " order by c.imov_id, c.cnta_amreferenciaconta, c.cnta_id")
+    for c in contas:
+        cnta = c.pop('cnta_id')
+        c['por_categoria'] = _linhas(ctx, "select g.catg_dscategoria as categoria, sc.scat_dssubcategoria as subcategoria,"
+                                          " k.ctcg_qteconomia as economias, k.ctcg_nnconsumoagua as consumo_agua,"
+                                          " k.ctcg_vlagua::text as valor_agua, k.ctcg_nnconsumominimoagua as consumo_minimo_agua,"
+                                          " k.ctcg_vltarifaminimaagua::text as tarifa_minima_agua,"
+                                          " k.ctcg_nnconsumoesgoto as consumo_esgoto, k.ctcg_vlesgoto::text as valor_esgoto,"
+                                          " (select coalesce(json_agg(json_build_object('inicio', x.cccf_nnconsumofaixainicio,"
+                                          "   'fim', x.cccf_nnconsumofaixafim, 'consumo_agua', x.cccf_nnconsumoagua,"
+                                          "   'tarifa', x.cccf_vltarifafaixa::text, 'valor_agua', x.cccf_vlagua::text)"
+                                          "   order by x.cccf_nnconsumofaixainicio), '[]') from faturamento.conta_catg_cons_fx x"
+                                          "   where x.cnta_id = k.cnta_id and x.catg_id = k.catg_id"
+                                          "   and x.scat_id is not distinct from k.scat_id) as faixas"
+                                          " from faturamento.conta_categoria k join cadastro.categoria g using (catg_id)"
+                                          " left join cadastro.subcategoria sc on sc.scat_id = k.scat_id and sc.scat_id <> 0"
+                                          f" where k.cnta_id = {int(cnta)} order by k.catg_id, k.scat_id")
+    totais = _linhas(ctx, "select r.rota_cdrota as rota, count(*) as contas, sum(c.cnta_vlagua)::text as valor_agua,"
+                          " sum(c.cnta_vlesgoto)::text as valor_esgoto,"
+                          " sum(c.cnta_vlagua + c.cnta_vlesgoto + c.cnta_vldebitos - c.cnta_vlcreditos"
+                          "     - coalesce(c.cnta_vlimpostos, 0))::text as valor_total"
+                          " from faturamento.conta c left join micromedicao.rota r on r.rota_id = c.rota_id"
+                          " group by r.rota_cdrota order by r.rota_cdrota")
+    grupo = _linhas(ctx, "select count(*) as contas, coalesce(sum(cnta_vlagua + cnta_vlesgoto + cnta_vldebitos - cnta_vlcreditos"
+                         " - coalesce(cnta_vlimpostos, 0)), 0)::text as valor_total from faturamento.conta")[0]
+    consumos = _linhas(ctx, "select h.imov_id as matricula, h.cshi_amfaturamento as referencia, l.lgti_dsligacaotipo as ligacao,"
+                            " h.cshi_nnconsumofaturadomes as consumo, t.cstp_dsconsumotipo as tipo"
+                            " from micromedicao.consumo_historico h left join micromedicao.ligacao_tipo l using (lgti_id)"
+                            " left join micromedicao.consumo_tipo t using (cstp_id)"
+                            " order by h.imov_id, h.cshi_amfaturamento, h.lgti_id")
+    return {
+        'processos': processos, 'funcionalidades': funcionalidades, 'unidades': unidades, 'contas': contas,
+        'totais': {'por_rota': totais, 'grupo': grupo}, 'consumos': consumos,
+        'grupo_faturamento': _linhas(ctx, "select ftgr_amreferencia as referencia_atual from faturamento.faturamento_grupo"
+                                          " where ftgr_id = 1")[0],
+        'comando': _linhas(ctx, "select (ftac_tmrealizacao is not null) as realizado from faturamento.fatur_ativ_cronograma"
+                                " where ftac_id = 1")[0],
+        'contas_iniciadas': _contas_entregues(ctx) - contas_no_inicio,
+    }
+
+
+def _situacoes(ctx):
+    return ctx.sql("select string_agg(proi_id::text || ':' || prst_id::text, ',' order by proi_id) from batch.processo_iniciado"
+                   " union all select string_agg(fuin_id::text || ':' || fnst_id::text, ',' order by fuin_id) from batch.funcionalidade_iniciada"
+                   " union all select string_agg(undi_id::text || ':' || unst_id::text, ',' order by undi_id) from batch.unidade_iniciada")
+
+
+def _aguardar(ctx, ate):
+    """`terminal`: todo processo iniciado num estado terminal e nada mudando por 15 s. `ciclo`: 75 s — ao menos uma
+    passagem do verificador (a cada minuto) — para ver o que ele faz com um processo que não deve rodar."""
+    inicio = time.monotonic()
+    if ate == 'ciclo':
+        time.sleep(75)
+        return {'ate': ate}
+    while time.monotonic() - inicio < ESPERA_MAXIMA:
+        situacoes = [int(s) for s in (ctx.sql('select prst_id from batch.processo_iniciado') or '').split()]
+        if situacoes and all(s in PROCESSO_TERMINAL for s in situacoes):
+            antes = _situacoes(ctx)
+            time.sleep(15)
+            if _situacoes(ctx) == antes:
+                return {'ate': ate}
+        time.sleep(5)
+    raise TimeoutError(f'o processo não chegou a um estado terminal em {ESPERA_MAXIMA} s')
+
+
+def _ultimo_processo(ctx):
+    return int(ctx.sql('select max(proi_id) from batch.processo_iniciado'))
+
+
+def faturar_grupo(ctx, entrada):
+    """Faturar grupo pelo processo comandado (ExibirInserirProcessoFaturamentoComandadoAction →
+    InserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado →
+    verificador do Quartz → MDB por rota → ControladorFaturamentoFINAL.faturarGrupoFaturamento), com os passos da variação:
+    disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (correção de causa) · reiniciar."""
+    login = entrada['usuario']
+    comando = str(int(entrada['comando']))
+    ctx.nova_sessao()
+    ctx.atual.tentar_login(login, ctx.senha(login, 'correta'))
+    contas_no_inicio = _contas_entregues(ctx)
+    passos = []
+    for passo in entrada['passos']:
+        tipo, r = passo['tipo'], {'tipo': passo['tipo']}
+        if tipo == 'disparar':
+            html = ctx.atual.get('exibirInserirProcessoFaturamentoComandadoAction.do?menu=sim')
+            listado = any(re.search(r'(?i)\bvalue="' + comando + r'"', t)
+                          for t in re.findall(r'(?is)<input\b[^>]*name="idFaturamentoAtividadeCronograma"[^>]*>', html))
+            r['tela'] = {'http': ctx.atual.ultimo_estado, 'comando_listado': listado,
+                         'mensagem': None if listado else (_mensagem(html) or _atencao(html))}
+            if listado or passo.get('forjar'):
+                # Sem o comando na tela, o POST é o que a tela não deixaria enviar: o servidor aceita ou não.
+                r['forjado'] = not listado
+                html = ctx.atual.post('inserirProcessoFaturamentoComandadoAction.do', {'idFaturamentoAtividadeCronograma': comando})
+                sucesso = 'inserido(s) com sucesso' in texto_visivel(html)
+                r.update(http=ctx.atual.ultimo_estado, resultado='inserido' if sucesso else 'recusado',
+                         mensagem=None if sucesso else (_mensagem(html) or _atencao(html)))
+            else:
+                r['resultado'] = 'nao_enviado'
+        elif tipo == 'aguardar':
+            r.update(_aguardar(ctx, passo.get('ate', 'terminal')))
+        elif tipo == 'observar':
+            r['estado'] = _estado_faturamento(ctx, contas_no_inicio)
+        elif tipo == 'autorizar':
+            proi = _ultimo_processo(ctx)
+            html = ctx.atual.get('exibirAutorizarRelatoriosBatchAction.do?menu=sim')
+            listado = any(re.search(r'(?i)\bvalue="' + str(proi) + r'"', t)
+                          for t in re.findall(r'(?is)<input\b[^>]*name="idRegistrosAutorizar"[^>]*>', html))
+            r['tela'] = {'http': ctx.atual.ultimo_estado, 'processo_listado': listado}
+            html = ctx.atual.post('autorizarProcessoIniciadoAction.do', {'idRegistrosAutorizar': str(proi)})
+            sucesso = 'autorizado(s) com sucesso' in texto_visivel(html)
+            r.update(http=ctx.atual.ultimo_estado, resultado='autorizado' if sucesso else 'recusado',
+                     mensagem=None if sucesso else (_mensagem(html) or _atencao(html)))
+        elif tipo == 'aplicar':
+            caminho = '/referencia/baselines/' + passo['arquivo']
+            with open(caminho, 'rb') as f:
+                conteudo = f.read()
+            ctx.sql(conteudo.decode('utf-8'))
+            r.update(arquivo=passo['arquivo'], sha256=hashlib.sha256(conteudo).hexdigest())
+        elif tipo == 'reiniciar':
+            proi = _ultimo_processo(ctx)
+            # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.
+            situacao = {'com_erro': 4, 'concluidas': 2}[passo.get('etapas', 'com_erro')]
+            r['etapas'] = passo.get('etapas', 'com_erro')
+            com_erro = ctx.sql(f'select fuin_id from batch.funcionalidade_iniciada where proi_id = {proi}'
+                               f' and fnst_id = {situacao} order by fuin_id').split()
+            html = ctx.atual.get(f'exibirConsultarDadosProcessoIniciadoAction.do?idRegistroAtualizacao={proi}')
+            r['tela'] = {'http': ctx.atual.ultimo_estado,
+                         'etapas_listadas_para_reinicio': sum(1 for f in com_erro if re.search(
+                             r'(?is)<input\b[^>]*name="idRegistrosRemocao"[^>]*value="' + f + r'"', html))}
+            # A tela marca uma etapa por vez (caixa idRegistrosRemocao); a etapa de faturar é a única do processo.
+            if len(com_erro) != 1:
+                raise RuntimeError(f'esperada uma etapa para reiniciar ({r["etapas"]}), há {len(com_erro)}')
+            html = ctx.atual.post('reiniciarFuncionalidadeIniciadaAction.do', {'idRegistrosRemocao': com_erro[0]})
+            r.update(etapas_reiniciadas=len(com_erro), http=ctx.atual.ultimo_estado,
+                     mensagem=_mensagem(html) or (_atencao(html) if ctx.atual.ultimo_estado >= 400 else None))
+        else:
+            raise ValueError(f'passo desconhecido: {tipo}')
+        passos.append(r)
+    final = _estado_faturamento(ctx, contas_no_inicio)
+    return {'passos': passos, **final}
 
 
 # --- Segurança: autenticação e autorização -------------------------------------------------------
@@ -569,4 +780,5 @@ ROTEIROS = {
     'seguranca': seguranca,
     'efetuar_ligacao_agua': efetuar_ligacao_agua,
     'consultar_consumo_minimo_ligacao_agua': consultar_consumo_minimo_ligacao_agua,
+    'faturar_grupo': faturar_grupo,
 }

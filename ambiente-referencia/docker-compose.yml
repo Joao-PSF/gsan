@@ -61,7 +61,7 @@ services:
       GSAN_JVM_XMX: ${GSAN_JVM_XMX:-1024m}
       GSAN_JVM_MAXPERM: ${GSAN_JVM_MAXPERM:-512m}
     volumes:
-      - ear:/opt/jboss/server/default/deploy/gcom.ear
+      - ${GSAN_EAR:-ear}:/opt/jboss/server/default/deploy/gcom.ear
       - jboss-log:/opt/jboss/server/default/log
     networks: [interna]
     depends_on:
@@ -96,8 +96,9 @@ services:
       GSAN_VERSAO: ${GSAN_VERSAO:-referencia}
       GSAN_COMMIT_LEGADO: ${GSAN_COMMIT_LEGADO}
     volumes:
-      - ear:/opt/jboss/server/default/deploy/gcom.ear
-      - ./.saida:/saida
+      - ${GSAN_EAR:-ear}:/opt/jboss/server/default/deploy/gcom.ear
+      # Um EAR por modo (Online | Batch), cada um no seu volume e com a saída do build em pasta própria.
+      - ${GSAN_SAIDA_BUILD:-./.saida}:/saida
     network_mode: none
 
   # Obtenção das migrações: único passo das ferramentas com acesso externo.
@@ -168,5 +169,6 @@ volumes:
   pgdata:
   pgindices:
   ear:
+  ear-batch:
   jboss-log:
   migracoes:

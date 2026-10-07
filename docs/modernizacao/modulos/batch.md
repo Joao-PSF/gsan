@@ -180,7 +180,7 @@ encerrarFuncionalidadesIniciadas / encerrarProcessosIniciados  → consolida ní
 
 🟢 O mecanismo é **mensagem por unidade/lote para MDBs**: cada tarefa envia mensagens JMS para a fila do processo, e o container (JBoss) processa com **múltiplas instâncias de MDB** — 🔵 o paralelismo é do pool de MDBs, não de threads gerenciadas pelo código. 🟢 `Processo.limite` e `Processo.prioridade` existem como parâmetros da definição — 🔵 provavelmente limite de execução/concorrência e prioridade de fila, mas ❔ a semântica exata de `proc_limite` **não foi comprovada**.
 
-🟢 **Proteção contra dupla execução da mesma unidade** existe (§5). ❔ **Não comprovado**: se há bloqueio para duas execuções simultâneas do **mesmo processo** (ex.: mesmo grupo + referência), nem lock explícito.
+🟢 **Proteção contra dupla execução da mesma unidade** existe (§5). ❔ **Não comprovado**: se há bloqueio para duas execuções simultâneas do **mesmo processo** (ex.: mesmo grupo + referência), nem lock explícito. 🆕 **Fase 2 (2026-10-07)**: dois disparos **em sequência** do mesmo comando são **aceitos** e os dois processos rodam — o framework não bloqueia; o faturamento não duplica porque `faturarImovel` pula o imóvel que já tem conta da referência (CEN-BAT-004 V1). Disparar de novo um comando **já realizado** fatura a referência **seguinte** (CEN-BAT-004 V1b; achado de segurança 35). Simultâneos: não caracterizado.
 
 ## 11. Transações e commits
 
@@ -192,13 +192,15 @@ encerrarFuncionalidadesIniciadas / encerrarProcessosIniciados  → consolida ní
 
 > O framework persiste estado por unidade em transação própria e fornece mecanismos de retomada/reprocessamento. A **atomicidade das alterações de negócio dentro de uma unidade** e a possibilidade de **commits parciais intra-unidade** **não foram comprovadas** e devem ser caracterizadas **por processo**.
 
+🆕 🔴 **Caracterizado na Fase 2 (2026-10-07) — efeitos parciais**: na instância de referência (variante COSANPA, a semeada), o EJB de faturamento declara `faturarGrupoFaturamento` e `faturarImovel` **`NotSupported`** (`descriptors/faturamentoCOSANPA/META-INF/ejb-jar.xml:118-128`; `Required` é o padrão dos demais métodos): a unidade de faturamento **não tem transação** — cada gravação (conta, categorias, impressão) confirma sozinha. Com um imóvel inválido no meio da rota, a conta do imóvel anterior **fica gravada** e nada é desfeito (CEN-BAT-003 V1; [relatório §20](../testes/fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07), F2-63). A frase "`faturarGrupoFaturamento` é uma única chamada `Required`" acima vale para o descritor genérico, não para a variante ativa. **CAND-02** caracterizado.
+
 🔵 Distinção a manter: **estado persistido da execução ≠ commit parcial das regras de negócio**. ❔ Granularidade de commit dentro da unidade (ex.: lote de N registros) permanece dúvida por processo.
 
 ## 12. Falha, recuperação e reprocessamento
 
 🟢 Falha de unidade → `CONCLUIDA_COM_ERRO` + `inserirLogExcecaoFuncionalidadeIniciada` (exceção persistida; `FuncionalidadeIniciada.fuin_dserro`); 🔵 as demais unidades seguem, e o nível superior termina como `CONCLUIDO_COM_ERRO`. 🟢 Há tela para consultar a exceção (`ExibirExcecaoFuncionalidadeIniciadaAction`).
 
-🟢 **Reprocessamento é por etapa**: `ControladorBatchSEJB.reiniciarFuncionalidadesIniciadas(String[] idsFuncionalidadesIniciadas, Integer idProcessoIniciado)` — 🔵 o operador seleciona funcionalidades iniciadas para reiniciar dentro do mesmo processo iniciado; a tarefa então usa `pesquisarTodasUnidadeProcessamentoReinicioBatch()` e a proteção da §5 evita refazer unidades concluídas.
+🟢 **Reprocessamento é por etapa**: `ControladorBatchSEJB.reiniciarFuncionalidadesIniciadas(String[] idsFuncionalidadesIniciadas, Integer idProcessoIniciado)` — 🔵 o operador seleciona funcionalidades iniciadas para reiniciar dentro do mesmo processo iniciado; a tarefa então usa `pesquisarTodasUnidadeProcessamentoReinicioBatch()` e a proteção da §5 evita refazer unidades concluídas. 🆕 ⚠️ **Corrigido pela Fase 2 (2026-10-07)**: o reinício **apaga** as unidades iniciadas da etapa e **esquece** as já executadas (`ControladorBatchSEJB:4565`, `:4588`) — no faturamento em grupo, **todas** as rotas são reexecutadas, as concluídas inclusive; não há conta em dobro porque `faturarImovel` pula o imóvel que já tem conta da referência (`ControladorFaturamentoFINAL:1297`). A idempotência do reprocessamento é do **módulo**, não do framework (CEN-BAT-002 V2/V3; F2-64).
 
 ❔ Não comprovados: retry **automático**, limite de tentativas, e se o reinício cria nova `FuncionalidadeIniciada` ou reaproveita a existente.
 

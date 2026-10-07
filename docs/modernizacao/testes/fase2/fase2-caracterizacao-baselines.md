@@ -286,7 +286,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~2b — Segurança restante~~ ✅ **capturado em 2026-10-06** (§17) | SEG-006 (P0), SEG-007 (P0), SEG-003 (P1). **Ficam**: SEG-008 (P1) → lote 4, porque as ações condicionadas exigem OS/RA/comando de cobrança; SEG-009 (C) → lote 5 (Batch) | Login, filtro, troca de senha; Manter Conta (abrangência) — Online | USR-04…USR-08; território em degraus; níveis de abrangência |
 | ~~3 — Cadastro e faturamento online~~ ✅ **capturado em 2026-10-06** (§18) | CAD-001, CAD-002 (entrou), CAD-004 (parte online), FAT-003 V1. **Saíram** para o lote 5, com evidência: CAD-005 (rotas só nos processos), FAT-011 V1 (`faturarImovel` só no faturamento em grupo), FAT-003 V2/V3 | Consultar Imóvel; Consultar Relação Cliente e Imóvel; simulação — Online | Fronteiras do DV; papéis e vigências do IMV-01; situações sintéticas |
 | ~~4 — Atendimento e consumo mínimo~~ ✅ **capturado em parte em 2026-10-06** (§19) | ATE-007 V1, ATE-008, MIC-002 (nesta superfície), SEG-008 (ligação sem RA). **Ficam**: ATE-001…006 (fluxos de RA: abertura, encerramento, tramitação, espera, ciclo da OS), ATE-007 V2/V3 (religação, ligação de esgoto), as demais permissões de SEG-008, CAD-004 na abertura de RA | Efetuar Ligação de Água a partir de OS encerrada; Atualizar Consumo Mínimo (exibição) — Online | Catálogos de Atendimento; RA e OS encerradas; overrides de consumo mínimo |
-| **5 — Faturamento em grupo e Micromedição** (recomendado a seguir: os P0 que faltam são quase todos processos) | BAT-001…005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005, CAD-005, FAT-011 V1, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial), 🆕 MIC-002 (a precedência das fontes de mínimo ao faturar), ATE-008 (valor de cada prestação na conta) | Processos batch — **EAR em modo Batch** (`GSAN_TIPO=Batch`, novo build) | Cronograma, rotas, leituras, históricos (IMV-05…10, 11a/b, 12a/b, 16, 17, 18) |
+| ~~5 — Faturamento em grupo~~ ✅ **capturado em 2026-10-07** (§20) — o modo Batch foi preparado e validado | BAT-001 V1/V2, BAT-002 V1–V3, BAT-003, BAT-004 V1/V1b, BAT-005, FAT-011 V1. **Ficam**: BAT-001 V3 (relatório), BAT-004 V2 (simultâneos) | Faturar grupo comandado — **EAR em modo Batch** | Catálogos do framework; cronograma, comando, rotas R1–R3 e consumos; falha controlada; IMV-16 |
+| **5b — Micromedição e faturamento na conta** (recomendado a seguir: mesmo modo, mesma fronteira de processo) | FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial), MIC-002 (a precedência das fontes de mínimo ao faturar), ATE-008 (valor de cada prestação na conta) | Consistir leituras e faturar grupo — Batch | Leituras, hidrômetros, históricos (IMV-05…10, 11a/b, 12a/b, 17, 18) |
 | 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -300,7 +301,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
   denormalizado fica coerente) — exigem executar Inserir/Manter Imóvel.
 - **Configuração da instância**: `parm_ictarifacategoria = 1` (tarifa por categoria) e nenhuma variante de companhia;
   as baselines valem para essa configuração, gravada em cada uma.
-- **Modo do EAR**: o piloto é todo Online. Lotes batch exigem rebuild em Batch — um EAR por modo.
+- **Modo do EAR**: um EAR por modo, cada um no seu volume; o cenário declara o modo e o executor confere o rodapé
+  (§20.3). O lote 5 é o primeiro em Batch.
 - **Custo por execução** (~1 min) é dominado pela subida do JBoss; é o preço do isolamento total e foi mantido.
 - **Catálogos que a base reconstruída não tem** (situações do usuário, ações e tipos de alteração da auditoria, tipos
   de relação cliente × imóvel, níveis de abrangência) entram pela massa, com os ids das constantes do código: a caracterização mostra o
@@ -316,6 +318,9 @@ registram horários, mas nenhuma medição foi tratada como baseline.
   instalação** — a base reconstruída não tem nenhum dos dois, e a Fase 2 não usa dado real (CEN-CAD-004 fica em parte).
 - **OS pela massa**: no lote 4, o RA e a OS nascem por SQL no estado em que o encerramento os deixaria — o objeto é o
   efeito da operação sobre a OS, não a abertura nem o encerramento (CEN-ATE-002…006, a capturar).
+- **Processo pela massa**: no lote 5, cronograma, comando e consumos nascem por SQL; o objeto é o processo de faturar.
+  A correção de causa de BAT-002 V2/V3 é aplicada por SQL **no meio** da execução (`massas/passos/`), porque a
+  manutenção do imóvel é outra fronteira. O disparo **agendado** e o paralelismo das unidades são C4.
 
 ## 14. Volume projetado
 
@@ -323,8 +328,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | ------ | ----- | ---- |
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
-| Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução — batch será maior (processo + modo Batch). Com a instância de inspeção no ar ou a máquina ocupada por outros contêineres, ~2–3 min por execução | Piloto; lotes de Segurança |
-| Já capturado | **78 variações** de 20 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17) — 33% das 234 | Cobertura |
+| Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
+| Já capturado | **88 variações** de 26 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10) — 38% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -334,8 +339,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **15 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), atendimento (2: efeito cadastral e financeiro da OS) e micromedição (1: consumo mínimo); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **19 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), atendimento (2: efeito cadastral e financeiro da OS), micromedição (1: consumo mínimo) e 🆕 processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -769,3 +774,131 @@ indicador; o imóvel do Atendimento fica numa quadra nova, com rede. `territorio
 | F2-53 | Serviço **sem tipo de débito**: a OS não é marcada "comercial atualizado" — continua apta a outra operação comercial | ATE-007 V1; `ControladorAtendimentoPublicoSEJB:303-308` | 🟡 | Registro |
 | F2-54 | A operação 257 é marcada para registro de transação, mas a ligação **não deixa trilha** de auditoria | ATE-007/008 (registros de operação: 0) | 🟡 | Contraste com CEN-SEG-006 |
 | F2-55 | O "Valor Obtido" do consumo mínimo ignora os overrides de ligação, situação e área; o fator de economias da categoria **substitui** as economias | MIC-002 V3–V7; `ControladorMicromedicao.obterConsumoMinimoLigacaoPorCategoria` | 🟢 | Responde, para esta superfície, a "ordem fina" pendente; a precedência ao faturar fica para o lote 5 |
+
+## 20. Lote 5 — Faturamento em grupo em modo Batch (2026-10-07)
+
+Sexto lote, o primeiro de **processos**: o faturamento de um grupo pelo processo comandado, executado pelo agendador do
+EAR em modo Batch. Exigiu preparar e validar o modo Batch (§20.3) e caracteriza o **framework** de processamento — os três
+níveis, a autorização, a falha por unidade, o reinício, a duplicidade — e o **resultado** do faturamento em lote.
+
+### 20.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Fronteira |
+| ------- | ------ | - | --------- | --------- |
+| CEN-BAT-005 — lote igual à soma dos individuais | A (1, ao centavo) | P0 | V1 | Faturar grupo comandado — R1 com IMV-01, IMV-02, IMV-03 |
+| CEN-BAT-001 — processo em três níveis, com autorização | A (1) | P1 | V1, V2 | idem; V2 com o processo exigindo autorização |
+| CEN-BAT-002 — falha de unidade, retomada e reprocessamento | A (1) | P0 | V1, V2, V3 | idem — três rotas, falha controlada em R2; reinício pela tela |
+| CEN-BAT-003 — atomicidade dentro da unidade | A (pendente) | P0 | V1 | idem — o imóvel do meio da R2 falha |
+| CEN-BAT-004 — execução duplicada | A (pendente) | P0 | V1, V1b | idem — dois disparos; novo disparo depois de concluído |
+| CEN-FAT-011 — imóvel sem consumo anterior | A (1) | P1 | V1 | idem — IMV-16 na R1 |
+
+**Fora do lote, com motivo**: BAT-001 V3 (processo de relatório) — nenhum relatório batch exercido; BAT-004 V2
+(disparos **simultâneos**) — concorrência real entre requisições; FAT-011 V2 — oráculo 2, só existe no OpenGSAN;
+FAT-001 V4/V5, FAT-002 na conta, MIC-001/003/004/005, CAD-005, FAT-003 V2/V3 — exigem leituras, hidrômetros,
+históricos e situações especiais que a massa deste lote ainda não tem (lote 5b, §12).
+
+### 20.2 Massa
+
+A base reconstruída **não tem** o que o framework e o faturamento em grupo pressupõem (F2-56). A massa cria pelas
+constantes do código, SINTÉTICO no resto:
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `categorias-com-tipo.sql` | Tipos de categoria (PARTICULAR, PÚBLICO) e o tipo de cada categoria — sem ele o imóvel "não tem subcategoria" (F2-44) |
+| `batch-catalogos.sql` | Situações de processo (1–8), de etapa (1–7) e de unidade (1–4); atividade FATURAR GRUPO (5) ligada ao processo 2; o processo 2 com **tipo** (FATURAMENTO COMANDADO) e com a etapa de faturar (63) — a base só tem as etapas acessórias, postas fora de uso; tipos de ligação e de consumo; situação de débito NORMAL (0); tipos de conta (1–6); concessão do disparo |
+| `batch-parametros-faturamento.sql` | Meses de validade da conta (`parm_nnmesesvalidadeconta = 3`) — nulo na base, quebra a geração da conta (F2-57) |
+| `batch-faturamento-g1-202605.sql` | Cronograma de G1 para 05/2026, o **comando** de FATURAR GRUPO com a rota R1 (vencimento 10/06/2026) e o consumo REAL de 05/2026 de IMV-01 (27 m³), IMV-02 (47) e IMV-03 (58) — os mesmos das simulações CEN-FAT-001 V1–V3 |
+| `batch-rotas-r2-r3.sql` | R2 e R3 no comando; R2 com IMV-R2a (15 m³), **IMV-R2x** (18 m³, **sem subcategoria** — a falha controlada) e IMV-R2b (22 m³), nesta ordem; R3 com IMV-R3a (33 m³) |
+| `batch-imovel-sem-consumo.sql` | IMV-16 na R1, sem **nenhum** consumo registrado |
+| `batch-permissoes-processo.sql` | Concessões de consultar, reiniciar e autorizar processo iniciado |
+| `batch-processo-com-autorizacao.sql` | O processo 2 exigindo autorização (`proc_icautorizacao = 1`) |
+| `massas/passos/batch-correcao-imovel-r2x.sql` | **Não é massa inicial**: a correção que o roteiro aplica entre a falha e o reinício (BAT-002 V2/V3), com o sha256 no resultado |
+
+O que vem por SQL é o que as **etapas anteriores** do ciclo gravariam (Inserir Comando de Atividade, Consistir Leituras):
+o objeto do lote é o processo, não a leitura nem o comando.
+
+### 20.3 Modo Batch — preparação e validação
+
+O piloto e os lotes 2–4 rodaram no EAR **Online**. O agendador (Quartz) só inicia no EAR **Batch** — `GSAN_TIPO=Batch`
+no build, que grava o tipo no `version.properties` e o rodapé. Para não perder o EAR das 78 baselines existentes:
+
+- **Um EAR por modo, cada um no seu volume** (`ear` e `ear-batch`); `referencia.sh` escolhe pelo `GSAN_TIPO` (build,
+  subir) e a saída do build Batch vai para `.saida/build-batch/`.
+- **O mesmo código**: do mesmo commit, os 247 jars do EAR Batch têm as **mesmas 22.614 entradas**, byte a byte, que os do
+  Online — a única diferença é o `version.properties`; fora dos jars, só o `version.properties` e o rodapé. Os 504
+  `.jasper` diferem por serem recompilados a cada build (artefato de compilação, não código).
+- **Funcionando**: `referencia.sh verificar` **23/23** no EAR Batch; o log mostra o agendador iniciado e o verificador
+  disparando a cada minuto; o rodapé mostra `referencia (Batch)`.
+- 🔵 **NPE na iniciação do Batch** (F2-58): `AgendadorTarefas.agendarTarefaIntegracaoUPA` (:143-152) lê dois
+  parâmetros nulos na base (hora de início e intervalo da integração UPA) como `int`. A exceção não impede o verificador
+  — agendado na linha anterior (:47-48) —, e nada deste lote depende da integração. **Não corrigido** (o legado não muda
+  nesta fase).
+- O rótulo do rodapé vem do `version.properties` gravado no build; o atributo de contexto que distinguiria o modo em
+  tempo de execução (`versaoTipo`) depende de um datasource `java:/BatchDS` que a receita não cria
+  (`CarregarParametrosAction:66`) — por isso a guarda confere o rodapé.
+- **O modo é exigido por cenário**: `"modo": "Batch"` na definição; `baseline.sh` sobe o JBoss com o EAR do modo e o
+  executor **recusa** a execução se o rodapé mostrar outro modo (teste negativo: um cenário Online com o EAR Batch no ar
+  é recusado). Cenários sem `modo` são Online — as 78 baselines anteriores não mudam de forma.
+
+### 20.4 Mecanismo — o que mudou
+
+- Roteiro `faturar_grupo` (autenticado pelo próprio roteiro, operador com senha efêmera): **dispara** pela tela "Inserir
+  Processo Faturamento Comandado", registrando se o comando estava listado (e, com `forjar`, envia o POST que a tela não
+  deixaria); **aguarda** o processo chegar a um estado final, sem mudar por 15 s (ou um ciclo de 75 s do verificador,
+  para ver o que ele faz com um processo que não deve rodar); **autoriza** e **reinicia** pelas telas; **aplica** a
+  correção de causa declarada; e lê do banco o estado final.
+- O estado sai **sem ids nem carimbos**: processos pela ordem, unidades pelo código da rota, contas pela matrícula (com
+  categorias e faixas), totais por rota e do grupo, consumos, referência do grupo, comando realizado e
+  **`contas_iniciadas`** — quantos números a sequência das contas entregou durante a operação. Sequências não voltam num
+  rollback: a diferença entre contas iniciadas e contas gravadas mede o trabalho **desfeito**.
+- A exceção persistida sai pelo **registro** e pelas **chaves de mensagem** do legado que ela carrega; a pilha fica nas
+  evidências (normalização "texto técnico da exceção" da especificação).
+
+### 20.5 Baselines do lote
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| BAT-005 V1 | Três contas NORMAL de 05/2026 (vencimento 10/06/2026, validade 30/09/2026, referência contábil 202605): IMV-01 **110,40** (27 m³ — mínimo 32,50 + faixa 11–20: 10 m³ × 4,15 = 41,50 + faixa 21–30: 7 m³ × 5,20 = 36,40), IMV-02 **168,09**, IMV-03 **252,60** (residencial 128,66 + comercial 123,94); rota e grupo **531,09**. 🟢 **Igual, ao centavo, a CEN-FAT-001 V1–V3** em cada categoria (conferência abaixo) |
+| BAT-001 V1 | Processo FATURAR GRUPO FATURAMENTO do grupo 1, solicitante `fase2.oper` → **CONCLUIDO**; etapa 63 (sequência 1) CONCLUIDA; **uma unidade por rota** (tipo 1 = ROTA, rota 1) CONCLUIDA; início e término registrados nos três níveis; comando realizado; grupo 05/2026 → **06/2026**. As contas **não têm autor** (`usur_id` nulo) e a operação não deixa registro de operação |
+| BAT-001 V2 | Com o indicador de autorização, o processo nasce **AGUARD AUTORIZACAO** e a etapa EM ESPERA; depois de um ciclo do verificador **nada rodou** (nenhuma unidade, nenhuma conta, comando não realizado, grupo em 05/2026). O processo aparece na tela de autorização; **o próprio solicitante** o autoriza (operação própria, 1527) → CONCLUIDO, com as mesmas contas de V1 |
+| BAT-002 V1 | R1 e R3 **CONCLUIDA**; R2 **CONCLUIDA COM ERRO**; a etapa CONCLUIDA COM ERRO com a exceção **persistida** (chave `atencao.nao_cadastrado.imovel_subcategoria`); processo **CONCLUIDO COM ERRO**; comando **não** realizado; grupo continua em 05/2026. Cinco contas: R1 (3), R3 (1) e a do **IMV-R2a** — o imóvel da R2 processado antes da falha |
+| BAT-002 V2 | Correção da causa e reinício pela tela (a etapa com erro aparece para reinício): as **três** unidades são reexecutadas e terminam CONCLUIDA; contas novas só de IMV-R2x (65,70) e IMV-R2b (84,40) — R1, R3 e IMV-R2a **não duplicam** (7 números de conta entregues = 7 contas); processo CONCLUIDO; comando realizado; grupo → 06/2026; total **882,49** |
+| BAT-002 V3 | V2 e, com o processo concluído, novo reinício da etapa **CONCLUIDA**: aceito pela tela; as três unidades rodam de novo e **nada** muda — 7 contas, grupo em 06/2026 |
+| BAT-003 V1 | R2 com três imóveis, o do meio sem subcategoria: a conta do **primeiro** (IMV-R2a, 53,25) **fica gravada**; o terceiro não é processado; números de conta entregues **5 = contas gravadas** — nada foi desfeito; consumos intactos |
+| BAT-004 V1 | Dois disparos pela tela, o comando listado nas duas vezes → **dois processos**, ambos CONCLUIDO, cada um com a sua unidade R1; **três contas** (uma por imóvel) e três números entregues — o segundo processo não gerou nada; grupo em 06/2026 |
+| BAT-004 V1b | Depois de concluído, a tela **não lista** o comando (HTTP 500, "A pesquisa não retornou nenhum resultado."). O POST do mesmo comando é **aceito**: o segundo processo, CONCLUIDO, fatura **06/2026** — referência **sem comando e sem consumo** — pela tarifa mínima (IMV-01 32,50; IMV-02 97,50; IMV-03 136,40) e avança o grupo para **07/2026** |
+| FAT-011 V1 | IMV-16, sem nenhum consumo registrado: conta de **0 m³** e **R$ 32,50** — a tarifa mínima residencial de 1 economia, sem faixa; **nenhum consumo gravado**; os outros três imóveis como em BAT-005 |
+
+**Conferência BAT-005 × CEN-FAT-001** (lendo só `golden/`): V1 × IMV-01 RESIDENCIAL 110,40 = 110,40; V2 × IMV-02
+RESIDENCIAL 168,09 = 168,09; V3 × IMV-03 RESIDENCIAL 128,66 = 128,66 e COMERCIAL 123,94 = 123,94 — **o lote é a soma dos
+individuais**. O consumo difere na forma, não no valor: a conta grava o consumo **medido** (47 e 58 m³), e as categorias
+somam o consumo distribuído por economia e arredondado (48 e 59 m³) — o que a simulação exibe como "consumo faturado"
+(F2-59).
+
+### 20.6 Determinismo
+
+- **Captura**: **10 de 10** variações com as duas execuções **idênticas byte a byte** (`20261007T120644Z-capturar`),
+  inclusive a ordem de processamento dos imóveis dentro da R2 (a consulta não tem `ORDER BY`; o plano é o mesmo para a
+  mesma massa) e os dois processos de BAT-004. Antes, duas rodadas exploratórias acertaram o roteiro (dois erros de tipo
+  em SQL — o PostgreSQL 9.5 não concatena inteiro com texto sem conversão).
+- **Verificação independente** (3ª execução): lote 5 **10/10** conferem (`20261007T133127Z-verificar`).
+- **Regressão Online** — a guarda de modo, o `baseline.sh` e o `referencia.sh` mudaram para todos os cenários: as
+  **78 baselines** dos lotes piloto, 2, 2b, 3 e 4 **conferem** (`20261007T141238Z-verificar`), cada uma subindo o EAR
+  Online pelo mecanismo novo. Com as 10 do lote 5, as **88** baselines conferem.
+
+### 20.7 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-56 | A base não tem o que o processamento pressupõe: situações de processo, etapa e unidade **vazias**; nenhuma atividade de faturamento; o processo FATURAR GRUPO **sem tipo** e **sem a etapa de faturar** (só as acessórias); tipos de ligação, de consumo e de conta vazios; sem a situação NORMAL; `unidade_processamento` vazia. Sem tipo, o início do processo quebra (NPE em `verificarAutorizacaoBatch:6272`) | Exploração; `ControladorBatchSEJB:6260-6283` | ⚙️ | Massa cria pelas constantes; checklist de instalação |
+| F2-57 | Meses de validade da conta **nulos** na base: a geração da conta quebra (NPE) | `ControladorFaturamentoFINAL:53629`, `:9440` | ⚙️ | Massa sintética (3); parâmetro obrigatório numa instalação |
+| F2-58 | A iniciação do Batch lança NPE ao agendar a integração UPA (hora e intervalo nulos lidos como `int`) — depois de agendar o verificador, que segue funcionando | `AgendadorTarefas:47-48`, `:143-152` | 🔵 | Não bloqueia; registro |
+| F2-59 | **Lote = soma dos individuais**, ao centavo, por categoria. A conta grava o consumo medido; as categorias guardam o consumo distribuído por economia e arredondado — a soma por categoria (48, 59) **não fecha** com o da conta (47, 58) | BAT-005 V1 × FAT-001 V1–V3 | 🟢 | Confirma a especificação; o consumo por categoria é observável próprio |
+| F2-60 | Três níveis persistidos, cada um com situação, início e término; a ordem das etapas é **dado** (sequência); a unidade é a rota; o solicitante fica no processo. As escritas do processo **não têm autor** (`usur_id` nulo na conta) nem registro de operação — não há "usuário de batch" | BAT-001 V1 | 🟢 / 🟡 | Confirma o modelo; a autoria das escritas em lote é lacuna (USR-11) |
+| F2-61 | Autorização: processo com indicador fica parado em AGUARD AUTORIZACAO (o verificador não o inicia) até a autorização pela tela, com **operação própria** — mas **o próprio solicitante autoriza**: não há segregação | BAT-001 V2; `AutorizarProcessoIniciadoAction` | 🟢 / 🟡 | Confirma a autorização distinta da permissão de tela; segregação é decisão de projeto |
+| F2-62 | Falha **por unidade**: a exceção fica persistida na etapa, as outras rotas seguem, o processo termina CONCLUIDO COM ERRO, o comando não é realizado e o grupo não avança | BAT-002 V1 | 🟢 | Confirma a especificação |
+| F2-63 | **A unidade não é atômica**: a conta do imóvel processado antes da falha fica gravada; nada é desfeito (números de conta entregues = contas gravadas). Na variante ativa (COSANPA), `faturarGrupoFaturamento` e `faturarImovel` são **`NotSupported`** — cada gravação confirma sozinha; o `setRollbackOnly` da falha não tem transação a marcar. A especificação e `modulos/batch.md §11` supunham `Required` | BAT-003 V1, BAT-002 V1; `descriptors/faturamentoCOSANPA/META-INF/ejb-jar.xml:118-128` | 🔴 | **CAND-02 caracterizado**: efeitos parciais — atomicidade no OpenGSAN exige divergência aprovada |
+| F2-64 | O reinício é **por etapa e reexecuta todas as unidades** (apaga as unidades iniciadas e esquece as já executadas); não duplica porque `faturarImovel` **pula** o imóvel que já tem conta da referência (salvo PRÉ-FATURADA) — a salvaguarda é do **módulo**, não do framework. Reiniciar etapa concluída é aceito e não muda nada | BAT-002 V2, V3; `ControladorBatchSEJB:4565`, `:4588`; `ControladorFaturamentoFINAL:1297` | 🔵 | A especificação esperava "unidade concluída não é reexecutada": ela é — a idempotência vem do faturamento |
+| F2-65 | Disparo **duplicado** com o comando ainda pendente: o framework aceita os dois e roda os dois processos; **não há faturamento em dobro** — a mesma salvaguarda do módulo | BAT-004 V1 | 🟢 | Oráculo 1 para o resultado (uma conta por imóvel) |
+| F2-66 | **Novo disparo de comando já realizado fatura a referência seguinte**: a tela não lista o comando, mas o servidor não confere se ele foi realizado; a tarefa leva o grupo **como está** (já em 06/2026), não a referência do cronograma — fatura uma referência **sem comando e sem consumo**, pela tarifa mínima, e avança o grupo | BAT-004 V1b; `ControladorBatchSEJB:2678`, `:2892-2893` | 🔴 | Achado de segurança 35; **CAND-11** |
+| F2-67 | Imóvel **sem nenhum consumo** é faturado com **0 m³ pela tarifa mínima**, e nenhum consumo é gravado. O "consumo de reserva 20" que a Fase 1 apontou (`ControladorFaturamentoFINAL:1875/1893`) fica em `obterValoresCreditosBolsaAgua` — o **crédito Bolsa Água** —, não no faturamento do imóvel | FAT-011 V1 | 🔴 (especificação) | Corrige a premissa de CEN-FAT-011 e a leitura de **D-15** (nota no registro) |

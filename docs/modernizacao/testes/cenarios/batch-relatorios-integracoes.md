@@ -2,7 +2,7 @@
 
 > Parte de [`cenarios-criticos.md`](../cenarios-criticos.md). Modelo e regras em [`estrategia-testes.md`](../estrategia-testes.md).
 >
-> ⚠️ **Nenhum valor desta página foi capturado.** Baseline: `⬜ A CAPTURAR NA FASE 2` em todos os cenários.
+> 🆕 **Fase 2, lote 5 (2026-10-07)**: CEN-BAT-001…005 capturados no EAR em modo Batch ([relatório §20](../fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07)). Os demais cenários desta página: `⬜ A CAPTURAR NA FASE 2`.
 
 🔵 **Leitura da área**: três capacidades de **plataforma**. No Processamento, a compatibilidade está no **modelo** (processo, etapa, unidade, estado, retomada) e **nunca** na tecnologia — EJB, MDB, JMS e Quartz são `C4`, sem teste de equivalência. Nas Integrações, quase tudo é **oráculo 2**: o legado aceita escrita sem identificar a origem.
 
@@ -30,7 +30,7 @@
 - **Observações semânticas**: solicitante gravado · parâmetros gravados · etapas criadas **e sua ordem** · unidades resolvidas (rota no faturamento, localidade na arrecadação) · estado de cada nível · estado de espera por autorização (V2) · autor das escritas feitas pelo processo
 - **Localizadores GSAN**: `batch.processo_iniciado`, `funcionalidade_iniciada`, `unidade_iniciada`; `sequencialExecucao`; `Processo.indicadorAutorizacao`; `AGUARDANDO_AUTORIZACAO`; `Usuario.USUARIO_BATCH`
 - **Resultado semântico esperado**: 🟢 definição e execução separadas em **três níveis**, cada um com estado, tempos, parâmetros e erro **persistidos**; 🟢 a ordem das etapas **é dado**; 🟢 processos sensíveis exigem **autorização própria**, distinta da permissão de tela; 🟢 as escritas do processo têm como autor o **usuário de batch**
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** (Fase 2, lote 5, 2026-10-07) — V1 e V2 em [`golden/processamento/CEN-BAT-001/`](../../../../ambiente-referencia/baselines/golden/processamento/CEN-BAT-001/), pelo faturamento de grupo comandado no EAR Batch. V1: processo do grupo 1 com o **solicitante** gravado → CONCLUIDO; a etapa 63 (sequência 1) CONCLUIDA; **uma unidade por rota** (tipo ROTA, rota 1) CONCLUIDA; início e término nos três níveis; comando realizado; grupo 05 → 06/2026. V2: com `proc_icautorizacao = 1` o processo nasce **AGUARD AUTORIZACAO** (etapa EM ESPERA) e o verificador **não o inicia**; autorizado pela tela (operação 1527) → CONCLUIDO. 🟡 As escritas do processo **não têm autor** (`usur_id` nulo na conta) — não há usuário de batch; 🟡 **o próprio solicitante autoriza** (sem segregação). ⬜ V3 (relatório) a capturar. [relatório §20](../fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07) — F2-60, F2-61
 - **Normalizações**: identificadores técnicos de execução; timestamps; ⚠️ **não** a ordem das etapas
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**
@@ -54,7 +54,7 @@
 - **Observações semânticas**: estado de cada unidade · exceção persistida · estado final do processo · unidades executadas no reprocessamento · **contas de R1 e R3 não duplicadas** · contas de R2 geradas uma única vez
 - **Localizadores GSAN**: `CONCLUIDA_COM_ERRO`; `CONCLUIDO_COM_ERRO`; `reiniciarFuncionalidadesIniciadas`; `codigoRealUnidadeProcessamento`
 - **Resultado semântico esperado**: 🟢 a falha é **por unidade**, com exceção persistida, e **as demais seguem**; 🟢 unidade concluída **não é reexecutada**; 🟢 reprocessamento é **por etapa**
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** (Fase 2, lote 5, 2026-10-07) — V1–V3 em [`golden/processamento/CEN-BAT-002/`](../../../../ambiente-referencia/baselines/golden/processamento/CEN-BAT-002/). Falha controlada: um imóvel da R2 **sem subcategoria**. V1: R1 e R3 CONCLUIDA, R2 **CONCLUIDA COM ERRO**, exceção **persistida** na etapa (`atencao.nao_cadastrado.imovel_subcategoria`), processo **CONCLUIDO COM ERRO**, comando não realizado, grupo não avança. V2: correção + reinício pela tela → as **três** unidades reexecutadas (o reinício apaga as unidades iniciadas); contas de R1, R3 e do imóvel da R2 já faturado **não duplicam** — `faturarImovel` pula o imóvel com conta da referência; processo CONCLUIDO. V3: reiniciar a etapa **já concluída** é aceito e não muda nada. 🔵 Ao contrário do esperado, **a unidade concluída é reexecutada**: a idempotência é do **módulo** (faturamento), não do framework. [relatório §20](../fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07) — F2-62, F2-64
 - **Normalizações**: identificadores de execução; timestamps; texto técnico da exceção
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**
@@ -74,9 +74,9 @@
 - **Operação GSAN**: `faturarGrupoFaturamento` para a unidade
 - **Operação conceitual OpenGSAN**: executar unidade
 - **Observações semânticas**: contas dos imóveis 1…k−1 · efeitos colaterais (lançamentos, consumos) · estado da unidade · o que um reprocessamento faz com o que ficou
-- **Localizadores GSAN**: MDB `NotSupported` (`descriptors/batchFaturarGrupoFaturamento/META-INF/ejb-jar.xml`); `faturarGrupoFaturamento` com atributo `Required`
+- **Localizadores GSAN**: MDB `NotSupported` (`descriptors/batchFaturarGrupoFaturamento/META-INF/ejb-jar.xml`); ~~`faturarGrupoFaturamento` com atributo `Required`~~ 🆕 **corrigido pela Fase 2**: na variante ativa (COSANPA) `faturarGrupoFaturamento` e `faturarImovel` são **`NotSupported`** (`descriptors/faturamentoCOSANPA/META-INF/ejb-jar.xml:118-128`); `Required` é o padrão (`*`) dos demais métodos
 - **Resultado semântico esperado**: 🟢 o estado da unidade é gravado **em transação própria**. ❔ **Se o trabalho de negócio é atômico dentro da unidade não está comprovado** — chamadas aninhadas, `RequiresNew` ou commits explícitos poderiam quebrá-lo
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🔴 **CAPTURADA — efeitos parciais** (Fase 2, lote 5, 2026-10-07) — V1 em [`golden/processamento/CEN-BAT-003/`](../../../../ambiente-referencia/baselines/golden/processamento/CEN-BAT-003/). R2 com três imóveis, o do meio sem subcategoria: a conta do **primeiro fica gravada**, o terceiro não é processado, e os números de conta entregues pela sequência (5) **igualam** as contas gravadas — **nada é desfeito**. Causa: na variante ativa (COSANPA), `faturarGrupoFaturamento` e `faturarImovel` são **`NotSupported`** (`descriptors/faturamentoCOSANPA/META-INF/ejb-jar.xml:118-128`) — cada gravação confirma na própria transação. **CAND-02 caracterizado**. [relatório §20](../fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07) — F2-63
 - **Normalizações**: identificadores técnicos
 - **Divergência permitida**: nenhuma aprovada — ⚠️ **CAND-02**
 - **Oráculo**: ⚠️ **PENDENTE DE CARACTERIZAÇÃO** — 🔴 **não** é oráculo 2: não se constrói teste como se a divergência existisse. Se a baseline mostrar efeitos parciais, garantir atomicidade no OpenGSAN exige divergência **aprovada**; se mostrar atomicidade, o cenário passa a oráculo 1
@@ -96,9 +96,9 @@
 - **Operação GSAN**: iniciar processo duas vezes
 - **Operação conceitual OpenGSAN**: iniciar processo
 - **Observações semânticas**: o segundo disparo foi recusado? · contas geradas por imóvel (uma ou duas?) · salvaguarda que atuou (framework ou módulo dono)
-- **Localizadores GSAN**: a identificar na Fase 1
+- **Localizadores GSAN**: ~~a identificar na Fase 1~~ 🆕 `ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado` (:2678 — não confere se o comando foi realizado); a tarefa leva o grupo como está (:2892-2893); salvaguarda do módulo em `ControladorFaturamentoFINAL.faturarImovel` (:1297 — imóvel com conta da referência, salvo PRÉ-FATURADA, é pulado); a tela lista só comandos não realizados (`pesquisarFaturamentoAtividadeCronogramaComandadasNaoRealizadas`)
 - **Resultado semântico esperado**: 🟢 a proteção **no nível da unidade** existe; ❔ **no nível do processo, não comprovada**. 🔵 Salvaguardas de negócio podem existir nos módulos donos (situação da conta, referência já faturada) — são regra do módulo, não do framework
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢/🔴 **CAPTURADA** (Fase 2, lote 5, 2026-10-07) — V1 e 🆕 V1b em [`golden/processamento/CEN-BAT-004/`](../../../../ambiente-referencia/baselines/golden/processamento/CEN-BAT-004/). V1 (dois disparos em sequência, comando pendente): o framework **aceita os dois** e roda dois processos, mas **não há faturamento em dobro** — uma conta por imóvel; a salvaguarda é do módulo (`faturarImovel` pula imóvel com conta da referência). 🆕 V1b (novo disparo do comando **já realizado**): a tela não o lista, mas o POST é **aceito** e o processo fatura a **referência seguinte** (06/2026, sem comando e sem consumo) pela tarifa mínima e avança o grupo — o servidor não confere a realização do comando e a tarefa leva o grupo como está (`ControladorBatchSEJB:2678`, `:2892-2893`). ⬜ V2 (simultâneos) a capturar. [relatório §20](../fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07) — F2-65, F2-66; **CAND-11**
 - **Normalizações**: identificadores técnicos
 - **Divergência permitida**: nenhuma
 - **Oráculo**: ⚠️ **PENDENTE DE CARACTERIZAÇÃO** — se a baseline mostrar **faturamento em dobro**, reproduzi-lo seria absurdo e protegê-lo exige **divergência registrada**; o candidato só é aberto se a evidência aparecer
@@ -120,7 +120,7 @@
 - **Observações semânticas**: para cada imóvel, a conta produzida pelo lote comparada com a produzida individualmente · totais por rota e por grupo
 - **Localizadores GSAN**: `descriptors/batchFaturarGrupoFaturamento`; `faturarGrupoFaturamento`; `gerarConta`
 - **Resultado semântico esperado**: 🟢 **mesmo cálculo no individual e no lote** — cada conta do lote é **idêntica** à individual correspondente
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** (Fase 2, lote 5, 2026-10-07) — V1 em [`golden/processamento/CEN-BAT-005/`](../../../../ambiente-referencia/baselines/golden/processamento/CEN-BAT-005/): R1 com IMV-01 (27 m³), IMV-02 (47) e IMV-03 (58) → contas **110,40**, **168,09** e **252,60** (residencial 128,66 + comercial 123,94); rota e grupo 531,09. 🟢 **Igual, ao centavo e por categoria, a CEN-FAT-001 V1–V3** — o lote é orquestração do mesmo cálculo. 🔵 A conta grava o consumo medido (47, 58); a soma por categoria (48, 59) é a do consumo distribuído por economia — o que a simulação exibe. [relatório §20](../fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07) — F2-59
 - **Normalizações**: identificadores técnicos; ordem de processamento das unidades
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — **ao centavo**

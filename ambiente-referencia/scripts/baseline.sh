@@ -39,11 +39,13 @@ executar_uma() {  # cenário variação diretório-no-contêiner
   local cen=$1 var=$2 dir=$3
   dc stop gsan > /dev/null 2>&1 || true
   mapfile -t massa < <(fer python3 "$EXEC" massa "$cen" "$var" | tr -d '\r')
+  # Modo do EAR exigido pelo cenário: o JBoss sobe com o EAR desse modo (volume próprio) e o executor confere.
+  local modo; modo=$(fer python3 "$EXEC" modo "$cen" | tr -d '\r')
   fer bash /referencia/scripts/estado-base.sh restaurar "${massa[@]}" \
     || falhar "a massa de $cen $var não foi aplicada (erro do psql acima) — nenhuma execução desta variação"
-  GSAN_INSTANCIA=referencia bash scripts/referencia.sh subir > "$SAIDA_HOST/subir-$cen-$var-$(basename "$dir").log" 2>&1 \
+  GSAN_TIPO=$modo GSAN_INSTANCIA=referencia bash scripts/referencia.sh subir > "$SAIDA_HOST/subir-$cen-$var-$(basename "$dir").log" 2>&1 \
     || { tail -20 "$SAIDA_HOST/subir-$cen-$var-$(basename "$dir").log" >&2; falhar "o JBoss não subiu"; }
-  fer python3 "$EXEC" executar "$cen" "$var" "$dir"
+  GSAN_TIPO=$modo fer python3 "$EXEC" executar "$cen" "$var" "$dir"
 }
 
 rodar() {

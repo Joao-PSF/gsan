@@ -1,0 +1,135 @@
+{
+  "dominio": "processamento",
+  "lote": "batch-faturamento",
+  "modo": "Batch",
+  "fronteira": "Faturar grupo pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" (exibirInserirProcessoFaturamentoComandadoAction → inserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado) cria o processo iniciado; o verificador do Quartz (a cada minuto) o inicia e despacha uma unidade por rota (MDB batchFaturarGrupoFaturamento → ControladorFaturamentoFINAL.faturarGrupoFaturamento → faturarImovel → determinarFaturamentoImovel → gerarConta). O que o framework e o faturamento gravam é lido do banco, sem ids nem carimbos.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_catg_cons_fx",
+    "faturamento.conta_impressao",
+    "micromedicao.consumo_historico",
+    "seguranca.operacao_efetuada",
+    {
+      "tabela": "faturamento.faturamento_grupo",
+      "modo": "conteudo"
+    }
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-BAT-001",
+  "titulo": "Execução de processo em três níveis, com autorização",
+  "especificacao": "docs/modernizacao/testes/cenarios/batch-relatorios-integracoes.md — CEN-BAT-001",
+  "oraculo": "1",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, rotas e consumos chegam pela massa: são o que as etapas anteriores do ciclo gravariam (Inserir Comando de Atividade, Consistir Leituras) e não o objeto deste lote"
+  },
+  "observaveis": {
+    "campos": [
+      "passos",
+      "processos",
+      "funcionalidades",
+      "unidades",
+      "contas[matricula,referencia,autor]",
+      "comando",
+      "grupo_faturamento"
+    ],
+    "fora_desta_fronteira": {
+      "V3 processo de relatório": "nenhum relatório batch exercido neste lote",
+      "usuário técnico de batch (USR-11)": "o autor das escritas é lido da conta (usur_id); a base não define um usuário de batch próprio",
+      "parâmetros gravados": "a tarefa do processo é serializada em Java (fuin_tarefabatch) — não é dado de negócio legível"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "disparo manual do faturamento de G1/05-2026 (processo sem autorização)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "processo que exige autorização: disparo → um ciclo do verificador (não deve rodar) → autorização pela tela → execução",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/batch-permissoes-processo.sql",
+        "massas/deltas/batch-processo-com-autorizacao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "ciclo"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "autorizar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ]
+      }
+    }
+  }
+}

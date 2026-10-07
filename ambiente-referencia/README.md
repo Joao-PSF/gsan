@@ -47,7 +47,7 @@ O `.env` é ignorado pelo Git; nenhuma credencial histórica é usada.
 | -------- | --- |
 | `GSAN_DB_SENHA` | Superusuário do PostgreSQL de referência e credencial do datasource do JBoss (como na receita oficial). Só letras, dígitos, `.`, `-`, `_` |
 | `GSAN_ADMIN_SENHA` | Senha do usuário `admin` do GSAN — substitui a publicada pelas migrações e pela wiki |
-| `GSAN_TIPO` | `Online` (padrão da receita) ou `Batch`. **Batch** inicia o agendador Quartz (verificador de processos a cada minuto), sem o qual processos batch e relatórios assíncronos não rodam. Mudar exige novo `build` |
+| `GSAN_TIPO` | `Online` (padrão da receita) ou `Batch`. **Batch** inicia o agendador Quartz (verificador de processos a cada minuto), sem o qual processos batch e relatórios assíncronos não rodam. Cada modo tem o **seu** EAR, num volume próprio (`ear` e `ear-batch`): `GSAN_TIPO=Batch bash scripts/referencia.sh build` constrói o Batch sem tocar no Online, e `subir` sobe o do modo pedido. O rodapé das telas mostra o modo (`referencia (Online)` / `referencia (Batch)`) |
 | `GSAN_VERSAO` | Texto do rodapé das telas |
 | `GSAN_PORTA_HTTP`, `GSAN_JVM_*` | Porta publicada e memória da JVM (valores da receita) |
 | `GSAN_MIGRACOES_CODIFICACAO` | `detectar` (padrão) lê cada script de migração na sua codificação; `latin1` reproduz a receita, que corrompe o texto dos scripts em UTF-8 |
@@ -63,6 +63,10 @@ Confere que o código legado no `HEAD` é o do commit fixado (`GSAN_COMMIT_LEGAD
 roda o `build.xml` original (Ant 1.9.16, JDK 6) num contêiner **sem rede**, gravando o EAR explodido no volume `ear`.
 Saídas em `.saida/`: `build.log`, `build.metadados` (versões, contagens) e `inventario-ear.sha256` (caminho + hash de cada
 arquivo do EAR — base de comparação da Fase 3). Cerca de 3 minutos.
+
+O modo vem de `GSAN_TIPO` (padrão `Online`). `GSAN_TIPO=Batch bash scripts/referencia.sh build` grava o EAR **Batch** no
+volume `ear-batch` e as saídas em `.saida/build-batch/`; os dois EARs coexistem. Do mesmo commit, diferem só no
+`version.properties` (tipo) e no rodapé — conferido entrada a entrada no lote 5 da Fase 2.
 
 ## 4. Banco
 
@@ -114,8 +118,11 @@ bash scripts/baseline.sh capturar --lote piloto     # 2 execuções idênticas p
 bash scripts/baseline.sh verificar --lote piloto    # nova execução comparada com a baseline; não escreve
 ```
 
-Cada execução recria os bancos dos modelos, aplica a massa sintética da variação, sobe o JBoss do zero e executa a
-operação pelas telas do legado. Depois de uma captura, o banco de trabalho fica com a massa da **última** execução.
+Cada execução recria os bancos dos modelos, aplica a massa sintética da variação, sobe o JBoss do zero **com o EAR do
+modo que o cenário declara** (`"modo": "Batch"`; padrão Online) e executa a operação pelas telas do legado; o executor
+recusa a execução se o rodapé mostrar outro modo. Os cenários Batch exigem o EAR Batch construído uma vez
+(`GSAN_TIPO=Batch bash scripts/referencia.sh build`). Depois de uma captura, o banco de trabalho fica com a massa da
+**última** execução.
 Tudo em [`baselines/README.md`](baselines/README.md).
 
 ## 6b. Acesso remoto temporário

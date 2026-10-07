@@ -446,8 +446,8 @@ Especificados e prontos para a Fase 2 — o que falta é **decidir o oráculo de
 | ------- | --------------------------------------- |
 | **CEN-SEG-005** | Se a Action excepcionada protege por controle interno, oráculo 1; se retorna dado, proteger exige divergência — **CAND-04** |
 | **CEN-SEG-002 V3** | Bloqueio por tentativas em sessões diferentes — **CAND-03** |
-| **CEN-BAT-003** | Atomicidade dentro da unidade — **CAND-02**. 🔴 Não se constrói oráculo 2 como se a divergência existisse |
-| **CEN-BAT-004** | Execução duplicada — se houver faturamento em dobro, protegê-lo exige divergência |
+| **CEN-BAT-003** | Atomicidade dentro da unidade — **CAND-02**. 🔴 Não se constrói oráculo 2 como se a divergência existisse. 🆕 **Caracterizado (2026-10-07)**: **efeitos parciais** — a conta do imóvel anterior à falha fica gravada ([relatório §20](fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07)). Continua pendente: atomicidade no OpenGSAN exige divergência **aprovada** |
+| **CEN-BAT-004** | Execução duplicada — se houver faturamento em dobro, protegê-lo exige divergência. 🆕 **Caracterizado (2026-10-07)**: V1 (dois disparos com o comando pendente) **sem** faturamento em dobro → oráculo 1 para o resultado; V1b (novo disparo do comando já realizado) fatura a **referência seguinte**, sem comando — **CAND-11** |
 | **CEN-OPE-003 V5** 🆕 | O passo 2 da cascata de qualidade da água não limpa o filtro do passo 1 — se o legado deixar de encontrar o registro por isso, não reproduzir exige divergência |
 | **CEN-SEG-004 V7(c)** 🆕 | Composição do filtro de restrições com limite de laço trocado (`ControladorAcessoSEJB:3072`) — se o resultado desviar de "restrições < concessões", não reproduzir exige divergência — **CAND-05** |
 
@@ -488,6 +488,8 @@ Registrados para a auditoria, com o motivo:
 
 ⚠️ **Nenhum aprovado.** São comportamentos que talvez devam mudar e **não estão registrados**. Os dois primeiros vêm da execução anterior; CAND-03 e CAND-04, da especificação dos cenários; 🆕 CAND-05, da auditoria final. ⚠️ A auditoria **não** aprovou CAND-03 nem CAND-04: não há decisão explícita nem caracterização que as sustente.
 
+🆕 **Fase 2, lote 5 — faturamento em grupo em modo Batch (2026-10-07)** — **caracterizou CAND-02** (efeitos parciais dentro da unidade) e revelou **CAND-11** (pré-condição do processo verificada só na tela); [relatório §20](fase2/fase2-caracterizacao-baselines.md#20-lote-5--faturamento-em-grupo-em-modo-batch-2026-10-07); achado 35.
+
 🆕 **Fase 2, lote 4 — Atendimento (2026-10-06)** — revelou **CAND-10** (controle de tela sem verificação no servidor); [relatório §19](fase2/fase2-caracterizacao-baselines.md#19-lote-4--atendimento-efeitos-da-os-e-consumo-mínimo-2026-10-06); achados 33–34.
 
 🆕 **Fase 2, Segurança restante (2026-10-06)** — a caracterização revelou **CAND-08** (redefinição de senha para valor fixo) e **CAND-09** (troca imposta que não restringe a sessão); [relatório §17](fase2/fase2-caracterizacao-baselines.md#17-lote-2b--segurança-restante-2026-10-06); achados 30–32.
@@ -497,7 +499,7 @@ Registrados para a auditoria, com o motivo:
 | # | Conceito | Origem | Situação |
 | - | -------- | ------ | -------- |
 | CAND-01 | Valores denormalizados no Imóvel | 19ª execução | Condicional à caracterização — CEN-CAD-003 |
-| CAND-02 | Atomicidade dentro da unidade | 19ª execução | Condicional à caracterização — CEN-BAT-003 |
+| CAND-02 | Atomicidade dentro da unidade | 19ª execução | ~~Condicional à caracterização~~ 🆕 🟢 **Caracterizado (2026-10-07)**: **efeitos parciais** — no faturamento em grupo, a conta do imóvel processado antes da falha fica gravada e nada é desfeito; na variante ativa, `faturarGrupoFaturamento` e `faturarImovel` são `NotSupported` (CEN-BAT-003 V1; F2-63). O reprocessamento não duplica porque o faturamento pula imóvel já faturado (F2-64). Proposta: unidade **atômica** (ou reprocessamento idempotente declarado) no OpenGSAN — exige divergência aprovada |
 | **CAND-03** | **Contador de tentativas de login na sessão** | 🆕 | 🟢 O contador vive na `HttpSession`; o mapa de segurança o classifica `REESTRUTURAR` e a visão conceitual o descreve como "persistente" **atribuindo-o a D-01** — mas ⚠️ **o texto de D-01 cobre apenas o hash**. É **lacuna de registro**: ampliar D-01 ou criar divergência própria — CEN-SEG-002 V3. 🆕 **Caracterizado**: 4 senhas erradas em 2 sessões **não bloqueiam** (baseline V3) |
 | **CAND-04** | **Exceção de autorização por substring `pesquisar`/`relatorio`** | 🆕 | 🟢 Qualquer Action cujo nome contenha os termos **sai do bloco de autorização funcional do filtro**; para `relatorio` no download, o acesso indevido já é achado confirmado. Para `pesquisar`, **depende de cada Action** — CEN-SEG-005. 🆕 **Sustentado**: usuário **sem nenhuma concessão** obtém por `pesquisarImovelAction` matrícula, cliente e endereço; o relatório de dados cadastrais é gerado (achado 28) |
 | 🆕 **CAND-05** | **Composição do filtro de restrições por funcionalidade** | Auditoria final | 🟢 No laço sobre as concessões, o marcador do último termo do `OR` usa o total de **grupos**, não de concessões (`ControladorAcessoSEJB:3072`) — condicional à caracterização — CEN-SEG-004 V7(c). 🆕 **Não confirmado**: sem restrição (V7c) e com uma restrição (V7c2) a decisão é a da regra "restrições < concessões"; outras composições (vários grupos × várias concessões) não foram caracterizadas |
@@ -506,6 +508,7 @@ Registrados para a auditoria, com o motivo:
 | 🆕 **CAND-08** | **Redefinição de senha para valor fixo** | Fase 2 (2026-10-06) | 🟢 **Caracterizado**: a operação 818 grava, como senha de qualquer login, um valor literal versionado, sem impor troca (CEN-SEG-006 V1; achado 30). Proposta: redefinição gera credencial aleatória de uso único, com troca obrigatória — nunca um valor conhecido |
 | 🆕 **CAND-09** | **Troca de senha imposta que não restringe a sessão** | Fase 2 (2026-10-06) | 🟢 **Caracterizado**: PENDENTE e expirado veem a troca imposta, mas a funcionalidade concedida abre sem trocar (CEN-SEG-003 V2, V3; achado 32). Mesmo padrão de CAND-07. ⚠️ Regra 4: a divergência **reforça** a expiração |
 | 🆕 **CAND-10** → **D-19 (proposta)** | **Controle de tela sem verificação no servidor** | Fase 2 (2026-10-06) | 🆕 **Registrada como D-19, PROPOSTA — pendente de aprovação** ([`divergencias-aprovadas.md`](../compatibilidade/divergencias-aprovadas.md#divergências-propostas--não-aprovadas--não-valem-como-oráculo-2)). 🟢 **Caracterizado**: a permissão especial de ligação de água sem RA e as regras de cobrança do serviço (parcelas, valor, percentual, motivo de não cobrança) só existem na tela — o POST com outros valores é aceito (CEN-SEG-008 V2, CEN-ATE-008 V1b/V3b; achados 33–34). Proposta: toda permissão e regra de cobrança avaliada no servidor |
+| 🆕 **CAND-11** | **Pré-condição do processo verificada só na tela** | Fase 2 (2026-10-07) | 🟢 **Caracterizado**: depois do faturamento, a tela não lista mais o comando, mas o POST do mesmo comando é aceito — o processo fatura a **referência seguinte**, que nunca foi comandada e não tem consumo, pela tarifa mínima, e avança o grupo (CEN-BAT-004 V1b; F2-66; achado 35). Mesma família de D-19 (controle de tela sem verificação no servidor). Proposta: o disparo confere, no servidor, que o comando existe, não foi realizado e corresponde à referência do grupo |
 
 ---
 

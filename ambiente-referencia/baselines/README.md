@@ -30,6 +30,7 @@ baselines/
 ├── cenarios/<CEN>.json          definição executável: fronteira, roteiro, variações, observáveis, normalizações
 ├── massas/base/*.sql            massa comum, aplicada em ordem a toda execução
 ├── massas/deltas/*.sql          massa por variação (perfis IMV-*, TAR-*, …)
+├── massas/passos/*.sql          correções que um roteiro aplica NO MEIO da execução (passo `aplicar`), nunca massa inicial
 ├── golden/<domínio>/<CEN>/<V>.json   baselines (só `baseline.sh capturar` escreve aqui)
 └── ferramentas/
     ├── cenarios.py              leitura das especificações (docs)
@@ -75,6 +76,18 @@ rótulo; logins com o mesmo rótulo recebem a mesma) e executa os **passos** dec
 login), `historico` (contagem), `credenciais`, `guardar_credencial`/`credencial_alterada` (só igualdade e forma — o
 valor do hash nunca sai do executor), `auditoria` (registro de operação e trilha, sem ids sequenciais nem IP) e
 `cookie`. Uma fronteira, muitos cenários: variar é mudar passos e massa, não escrever teste.
+
+### Cenários de processamento — EAR em modo Batch
+
+Um cenário com `"modo": "Batch"` roda no EAR Batch (volume `ear-batch`, agendador Quartz ativo): `baseline.sh` sobe o
+JBoss com esse EAR e o executor recusa a execução se o rodapé mostrar outro modo. O roteiro `faturar_grupo` dispara o
+processo pela tela "Inserir Processo Faturamento Comandado" e segue os **passos** da variação: `disparar` (com `forjar`
+quando a tela já não lista o comando), `aguardar` (`terminal`: todo processo num estado final e nada mudando por 15 s;
+`ciclo`: 75 s, uma passagem do verificador), `observar` (fotografia intermediária), `autorizar`, `aplicar` (arquivo de
+`massas/passos/`, com o sha256 no resultado) e `reiniciar` (`etapas`: `com_erro` ou `concluidas`). O estado final —
+processos, etapas, unidades por rota, contas por matrícula com categorias e faixas, totais, consumos, referência do
+grupo e `contas_iniciadas` (números entregues pela sequência das contas, que não voltam num rollback) — sai sem ids nem
+carimbos de tempo.
 
 ## Regras
 
