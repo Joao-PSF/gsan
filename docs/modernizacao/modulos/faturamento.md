@@ -235,6 +235,7 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 - 🔵 **Consequência para a migração**: a regra "no OpenGSAN, usar HALF_UP" produziria divergência de centavos em massa contra o GSAN de referência. O arredondamento **é regra de negócio por ponto de cálculo**, e cada ponto precisa ser caracterizado antes de ser reimplementado. Este é o item de maior risco de equivalência financeira do módulo.
 - Valores monetários nas tabelas com `numeric(13,2)`-equivalente (length 13 nos mapeamentos, escala 2).
 - **O momento do arredondamento (por faixa, por categoria, no total) é regra de resultado** — deve ser capturado pelos golden masters, não reimplementado "matematicamente melhor" no OpenGSAN.
+- 🆕 **Medido na Fase 2 (lote 5b, 2026-10-07)**, em contas geradas pelo faturamento em grupo ([relatório §21](../testes/fase2/fase2-caracterizacao-baselines.md#21-lote-5b--faturamento-na-conta-lançamentos-impostos-e-rateio-2026-10-07)): prestação de **débito** truncada com o resto na última (33,33 · 33,34); prestação de **crédito** truncada **sem** o resto na última (33,33 · 33,33 · 33,33 — CAND-12); **impostos** em HALF_DOWN com o último por diferença truncada (meio centavo exato vai para baixo: 6,315 → 6,31); **rateio** de micro-condomínio com `+0,005` de `double`, FLOOR em escala longa e arredondamento do PostgreSQL ao gravar (55,325 → 55,33). Cada ponto, uma política — como esta seção previa.
 
 ## 28. Regras estruturantes do Faturamento
 

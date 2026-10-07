@@ -1,0 +1,169 @@
+{
+  "dominio": "faturamento",
+  "lote": "batch-faturamento-conta",
+  "modo": "Batch",
+  "fronteira": "Faturar grupo pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" (exibirInserirProcessoFaturamentoComandadoAction → inserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado) cria o processo iniciado; o verificador do Quartz (a cada minuto) o inicia e despacha uma unidade por rota (MDB batchFaturarGrupoFaturamento → ControladorFaturamentoFINAL.faturarGrupoFaturamento → faturarImovel → determinarFaturamentoImovel → gerarConta). O que o framework e o faturamento gravam é lido do banco, sem ids nem carimbos.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_catg_cons_fx",
+    "faturamento.conta_impressao",
+    "micromedicao.consumo_historico",
+    "seguranca.operacao_efetuada",
+    {
+      "tabela": "faturamento.faturamento_grupo",
+      "modo": "conteudo"
+    },
+    "faturamento.debito_cobrado",
+    "faturamento.debito_cobrado_categoria",
+    "faturamento.credito_realizado",
+    "faturamento.cred_realizado_catg",
+    "faturamento.conta_impostos_deduzidos",
+    {
+      "tabela": "faturamento.debito_a_cobrar",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "faturamento.credito_a_realizar",
+      "modo": "conteudo"
+    }
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-FAT-005",
+  "titulo": "Impostos deduzidos",
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-005",
+  "oraculo": "1 — ao centavo",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, rotas e consumos chegam pela massa: são o que as etapas anteriores do ciclo gravariam (Inserir Comando de Atividade, Consistir Leituras) e não o objeto deste lote"
+  },
+  "observaveis": {
+    "campos": [
+      "contas[matricula,referencia,situacao,valor_agua,valor_esgoto,valor_debitos,valor_creditos,valor_impostos,valor_total]",
+      "impostos"
+    ],
+    "fora_desta_fronteira": {
+      "truncamento da base": "a base (água + esgoto + débitos − créditos) soma valores de duas casas: o truncamento a duas casas (ControladorFaturamentoFINAL:29943) não tem o que cortar nesta fronteira"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01, 02 e 03 com cliente responsável federal; IR 1,20 · CSLL 1,00 · COFINS 3,00 · PIS 0,65 (vigentes desde 01/2026)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-impostos-orgao-federal.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "impostos"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "V1 com o IR a 2,50%: sobre 252,60 (IMV-03) o IR dá exatamente meio centavo (6,315)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-impostos-orgao-federal.sql",
+        "massas/deltas/fat-impostos-ir-meio-centavo.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "impostos"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "V1 com uma alíquota ANTERIOR do IR (1,50% desde 01/2010) além da vigente (1,20% desde 01/2026)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-impostos-orgao-federal.sql",
+        "massas/deltas/fat-impostos-ir-duas-vigencias.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "impostos"
+        ]
+      }
+    }
+  }
+}

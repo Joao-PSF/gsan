@@ -9,10 +9,10 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 24 | 24 | 221 | 85 | 85 |
+| **A** | 74 | 27 | 27 | 221 | 98 | 98 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 19 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 26.
+**P0 da classe A com baseline**: 22 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 29.
 
 ## Por domínio (classe A)
 
@@ -22,7 +22,7 @@
 | Batch, relatórios e integrações | 11 | 5 | 9 |
 | Cadastro e atendimento | 13 | 6 | 25 |
 | Cobrança | 7 | 0 | 0 |
-| Faturamento | 11 | 4 | 11 |
+| Faturamento | 11 | 7 | 24 |
 | Financeiro e operacional | 8 | 0 | 0 |
 | Micromedição | 5 | 1 | 7 |
 | Segurança | 8 | 8 | 33 |
@@ -45,6 +45,9 @@
 | CEN-FAT-001 | P0 | piloto | V1, V2, V3, V6, V7 | V1, V2, V3, V6, V7 | V4, V5 | a, b, c, e, f |
 | CEN-FAT-002 | P0 | piloto | V1, V2, V3 | V1, V2, V3 | — | parcela por vigência, contexto congelado |
 | CEN-FAT-003 | P0 | cadastro-faturamento | V1, V1b | V1, V1b | V2, V3 | percentuais fotografados na conta, composição do volume de esgoto pelo consumo da ligação |
+| CEN-FAT-004 | P0 | batch-faturamento-conta | V1, V1b, V2, V2b, V3, V3b, V3c, V4 | V1, V1b, V2, V2b, V3, V3b, V3c, V4 | — | V5 taxa de emissão, IMV-02 e IMV-03 |
+| CEN-FAT-005 | P0 | batch-faturamento-conta | V1, V2, V3 | V1, V2, V3 | — | truncamento da base |
+| CEN-FAT-006 | P0 | batch-faturamento-conta | V1, V2 | V1, V2 | — | consumo do principal e dos micros, esgoto |
 | CEN-FAT-011 | P1 | batch-faturamento | V1 | V1 | — | V2, localizador da Fase 1 |
 | CEN-MIC-002 | P0 | atendimento | V1, V2, V3, V4, V5, V6, V7 | V1, V2, V3, V4, V5, V6, V7 | — | precedência no faturamento, tipo de consumo quando o mínimo é faturado |
 | CEN-SEG-001 | P0 | seguranca | V1 | V1 | — | concessoes no contexto (c) |

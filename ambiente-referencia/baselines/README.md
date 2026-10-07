@@ -87,7 +87,9 @@ quando a tela já não lista o comando), `aguardar` (`terminal`: todo processo n
 `massas/passos/`, com o sha256 no resultado) e `reiniciar` (`etapas`: `com_erro` ou `concluidas`). O estado final —
 processos, etapas, unidades por rota, contas por matrícula com categorias e faixas, totais, consumos, referência do
 grupo e `contas_iniciadas` (números entregues pela sequência das contas, que não voltam num rollback) — sai sem ids nem
-carimbos de tempo.
+carimbos de tempo. Blocos de detalhe opcionais (`"detalhes"` na entrada): `lancamentos` (débitos cobrados, créditos realizados e o que
+resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto) e `rateio` (micro-condomínio) — só entram
+nas baselines que os declaram.
 
 ## Regras
 

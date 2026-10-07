@@ -293,7 +293,82 @@ def _contas_entregues(ctx):
     return int(ctx.sql('select case when is_called then last_value else last_value - 1 end from faturamento.seq_conta_geral'))
 
 
-def _estado_faturamento(ctx, contas_no_inicio):
+def _lancamentos(ctx):
+    """Débitos cobrados e créditos realizados nas contas, e o que resta a cobrar/realizar (CEN-FAT-004)."""
+    return {
+        'debitos_cobrados': _linhas(ctx, "select c.imov_id as matricula, c.cnta_amreferenciaconta as referencia_conta,"
+                                         " t.dbtp_dsdebitotipo as tipo, f.fntp_dsfinanciamentotipo as financiamento,"
+                                         " d.dbcb_nnprestacaodebito as prestacao, d.dbcb_nnprestacao as prestacoes,"
+                                         " d.dbcb_vlprestacao::text as valor, d.dbcb_amreferenciadebito as referencia_debito,"
+                                         " d.dbcb_amcobrancadebito as cobranca,"
+                                         " (select json_agg(json_build_object('categoria', g.catg_dscategoria, 'economias', k.dccg_qteconomia,"
+                                         "   'valor', k.dccg_vlcategoria::text) order by k.catg_id) from faturamento.debito_cobrado_categoria k"
+                                         "   join cadastro.categoria g using (catg_id) where k.dbcb_id = d.dbcb_id) as por_categoria"
+                                         " from faturamento.debito_cobrado d join faturamento.conta c using (cnta_id)"
+                                         " join faturamento.debito_tipo t using (dbtp_id) join financeiro.financiamento_tipo f on f.fntp_id = d.fntp_id"
+                                         " order by c.imov_id, c.cnta_amreferenciaconta, d.dbtp_id, d.dbcb_nnprestacaodebito"),
+        'creditos_realizados': _linhas(ctx, "select c.imov_id as matricula, c.cnta_amreferenciaconta as referencia_conta,"
+                                            " t.crti_dscreditotipo as tipo, o.crog_dscreditoorigem as origem,"
+                                            " r.crrz_nnprestacaocredito as prestacao, r.crrz_nnprestacao as prestacoes,"
+                                            " r.crrz_vlcredito::text as valor"
+                                            " from faturamento.credito_realizado r join faturamento.conta c using (cnta_id)"
+                                            " left join faturamento.credito_tipo t using (crti_id)"
+                                            " join faturamento.credito_origem o using (crog_id)"
+                                            " order by c.imov_id, c.cnta_amreferenciaconta, r.crti_id, r.crrz_nnprestacaocredito"),
+        'debitos_a_cobrar': _linhas(ctx, "select d.imov_id as matricula, t.dbtp_dsdebitotipo as tipo, d.dbac_vldebito::text as valor,"
+                                         " d.dbac_nnprestacaodebito as prestacoes, d.dbac_nnprestacaocobradas as cobradas,"
+                                         " d.dbac_amreferenciaprestacao as referencia_ultima_prestacao, (d.parc_id is not null) as de_parcelamento,"
+                                         " s.dcst_dsdebitocreditosituacao as situacao"
+                                         " from faturamento.debito_a_cobrar d join faturamento.debito_tipo t using (dbtp_id)"
+                                         " join faturamento.debito_credito_situacao s on s.dcst_id = d.dcst_idatual"
+                                         " order by d.imov_id, d.dbtp_id, d.dbac_vldebito"),
+        'creditos_a_realizar': _linhas(ctx, "select r.imov_id as matricula, t.crti_dscreditotipo as tipo, r.crar_vlcredito::text as valor,"
+                                            " r.crar_nnprestacaocredito as prestacoes, r.crar_nnprestacaorealizadas as realizadas,"
+                                            " r.crar_vlresidualmesanterior::text as residual,"
+                                            " r.crar_vlresidualconcedidomes::text as residual_concedido_mes,"
+                                            " r.crar_amreferenciaprestacao as referencia_ultima_prestacao,"
+                                            " s.dcst_dsdebitocreditosituacao as situacao"
+                                            " from faturamento.credito_a_realizar r join faturamento.credito_tipo t using (crti_id)"
+                                            " join faturamento.debito_credito_situacao s on s.dcst_id = r.dcst_idatual"
+                                            " order by r.imov_id, r.crti_id, r.crar_vlcredito"),
+    }
+
+
+def _impostos(ctx):
+    """Impostos deduzidos de cada conta: base, alíquota e valor por imposto (CEN-FAT-005)."""
+    return {'impostos': _linhas(ctx, "select c.imov_id as matricula, c.cnta_amreferenciaconta as referencia_conta,"
+                                     " t.imtp_dsimposto as imposto, i.cnid_pcaliquota::text as aliquota,"
+                                     " i.cnid_vlbasecalculo::text as base, i.cnid_vlimposto::text as valor"
+                                     " from faturamento.conta_impostos_deduzidos i join faturamento.conta c using (cnta_id)"
+                                     " join faturamento.imposto_tipo t using (imtp_id)"
+                                     " order by c.imov_id, c.cnta_amreferenciaconta, i.imtp_id")}
+
+
+def _rateio(ctx):
+    """Rateio de micro-condomínio: o que cada conta recebeu e o histórico de consumo do principal e dos vinculados
+    (CEN-FAT-006)."""
+    return {
+        'rateio_contas': _linhas(ctx, "select c.imov_id as matricula, c.cnta_amreferenciaconta as referencia_conta,"
+                                      " c.cnta_nnconsumoagua as consumo_agua, c.cnta_nnconsumorateioagua as consumo_rateio_agua,"
+                                      " c.cnta_vlrateioagua::text as valor_rateio_agua, c.cnta_vlagua::text as valor_agua,"
+                                      " c.cnta_vlrateioesgoto::text as valor_rateio_esgoto"
+                                      " from faturamento.conta c join cadastro.imovel i using (imov_id)"
+                                      " where i.imov_idimovelcondominio is not null or i.imov_icimovelcondominio = 1"
+                                      " order by c.imov_id, c.cnta_amreferenciaconta"),
+        'rateio_consumos': _linhas(ctx, "select h.imov_id as matricula, (i.imov_icimovelcondominio = 1) as principal,"
+                                        " h.cshi_amfaturamento as referencia, h.cshi_nnconsumofaturadomes as consumo,"
+                                        " h.cshi_nnconsumorateio as consumo_rateio, h.cshi_nnconsimoveisvinculados as consumo_vinculados,"
+                                        " (h.cshi_idconsumoimovelcondominio is not null) as ligado_ao_principal"
+                                        " from micromedicao.consumo_historico h join cadastro.imovel i using (imov_id)"
+                                        " where i.imov_idimovelcondominio is not null or i.imov_icimovelcondominio = 1"
+                                        " order by h.imov_id, h.cshi_amfaturamento, h.lgti_id"),
+    }
+
+
+DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio}
+
+
+def _estado_faturamento(ctx, contas_no_inicio, detalhes=()):
     processos = _linhas(ctx, "select p.proi_id, pr.proc_dsprocesso as processo, s.prst_dsprocessosituacao as situacao,"
                              " u.usur_nmlogin as solicitante, p.proi_nngrupo as grupo,"
                              " (p.proi_tminicio is not null) as inicio_registrado, (p.proi_tmtermino is not null) as termino_registrado"
@@ -378,6 +453,8 @@ def _estado_faturamento(ctx, contas_no_inicio):
         'comando': _linhas(ctx, "select (ftac_tmrealizacao is not null) as realizado from faturamento.fatur_ativ_cronograma"
                                 " where ftac_id = 1")[0],
         'contas_iniciadas': _contas_entregues(ctx) - contas_no_inicio,
+        # Blocos de detalhe só quando a variação os pede: as baselines que não os declaram não mudam de forma.
+        **{k: v for d in detalhes for k, v in DETALHES[d](ctx).items()},
     }
 
 
@@ -413,12 +490,14 @@ def faturar_grupo(ctx, entrada):
     """Faturar grupo pelo processo comandado (ExibirInserirProcessoFaturamentoComandadoAction →
     InserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado →
     verificador do Quartz → MDB por rota → ControladorFaturamentoFINAL.faturarGrupoFaturamento), com os passos da variação:
-    disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (correção de causa) · reiniciar."""
+    disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (correção de causa) · reiniciar.
+    `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos` e `rateio`."""
     login = entrada['usuario']
     comando = str(int(entrada['comando']))
     ctx.nova_sessao()
     ctx.atual.tentar_login(login, ctx.senha(login, 'correta'))
     contas_no_inicio = _contas_entregues(ctx)
+    detalhes = entrada.get('detalhes', [])
     passos = []
     for passo in entrada['passos']:
         tipo, r = passo['tipo'], {'tipo': passo['tipo']}
@@ -440,7 +519,7 @@ def faturar_grupo(ctx, entrada):
         elif tipo == 'aguardar':
             r.update(_aguardar(ctx, passo.get('ate', 'terminal')))
         elif tipo == 'observar':
-            r['estado'] = _estado_faturamento(ctx, contas_no_inicio)
+            r['estado'] = _estado_faturamento(ctx, contas_no_inicio, detalhes)
         elif tipo == 'autorizar':
             proi = _ultimo_processo(ctx)
             html = ctx.atual.get('exibirAutorizarRelatoriosBatchAction.do?menu=sim')
@@ -477,7 +556,7 @@ def faturar_grupo(ctx, entrada):
         else:
             raise ValueError(f'passo desconhecido: {tipo}')
         passos.append(r)
-    final = _estado_faturamento(ctx, contas_no_inicio)
+    final = _estado_faturamento(ctx, contas_no_inicio, detalhes)
     return {'passos': passos, **final}
 
 

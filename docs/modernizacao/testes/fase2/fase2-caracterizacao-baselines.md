@@ -287,7 +287,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~3 — Cadastro e faturamento online~~ ✅ **capturado em 2026-10-06** (§18) | CAD-001, CAD-002 (entrou), CAD-004 (parte online), FAT-003 V1. **Saíram** para o lote 5, com evidência: CAD-005 (rotas só nos processos), FAT-011 V1 (`faturarImovel` só no faturamento em grupo), FAT-003 V2/V3 | Consultar Imóvel; Consultar Relação Cliente e Imóvel; simulação — Online | Fronteiras do DV; papéis e vigências do IMV-01; situações sintéticas |
 | ~~4 — Atendimento e consumo mínimo~~ ✅ **capturado em parte em 2026-10-06** (§19) | ATE-007 V1, ATE-008, MIC-002 (nesta superfície), SEG-008 (ligação sem RA). **Ficam**: ATE-001…006 (fluxos de RA: abertura, encerramento, tramitação, espera, ciclo da OS), ATE-007 V2/V3 (religação, ligação de esgoto), as demais permissões de SEG-008, CAD-004 na abertura de RA | Efetuar Ligação de Água a partir de OS encerrada; Atualizar Consumo Mínimo (exibição) — Online | Catálogos de Atendimento; RA e OS encerradas; overrides de consumo mínimo |
 | ~~5 — Faturamento em grupo~~ ✅ **capturado em 2026-10-07** (§20) — o modo Batch foi preparado e validado | BAT-001 V1/V2, BAT-002 V1–V3, BAT-003, BAT-004 V1/V1b, BAT-005, FAT-011 V1. **Ficam**: BAT-001 V3 (relatório), BAT-004 V2 (simultâneos) | Faturar grupo comandado — **EAR em modo Batch** | Catálogos do framework; cronograma, comando, rotas R1–R3 e consumos; falha controlada; IMV-16 |
-| **5b — Micromedição e faturamento na conta** (recomendado a seguir: mesmo modo, mesma fronteira de processo) | FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, MIC-001/003/004/005, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial), MIC-002 (a precedência das fontes de mínimo ao faturar), ATE-008 (valor de cada prestação na conta) | Consistir leituras e faturar grupo — Batch | Leituras, hidrômetros, históricos (IMV-05…10, 11a/b, 12a/b, 17, 18) |
+| ~~5b — Faturamento na conta~~ ✅ **capturado em 2026-10-07** (§21) — reordenado: os P0 que já cabiam na fronteira do lote 5 | FAT-004 (V1–V4, com V1b, V2b, V3b, V3c), FAT-005 (V1–V3), FAT-006 (V1, V2); ATE-008 (valor de cada prestação na conta) respondido por FAT-004 V1/V1b. **Ficam**: FAT-004 V5 (taxa de emissão — processo de emissão) | Faturar grupo — Batch | Lançamentos, cliente responsável federal e impostos, micro-condomínio |
+| **5c — Micromedição e faturamento pela origem do consumo** (recomendado a seguir) | MIC-001 e MIC-003 (P0), MIC-004/005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial), MIC-002 (a precedência das fontes de mínimo ao faturar) | Consistir leituras e calcular consumos, e faturar grupo — Batch | Leituras, hidrômetros, históricos (IMV-05…10, 11a/b, 12a/b, 17, 18) |
 | 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -318,6 +319,9 @@ registram horários, mas nenhuma medição foi tratada como baseline.
   instalação** — a base reconstruída não tem nenhum dos dois, e a Fase 2 não usa dado real (CEN-CAD-004 fica em parte).
 - **OS pela massa**: no lote 4, o RA e a OS nascem por SQL no estado em que o encerramento os deixaria — o objeto é o
   efeito da operação sobre a OS, não a abertura nem o encerramento (CEN-ATE-002…006, a capturar).
+- **Lançamentos pela massa**: no lote 5b, débitos a cobrar, parcelamento, créditos a realizar e alíquotas nascem por
+  SQL, no estado em que as operações que os criam os deixariam; o objeto é a **incorporação na conta**. O resultado do
+  parcelamento depende da referência de faturamento do sistema, que na base está em 201410 (F2-70).
 - **Processo pela massa**: no lote 5, cronograma, comando e consumos nascem por SQL; o objeto é o processo de faturar.
   A correção de causa de BAT-002 V2/V3 é aplicada por SQL **no meio** da execução (`massas/passos/`), porque a
   manutenção do imóvel é outra fronteira. O disparo **agendado** e o paralelismo das unidades são C4.
@@ -329,7 +333,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
-| Já capturado | **88 variações** de 26 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10) — 38% das 234 | Cobertura |
+| Já capturado | **101 variações** de 29 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13) — 43% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -339,8 +343,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **19 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), atendimento (2: efeito cadastral e financeiro da OS), micromedição (1: consumo mínimo) e 🆕 processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **22 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3) e 🆕 na conta (3: lançamentos, impostos, rateio), atendimento (2: efeito cadastral e financeiro da OS), micromedição (1: consumo mínimo) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -902,3 +906,88 @@ somam o consumo distribuído por economia e arredondado (48 e 59 m³) — o que 
 | F2-65 | Disparo **duplicado** com o comando ainda pendente: o framework aceita os dois e roda os dois processos; **não há faturamento em dobro** — a mesma salvaguarda do módulo | BAT-004 V1 | 🟢 | Oráculo 1 para o resultado (uma conta por imóvel) |
 | F2-66 | **Novo disparo de comando já realizado fatura a referência seguinte**: a tela não lista o comando, mas o servidor não confere se ele foi realizado; a tarefa leva o grupo **como está** (já em 06/2026), não a referência do cronograma — fatura uma referência **sem comando e sem consumo**, pela tarifa mínima, e avança o grupo | BAT-004 V1b; `ControladorBatchSEJB:2678`, `:2892-2893` | 🔴 | Achado de segurança 35; **CAND-11** |
 | F2-67 | Imóvel **sem nenhum consumo** é faturado com **0 m³ pela tarifa mínima**, e nenhum consumo é gravado. O "consumo de reserva 20" que a Fase 1 apontou (`ControladorFaturamentoFINAL:1875/1893`) fica em `obterValoresCreditosBolsaAgua` — o **crédito Bolsa Água** —, não no faturamento do imóvel | FAT-011 V1 | 🔴 (especificação) | Corrige a premissa de CEN-FAT-011 e a leitura de **D-15** (nota no registro) |
+
+## 21. Lote 5b — Faturamento na conta: lançamentos, impostos e rateio (2026-10-07)
+
+Sétimo lote, na mesma fronteira do lote 5 (faturar grupo comandado, EAR em modo Batch): o que a conta **incorpora** além
+da água e do esgoto — débitos a cobrar, créditos a realizar, impostos retidos e o rateio de micro-condomínio. Três P0 de
+Faturamento que só existem na conta gerada.
+
+### 21.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Fronteira |
+| ------- | ------ | - | --------- | --------- |
+| CEN-FAT-004 — débitos cobrados e créditos realizados | A (1, ao centavo) | P0 | V1, V1b, V2, V2b, V3, V3b, V3c, V4 | Faturar grupo — IMV-01 com débito de serviço, parcelamento e crédito |
+| CEN-FAT-005 — impostos deduzidos | A (1, ao centavo) | P0 | V1, V2, V3 | idem — IMV-01, 02 e 03 com cliente responsável de esfera federal |
+| CEN-FAT-006 — rateio de micro-condomínio | A (1, ao centavo) | P0 | V1, V2 | idem — condomínio principal com dois micros na R1 |
+
+**Fora do lote, com motivo**: FAT-004 V5 (taxa de emissão) — o débito nasce na **emissão** das contas
+(`ControladorFaturamentoFINAL:29469`, `:39318`), outro processo; FAT-005 "base com centavos que exercitam o truncamento"
+— a base soma valores de duas casas e o truncamento (`:29943`) não tem o que cortar nesta fronteira; MIC-001/003/004/005,
+FAT-001 V4/V5, FAT-002 na conta e CAD-005 — exigem leituras, hidrômetros e históricos (consistir leituras) — lote 5c.
+
+🆕 Variações que a especificação não tinha, acrescentadas porque o código mostrou uma regra a caracterizar: **V1b** (a
+última prestação do débito), **V2b** (parcelamento recente), **V3b** (crédito maior que a conta), **V3c** (última
+prestação do crédito) em FAT-004; **V3** (duas vigências de alíquota) em FAT-005.
+
+### 21.2 Massa
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `fat-lancamentos-catalogos.sql` | Forma de cobrança EM CONTA, financiamento PARCELAMENTO SERVIÇO (4), situação e tipo de parcelamento, origem de crédito (7), tipos de débito e de crédito SINTÉTICOS — a base não tem nenhum deles para uso geral (F2-68) |
+| `fat-debito-servico-3x.sql` · `fat-debito-servico-ultima-prestacao.sql` | Débito de serviço do IMV-01 de **R$ 100,00 em 3** — o mesmo de CEN-ATE-008 V1 —, nenhuma cobrada / 2 cobradas |
+| `fat-parcelamento-6x.sql` · `fat-parcelamento-recente.sql` | Parcelamento de 6 × R$ 50,00 feito em 09/2014 / em 04/2026 |
+| `fat-credito-30.sql` · `fat-credito-maior-que-conta.sql` · `fat-credito-3x-ultima.sql` | Crédito de R$ 30,00 em 1 / de R$ 150,00 / de R$ 100,00 em 3 com 2 realizadas |
+| `fat-impostos-orgao-federal.sql` | Esfera FEDERAL, cliente SINTÉTICO de órgão público como **responsável** de IMV-01, 02 e 03, tipos de relação cliente × imóvel, os quatro impostos e alíquotas SINTÉTICAS desde 01/2026 (IR 1,20 · CSLL 1,00 · COFINS 3,00 · PIS 0,65) |
+| `fat-impostos-ir-meio-centavo.sql` · `fat-impostos-ir-duas-vigencias.sql` | IR a 2,50% (meio centavo exato sobre 252,60) / IR com uma alíquota anterior, de 01/2010 a 1,50% |
+| `fat-condominio-micros.sql` · `fat-condominio-consumo-76.sql` | IMV-C (principal, 2 economias, com ligação de água), IMV-M1 (20 m³) e IMV-M2 (25 m³); o principal consome 75 / 76 m³ |
+
+### 21.3 Mecanismo — o que mudou
+
+- O roteiro `faturar_grupo` ganhou **blocos de detalhe opcionais** (`"detalhes"` na entrada): `lancamentos` (débitos
+  cobrados, créditos realizados e o que resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto) e
+  `rateio` (consumo e valor rateados por conta e o histórico do principal e dos vinculados). Só entram quando a variação
+  os pede — as 10 baselines do lote 5 não mudam de forma (regressão abaixo).
+
+### 21.4 Baselines do lote
+
+Em todas, IMV-01 tem água de **110,40** (27 m³ — a conta de CEN-BAT-005); IMV-02 e IMV-03 são faturados junto.
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| FAT-004 V1 | Débito de serviço de 100,00 em 3 → a conta cobra a **1ª prestação, 33,33** (valor ÷ 3 truncado), por categoria residencial; o débito a cobrar fica com 1 de 3 cobradas e a referência da prestação 202605. Conta **143,73** |
+| FAT-004 V1b | O mesmo débito com 2 cobradas → a **3ª prestação leva o resto: 33,34**; 3 de 3 cobradas. Conta **143,74**. Fecha a pergunta deixada pelo lote 4 (F2-52): a distribuição dos centavos acontece **na conta** |
+| FAT-004 V2 | Parcelamento de 6 × 50,00 feito em 09/2014 → a **1ª prestação, 50,00**, entra; o débito do parcelamento fica com 1 de 6. Conta **160,40** |
+| FAT-004 V2b | O mesmo parcelamento feito em **04/2026** → **nenhuma** prestação entra (0 de 6 cobradas). Conta 110,40 |
+| FAT-004 V3 | Crédito de 30,00 → realizado **30,00**; conta **80,40**; crédito 1 de 1, sem resíduo |
+| FAT-004 V3b | Crédito de 150,00 → realizado **110,40** (o valor da conta); conta **0,00**; **resíduo de 39,60** guardado no crédito |
+| FAT-004 V3c | Crédito de 100,00 em 3, 2 realizadas → a 3ª realiza **33,33** e o crédito se **encerra** (3 de 3, resíduo 0,00). Conta 77,07 |
+| FAT-004 V4 | Débito (1ª de 3, 33,33) + parcelamento (1ª de 6, 50,00) + crédito (30,00) → débitos **83,33**, créditos 30,00, conta **163,73** |
+| FAT-005 V1 | IR 1,20 · CSLL 1,00 · COFINS 3,00 · PIS 0,65 sobre 110,40 / 168,09 / 252,60 → impostos **6,46 / 9,83 / 14,78**; no IMV-01 o PIS sai **0,73** (0,65% isolado daria 0,72): o último imposto absorve o resíduo |
+| FAT-005 V2 | IR a 2,50%: sobre 252,60 dá **6,315 exato → 6,31** (HALF_DOWN) |
+| FAT-005 V3 | IR com duas alíquotas — 1,50% desde 01/2010 e 1,20% desde 01/2026 → a conta de 05/2026 usa **1,50%** (IMV-01 IR 1,66) |
+| FAT-006 V1 | Principal 75 m³, micros 20 + 25 → **30 m³** a ratear → cada micro recebe **53,25**; contas 127,25 e 153,25 |
+| FAT-006 V2 | Principal 76 m³ → **31 m³** → cada micro recebe **55,33** (15,5 m³ por economia valem 55,325); contas 129,33 e 155,33. O histórico do principal não recebe o rateio de consumo |
+
+### 21.5 Determinismo
+
+- **Captura**: **13 de 13** variações com as duas execuções **idênticas byte a byte** (`20261007T172854Z-capturar`). Antes,
+  quatro rodadas exploratórias: três faltas de catálogo da base (forma de cobrança, tipos de relação cliente × imóvel —
+  F2-68) e um erro do roteiro (coluna ambígua num join).
+- **Verificação independente** (3ª execução): lote 5b **13/13** conferem (`20261007T184727Z-verificar`).
+- **Regressão** — o roteiro `faturar_grupo` mudou (blocos de detalhe): lote 5 **10/10** e piloto **11/11** conferem
+  (`20261007T192732Z-verificar`) — as 10 baselines do lote 5 não mudaram de forma. As **101** baselines conferem.
+
+### 21.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-68 | A base não tem o que lançamentos e impostos pressupõem: forma de cobrança, financiamento de parcelamento, situação e tipo de parcelamento, tipos de relação cliente × imóvel, esfera de poder pública, **nenhum** tipo de imposto nem alíquota | Exploração | ⚙️ | Massa cria pelas constantes; checklist de instalação |
+| F2-69 | Prestação do **débito**: valor ÷ N **truncado**; a **última** leva o resto (33,33 · 33,34) | FAT-004 V1, V1b; `ControladorFaturamentoFINAL:53141`, `:53170` | 🟢 | Fecha F2-52: a soma das prestações é o débito |
+| F2-70 | A 1ª prestação de um **parcelamento** só entra se a referência do parcelamento for anterior à referência de faturamento **do sistema** (`parm_amreferenciafaturamento` — 201410 na base), não à do grupo: um parcelamento de 04/2026 não entra na conta de 05/2026 | FAT-004 V2, V2b; `:18195` ([FS0005]) | 🔵 | O resultado depende de um parâmetro que o encerramento mensal avança — registro; a referência do sistema é dado de instalação |
+| F2-71 | **Crédito** limitado ao valor da conta: o excedente fica como **resíduo** no crédito, para as contas seguintes; a conta chega a 0,00 | FAT-004 V3b; `FaturamentoUtil.atualizarCreditosARealizar` | 🟢 | Confirma a especificação |
+| F2-72 | A **última** prestação do **crédito não leva o resto**: 100,00 em 3 realiza 33,33 na 3ª e encerra o crédito — **1 centavo nunca creditado** ao cliente. O ajuste existe, mas só no pré-faturamento (`CreditoARealizar.calculaValorParcelaIntermediaria`) — assimetria com o débito (F2-69) | FAT-004 V3c | 🔴 | **CAND-12**: reproduzir é a regra (oráculo 1) até decisão — toca valor cobrado |
+| F2-73 | Impostos: base = água + esgoto + débitos − créditos; cada imposto em **HALF_DOWN**, menos o **último**, que é total − anteriores, **truncado** — absorve o resíduo; meio centavo exato vai **para baixo** | FAT-005 V1, V2; `:29943-30021` | 🟢 | Responde a especificação: três políticas num só cálculo, agora com valores |
+| F2-74 | **Alíquota de imposto: vale a mais ANTIGA**. A consulta filtra referência ≤ a da conta, ordena **da mais antiga para a mais nova** e fica com a primeira — com uma alíquota de 2010 e outra de 2026, a conta de 2026 usa a de 2010; uma nova alíquota **nunca** entra em vigor enquanto existir a anterior | FAT-005 V3; `RepositorioFaturamentoHBM.pesquisarAliquotaImposto` | 🔴 | **CAND-13**: retenção calculada com alíquota revogada |
+| F2-75 | **Rateio** de micro-condomínio: consumo do principal − vinculados, valorado pela tarifa do principal, ÷ economias dos vinculados; o `+ new BigDecimal(0.005)` (de `double`), a divisão em FLOOR na escala longa e o arredondamento do PostgreSQL ao gravar `numeric(13,2)` levam **55,325 → 55,33** | FAT-006 V1, V2; `:60601`, `:60608`, `:60767-60785` | 🟢 | Responde a especificação: o efeito nos centavos, medido — não presumido |
+| F2-76 | O rateio de **consumo** no histórico do principal só é **corrigido** ao fim da rota (`atualizarConsumosCondominios`) se a consistência de leituras o tiver gravado; sem isso, fica nulo — o rateio de valor da conta não depende dele | FAT-006; `ControladorMicromedicao:39543-39560` | 🔵 | Registro; o rateio de consumo é do lote de Micromedição |

@@ -1,0 +1,335 @@
+{
+  "dominio": "faturamento",
+  "lote": "batch-faturamento-conta",
+  "modo": "Batch",
+  "fronteira": "Faturar grupo pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" (exibirInserirProcessoFaturamentoComandadoAction → inserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado) cria o processo iniciado; o verificador do Quartz (a cada minuto) o inicia e despacha uma unidade por rota (MDB batchFaturarGrupoFaturamento → ControladorFaturamentoFINAL.faturarGrupoFaturamento → faturarImovel → determinarFaturamentoImovel → gerarConta). O que o framework e o faturamento gravam é lido do banco, sem ids nem carimbos.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_catg_cons_fx",
+    "faturamento.conta_impressao",
+    "micromedicao.consumo_historico",
+    "seguranca.operacao_efetuada",
+    {
+      "tabela": "faturamento.faturamento_grupo",
+      "modo": "conteudo"
+    },
+    "faturamento.debito_cobrado",
+    "faturamento.debito_cobrado_categoria",
+    "faturamento.credito_realizado",
+    "faturamento.cred_realizado_catg",
+    "faturamento.conta_impostos_deduzidos",
+    {
+      "tabela": "faturamento.debito_a_cobrar",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "faturamento.credito_a_realizar",
+      "modo": "conteudo"
+    }
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-FAT-004",
+  "titulo": "Débitos cobrados e créditos realizados na conta",
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-004",
+  "oraculo": "1 — ao centavo",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, rotas e consumos chegam pela massa: são o que as etapas anteriores do ciclo gravariam (Inserir Comando de Atividade, Consistir Leituras) e não o objeto deste lote"
+  },
+  "observaveis": {
+    "campos": [
+      "contas[matricula,referencia,situacao,valor_agua,valor_esgoto,valor_debitos,valor_creditos,valor_impostos,valor_total]",
+      "debitos_cobrados",
+      "creditos_realizados",
+      "debitos_a_cobrar",
+      "creditos_a_realizar"
+    ],
+    "fora_desta_fronteira": {
+      "V5 taxa de emissão": "o débito da taxa de emissão nasce na EMISSÃO das contas (ControladorFaturamentoFINAL:29469, :39318) — outro processo, não o faturamento",
+      "IMV-02 e IMV-03": "faturados com o IMV-01, sem lançamentos — as contas de CEN-BAT-005"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "débito de serviço de R$ 100,00 em 3 prestações, nenhuma cobrada — a 1ª entra na conta",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    },
+    "V1b": {
+      "descricao": "o mesmo débito com 2 prestações cobradas — a última entra na conta",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-debito-servico-ultima-prestacao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "parcelamento de 6 × R$ 50,00 feito em 09/2014 (antes da referência do sistema), nenhuma prestação cobrada",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-parcelamento-6x.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    },
+    "V2b": {
+      "descricao": "o mesmo parcelamento feito em 04/2026 — antes da conta (05/2026), depois da referência do sistema (201410)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-parcelamento-6x.sql",
+        "massas/deltas/fat-parcelamento-recente.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "crédito a realizar de R$ 30,00 em 1 prestação",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-credito-30.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    },
+    "V3b": {
+      "descricao": "crédito de R$ 150,00 — maior que a conta de R$ 110,40",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/fat-credito-maior-que-conta.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    },
+    "V3c": {
+      "descricao": "crédito de R$ 100,00 em 3 prestações, 2 realizadas — a última entra na conta",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/fat-credito-3x-ultima.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "os três juntos: débito de serviço (1ª de 3), parcelamento (1ª de 6) e crédito de R$ 30,00",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-parcelamento-6x.sql",
+        "massas/deltas/fat-credito-30.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "lancamentos"
+        ]
+      }
+    }
+  }
+}

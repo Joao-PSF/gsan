@@ -1,0 +1,185 @@
+{
+  "cenario": "CEN-FAT-004",
+  "descricao": "crédito de R$ 100,00 em 3 prestações, 2 realizadas — a última entra na conta",
+  "efeitos_no_banco": {
+    "batch.funcionalidade_iniciada": 1,
+    "batch.processo_iniciado": 1,
+    "batch.unidade_iniciada": 1,
+    "faturamento.conta": 3,
+    "faturamento.conta_categoria": 4,
+    "faturamento.conta_catg_cons_fx": 5,
+    "faturamento.conta_impostos_deduzidos": 0,
+    "faturamento.conta_impressao": 3,
+    "faturamento.cred_realizado_catg": 1,
+    "faturamento.credito_a_realizar": "alterado",
+    "faturamento.credito_realizado": 1,
+    "faturamento.debito_a_cobrar": "inalterado",
+    "faturamento.debito_cobrado": 0,
+    "faturamento.debito_cobrado_categoria": 0,
+    "faturamento.faturamento_grupo": "alterado",
+    "micromedicao.consumo_historico": 0,
+    "seguranca.operacao_efetuada": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-004",
+  "fora_desta_fronteira": {
+    "IMV-02 e IMV-03": "faturados com o IMV-01, sem lançamentos — as contas de CEN-BAT-005",
+    "V5 taxa de emissão": "o débito da taxa de emissão nasce na EMISSÃO das contas (ControladorFaturamentoFINAL:29469, :39318) — outro processo, não o faturamento"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/batch-faturamento-g1-202605.sql",
+      "sha256": "0ed2b2838ce3938407e2e92341ef3e9bd187fd9b98e88f9080bbb74e11c45b28"
+    },
+    {
+      "arquivo": "massas/deltas/fat-lancamentos-catalogos.sql",
+      "sha256": "c9b6eb5db242b2006b5fe0c5e15553893dd5df484c645dc72f7e87416d8a414d"
+    },
+    {
+      "arquivo": "massas/deltas/fat-credito-30.sql",
+      "sha256": "508b4cfaba851b61127f5ebd725fc85b85d440cca9de8ffc6e9f33a3d3468f7d"
+    },
+    {
+      "arquivo": "massas/deltas/fat-credito-3x-ultima.sql",
+      "sha256": "0c95449295bf905e42dc51fd8a94e418ed4df8b6c00f5a096e42f61c981fca11"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "contas": [
+      {
+        "matricula": 100013,
+        "referencia": 202605,
+        "situacao": "NORMAL",
+        "valor_agua": "110.40",
+        "valor_creditos": "33.33",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_impostos": "0.00",
+        "valor_total": "77.07"
+      },
+      {
+        "matricula": 100021,
+        "referencia": 202605,
+        "situacao": "NORMAL",
+        "valor_agua": "168.09",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_impostos": "0.00",
+        "valor_total": "168.09"
+      },
+      {
+        "matricula": 100030,
+        "referencia": 202605,
+        "situacao": "NORMAL",
+        "valor_agua": "252.60",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_impostos": "0.00",
+        "valor_total": "252.60"
+      }
+    ],
+    "creditos_a_realizar": [
+      {
+        "matricula": 100013,
+        "prestacoes": 3,
+        "realizadas": 3,
+        "referencia_ultima_prestacao": 202605,
+        "residual": "0.00",
+        "residual_concedido_mes": "0.00",
+        "situacao": "NORMAL",
+        "tipo": "CREDITO SINTETICO",
+        "valor": "100.00"
+      }
+    ],
+    "creditos_realizados": [
+      {
+        "matricula": 100013,
+        "origem": "VALORES COBRADOS INDEVIDAMENTE",
+        "prestacao": 3,
+        "prestacoes": 3,
+        "referencia_conta": 202605,
+        "tipo": "CREDITO SINTETICO",
+        "valor": "33.33"
+      }
+    ],
+    "debitos_a_cobrar": [],
+    "debitos_cobrados": []
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "detalhes": [
+        "lancamentos"
+      ],
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Faturar grupo pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" (exibirInserirProcessoFaturamentoComandadoAction → inserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado) cria o processo iniciado; o verificador do Quartz (a cada minuto) o inicia e despacha uma unidade por rota (MDB batchFaturarGrupoFaturamento → ControladorFaturamentoFINAL.faturarGrupoFaturamento → faturarImovel → determinarFaturamentoImovel → gerarConta). O que o framework e o faturamento gravam é lido do banco, sem ids nem carimbos.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1 — ao centavo",
+  "ressalvas": {
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, rotas e consumos chegam pela massa: são o que as etapas anteriores do ciclo gravariam (Inserir Comando de Atividade, Consistir Leituras) e não o objeto deste lote",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução"
+  },
+  "titulo": "Débitos cobrados e créditos realizados na conta",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V3c"
+}
