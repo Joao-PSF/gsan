@@ -1,0 +1,324 @@
+{
+  "cenario": "CEN-FAT-008",
+  "descricao": "Operador SEM a permissão CANCELAR CONTA SEM RA e IMV-01 SEM RA: a tela de cancelamento recusa; o POST de cancelamento enviado mesmo assim — se aceito, registro do que o GSAN faz, não comportamento a reproduzir",
+  "efeitos_no_banco": {
+    "arrecadacao.pagamento": "inalterado",
+    "atendimentopublico.ra_unidade": 0,
+    "atendimentopublico.registro_atendimento": "inalterado",
+    "batch.funcionalidade_iniciada": 1,
+    "batch.processo_iniciado": 1,
+    "cadastro.cliente_conta": 1,
+    "faturamento.conta": 3,
+    "faturamento.conta_categoria": 4,
+    "faturamento.conta_geral": 3,
+    "micromedicao.consumo_historico": "inalterado",
+    "seguranca.operacao_efetuada": 1,
+    "seguranca.tabela_linha_alteracao": 2
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-008",
+  "fora_desta_fronteira": {
+    "desfazer cancelamento/retificação": "outra operação — fora deste lote",
+    "posição de dívida (CEN-COB-001)": "a presença na posição de dívida é observada com a Cobrança (lote 6); aqui, a situação e a existência do documento que a determinam",
+    "prescrição de débitos de imóveis PÚBLICOS": "outro processo (PRESCREVER_DEBITOS_IMOVEIS_PUBLICOS) — fora deste lote"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/batch-faturamento-g1-202605.sql",
+      "sha256": "0ed2b2838ce3938407e2e92341ef3e9bd187fd9b98e88f9080bbb74e11c45b28"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-catalogos.sql",
+      "sha256": "c859246d9955ae4cc7cfae4f13b752f290fc15d9c58507612af40bd30037e076"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "auditoria": [
+      {
+        "argumento": 100013,
+        "dados_adicionais": "Referencia:05/2026$Localidade:LOCALIDADE L1 (SINTETICA)$",
+        "linhas": [
+          {
+            "alteracao": "ALTERACAO",
+            "colunas": [
+              {
+                "anterior": "",
+                "atual": "CANCELAMENTO A PEDIDO (SINTETICO)",
+                "coluna": "cmcn_id"
+              }
+            ],
+            "tabela": "faturamento.conta"
+          },
+          {
+            "alteracao": "INCLUSAO",
+            "colunas": null,
+            "tabela": "faturamento.conta"
+          }
+        ],
+        "operacao": "Cancelar Conta"
+      }
+    ],
+    "consumos_ciclo": [
+      {
+        "alterado_na_data_da_execucao": false,
+        "consumo_faturado": 27,
+        "consumo_medio": null,
+        "consumo_para_media": null,
+        "ligacao_tipo": 1,
+        "matricula": 100013,
+        "referencia": 202605
+      },
+      {
+        "alterado_na_data_da_execucao": false,
+        "consumo_faturado": 47,
+        "consumo_medio": null,
+        "consumo_para_media": null,
+        "ligacao_tipo": 1,
+        "matricula": 100021,
+        "referencia": 202605
+      },
+      {
+        "alterado_na_data_da_execucao": false,
+        "consumo_faturado": 58,
+        "consumo_medio": null,
+        "consumo_para_media": null,
+        "ligacao_tipo": 1,
+        "matricula": 100030,
+        "referencia": 202605
+      }
+    ],
+    "contas_ciclo": [
+      {
+        "autor": "fase2.oper",
+        "clientes": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": 0,
+        "data_cancelamento": "data da execuÃ§Ã£o",
+        "data_emissao": "data da execuÃ§Ã£o",
+        "data_retificacao": null,
+        "economias": 1,
+        "indicador_alteracao_vencimento": 2,
+        "indicador_historico": 2,
+        "ligada_a_ra": false,
+        "matricula": 100013,
+        "motivo_cancelamento": "CANCELAMENTO A PEDIDO (SINTETICO)",
+        "motivo_retificacao": null,
+        "ordem": 1,
+        "origem": null,
+        "referencia": 202605,
+        "referencia_contabil": "mÃªs da execuÃ§Ã£o",
+        "retificacoes": null,
+        "situacao": "CANCELADA",
+        "situacao_anterior": "NORMAL",
+        "valor_agua": "110.40",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_total": "110.40",
+        "vencimento": "10/06/2026"
+      },
+      {
+        "autor": null,
+        "clientes": 0,
+        "consumo_agua": 47,
+        "consumo_esgoto": 0,
+        "data_cancelamento": null,
+        "data_emissao": "data da execuÃ§Ã£o",
+        "data_retificacao": null,
+        "economias": 3,
+        "indicador_alteracao_vencimento": 2,
+        "indicador_historico": 2,
+        "ligada_a_ra": false,
+        "matricula": 100021,
+        "motivo_cancelamento": null,
+        "motivo_retificacao": null,
+        "ordem": 1,
+        "origem": null,
+        "referencia": 202605,
+        "referencia_contabil": "202605",
+        "retificacoes": null,
+        "situacao": "NORMAL",
+        "situacao_anterior": null,
+        "valor_agua": "168.09",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_total": "168.09",
+        "vencimento": "10/06/2026"
+      },
+      {
+        "autor": null,
+        "clientes": 0,
+        "consumo_agua": 58,
+        "consumo_esgoto": 0,
+        "data_cancelamento": null,
+        "data_emissao": "data da execuÃ§Ã£o",
+        "data_retificacao": null,
+        "economias": 3,
+        "indicador_alteracao_vencimento": 2,
+        "indicador_historico": 2,
+        "ligada_a_ra": false,
+        "matricula": 100030,
+        "motivo_cancelamento": null,
+        "motivo_retificacao": null,
+        "ordem": 1,
+        "origem": null,
+        "referencia": 202605,
+        "referencia_contabil": "202605",
+        "retificacoes": null,
+        "situacao": "NORMAL",
+        "situacao_anterior": null,
+        "valor_agua": "252.60",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_total": "252.60",
+        "vencimento": "10/06/2026"
+      }
+    ],
+    "contas_gerais_sem_documento": [],
+    "funcionalidades": [
+      {
+        "descricao": "Faturar Grupo Faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 63,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "pagamentos": [],
+    "passos": [
+      {
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "forjado": true,
+        "http": 200,
+        "manter_conta": {
+          "conta_listada": true,
+          "http": 200
+        },
+        "resultado": "aceito",
+        "tela": {
+          "chaves": [],
+          "http": 500,
+          "mensagem": "Não existe RA que permita manutenção de conta para o imóvel 100013",
+          "motivos": []
+        },
+        "tipo": "cancelar"
+      }
+    ],
+    "processos": [
+      {
+        "grupo": 1,
+        "inicio_registrado": true,
+        "ordem": 1,
+        "processo": "FATURAR GRUPO FATURAMENTO",
+        "situacao": "CONCLUIDO",
+        "solicitante": "fase2.oper",
+        "termino_registrado": true
+      }
+    ],
+    "registros_atendimento": []
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "detalhes": [
+        "ciclo_conta"
+      ],
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "forjar": true,
+          "imovel": 100013,
+          "motivo": 3501,
+          "referencia": 202605,
+          "tipo": "cancelar"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Manutenção de conta pelas telas do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o mesmo disparo do lote 5: Inserir Processo Faturamento Comandado → verificador do Quartz → faturarGrupoFaturamento) ou que a massa traz: Manter Conta (exibirManterContaAction) → Retificar Conta (exibirRetificarContaAction → retificarContaAction → ControladorRetificarConta.retificarConta) ou Cancelar Conta (exibirCancelarContaAction → cancelarContaAction → ControladorFaturamentoFINAL.cancelarConta); a prescrição em lote pela tela Inserir Processo (eventual) → TarefaBatchGerarPrescreverDebitosDeImoveis → ControladorCobranca.gerarPrescreverDebitosDeImoveis. O que as operações gravam é lido do banco: cada conta pela identidade documental (matrícula, referência, ordem de criação), nunca pela chave.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1",
+  "ressalvas": {
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "as contas da referência 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); pagamento, RA e as contas antigas chegam pela massa, no estado em que as operações que os criam os deixariam — o pagamento, por um passo aplicado DEPOIS do faturamento (só então a conta existe)",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "relogio": "a referência contábil e as datas de retificação, cancelamento e encerramento saem relativas ao mês/dia da execução (o legado as grava pelo relógio); a prescrição compara o vencimento com HOJE − 10 anos — as contas da massa vencem em 2014 e 2020, longe dessa fronteira móvel"
+  },
+  "titulo": "Cancelamento e prescrição",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V1c"
+}

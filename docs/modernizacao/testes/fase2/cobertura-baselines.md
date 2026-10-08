@@ -9,10 +9,10 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 29 | 29 | 221 | 107 | 107 |
+| **A** | 74 | 31 | 31 | 221 | 119 | 119 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 24 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 31.
+**P0 da classe A com baseline**: 26 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 33.
 
 ## Por domínio (classe A)
 
@@ -22,7 +22,7 @@
 | Batch, relatórios e integrações | 11 | 5 | 9 |
 | Cadastro e atendimento | 13 | 6 | 25 |
 | Cobrança | 7 | 0 | 0 |
-| Faturamento | 11 | 7 | 24 |
+| Faturamento | 11 | 9 | 36 |
 | Financeiro e operacional | 8 | 0 | 0 |
 | Micromedição | 5 | 3 | 16 |
 | Segurança | 8 | 8 | 33 |
@@ -48,6 +48,8 @@
 | CEN-FAT-004 | P0 | batch-faturamento-conta | V1, V1b, V2, V2b, V3, V3b, V3c, V4 | V1, V1b, V2, V2b, V3, V3b, V3c, V4 | — | V5 taxa de emissão, IMV-02 e IMV-03 |
 | CEN-FAT-005 | P0 | batch-faturamento-conta | V1, V2, V3 | V1, V2, V3 | — | truncamento da base |
 | CEN-FAT-006 | P0 | batch-faturamento-conta | V1, V2 | V1, V2 | — | consumo do principal e dos micros, esgoto |
+| CEN-FAT-007 | P0 | batch-conta-ciclo | V1, V1b, V2, V2b, V3, V4, V4b | V1, V1b, V2, V2b, V3, V4, V4b | — | retificação por ALTERAÇÃO DA LEITURA FATURADA (motivo 104), retificar conjunto de contas, D-14 (observável g) |
+| CEN-FAT-008 | P0 | batch-conta-ciclo | V1, V1b, V1c, V2, V2b | V1, V1b, V1c, V2, V2b | — | posição de dívida (CEN-COB-001), prescrição de débitos de imóveis PÚBLICOS, desfazer cancelamento/retificação |
 | CEN-FAT-011 | P1 | batch-faturamento | V1 | V1 | — | V2, localizador da Fase 1 |
 | CEN-MIC-001 | P0 | batch-micromedicao | V1, V2, V3, V3b, V3c, V4 | V1, V2, V3, V3b, V3c, V4 | — | V5 situação especial, reincidência em três consistências |
 | CEN-MIC-002 | P0 | atendimento | V1, V2, V3, V4, V5, V6, V7 | V1, V2, V3, V4, V5, V6, V7 | — | precedência no faturamento, tipo de consumo quando o mínimo é faturado |

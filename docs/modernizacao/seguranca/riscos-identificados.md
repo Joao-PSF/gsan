@@ -93,6 +93,16 @@ Observados executando o legado ([relatório da Fase 2 §20](../testes/fase2/fase
 
 🔵 **Correlatos, não de segurança** (registrados no relatório): as escritas do processamento em lote **não têm autor** (`usur_id` nulo na conta) nem registro de operação (F2-60); o solicitante autoriza o **próprio** processo — a autorização é uma operação distinta, mas sem segregação (F2-61).
 
+## Achados de 2026-10-08 (Fase 2 — lote 5d, ciclo de vida da conta)
+
+Observados executando o legado ([relatório da Fase 2 §23](../testes/fase2/fase2-caracterizacao-baselines.md#23-lote-5d--ciclo-de-vida-da-conta-retificação-cancelamento-e-prescrição-2026-10-08)). Nada foi corrigido no legado.
+
+| # | Achado | Evidência | Risco | Prioridade / ação |
+| - | ------ | --------- | ----- | ----------------- |
+| 36 | **Exigência de RA no cancelamento de conta verificada só na tela** — sem a permissão CANCELAR CONTA SEM RA e sem RA do imóvel, a tela de cancelamento recusa ("Não existe RA que permita manutenção de conta para o imóvel…"), mas o POST de cancelamento é **aceito**: a conta é cancelada sem RA nenhum | `ExibirCancelarContaAction` chama `verificarExistenciaRegistroAtendimento` (lança); `ControladorFaturamentoFINAL.cancelarConta` só chama `verificarExistenciaRegistroAtendimentoSemLevantarExcecao` — sem RA, não recusa, apenas não liga a conta a um RA. A retificação, ao contrário, exige o RA também no controlador (`ControladorRetificarConta:426`, `:521`). Baseline CEN-FAT-008 V1c | Cancelamento de contas (receita) sem o atendimento que a regra exige e sem rastro de autorização | **P1** em instalação operante (exige Manter Conta e a operação de cancelar). No OpenGSAN: a exigência avaliada no servidor — escopo de **D-19 (proposta)**; candidato **CAND-24** |
+
+🔵 **Correlatos, não de segurança** (registrados no relatório): retificar conta paga **move o pagamento** para a conta nova (CAND-19); a segunda retificação no mesmo mês **sobrescreve** o documento e o valor anterior só sobrevive na trilha de auditoria, como texto (CAND-17); cancelar a retificada a **exclui** (CAND-18); a mudança do consumo para média do histórico não entra na trilha de auditoria (F2-93).
+
 ### Defeito funcional correlato (não é segurança, registrado aqui por proximidade)
 
 🟢 `ServicoSMS.getJson:41-58` **ignora o parâmetro `tipoMensagem`** e sempre monta o texto de confirmação de cadastro no Portal. `ControladorFaturamento:15268` solicita aviso de vencimento e o cliente recebe a mensagem errada. `ControladorCobranca:62373` tem o SMS de corte comentado (inativo). Registrado em [`modulos/integracoes.md §8.2`](../modulos/integracoes.md).

@@ -288,8 +288,8 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 6. Esgoto: percentual padrão, percentual alternativo acima do limite, e poço compondo volume.
 7. Conta com débitos cobrados (parcela de serviço/parcelamento) e créditos realizados.
 8. Impostos deduzidos (cliente público).
-9. Retificação: mesma referência antes/depois (cadeia origem, situações, valores).
-10. Cancelamento (inclusive prescrição) e efeito sobre estoque de débito.
+9. Retificação: mesma referência antes/depois (cadeia origem, situações, valores). 🆕 **Caracterizado (Fase 2, lote 5d, 2026-10-08)**: conta NORMAL → documento novo RETIFICADO e a original CANCELADA POR RETIFICAÇÃO com valores preservados; a cadeia é **implícita** (`cnta_idorigem` nulo); a segunda retificação no mesmo mês contábil **sobrescreve**; conta paga → o pagamento **migra** para a nova ([relatório §23](../testes/fase2/fase2-caracterizacao-baselines.md#23-lote-5d--ciclo-de-vida-da-conta-retificação-cancelamento-e-prescrição-2026-10-08); CAND-17, CAND-19, CAND-21).
+10. Cancelamento (inclusive prescrição) e efeito sobre estoque de débito. 🆕 **Caracterizado (lote 5d)**: cancelar conta NORMAL é estado; cancelar a retificada no mesmo mês a **exclui** (CAND-18); a prescrição em lote segue vencimento < hoje − 10 anos, contábil anterior e sem pagamento; a prescrição manual nunca é aceita (CAND-20). O efeito sobre o estoque de débito fica com a Cobrança (CEN-COB-001).
 11. Pré-faturada → consolidada (impressão simultânea).
 12. Vencimento: dia escolhido pelo imóvel × cronograma do grupo × mês seguinte.
 13. Virada de referência: conta emitida após encerramento (referência contábil ≠ referência).
@@ -298,7 +298,7 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 
 1. Ordem fina de precedência entre overrides de consumo mínimo (ligação × situação × área × tarifa) — caracterizar.
 2. Granularidade exata da aplicação de faixas (por economia individual × agregada por categoria) e suas variantes por companhia — caracterizar numericamente.
-3. Fluxo interno completo do `ControladorRetificarConta` (localizado; corpo não lido integralmente) — leitura dirigida quando a caracterização de retificação for montada.
+3. ~~Fluxo interno completo do `ControladorRetificarConta`~~ 🆕 **Resolvida (Fase 2, lote 5d, 2026-10-08)**: dois ramos pela situação e pela referência contábil — conta NORMAL (ou retificada/incluída já contabilizada) gera conta nova e cancela a original por retificação; retificada/incluída do mês é alterada **em lugar**; sem a permissão especial, exige RA de ALTERAÇÃO DE CONTA e o encerra; a referência contábil segue o relógio do servidor; o pagamento migra para a conta nova; a mudança de consumo pode sobrescrever o consumo para média do histórico. O caminho do motivo ALTERAÇÃO DA LEITURA FATURADA (leitura e consumo faturado) fica para o lote 5e ([relatório §23](../testes/fase2/fase2-caracterizacao-baselines.md#23-lote-5d--ciclo-de-vida-da-conta-retificação-cancelamento-e-prescrição-2026-10-08)).
 4. ~~Retenção/revisão de contas~~ **Parcialmente resolvida (2026-08-14, mapa da Cobrança)**: conta **em revisão** = `cmrv_id` preenchido; as consultas de débito da cobrança carregam o motivo junto e a tratam à parte (excluída de ações até resolução). **"Retidas"** segue como termo operacional desta instalação (tabelas de backup), sem funcionalidade nomeada no código — aberta. Ver [cobranca.md §20](cobranca.md).
 5. ~~Débito automático~~ **Resolvida (2026-08-14, mapa da Arrecadação)**: três níveis distintos — opção do cliente (`DebitoAutomatico`), envio de uma conta ao banco (`DebitoAutomaticoMovimento` apontando **ContaGeral**, com datas de envio/retorno, NSA e código de retorno) e o pagamento efetivo, que chega pelo movimento do arrecadador como qualquer outro. Ver [arrecadacao.md §10](arrecadacao.md).
 6. Diferenças reais entre as 7 subclasses de companhia do faturamento — inventário próprio.

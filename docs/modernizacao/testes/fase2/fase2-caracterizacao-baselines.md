@@ -289,8 +289,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~5 — Faturamento em grupo~~ ✅ **capturado em 2026-10-07** (§20) — o modo Batch foi preparado e validado | BAT-001 V1/V2, BAT-002 V1–V3, BAT-003, BAT-004 V1/V1b, BAT-005, FAT-011 V1. **Ficam**: BAT-001 V3 (relatório), BAT-004 V2 (simultâneos) | Faturar grupo comandado — **EAR em modo Batch** | Catálogos do framework; cronograma, comando, rotas R1–R3 e consumos; falha controlada; IMV-16 |
 | ~~5b — Faturamento na conta~~ ✅ **capturado em 2026-10-07** (§21) — reordenado: os P0 que já cabiam na fronteira do lote 5 | FAT-004 (V1–V4, com V1b, V2b, V3b, V3c), FAT-005 (V1–V3), FAT-006 (V1, V2); ATE-008 (valor de cada prestação na conta) respondido por FAT-004 V1/V1b. **Ficam**: FAT-004 V5 (taxa de emissão — processo de emissão) | Faturar grupo — Batch | Lançamentos, cliente responsável federal e impostos, micro-condomínio |
 | ~~5c — Micromedição~~ ✅ **capturado em 2026-10-07** (§22) — os dois P0 | MIC-001 (V1–V4, V3b, V3c), MIC-003 (V1–V3). **Ficam**: MIC-001 V5 (situação especial), as operações de hidrômetro pela OS (MIC-003 a–d, h) | Consistir leituras e calcular consumos — Batch | Catálogos da Micromedição; hidrômetros, instalações, medições registradas, históricos |
-| **5d — Ciclo de vida da conta** (recomendado a seguir: P0 de Faturamento sobre contas já geradas) | FAT-007 (retificação), FAT-008 (cancelamento e prescrição) | Retificar e cancelar conta — Online sobre contas do faturamento em grupo | Contas geradas; motivos; pagamento (V3 de FAT-007) |
-| 5e — Consumo pela origem, na conta | MIC-004/005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (situação especial), MIC-002 (precedência ao faturar), MIC-001 V5 | Consistir e faturar em sequência — Batch | Situações especiais, vigências tarifárias, poço, rota alternativa (IMV-11a/b, 12a/b, 17, 18) |
+| ~~5d — Ciclo de vida da conta~~ ✅ **capturado em 2026-10-08** (§23) | FAT-007 (V1, V1b, V2, V2b, V3, V4, V4b), FAT-008 (V1, V1b, V1c, V2, V2b). **Ficam**: a retificação por alteração da leitura faturada (motivo 104, imóvel hidrometrado) → 5e; a posição de dívida → 6 | Retificar e cancelar conta pela tela, sobre as contas que o faturamento em grupo gera na própria execução; prescrição em lote e manual — **Batch** | Catálogos da manutenção de conta; histórico de consumo; Arrecadação mínima e pagamento (passo); RA de alteração de conta; contas antigas; processo de prescrição |
+| **5e — Consumo pela origem, na conta** (recomendado a seguir) | MIC-004/005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (situação especial), MIC-002 (precedência ao faturar), MIC-001 V5; 🆕 a retificação por alteração da leitura faturada (FAT-007, motivo 104) | Consistir e faturar em sequência — Batch | Situações especiais, vigências tarifárias, poço, rota alternativa (IMV-11a/b, 12a/b, 17, 18) |
 | 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -328,6 +328,10 @@ registram horários, mas nenhuma medição foi tratada como baseline.
   **aplicada**, no estado que "Efetuar Leitura" e a operação da OS deixariam; o objeto é a consistência. A referência de
   faturamento do sistema é alinhada ao mês do comando (05/2026), como numa instalação em operação — a base parou em
   201410 (F2-80).
+- **Contas da própria execução**: no lote 5d, as contas manipuladas são as que o faturamento em grupo gera no início de cada
+  execução (não vêm da massa); pagamento, RA e as contas antigas da prescrição chegam pela massa — o pagamento, por um passo
+  aplicado depois do faturamento. A referência contábil e as datas de retificação/cancelamento saem relativas ao relógio; a
+  prescrição compara o vencimento com hoje − 10 anos (as contas da massa estão longe dessa fronteira).
 - **Processo pela massa**: no lote 5, cronograma, comando e consumos nascem por SQL; o objeto é o processo de faturar.
   A correção de causa de BAT-002 V2/V3 é aplicada por SQL **no meio** da execução (`massas/passos/`), porque a
   manutenção do imóvel é outra fronteira. O disparo **agendado** e o paralelismo das unidades são C4.
@@ -339,7 +343,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
-| Já capturado | **110 variações** de 31 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9) — 47% das 234 | Cobertura |
+| Já capturado | **122 variações** de 33 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12) — 52% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -349,8 +353,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **24 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3) e na conta (3: lançamentos, impostos, rateio), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **26 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), na conta (3: lançamentos, impostos, rateio) e 🆕 do documento (2: retificação; cancelamento e prescrição), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -1086,3 +1090,114 @@ A base reconstruída não tem **nada** da Micromedição (F2-77). A massa cria p
 | F2-84 | Sem hidrômetro, o consumo **não medido** vem do mínimo por **área** construída (12), não do mínimo da tarifa (10), quando `parm_icnaomedidotarifa` ≠ 1 | MIC-003 V3; `obterConsumoNaoMedido:37737-37747` | 🟢 | Registro da fonte |
 | F2-85 | A consistência também é **`NotSupported`** na variante ativa: uma falha no meio deixa a medição atualizada sem o consumo do mês (observado na exploração, com a falta do tipo de rateio) | `descriptors/micromedicaoCOSANPA/META-INF/ejb-jar.xml:33-35` | 🔵 | Mesma natureza de F2-63 (CAND-02) |
 | F2-86 | **Mecanismo**: o JBoss da referência grava datas em America/Belem e o banco roda em UTC — observações que comparam uma data gravada pelo legado com o `current_date` do banco viram entre 21h e 24h locais. Corrigido na sessão de observação (`PGTZ`), sem tocar no legado | Regressão de 2026-10-08 00:04 UTC; `imagens/jboss/Dockerfile:60` | ⚙️ | Ferramenta corrigida; baselines inalteradas |
+
+## 23. Lote 5d — Ciclo de vida da conta: retificação, cancelamento e prescrição (2026-10-08)
+
+Nono lote, no EAR em modo Batch: a **manutenção de conta** pelas telas do legado sobre as contas que o faturamento em
+grupo gera no início da execução — retificar, cancelar — e a **prescrição**, em lote e manual. Os dois P0 de Faturamento
+que faltavam na Etapa 4 (financeiro individual) do lado do documento.
+
+### 23.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Fronteira |
+| ------- | ------ | - | --------- | --------- |
+| CEN-FAT-007 — retificação de conta | A (1 · 2 em g) | P0 | V1, V1b, V2, V2b, V3, V4, V4b | Faturar G1 → Manter Conta → Retificar Conta, sobre a conta de 05/2026 de IMV-01 |
+| CEN-FAT-008 — cancelamento e prescrição | A (1) | P0 | V1, V1b, V1c, V2, V2b | Faturar G1 → Manter Conta → Cancelar Conta; Inserir Processo (eventual) → prescrição em lote |
+
+**Fora do lote, com motivo**: a retificação por **alteração da leitura faturada** (motivo 104 — exige imóvel hidrometrado,
+com medição e leitura na conta; é o caminho que corrige leitura e consumo **faturado** do histórico, `ControladorRetificarConta:263–273`)
+fica para o lote 5e, que consiste e fatura em sequência; retificar **conjunto** de contas (outra operação, mesma regra por
+conta); a presença na **posição de dívida** (CEN-COB-001, lote 6); a prescrição de imóveis **públicos** (outro processo);
+desfazer cancelamento ou retificação.
+
+🆕 Variações acrescentadas à especificação: **V1b** em FAT-007 (segunda retificação no mesmo mês), **V2b** (a resposta "Não"
+à substituição da média) e **V4b** (sem permissão e sem RA); **V1b** em FAT-008 (cancelar a conta já retificada), **V1c**
+(cancelamento sem permissão e sem RA, pelo POST que a tela recusa) e **V2b** (prescrição manual, pelo motivo de
+cancelamento). A especificação pedia "retificação originada por RA" (V4) e "prescrição" (V2); o código mostrou dois caminhos
+de cada.
+
+### 23.2 Massa
+
+As contas da referência 05/2026 **não** vêm da massa: são as do faturamento em grupo do lote 5 (IMV-01 27 m³ R$ 110,40;
+IMV-02 R$ 168,09; IMV-03 R$ 252,60), geradas no início de cada execução. A massa traz o que a manutenção exige e a base não
+tem (F2-87):
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `conta-ciclo-catalogos.sql` | Situações de conta RETIFICADA, INCLUÍDA, CANCELADA, CANCELADA POR RETIFICAÇÃO, DÉBITO PRESCRITO e DÉBITO PRESCRITO INCLUÍDAS (constantes de `DebitoCreditoSituacao`); dois motivos de retificação e um de cancelamento SINTÉTICOS e o motivo DÉBITO PRESCRITO pelo id do código (64); as permissões especiais 48 e 51 (catálogo); as concessões de Manter, Retificar e Cancelar Conta; o cliente USUÁRIO de IMV-01; o parâmetro CONSUMO_MINIMO_BOLSA_AGUA; a referência de faturamento do sistema = 05/2026 e os meses da média = 6 |
+| `conta-ciclo-permissao-sem-ra.sql` | O operador com RETIFICAR e CANCELAR CONTA SEM RA — todas as variações, menos V4/V4b de FAT-007 e V1c de FAT-008 |
+| `conta-ciclo-consumos-imv01.sql` | O histórico de consumo de IMV-01 como a consistência o deixaria: para média de 05/2026 = 27, média 25 (três meses REAIS anteriores) |
+| `conta-ciclo-arrecadacao.sql` · `passos/pagamento-conta-imv01-202605.sql` | O mínimo da Arrecadação (banco, agência, conta bancária, arrecadador, aviso, forma, tipo de documento, situação do pagamento) e, **depois do faturamento**, o pagamento classificado da conta de IMV-01 (R$ 110,40) |
+| `conta-ciclo-ra-alteracao-conta.sql` | Um RA pendente de IMV-01 com especificação que valida ALTERAÇÃO DE CONTA (`'C'`), o motivo de encerramento CONCLUSÃO DE SERVIÇO (2) e o trâmite ENCERRAR (3) pelas constantes; o operador lotado na unidade de atendimento |
+| `conta-ciclo-contas-antigas.sql` | Sete contas antigas de IMV-01..03, uma por condição da regra de prescrição (tabela em §23.4) |
+| `conta-ciclo-processo-prescricao.sql` | Processo SINTÉTICO eventual com a etapa 1350 (Gerar Prescrever Débitos de Imóveis); uma situação de cobrança (sem ela, o processo trava — F2-98); as concessões de Inserir Processo |
+
+### 23.3 Mecanismo — o que mudou
+
+- O roteiro `faturar_grupo` ganhou três passos de tela: **`retificar`** (Manter Conta → Exibir Retificar → Retificar, com as
+  confirmações que o legado pede — "conta já paga", "substituir o consumo para o cálculo da média" — respondidas pela
+  variação), **`cancelar`** (Manter Conta → Exibir Cancelar → Cancelar, com `forjar` para o POST que a tela recusa) e
+  **`iniciar_processo`** (Inserir Processo mensal/eventual). O passo **`aplicar`** passa a servir também ao pagamento, que só
+  pode nascer depois da conta.
+- Bloco opcional **`ciclo_conta`**: cada conta pela **identidade documental** — matrícula, referência e **ordem de criação na
+  referência** —, nunca pela chave; situação atual e anterior, valores, economias, motivos, número de retificações, datas
+  (relativas à execução quando gravadas pelo relógio do legado), referência contábil ("mês da execução" quando é o mês do
+  relógio), origem, RA, autor; as **contas gerais sem documento** (exclusão física); pagamentos e RA pela identidade da conta
+  a que apontam; o histórico de consumo; e a **trilha de auditoria** de cada operação (tabela, coluna, valor anterior e atual,
+  como o legado os grava).
+- Recusas e erros saem pelo texto exibido e pelas **chaves de mensagem** do legado; nunca pela pilha. A marca de tempo que
+  Manter Conta põe na caixa de seleção (necessária ao cancelamento) e os ids só servem à navegação.
+
+### 23.4 Baselines do lote
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| FAT-007 V1 | Retificar só as economias (1 → 2): nasce a conta **B** (ordem 2) RETIFICADA, 27 m³, **R$ 94,05**, motivo, 1 retificação, data de retificação = a da execução; a original **A** (ordem 1) fica **CANCELADA POR RETIFICAÇÃO** com os valores **preservados** (R$ 110,40) e situação anterior NORMAL. As duas com referência contábil = **mês do relógio** (outubro/2026, não 05/2026). **Nenhum vínculo explícito** B → A: `cnta_idorigem` nulo nas duas. Auditoria: economias 1 → 2, valor 110,40 → 94,05, motivo |
+| FAT-007 V1b | Retificar de novo a conta B no mesmo mês (2 → 3 economias): **nenhuma conta nova** — B é alterada **em lugar** para R$ 97,50, 2 retificações. O documento de R$ 94,05 **deixa de existir**; só a auditoria guarda "94,05 → 97,50", como texto |
+| FAT-007 V2 | Retificar o consumo 27 → 20 m³: o legado pergunta se "o novo consumo substituirá o consumo anterior para o cálculo da média"; **Sim** → B 20 m³ **R$ 74,00**; no histórico de 05/2026 o consumo **para média** é sobrescrito **27 → 20** e a média recalculada **25 → 23** (95 ÷ 4, divisão inteira) — **sem registro na auditoria**; o consumo **faturado** do histórico continua **27** |
+| FAT-007 V2b | A mesma retificação respondendo **Não**: B igual a V2 (20 m³, R$ 74,00); histórico intacto (para média 27, média 25) |
+| FAT-007 V3 | Conta paga (pagamento de R$ 110,40): o legado avisa "A conta do mês 05/2026 já está paga." e, confirmado, retifica (B R$ 94,05) — e **move o pagamento para B**: A, que recebeu o pagamento, fica sem ele; B fica com pagamento de R$ 110,40 para um valor de R$ 94,05 |
+| FAT-007 V4 | Sem a permissão RETIFICAR CONTA SEM RA, com RA pendente de ALTERAÇÃO DE CONTA: retifica; o RA é ligado à conta **A** (a cancelada) — B não referencia RA — e **encerrado automaticamente**: motivo CONCLUSÃO DE SERVIÇO, parecer fixo, trâmite ENCERRAR na unidade do operador |
+| FAT-007 V4b | Sem a permissão e sem RA: **recusa na exibição** (HTTP 500) — "Não existe RA que permita manutenção de conta para o imóvel 100013"; a conta segue NORMAL |
+| FAT-008 V1 | Cancelar a conta NORMAL com motivo: **CANCELADA**, motivo, data de cancelamento = a da execução, situação anterior NORMAL (a referência da conta é a do sistema), referência contábil = mês do relógio; **o documento permanece**. A tela não diz "sucesso": volta ao formulário |
+| FAT-008 V1b | Retificar e cancelar a conta **retificada** no mesmo mês: a conta B é **excluída fisicamente** (resta só a conta geral, com indicador 3, sem documento nem histórico); a original A volta como **CANCELADA**, com o motivo de cancelamento |
+| FAT-008 V1c | Sem a permissão de cancelar sem RA e sem RA: a tela de cancelamento **recusa** (HTTP 500, "Não existe RA que permita manutenção de conta para o imóvel 100013"); o POST enviado **mesmo assim** é **aceito** — a conta fica CANCELADA, sem RA ligado. ⚠️ Registro do que o GSAN faz, **não** comportamento a reproduzir |
+| FAT-008 V2 | Prescrição em lote: prescreve a NORMAL e a RETIFICADA vencidas em 2014 (→ **DÉBITO PRESCRITO**) e a INCLUÍDA (→ **DÉBITO PRESCRITO INCLUÍDAS**), com motivo DÉBITO PRESCRITO, data de cancelamento = a da execução, referência contábil = **05/2026 (do sistema)**, autor = usuário do batch e situação anterior **apagada**; **não** prescreve a paga, a vencida em 2020, a cancelada nem a retificada no mês corrente (contábil não anterior) |
+| FAT-008 V2b | Prescrição manual — cancelar com o motivo DÉBITO PRESCRITO a conta de 06/2014 (NORMAL, vencida em 2014, sem pagamento, cliente particular): **recusada** (HTTP 500), com a chave de mensagem **sem texto** `???pt_BR.erro.conta_nao_satisfaz_criterios_para_prescricao???`; a conta segue NORMAL |
+
+Contas da prescrição (V2, V2b):
+
+| Conta (identidade) | Situação | Vencimento | Contábil | Regra | V2 |
+| ------------------ | -------- | ---------- | -------- | ----- | -- |
+| IMV-01 · 06/2014 | NORMAL | 10/07/2014 | 06/2014 | prescreve | DÉBITO PRESCRITO |
+| IMV-01 · 07/2014 | RETIFICADA | 10/08/2014 | 08/2014 | prescreve | DÉBITO PRESCRITO |
+| IMV-02 · 06/2014 | INCLUÍDA | 10/07/2014 | 09/2014 | prescreve (incluídas) | DÉBITO PRESCRITO INCLUÍDAS |
+| IMV-02 · 08/2014 | NORMAL, **paga** | 10/09/2014 | 08/2014 | não — há pagamento | NORMAL |
+| IMV-03 · 01/2020 | NORMAL | 10/02/2020 | 01/2020 | não — menos de 10 anos | NORMAL |
+| IMV-03 · 06/2014 | CANCELADA | 10/07/2014 | 10/2014 | não — situação | CANCELADA |
+| IMV-01 · 09/2014 | RETIFICADA no mês corrente | 10/10/2014 | 05/2026 | não — contábil não é anterior | RETIFICADA |
+
+### 23.5 Determinismo
+
+- **Captura**: **11 de 11** variações com as duas execuções **idênticas byte a byte** (`20261008T123955Z-capturar`); a V1c, acrescentada depois com o ramo `forjar` do cancelamento, também (`20261008T143915Z-capturar`). Antes, três rodadas de exploração dirigida e uma passada exploratória das 11 variações sem gravar (`20261008T120756Z-verificar`) revelaram o que a base não tem (F2-87), o processo que trava (F2-98) e a prescrição manual inoperante (F2-97).
+- **Verificação independente** (3ª execução): lote 5d **12/12** conferem, com o roteiro final (`20261008T144657Z-verificar`). Uma verificação anterior, com o roteiro ainda sem o ramo `forjar`, já dera 11/11 (`20261008T135740Z-verificar`).
+- **Regressão** — o roteiro ganhou passos e um bloco de detalhe (aditivos): lotes 5, 5b, 5c e piloto **43/43** conferem, com o roteiro final (`20261008T152942Z-verificar`). As 67 baselines Online dos lotes de Segurança, 3 e 4 usam roteiros que não mudaram; a última verificação delas é a do lote 5c (67/67). As **122** baselines conferem.
+
+### 23.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-87 | A base não tem o que a manutenção de conta exige: as situações de conta além de NORMAL e PAGA, nenhum motivo de retificação ou de cancelamento, as permissões especiais 48 e 51, nenhum processo com a prescrição. Dois parâmetros derrubam operações inteiras: sem **CONSUMO_MINIMO_BOLSA_AGUA**, **toda** retificação termina em HTTP 500 — `RetificarContaAction:81` o lê antes de olhar o perfil do imóvel; com os **meses da média** nulos, confirmar a substituição do consumo dá NPE (`RepositorioMicromedicaoHBM:5292`) e "erro de acesso ao banco" | Exploração; código citado | ⚙️ | Massa cria pelas constantes; checklist de instalação |
+| F2-88 | **Retificar** conta NORMAL cria **documento novo**: a original fica CANCELADA POR RETIFICAÇÃO com os valores preservados e situação anterior NORMAL; a nova, RETIFICADA, com motivo, número e data de retificação. A **referência contábil** das duas é o **mês do relógio** do servidor (`obterReferenciaContabilConta`: maior entre a referência do sistema, o mês corrente e a da conta) — outubro/2026 para uma conta de maio, com o sistema em maio | FAT-007 V1; `ControladorRetificarConta.retificarContasReferenciaContabilMenor`; `ControladorFaturamentoFINAL:56677` | 🟢 | Responde a–d da especificação; contábil pelo relógio registrado |
+| F2-89 | **Linhagem só implícita**: a conta retificadora não referencia a retificada (`cnta_idorigem` nulo — o campo só é gravado na transferência de débitos entre imóveis, `ControladorCobranca:34815`); o que as liga é a mesma matrícula e referência e a situação CANCELADA POR RETIFICAÇÃO. O RA que autorizou a retificação fica ligado à conta **antiga** | FAT-007 V1, V4 | 🔵 | Corrige o localizador da especificação (`cnta_idorigem`); **CAND-21** |
+| F2-90 | **Segunda retificação no mesmo mês altera em lugar**: conta RETIFICADA com referência contábil ≥ a do sistema é **sobrescrita** (`retificarContasReferenciaContabilMaiorOuIgual`); o documento anterior deixa de existir e o valor anterior só sobrevive na **auditoria**, como texto formatado | FAT-007 V1b | 🔴 | Contradiz "retificar cria documento novo, não edita" — **CAND-17** |
+| F2-91 | **Cancelar a conta retificada no mesmo mês a EXCLUI**: o documento RETIFICADO é removido fisicamente (resta a conta geral com indicador 3, sem conta nem histórico) e a original volta como CANCELADA, com o motivo | FAT-008 V1b; `ControladorFaturamentoFINAL.cancelarConta` (ramo `isContaIncluidaOuRetificadaEReferenciaContabilMaiorOuIgual`) | 🔴 | Contradiz "cancelamento é estado, não exclusão" — **CAND-18** |
+| F2-92 | **Retificar conta paga move o pagamento** para a conta nova (`atualizarPagamentoContaRetificada`): a conta que recebeu o pagamento fica sem ele, e a nova fica "paga" com valor diferente (R$ 110,40 para R$ 94,05) | FAT-007 V3 | 🔴 | Contradiz o resultado esperado (f) da especificação — **CAND-19** (toca valor: oráculo 1 até decisão) |
+| F2-93 | **Consumo na retificação**: o legado pergunta se substitui o consumo "para o cálculo da média"; **Sim** sobrescreve o consumo para média do histórico (27 → 20) e recalcula a média (25 → 23, divisão inteira), **sem** registro na auditoria; **Não** deixa o histórico intacto. Em ambos, o consumo **faturado** do histórico continua o anterior (27) e a conta diz 20 | FAT-007 V2, V2b; `atualizarMediaConsumoHistoricoAoRetificarConta` | 🔵 | Responde (g): o valor anterior **não** é recuperável. Nota de evidência em **D-14** |
+| F2-94 | **RA na retificação**: sem a permissão, a tela recusa sem RA de ALTERAÇÃO DE CONTA e o controlador também exige; com RA, o legado o liga à conta antiga e o **encerra** sozinho (motivo de conclusão, parecer fixo, trâmite ENCERRAR na unidade do usuário). O parecer é gravado com **bytes corrompidos** — o literal no fonte do legado tem caracteres de substituição (`ControladorRetificarConta:472`) | FAT-007 V4, V4b | 🟢 · 🟡 | Responde V4; o texto corrompido é **CAND-22** |
+| F2-95 | **Cancelar** conta NORMAL é **estado**: CANCELADA, motivo, data, situação anterior NORMAL (porque a referência da conta é a do sistema; senão, nula), contábil pelo relógio; o documento permanece | FAT-008 V1 | 🟢 | Responde V1 |
+| F2-96 | **Prescrição em lote**: vencimento anterior a **hoje − 10 anos**, contábil anterior à referência do sistema, sem pagamento; NORMAL/RETIFICADA → DÉBITO PRESCRITO, INCLUÍDA → DÉBITO PRESCRITO INCLUÍDAS; motivo pelo id 64 (sem a linha no catálogo, chave estrangeira); contábil = referência do **sistema** (não o relógio, ao contrário do cancelamento); situação anterior **apagada** | FAT-008 V2; `RepositorioCobrancaHBM.prescreverDebitosDeImoveis` | 🟢 | Responde V2 |
+| F2-97 | **Prescrição manual nunca é aceita**: cancelar com o motivo de prescrição consulta a elegibilidade por uma HQL com a propriedade inexistente `conta.clienteConta` (o mapeamento é `clienteContas`); a exceção é engolida e a conta "não satisfaz os critérios" — qualquer conta, elegível ou não; a resposta é HTTP 500 com a chave de mensagem sem texto | FAT-008 V2b; `RepositorioFaturamentoHBM.pesquisarContaParaPrescricao:53932`, `ControladorFaturamentoFINAL:61105` | 🔴 | Defeito do legado — **CAND-20** |
+| F2-98 | **Processo batch preso sem erro**: uma exceção na montagem da tarefa (`TarefaBatch.executar`, antes do envio ao MDB) não encerra nem registra a etapa. Com a situação de cobrança vazia, a prescrição lança `StringIndexOutOfBoundsException` (`Util.removerUltimosCaracteres` de lista vazia) no job do Quartz e o processo fica **EM PROCESSAMENTO** para sempre — indistinguível de um em andamento | Exploração (log do JBoss); `TarefaBatchGerarPrescreverDebitosDeImoveis:51` | 🔵 | **CAND-23**; massa traz a situação de cobrança |
+| F2-99 | **Erro de banco engolido**: em `cancelarConta` e em `atualizarFaturaItemContaRetificada`, a falha do repositório marca a transação para rollback e cria uma `ControladorException` **sem lançá-la** — a operação é desfeita, mas a tela segue como se tivesse dado certo | Código: `ControladorFaturamentoFINAL:8637`, `:8808` (`cancelarConta`), `ControladorRetificarConta:836`; o mesmo padrão se repete em outros pontos do controlador | 🟡 | Registro (não exercido) |
+| F2-100 | **RA exigido só na tela, no cancelamento**: sem a permissão e sem RA, a exibição recusa; o POST enviado mesmo assim cancela a conta — o controlador só procura o RA para ligá-lo (`verificarExistenciaRegistroAtendimentoSemLevantarExcecao`) e não recusa. Na retificação, o controlador recusa (`ControladorRetificarConta:426`, `:521`) | FAT-008 V1c; `ExibirCancelarContaAction`, `ControladorFaturamentoFINAL.cancelarConta` | 🔴 | Achado de segurança 36; **CAND-24** (mesma família de D-19, proposta) |

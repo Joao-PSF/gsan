@@ -1,0 +1,280 @@
+{
+  "dominio": "faturamento",
+  "lote": "batch-conta-ciclo",
+  "modo": "Batch",
+  "fronteira": "Manutenção de conta pelas telas do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o mesmo disparo do lote 5: Inserir Processo Faturamento Comandado → verificador do Quartz → faturarGrupoFaturamento) ou que a massa traz: Manter Conta (exibirManterContaAction) → Retificar Conta (exibirRetificarContaAction → retificarContaAction → ControladorRetificarConta.retificarConta) ou Cancelar Conta (exibirCancelarContaAction → cancelarContaAction → ControladorFaturamentoFINAL.cancelarConta); a prescrição em lote pela tela Inserir Processo (eventual) → TarefaBatchGerarPrescreverDebitosDeImoveis → ControladorCobranca.gerarPrescreverDebitosDeImoveis. O que as operações gravam é lido do banco: cada conta pela identidade documental (matrícula, referência, ordem de criação), nunca pela chave.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "referência de faturamento do sistema = a do grupo (05/2026), como numa instalação em operação no mês",
+      "sql": "select parm_amreferenciafaturamento from cadastro.sistema_parametros",
+      "esperado": "202605"
+    },
+    {
+      "descricao": "meses da média de consumo (sistema_parametros.parm_nnmesescalcmediacons) = 6",
+      "sql": "select parm_nnmesescalcmediacons from cadastro.sistema_parametros",
+      "esperado": "6"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_geral",
+    "faturamento.conta_categoria",
+    "cadastro.cliente_conta",
+    {
+      "tabela": "arrecadacao.pagamento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "micromedicao.consumo_historico",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "atendimentopublico.registro_atendimento",
+      "modo": "conteudo"
+    },
+    "atendimentopublico.ra_unidade",
+    "seguranca.operacao_efetuada",
+    "seguranca.tabela_linha_alteracao"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-FAT-008",
+  "titulo": "Cancelamento e prescrição",
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-008",
+  "oraculo": "1",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "as contas da referência 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); pagamento, RA e as contas antigas chegam pela massa, no estado em que as operações que os criam os deixariam — o pagamento, por um passo aplicado DEPOIS do faturamento (só então a conta existe)",
+    "relogio": "a referência contábil e as datas de retificação, cancelamento e encerramento saem relativas ao mês/dia da execução (o legado as grava pelo relógio); a prescrição compara o vencimento com HOJE − 10 anos — as contas da massa vencem em 2014 e 2020, longe dessa fronteira móvel"
+  },
+  "observaveis": {
+    "campos": [
+      "passos",
+      "processos",
+      "funcionalidades",
+      "contas_ciclo",
+      "contas_gerais_sem_documento",
+      "pagamentos",
+      "registros_atendimento",
+      "consumos_ciclo",
+      "auditoria"
+    ],
+    "fora_desta_fronteira": {
+      "posição de dívida (CEN-COB-001)": "a presença na posição de dívida é observada com a Cobrança (lote 6); aqui, a situação e a existência do documento que a determinam",
+      "prescrição de débitos de imóveis PÚBLICOS": "outro processo (PRESCREVER_DEBITOS_IMOVEIS_PUBLICOS) — fora deste lote",
+      "desfazer cancelamento/retificação": "outra operação — fora deste lote"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01, conta de 05/2026 gerada pelo faturamento em grupo: cancelar com motivo",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "cancelar",
+            "motivo": 3501
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V1b": {
+      "descricao": "IMV-01: retificar a conta (1 → 2 economias) e cancelar a conta RETIFICADA, no mesmo mês",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3401,
+            "economias": {
+              "1": 2
+            }
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "cancelar",
+            "motivo": 3501
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V1c": {
+      "descricao": "Operador SEM a permissão CANCELAR CONTA SEM RA e IMV-01 SEM RA: a tela de cancelamento recusa; o POST de cancelamento enviado mesmo assim — se aceito, registro do que o GSAN faz, não comportamento a reproduzir",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "cancelar",
+            "motivo": 3501,
+            "forjar": true
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "Prescrição em lote: contas antigas de IMV-01..03, uma por condição da regra (NORMAL, RETIFICADA e INCLUÍDA vencidas em 2014; paga; vencida em 2020; cancelada; retificada no mês corrente) — processo \"Gerar Prescrever Débitos de Imóveis\" iniciado pela tela",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/conta-ciclo-arrecadacao.sql",
+        "massas/deltas/conta-ciclo-contas-antigas.sql",
+        "massas/deltas/conta-ciclo-processo-prescricao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "iniciar_processo",
+            "processo": 3101,
+            "tipo_processo": 4
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2b": {
+      "descricao": "Prescrição manual: cancelar com o motivo DÉBITO PRESCRITO a conta de 06/2014 de IMV-01 (NORMAL, vencida em 10/07/2014, sem pagamento, cliente particular — elegível pela regra do lote)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/conta-ciclo-arrecadacao.sql",
+        "massas/deltas/conta-ciclo-contas-antigas.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "cancelar",
+            "imovel": 100013,
+            "referencia": 201406,
+            "motivo": 64
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    }
+  }
+}

@@ -30,7 +30,7 @@ baselines/
 ├── cenarios/<CEN>.json          definição executável: fronteira, roteiro, variações, observáveis, normalizações
 ├── massas/base/*.sql            massa comum, aplicada em ordem a toda execução
 ├── massas/deltas/*.sql          massa por variação (perfis IMV-*, TAR-*, …)
-├── massas/passos/*.sql          correções que um roteiro aplica NO MEIO da execução (passo `aplicar`), nunca massa inicial
+├── massas/passos/*.sql          o que um roteiro aplica NO MEIO da execução (passo `aplicar`: a correção de causa, o pagamento de uma conta que só existe depois do faturamento), nunca massa inicial
 ├── golden/<domínio>/<CEN>/<V>.json   baselines (só `baseline.sh capturar` escreve aqui)
 └── ferramentas/
     ├── cenarios.py              leitura das especificações (docs)
@@ -88,12 +88,17 @@ JBoss com esse EAR e o executor recusa a execução se o rodapé mostrar outro m
 processo pela tela "Inserir Processo Faturamento Comandado" e segue os **passos** da variação: `disparar` (com `forjar`
 quando a tela já não lista o comando), `aguardar` (`terminal`: todo processo num estado final e nada mudando por 15 s;
 `ciclo`: 75 s, uma passagem do verificador), `observar` (fotografia intermediária), `autorizar`, `aplicar` (arquivo de
-`massas/passos/`, com o sha256 no resultado) e `reiniciar` (`etapas`: `com_erro` ou `concluidas`). O estado final —
+`massas/passos/`, com o sha256 no resultado), `reiniciar` (`etapas`: `com_erro` ou `concluidas`) e, para a manutenção de
+conta, `retificar` e `cancelar` (pela lista de Manter Conta, com as confirmações que o legado pede respondidas pela
+variação; `forjar` no cancelamento que a tela recusa) e `iniciar_processo` (Inserir Processo mensal/eventual, ex.: a
+prescrição). O estado final —
 processos, etapas, unidades por rota, contas por matrícula com categorias e faixas, totais, consumos, referência do
 grupo e `contas_iniciadas` (números entregues pela sequência das contas, que não voltam num rollback) — sai sem ids nem
 carimbos de tempo. Blocos de detalhe opcionais (`"detalhes"` na entrada): `lancamentos` (débitos cobrados, créditos realizados e o que
 resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto), `rateio` (micro-condomínio) e
-`micromedicao` (instalações de hidrômetro, medições e consumos detalhados) — só entram nas baselines que os declaram. O
+`micromedicao` (instalações de hidrômetro, medições e consumos detalhados) e `ciclo_conta` (cada conta pela identidade
+documental — matrícula, referência e ordem de criação —, contas gerais sem documento, pagamentos e RA pela conta a que
+apontam, consumos e a trilha de auditoria das operações) — só entram nas baselines que os declaram. O
 mesmo roteiro dispara a **consistência de leituras** (outro comando, `"comando"` na entrada); o texto técnico das exceções
 persistidas fica só nas evidências (`erros_tecnicos` em `bruto.json`).
 

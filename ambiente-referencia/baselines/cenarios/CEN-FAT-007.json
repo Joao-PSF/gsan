@@ -1,0 +1,386 @@
+{
+  "dominio": "faturamento",
+  "lote": "batch-conta-ciclo",
+  "modo": "Batch",
+  "fronteira": "Manutenção de conta pelas telas do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o mesmo disparo do lote 5: Inserir Processo Faturamento Comandado → verificador do Quartz → faturarGrupoFaturamento) ou que a massa traz: Manter Conta (exibirManterContaAction) → Retificar Conta (exibirRetificarContaAction → retificarContaAction → ControladorRetificarConta.retificarConta) ou Cancelar Conta (exibirCancelarContaAction → cancelarContaAction → ControladorFaturamentoFINAL.cancelarConta); a prescrição em lote pela tela Inserir Processo (eventual) → TarefaBatchGerarPrescreverDebitosDeImoveis → ControladorCobranca.gerarPrescreverDebitosDeImoveis. O que as operações gravam é lido do banco: cada conta pela identidade documental (matrícula, referência, ordem de criação), nunca pela chave.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "referência de faturamento do sistema = a do grupo (05/2026), como numa instalação em operação no mês",
+      "sql": "select parm_amreferenciafaturamento from cadastro.sistema_parametros",
+      "esperado": "202605"
+    },
+    {
+      "descricao": "meses da média de consumo (sistema_parametros.parm_nnmesescalcmediacons) = 6",
+      "sql": "select parm_nnmesescalcmediacons from cadastro.sistema_parametros",
+      "esperado": "6"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_geral",
+    "faturamento.conta_categoria",
+    "cadastro.cliente_conta",
+    {
+      "tabela": "arrecadacao.pagamento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "micromedicao.consumo_historico",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "atendimentopublico.registro_atendimento",
+      "modo": "conteudo"
+    },
+    "atendimentopublico.ra_unidade",
+    "seguranca.operacao_efetuada",
+    "seguranca.tabela_linha_alteracao"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-FAT-007",
+  "titulo": "Retificação de conta",
+  "especificacao": "docs/modernizacao/testes/cenarios/faturamento.md — CEN-FAT-007",
+  "oraculo": "1 (a–f) — por mapeamento semântico · 2 (g)",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "as contas da referência 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); pagamento, RA e as contas antigas chegam pela massa, no estado em que as operações que os criam os deixariam — o pagamento, por um passo aplicado DEPOIS do faturamento (só então a conta existe)",
+    "relogio": "a referência contábil e as datas de retificação, cancelamento e encerramento saem relativas ao mês/dia da execução (o legado as grava pelo relógio); a prescrição compara o vencimento com HOJE − 10 anos — as contas da massa vencem em 2014 e 2020, longe dessa fronteira móvel"
+  },
+  "observaveis": {
+    "campos": [
+      "passos",
+      "processos",
+      "funcionalidades",
+      "contas_ciclo",
+      "contas_gerais_sem_documento",
+      "pagamentos",
+      "registros_atendimento",
+      "consumos_ciclo",
+      "auditoria"
+    ],
+    "fora_desta_fronteira": {
+      "retificação por ALTERAÇÃO DA LEITURA FATURADA (motivo 104)": "exige imóvel hidrometrado, com medição e leitura na conta: o caminho que corrige a leitura e o consumo FATURADO do histórico em lugar (ControladorRetificarConta:263–273) entra com o lote 5e (consistir e faturar em sequência)",
+      "retificar conjunto de contas": "outra operação (retificarConjuntoConta), mesma regra por conta — fora deste lote",
+      "D-14 (observável g)": "a baseline grava a forma do legado (sobrescrita do consumo para média, trilha só na auditoria); a versão com motivo no OpenGSAN é divergência aprovada, comparada pelo oráculo 2"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01, conta de 05/2026 (27 m³, 1 economia, R$ 110,40) gerada pelo faturamento em grupo: retificar SÓ as economias (1 → 2), sem alterar o consumo",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3401,
+            "economias": {
+              "1": 2
+            }
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V1b": {
+      "descricao": "IMV-01: retificar (1 → 2 economias) e retificar DE NOVO a conta retificada, no mesmo mês (2 → 3)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3401,
+            "economias": {
+              "1": 2
+            }
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3401,
+            "economias": {
+              "1": 3
+            }
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "IMV-01 com histórico de consumo (para média 27, média 25): retificar o CONSUMO de 27 para 20 m³ e responder SIM a \"substituir o consumo para o cálculo da média\"",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/conta-ciclo-consumos-imv01.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3402,
+            "consumo_agua": 20,
+            "substituir_media": "ok"
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2b": {
+      "descricao": "O mesmo de V2, respondendo NÃO a \"substituir o consumo para o cálculo da média\"",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/conta-ciclo-consumos-imv01.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3402,
+            "consumo_agua": 20,
+            "substituir_media": "cancelar"
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "IMV-01, conta de 05/2026 PAGA (pagamento classificado de R$ 110,40, aplicado depois do faturamento): retificar as economias (1 → 2), confirmando \"a conta já está paga\"",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/conta-ciclo-arrecadacao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/pagamento-conta-imv01-202605.sql"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3401,
+            "economias": {
+              "1": 2
+            },
+            "conta_paga": "ok"
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "Operador SEM a permissão RETIFICAR CONTA SEM RA; IMV-01 com um RA pendente de especificação que valida ALTERAÇÃO DE CONTA: retificar as economias (1 → 2)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-ra-alteracao-conta.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3401,
+            "economias": {
+              "1": 2
+            }
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V4b": {
+      "descricao": "Operador SEM a permissão RETIFICAR CONTA SEM RA e IMV-01 SEM RA: tentar retificar",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "imovel": 100013,
+            "referencia": 202605,
+            "tipo": "retificar",
+            "motivo": 3401,
+            "economias": {
+              "1": 2
+            }
+          }
+        ],
+        "detalhes": [
+          "ciclo_conta"
+        ]
+      }
+    }
+  }
+}

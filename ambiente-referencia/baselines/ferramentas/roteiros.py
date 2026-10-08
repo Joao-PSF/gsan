@@ -410,7 +410,106 @@ def _micromedicao(ctx):
     }
 
 
-DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao}
+# Identidade documental da conta: matrícula, referência e ordem de criação na referência — nunca a chave técnica.
+IDENT = ("with ident as (select cnta_id, imov_id, cnta_amreferenciaconta,"
+         " row_number() over (partition by imov_id, cnta_amreferenciaconta order by cnta_id) as ordem from faturamento.conta) ")
+IDENT_JSON = "json_build_object('matricula', {a}.imov_id, 'referencia', {a}.cnta_amreferenciaconta, 'ordem', {a}.ordem)"
+
+
+def _data_relativa(coluna):
+    """Data gravada pelo relógio do legado sai relativa à execução; as datas da massa saem como estão."""
+    return (f"case when {coluna} is null then null when {coluna}::date = current_date then 'data da execução'"
+            f" else to_char({coluna}, 'DD/MM/YYYY') end")
+
+
+def _ciclo_conta(ctx):
+    """Ciclo de vida das contas (CEN-FAT-007, CEN-FAT-008): cada conta pela identidade documental, com situação atual e
+    anterior, valores, motivos, retificações e referência contábil; as contas gerais que ficaram SEM documento (exclusão
+    física); pagamentos e RA pela conta a que apontam; o histórico de consumo; e a trilha de auditoria das operações
+    (tabela, coluna, valor anterior e atual, como o legado os grava)."""
+    contas = _linhas(ctx, IDENT +
+                     "select c.imov_id as matricula, c.cnta_amreferenciaconta as referencia, i.ordem,"
+                     " s.dcst_dsdebitocreditosituacao as situacao, sa.dcst_dsdebitocreditosituacao as situacao_anterior,"
+                     " c.cnta_nnconsumoagua as consumo_agua, c.cnta_nnconsumoesgoto as consumo_esgoto,"
+                     " (select sum(k.ctcg_qteconomia) from faturamento.conta_categoria k where k.cnta_id = c.cnta_id) as economias,"
+                     " c.cnta_vlagua::text as valor_agua, c.cnta_vlesgoto::text as valor_esgoto,"
+                     " c.cnta_vldebitos::text as valor_debitos, c.cnta_vlcreditos::text as valor_creditos,"
+                     " (c.cnta_vlagua + c.cnta_vlesgoto + c.cnta_vldebitos - c.cnta_vlcreditos"
+                     "  - coalesce(c.cnta_vlimpostos, 0))::text as valor_total,"
+                     " mr.cmrt_dsmotivoretificacaoconta as motivo_retificacao, mc.cmcn_dsmotivocancelamentoconta as motivo_cancelamento,"
+                     " c.cnta_nnretificacao as retificacoes,"
+                     f" {_data_relativa('c.cnta_dtretificacao')} as data_retificacao,"
+                     f" {_data_relativa('c.cnta_dtcancelamento')} as data_cancelamento,"
+                     f" {_data_relativa('c.cnta_dtemissao')} as data_emissao,"
+                     " to_char(c.cnta_dtvencimentoconta, 'DD/MM/YYYY') as vencimento,"
+                     " c.cnta_icalteracaovencimento as indicador_alteracao_vencimento,"
+                     " case when c.cnta_amreferenciacontabil = to_char(current_date, 'YYYYMM')::int then 'mês da execução'"
+                     "  else c.cnta_amreferenciacontabil::text end as referencia_contabil,"
+                     " case when c.cnta_idorigem is null then null else coalesce((select " + IDENT_JSON.format(a='o') +
+                     "  from ident o where o.cnta_id = c.cnta_idorigem), json_build_object('conta_geral_sem_documento', true)) end"
+                     " as origem,"
+                     " (c.rgat_id is not null) as ligada_a_ra, u.usur_nmlogin as autor,"
+                     " (select count(*) from cadastro.cliente_conta k where k.cnta_id = c.cnta_id) as clientes,"
+                     " g.cntg_ichistorico as indicador_historico"
+                     " from faturamento.conta c join ident i using (cnta_id) join faturamento.conta_geral g using (cnta_id)"
+                     " join faturamento.debito_credito_situacao s on s.dcst_id = c.dcst_idatual"
+                     " left join faturamento.debito_credito_situacao sa on sa.dcst_id = c.dcst_idanterior"
+                     " left join faturamento.conta_motivo_retificacao mr using (cmrt_id)"
+                     " left join faturamento.conta_mot_cancelamento mc using (cmcn_id) left join seguranca.usuario u using (usur_id)"
+                     " order by c.imov_id, c.cnta_amreferenciaconta, i.ordem")
+    return {
+        'contas_ciclo': contas,
+        'contas_gerais_sem_documento': _linhas(ctx, "select g.cntg_ichistorico as indicador_historico, count(*) as quantidade"
+                                                    " from faturamento.conta_geral g"
+                                                    " where not exists (select 1 from faturamento.conta c where c.cnta_id = g.cnta_id)"
+                                                    " and not exists (select 1 from faturamento.conta_historico h"
+                                                    "  where h.cnta_id = g.cnta_id) group by 1 order by 1"),
+        'pagamentos': _linhas(ctx, IDENT +
+                              "select p.imov_id as matricula, p.pgmt_amreferenciapagamento as referencia_pagamento,"
+                              " p.pgmt_vlpagamento::text as valor, ps.pgst_dspagamentosituacao as situacao,"
+                              " case when p.cnta_id is null then null else coalesce((select " + IDENT_JSON.format(a='i') +
+                              "  from ident i where i.cnta_id = p.cnta_id), json_build_object('conta_geral_sem_documento', true)) end"
+                              " as conta"
+                              " from arrecadacao.pagamento p left join arrecadacao.pagamento_situacao ps on ps.pgst_id = p.pgst_idatual"
+                              " order by p.imov_id, p.pgmt_amreferenciapagamento, p.pgmt_vlpagamento"),
+        'registros_atendimento': _linhas(ctx, IDENT +
+                                         "select r.imov_id as matricula, e.step_dssolcttipoespec as especificacao,"
+                                         " r.rgat_cdsituacao as codigo_situacao, m.amen_dsmotivoencerramento as motivo_encerramento,"
+                                         " r.rgat_dsparecerencerramento as parecer,"
+                                         f" {_data_relativa('r.rgat_tmencerramento')} as data_encerramento,"
+                                         " (select json_agg(json_build_object('tramite', t.attp_dsatendimentorelacaotipo,"
+                                         "   'unidade', o.unid_dssiglaunidade, 'usuario', us.usur_nmlogin) order by ru.raun_id)"
+                                         "   from atendimentopublico.ra_unidade ru"
+                                         "   join atendimentopublico.atendimento_relacao_tipo t using (attp_id)"
+                                         "   join cadastro.unidade_organizacional o using (unid_id) join seguranca.usuario us using (usur_id)"
+                                         "   where ru.rgat_id = r.rgat_id) as tramites,"
+                                         " (select json_agg(" + IDENT_JSON.format(a='i') + " order by i.imov_id, i.cnta_amreferenciaconta,"
+                                         "   i.ordem) from ident i join faturamento.conta c using (cnta_id) where c.rgat_id = r.rgat_id)"
+                                         " as contas_ligadas"
+                                         " from atendimentopublico.registro_atendimento r"
+                                         " join atendimentopublico.solicitacao_tipo_espec e using (step_id)"
+                                         " left join atendimentopublico.atend_motivo_encmt m using (amen_id)"
+                                         " order by r.imov_id, r.rgat_tmregistroatendimento"),
+        'consumos_ciclo': _linhas(ctx, "select h.imov_id as matricula, h.cshi_amfaturamento as referencia, h.lgti_id as ligacao_tipo,"
+                                       " h.cshi_nnconsumofaturadomes as consumo_faturado, h.cshi_nnconsumocalculomedia as consumo_para_media,"
+                                       " h.cshi_nnconsumomedio as consumo_medio,"
+                                       " (h.cshi_tmultimaalteracao::date = current_date) as alterado_na_data_da_execucao"
+                                       " from micromedicao.consumo_historico h order by h.imov_id, h.cshi_amfaturamento, h.lgti_id"),
+        'auditoria': _linhas(ctx, "select o.oper_dsoperacao as operacao, e.opef_cnargumento as argumento,"
+                                  " e.opef_dsdadosadicionais as dados_adicionais,"
+                                  " (select json_agg(json_build_object('tabela', t.tabe_nmtabela, 'alteracao', a.altp_dsalteracaotipo,"
+                                  "   'colunas', (select json_agg(json_build_object('coluna', tc.tbco_nmcoluna,"
+                                  "     'anterior', ca.tbca_cncolunaanterior, 'atual', ca.tbca_cncolunaatual) order by ca.tbca_id)"
+                                  "     from seguranca.tab_linha_col_alteracao ca join seguranca.tabela_coluna tc using (tbco_id)"
+                                  "     where ca.tbla_id = l.tbla_id)) order by l.tbla_id)"
+                                  "   from seguranca.tabela_linha_alteracao l join seguranca.tabela t using (tabe_id)"
+                                  "   join seguranca.alteracao_tipo a using (altp_id) where l.tref_id = e.opef_id) as linhas"
+                                  " from seguranca.operacao_efetuada e join seguranca.operacao o using (oper_id) order by e.opef_id"),
+    }
+
+
+DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
+            'ciclo_conta': _ciclo_conta}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -531,13 +630,165 @@ def _ultimo_processo(ctx):
     return int(ctx.sql('select max(proi_id) from batch.processo_iniciado'))
 
 
+# --- Manutenção de conta: retificar, cancelar (lote 5d) ---------------------------------------------
+# Sobre as contas que o faturamento em grupo acabou de gerar (ou as que a massa traz): o usuário escolhe a conta da
+# referência na lista de Manter Conta; o id só serve à navegação e nunca sai no resultado (nem a marca de tempo que a
+# lista põe na caixa de seleção). Mensagens de erro saem pelas chaves de mensagem do legado, sem pilha.
+
+def _conta_alvo(ctx, imovel, referencia, situacoes):
+    """A conta da referência que a variação manipula: a mais recente entre as situações pedidas."""
+    return ctx.sql(f"select max(cnta_id) from faturamento.conta where imov_id = {int(imovel)}"
+                   f" and cnta_amreferenciaconta = {int(referencia)}"
+                   f" and dcst_idatual in ({', '.join(str(int(s)) for s in situacoes)})") or None
+
+
+def _confirmacao(html):
+    """Página de confirmação do legado: o texto e as URLs dos botões Sim (confirmado=ok) e Não (confirmado=cancelar)."""
+    botoes = {m.group(2): m.group(1) for m in
+              re.finditer(r"botaoAvancarTelaEspera\('/gsan/([^']*?confirmado=(ok|cancelar)[^']*)'\)", html)}
+    if not botoes:
+        return None, {}
+    m = re.search(r'Confirma..o\s+(.*?)\s+GSAN -', texto_visivel(html))
+    return (m.group(1).strip() if m else ''), botoes
+
+
+def _recusa(html, estado):
+    """Mensagem de recusa ou de erro: o texto exibido (sem pilha) e as chaves de mensagem do legado que a página traz."""
+    chaves = sorted({k for k in re.findall(r'\b(?:atencao|erro)\.[a-z0-9_.]*[a-z0-9_]', html)
+                     if not re.search(r'\.(?:gif|png|jpe?g)$', k)})  # os ícones atencao.gif/erro.gif não são mensagens
+    texto = _mensagem(html) or (_atencao(html) if estado >= 400 or chaves else None)
+    if not texto and chaves:  # página de erro: o que ela exibe antes do link para o log (às vezes a chave sem texto)
+        m = re.search(r'Erro\s+(.*?)\s+Visualizar Log', texto_visivel(html))
+        texto = m.group(1) if m else None
+    return {'mensagem': texto, 'chaves': chaves}
+
+
+def _manter_conta(ctx, imovel, conta):
+    """Manter Conta do imóvel: a lista de onde a conta é escolhida (e a coleção que o cancelamento usa na sessão)."""
+    html = ctx.atual.get(f'exibirManterContaAction.do?idImovel={int(imovel)}')
+    marca = re.search(r'(?i)NAME="conta"\s*value="(' + str(conta) + r'-\d*)"', html) if conta else None
+    r = {'http': ctx.atual.ultimo_estado, 'conta_listada': bool(marca)}
+    if not marca:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r, (marca.group(1) if marca else None)
+
+
+def _retificar(ctx, passo):
+    """Retificar Conta (ExibirRetificarContaAction → RetificarContaAction → ControladorRetificarConta.retificarConta):
+    o que a tela mostrou, as confirmações que o legado pediu e a resposta da variação, e o resultado."""
+    r = {}
+    conta = _conta_alvo(ctx, passo['imovel'], passo['referencia'], passo.get('situacoes', (0, 1, 2)))
+    r['manter_conta'], _ = _manter_conta(ctx, passo['imovel'], conta)
+    if not conta:
+        r['resultado'] = 'sem_conta'
+        return r
+    html = ctx.atual.get(f'exibirRetificarContaAction.do?contaID={conta}&idImovel={int(passo["imovel"])}')
+    tela = {'http': ctx.atual.ultimo_estado}
+    texto, botoes = _confirmacao(html)
+    if texto is not None:  # conta paga: o legado pede confirmação antes de abrir a tela
+        tela.update(confirmacao=texto, resposta=passo.get('conta_paga'))
+        if passo.get('conta_paga') not in botoes:
+            r.update(tela=tela, resultado='nao_confirmado')
+            return r
+        html = ctx.atual.get(botoes[passo['conta_paga']])
+        tela['http_apos_confirmacao'] = ctx.atual.ultimo_estado
+    dados = _formulario(html, 'RetificarContaActionForm')
+    if not dados.get('idImovel'):
+        tela.update(_recusa(html, ctx.atual.ultimo_estado))
+        r.update(tela=tela, resultado='recusado_na_exibicao')
+        return r
+    tela.update(referencia=dados.get('mesAnoConta'), consumo_agua=dados.get('consumoAgua'),
+                valor_agua=moeda(dados.get('valorAgua') or ''), valor_total=moeda(dados.get('valorTotal') or ''),
+                vencimento=dados.get('vencimentoConta'),
+                economias={c: v for c, v in re.findall(r'(?i)NAME="categoria(\d+)"[^>]*value="([^"]*)"', html)})
+    r['tela'] = tela
+    # O que a variação digita: o motivo, as economias por categoria e/ou o consumo de água.
+    dados['motivoRetificacaoID'] = str(int(passo['motivo']))
+    for categoria, quantidade in passo.get('economias', {}).items():
+        dados[f'categoria{int(categoria)}'] = str(int(quantidade))
+    if 'consumo_agua' in passo:
+        dados['consumoAgua'] = str(int(passo['consumo_agua']))
+    html = ctx.atual.post('retificarContaAction.do', dados)
+    texto, botoes = _confirmacao(html)
+    if texto is not None:  # consumo alterado: "substituir o consumo para o cálculo da média?"
+        r.update(confirmacao=texto, resposta=passo.get('substituir_media'))
+        if passo.get('substituir_media') not in botoes:
+            r['resultado'] = 'nao_confirmado'
+            return r
+        html = ctx.atual.post(botoes[passo['substituir_media']], {})
+    sucesso = 'retificada com sucesso' in texto_visivel(html)
+    r.update(http=ctx.atual.ultimo_estado, resultado='retificada' if sucesso else 'recusada')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
+def _cancelar(ctx, passo):
+    """Cancelar Conta a partir de Manter Conta (ExibirCancelarContaAction → CancelarContaAction →
+    ControladorFaturamentoFINAL.cancelarConta). A tela não diz "sucesso": volta ao formulário; o efeito é lido do banco.
+    `forjar`: se a tela recusa, o POST de cancelamento é enviado mesmo assim (o servidor aceita ou não)."""
+    r = {}
+    conta = _conta_alvo(ctx, passo['imovel'], passo['referencia'], passo.get('situacoes', (0, 1, 2)))
+    r['manter_conta'], marca = _manter_conta(ctx, passo['imovel'], conta)
+    if not marca:
+        r['resultado'] = 'conta_nao_listada'
+        return r
+    html = ctx.atual.get(f'exibirCancelarContaAction.do?conta={marca}&idImovel={int(passo["imovel"])}')
+    dados = _formulario(html, 'CancelarContaActionForm')
+    tela = {'http': ctx.atual.ultimo_estado,
+            'motivos': re.findall(r'(?is)<option\b[^>]*value="(\d+)"', html)}
+    if 'contaSelected' not in dados:
+        tela.update(_recusa(html, ctx.atual.ultimo_estado))
+        if not passo.get('forjar'):
+            r.update(tela=tela, resultado='recusado_na_exibicao')
+            return r
+        r['forjado'] = True  # o que a tela não deixaria enviar
+        dados = {'contaSelected': marca, 'contasEmExtratoDebito': ''}
+    r['tela'] = tela
+    dados.update(contaSelected=marca, motivoCancelamentoContaID=str(int(passo['motivo'])))
+    html = ctx.atual.post('cancelarContaAction.do', dados)
+    texto, botoes = _confirmacao(html)
+    if texto is not None:  # conta paga
+        r.update(confirmacao=texto, resposta=passo.get('conta_paga'))
+        if passo.get('conta_paga') not in botoes:
+            r['resultado'] = 'nao_confirmado'
+            return r
+        html = ctx.atual.post(botoes[passo['conta_paga']], {})
+    recusa = _recusa(html, ctx.atual.ultimo_estado)
+    aceito = ctx.atual.ultimo_estado < 400 and not recusa['chaves'] and 'CancelarContaActionForm' in html
+    r.update(http=ctx.atual.ultimo_estado, resultado='aceito' if aceito else 'recusado')
+    if not aceito:
+        r.update(recusa)
+    return r
+
+
+def _iniciar_processo(ctx, passo):
+    """Inserir Processo de tipo mensal/eventual (InserirProcessoAction → InserirProcessoMensalEventualAction →
+    ControladorBatchSEJB.inserirProcessoIniciado): o verificador do Quartz o executa no minuto seguinte."""
+    ctx.atual.get('exibirInserirProcessoAction.do?menu=sim')
+    ctx.atual.post('inserirProcessoAction.do', {'idProcessoTipo': str(int(passo['tipo_processo']))})
+    html = ctx.atual.post('exibirInserirProcessoMensalEventualAction.do', {'idProcesso': str(int(passo['processo']))})
+    dados = _formulario(html, 'InserirProcessoMensalEventualActionForm')
+    r = {'tela': {'http': ctx.atual.ultimo_estado, 'processo': dados.get('descricaoProcesso') or None}}
+    dados['idProcesso'] = str(int(passo['processo']))
+    html = ctx.atual.post('inserirProcessoMensalEventualAction.do', dados)
+    sucesso = 'inserido com sucesso' in texto_visivel(html)
+    r.update(http=ctx.atual.ultimo_estado, resultado='inserido' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
 def faturar_grupo(ctx, entrada):
     """Faturar grupo pelo processo comandado (ExibirInserirProcessoFaturamentoComandadoAction →
     InserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado →
     verificador do Quartz → MDB por rota → ControladorFaturamentoFINAL.faturarGrupoFaturamento), com os passos da variação:
-    disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (correção de causa) · reiniciar.
-    `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos`, `rateio` e
-    `micromedicao` (medições e consumos detalhados)."""
+    disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (arquivo de massas/passos: a correção de causa
+    do lote 5, o pagamento do lote 5d) · reiniciar · retificar · cancelar (manutenção de conta pela tela) ·
+    iniciar_processo (processo mensal/eventual, ex.: a prescrição).
+    `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos`, `rateio`,
+    `micromedicao` (medições e consumos detalhados) e `ciclo_conta` (contas pela identidade documental, pagamentos, RA,
+    consumos e auditoria)."""
     login = entrada['usuario']
     comando = str(int(entrada['comando']))
     ctx.nova_sessao()
@@ -582,6 +833,12 @@ def faturar_grupo(ctx, entrada):
                 conteudo = f.read()
             ctx.sql(conteudo.decode('utf-8'))
             r.update(arquivo=passo['arquivo'], sha256=hashlib.sha256(conteudo).hexdigest())
+        elif tipo == 'retificar':
+            r.update(_retificar(ctx, passo))
+        elif tipo == 'cancelar':
+            r.update(_cancelar(ctx, passo))
+        elif tipo == 'iniciar_processo':
+            r.update(_iniciar_processo(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.
