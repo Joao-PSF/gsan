@@ -2,7 +2,7 @@
 
 > Parte de [`cenarios-criticos.md`](../cenarios-criticos.md). Modelo e regras em [`estrategia-testes.md`](../estrategia-testes.md).
 >
-> ⚠️ **Nenhum valor desta página foi capturado.** Baseline: `⬜ A CAPTURAR NA FASE 2` em todos os cenários.
+> 🆕 **Fase 2**: capturados CEN-MIC-002 (exibição, lote 4), CEN-MIC-001 e CEN-MIC-003 (consistência de leituras, EAR Batch, lote 5c) — ver cada cenário. Os demais: `⬜ A CAPTURAR NA FASE 2`.
 
 🔵 **Leitura da área**: a Micromedição produz a **quantidade** que o Faturamento transforma em dinheiro. Todo cenário aqui é insumo de um cenário financeiro — por isso a maioria é P0, mesmo sem valor monetário próprio.
 
@@ -38,7 +38,7 @@
   - V4 — ❔ comportamento com histórico insuficiente **a capturar**
   - V5 — 🟢 consumo por **média**, com tipo correspondente
   - Em todas: 🟢 **faturado, para média e medido podem diferir** — os três são observados
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA** (Fase 2, lote 5c, 2026-10-07) — V1, V2, V3, 🆕 V3b, 🆕 V3c e V4 em [`golden/micromedicao/CEN-MIC-001/`](../../../../ambiente-referencia/baselines/golden/micromedicao/CEN-MIC-001/), pela consistência de leituras comandada (EAR Batch), com a medição do mês já registrada pela massa. V1: 1000 → 1027 → consumo **REAL 27**; média do hidrômetro **26** — divisão **inteira** dos 6 meses REAIS (159 / 6). V2: primeira leitura de hidrômetro novo (instalação com 5, leitura 32) → **27**, mas do tipo **ESTIMADO** (a medição nasce com situação anterior "não realizada") e com anormalidade FORA DE FAIXA — sem histórico REAL, a média é o mínimo (10) (CAND-15). V3: sem leitura, anormalidade com ações paramétricas (média; anterior + média) → consumo **21** (média), tipo MÉDIA HIDRÔMETRO, leitura de faturamento 521. V3b/V3c (2º e 3º mês): **não há regra de reincidência** — os meses estimados saem da média, que vira a dos meses REAIS restantes: **20**, depois **21**. V4: sem leitura e sem anormalidade, com 1 mês de histórico → consumo **8** (média de um mês), MÉDIA HIDRÔMETRO, **sem** anormalidade de consumo (a condição que a atribuiria está invertida, F2-82). 🟢 Faturado, para média e médio são gravados separados. ⬜ V5 (situação especial) a capturar. [relatório §22](../fase2/fase2-caracterizacao-baselines.md#22-lote-5c--micromedição-consistência-de-leituras-e-cálculo-de-consumos-2026-10-07) — F2-77 a F2-82
 - **Normalizações**: identificadores técnicos; ⚠️ **nunca** o consumo, o tipo ou a referência
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1**
@@ -100,7 +100,7 @@
   - h) indicador na OS de que a atualização ocorreu
 - **Localizadores GSAN**: histórico de instalação; `ConsumoAnormalidade` HIDROMETRO_SUBSTITUIDO_INFORMADO(9); `orse_iccomercialatualizado`
 - **Resultado semântico esperado**: 🟢 equipamento e instalação são **separados**; a troca registra leituras de **fronteira**. 🔴 **A composição do consumo no mês da troca não está comprovada** (soma dos trechos × regra alternativa) — ⚠️ **nenhuma fórmula é presumida**: a baseline é que a define
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟡 **CAPTURADA EM PARTE** (Fase 2, lote 5c, 2026-10-07) — V1, V2 e V3 em [`golden/micromedicao/CEN-MIC-003/`](../../../../ambiente-referencia/baselines/golden/micromedicao/CEN-MIC-003/), pela consistência de leituras; a troca, a instalação e a retirada chegam pela **massa**, no estado em que a operação da OS as deixaria (observáveis a–d e g como contexto; h — o indicador na OS — não exercido). 🔴 **e) consumo do mês da troca — a pergunta em aberto**: a consistência fatura **só o trecho do hidrômetro atual** — V1: H5 com 800 em 30/04 e retirada com 812; H6 instalado com 3 e lido com 15 → consumo **12 = 15 − 3**, REAL, anormalidade **HIDRÔMETRO SUBSTITUÍDO INFORMADO** (f); os 12 m³ do H5 até a retirada **não entram** — nem soma dos trechos, nem regra alternativa (CAND-14). V2: instalação numa ligação sem hidrômetro (0 → 9) → **9**, tipo **ESTIMADO** (CAND-15). V3: retirada sem reposição (400 → retirada com 410) → o mês vira **NÃO MEDIDO 12** (mínimo por área), e os 10 m³ até a retirada também não entram. [relatório §22](../fase2/fase2-caracterizacao-baselines.md#22-lote-5c--micromedição-consistência-de-leituras-e-cálculo-de-consumos-2026-10-07) — F2-83, F2-84
 - **Normalizações**: identificadores técnicos das instalações
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — por mapeamento semântico nos observáveis a–d, g, h; igualdade exata, em m³, no observável e

@@ -288,7 +288,9 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~4 — Atendimento e consumo mínimo~~ ✅ **capturado em parte em 2026-10-06** (§19) | ATE-007 V1, ATE-008, MIC-002 (nesta superfície), SEG-008 (ligação sem RA). **Ficam**: ATE-001…006 (fluxos de RA: abertura, encerramento, tramitação, espera, ciclo da OS), ATE-007 V2/V3 (religação, ligação de esgoto), as demais permissões de SEG-008, CAD-004 na abertura de RA | Efetuar Ligação de Água a partir de OS encerrada; Atualizar Consumo Mínimo (exibição) — Online | Catálogos de Atendimento; RA e OS encerradas; overrides de consumo mínimo |
 | ~~5 — Faturamento em grupo~~ ✅ **capturado em 2026-10-07** (§20) — o modo Batch foi preparado e validado | BAT-001 V1/V2, BAT-002 V1–V3, BAT-003, BAT-004 V1/V1b, BAT-005, FAT-011 V1. **Ficam**: BAT-001 V3 (relatório), BAT-004 V2 (simultâneos) | Faturar grupo comandado — **EAR em modo Batch** | Catálogos do framework; cronograma, comando, rotas R1–R3 e consumos; falha controlada; IMV-16 |
 | ~~5b — Faturamento na conta~~ ✅ **capturado em 2026-10-07** (§21) — reordenado: os P0 que já cabiam na fronteira do lote 5 | FAT-004 (V1–V4, com V1b, V2b, V3b, V3c), FAT-005 (V1–V3), FAT-006 (V1, V2); ATE-008 (valor de cada prestação na conta) respondido por FAT-004 V1/V1b. **Ficam**: FAT-004 V5 (taxa de emissão — processo de emissão) | Faturar grupo — Batch | Lançamentos, cliente responsável federal e impostos, micro-condomínio |
-| **5c — Micromedição e faturamento pela origem do consumo** (recomendado a seguir) | MIC-001 e MIC-003 (P0), MIC-004/005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (forma de faturamento por situação especial), MIC-002 (a precedência das fontes de mínimo ao faturar) | Consistir leituras e calcular consumos, e faturar grupo — Batch | Leituras, hidrômetros, históricos (IMV-05…10, 11a/b, 12a/b, 17, 18) |
+| ~~5c — Micromedição~~ ✅ **capturado em 2026-10-07** (§22) — os dois P0 | MIC-001 (V1–V4, V3b, V3c), MIC-003 (V1–V3). **Ficam**: MIC-001 V5 (situação especial), as operações de hidrômetro pela OS (MIC-003 a–d, h) | Consistir leituras e calcular consumos — Batch | Catálogos da Micromedição; hidrômetros, instalações, medições registradas, históricos |
+| **5d — Ciclo de vida da conta** (recomendado a seguir: P0 de Faturamento sobre contas já geradas) | FAT-007 (retificação), FAT-008 (cancelamento e prescrição) | Retificar e cancelar conta — Online sobre contas do faturamento em grupo | Contas geradas; motivos; pagamento (V3 de FAT-007) |
+| 5e — Consumo pela origem, na conta | MIC-004/005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (situação especial), MIC-002 (precedência ao faturar), MIC-001 V5 | Consistir e faturar em sequência — Batch | Situações especiais, vigências tarifárias, poço, rota alternativa (IMV-11a/b, 12a/b, 17, 18) |
 | 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -322,6 +324,10 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 - **Lançamentos pela massa**: no lote 5b, débitos a cobrar, parcelamento, créditos a realizar e alíquotas nascem por
   SQL, no estado em que as operações que os criam os deixariam; o objeto é a **incorporação na conta**. O resultado do
   parcelamento depende da referência de faturamento do sistema, que na base está em 201410 (F2-70).
+- **Leitura e hidrômetro pela massa**: no lote 5c, a medição do mês chega **registrada** e a troca de hidrômetro chega
+  **aplicada**, no estado que "Efetuar Leitura" e a operação da OS deixariam; o objeto é a consistência. A referência de
+  faturamento do sistema é alinhada ao mês do comando (05/2026), como numa instalação em operação — a base parou em
+  201410 (F2-80).
 - **Processo pela massa**: no lote 5, cronograma, comando e consumos nascem por SQL; o objeto é o processo de faturar.
   A correção de causa de BAT-002 V2/V3 é aplicada por SQL **no meio** da execução (`massas/passos/`), porque a
   manutenção do imóvel é outra fronteira. O disparo **agendado** e o paralelismo das unidades são C4.
@@ -333,7 +339,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
-| Já capturado | **101 variações** de 29 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13) — 43% das 234 | Cobertura |
+| Já capturado | **110 variações** de 31 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9) — 47% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -343,8 +349,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **22 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3) e 🆕 na conta (3: lançamentos, impostos, rateio), atendimento (2: efeito cadastral e financeiro da OS), micromedição (1: consumo mínimo) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **24 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3) e na conta (3: lançamentos, impostos, rateio), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -991,3 +997,92 @@ Em todas, IMV-01 tem água de **110,40** (27 m³ — a conta de CEN-BAT-005); IM
 | F2-74 | **Alíquota de imposto: vale a mais ANTIGA**. A consulta filtra referência ≤ a da conta, ordena **da mais antiga para a mais nova** e fica com a primeira — com uma alíquota de 2010 e outra de 2026, a conta de 2026 usa a de 2010; uma nova alíquota **nunca** entra em vigor enquanto existir a anterior | FAT-005 V3; `RepositorioFaturamentoHBM.pesquisarAliquotaImposto` | 🔴 | **CAND-13**: retenção calculada com alíquota revogada |
 | F2-75 | **Rateio** de micro-condomínio: consumo do principal − vinculados, valorado pela tarifa do principal, ÷ economias dos vinculados; o `+ new BigDecimal(0.005)` (de `double`), a divisão em FLOOR na escala longa e o arredondamento do PostgreSQL ao gravar `numeric(13,2)` levam **55,325 → 55,33** | FAT-006 V1, V2; `:60601`, `:60608`, `:60767-60785` | 🟢 | Responde a especificação: o efeito nos centavos, medido — não presumido |
 | F2-76 | O rateio de **consumo** no histórico do principal só é **corrigido** ao fim da rota (`atualizarConsumosCondominios`) se a consistência de leituras o tiver gravado; sem isso, fica nulo — o rateio de valor da conta não depende dele | FAT-006; `ControladorMicromedicao:39543-39560` | 🔵 | Registro; o rateio de consumo é do lote de Micromedição |
+
+## 22. Lote 5c — Micromedição: consistência de leituras e cálculo de consumos (2026-10-07)
+
+Oitavo lote, no EAR em modo Batch: o processo **Consistir Leituras e Calcular Consumos** — o que a Micromedição grava como
+consumo da referência a partir da leitura registrada, conforme a situação da leitura e a troca de hidrômetro. Os dois P0
+da Micromedição que faltavam.
+
+### 22.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações | Fronteira |
+| ------- | ------ | - | --------- | --------- |
+| CEN-MIC-001 — consumo por situação de leitura | A (1) | P0 | V1, V2, V3, V3b, V3c, V4 | Consistir leituras comandado — R4, um imóvel por perfil de leitura |
+| CEN-MIC-003 — troca de hidrômetro na referência | A (1) | P0 | V1, V2, V3 | idem — substituição, instalação e retirada no meio do período |
+
+**Fora do lote, com motivo**: MIC-001 V5 (situação especial PARALISAR_LEITURA_FATURAR_MEDIA — exige o histórico de
+situação especial de faturamento); as **operações** de hidrômetro pela OS (MIC-003 observáveis a–d, g, h: a troca
+chega pela massa); MIC-004/005, FAT-001 V4/V5, FAT-002 na conta, FAT-003 V2/V3, CAD-004 e CAD-005 — próximos lotes,
+agora que o processo de consistência roda.
+
+🆕 Variações acrescentadas: **V3b** e **V3c** em MIC-001 — o 2º e o 3º mês sem leitura, pelo que as consistências
+anteriores teriam gravado (a especificação pedia a reincidência).
+
+### 22.2 Massa
+
+A base reconstruída não tem **nada** da Micromedição (F2-77). A massa cria pelas constantes do código:
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `mic-catalogos.sql` | Processo SINTÉTICO com a etapa 52 (Consistir Leituras e Calcular Consumos) e as atividades EFETUAR LEITURA (2) e CONSISTIR LEITURAS (9); tipos de medição, situações de leitura, anormalidades de consumo, ações paramétricas da anormalidade de leitura (consumo e leitura a faturar), uma anormalidade de leitura SINTÉTICA "imóvel fechado", tipos de rateio, hidrômetro (marca, capacidade, tipo, diâmetro, situação, classe, local, proteção); o parâmetro CONSUMO_MINIMO_BOLSA_AGUA; os meses da média (6); limites de consumo das categorias |
+| `mic-rota-r4-consistir-202605.sql` | Rota R4 (quadra 4); cronogramas de 04 e 05/2026 com EFETUAR LEITURA realizada e o **comando** de CONSISTIR LEITURAS de 05/2026 só para a R4 |
+| `mic-imv-*.sql` | Um imóvel por perfil, cada um com ligação de água, hidrômetro(s), histórico de instalação, consumos anteriores e as medições de 04 e 05/2026 já **registradas** (o que "Efetuar Leitura" gravaria) |
+| `mic-sem-leitura-2o-mes.sql` · `-3o-mes.sql` | O mesmo imóvel sem leitura também em 04/2026 (e 03/2026), com o que a consistência daqueles meses teria gravado |
+
+### 22.3 Mecanismo — o que mudou
+
+- 🆕 **Relógio da observação = relógio do legado** (achado de mecanismo, F2-86): a regressão noturna acusou
+  CEN-BAT-005 V1 e CEN-FAT-011 V1 em `emitida_na_data_da_execucao` (`true ≠ false`). O JBoss grava datas no fuso da imagem
+  (`imagens/jboss/Dockerfile:60`, America/Belem) e o banco roda em UTC: entre 21h e 24h locais, o `current_date` da sessão
+  de observação já é o dia seguinte. **Não é comportamento do legado** — é o observador comparando dois relógios. A sessão
+  `psql` das ferramentas passou a usar o fuso do legado (`PGTZ` no serviço `ferramentas`); o legado e o banco não mudam, e
+  as baselines (capturadas de dia, quando os dois relógios dão a mesma data) continuam válidas — as duas foram verificadas
+  de novo, à noite, com a correção (abaixo).
+- O roteiro `faturar_grupo` serve à consistência sem mudança de fluxo: o comando é outro (atividade 9). O estado lê a
+  realização **do comando da entrada** (antes, sempre o comando 1 — todas as baselines anteriores usam 1, nada muda) e
+  ganhou o bloco opcional `micromedicao`: instalações de hidrômetro, medições (leituras informadas e de faturamento,
+  consumo medido, média do hidrômetro, situação e anormalidades) e consumos (faturado, para média, médio, tipo,
+  anormalidade).
+
+### 22.4 Baselines do lote
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| MIC-001 V1 | Leituras 1000 → 1027 realizadas → consumo **REAL 27**; a medição grava o consumo medido (27) e a **média do hidrômetro, 26** (159 / 6, divisão inteira dos 6 meses REAIS); o consumo do mês: faturado 27, para média 27, médio 26 |
+| MIC-001 V2 | Primeira leitura de hidrômetro instalado em 04/2026 (leitura de instalação 5) → consumo **27** (32 − 5), mas do tipo **ESTIMADO** — a situação ANTERIOR da medição é "não realizada" — e com anormalidade **FORA DE FAIXA**: sem consumo REAL no histórico, a média é o **mínimo (10)** |
+| MIC-001 V3 | Sem leitura, anormalidade "imóvel fechado" (sem leitura: média; leitura anterior + média) → consumo **21** (média), tipo **MÉDIA HIDRÔMETRO**; leitura de faturamento **521** (500 + 21) |
+| MIC-001 V3b | 2º mês sem leitura (04/2026 estimado) → o mês estimado **sai** da média: média **20** (os 5 REAIS restantes) → consumo 20; leitura de faturamento 511 (491 + 20) |
+| MIC-001 V3c | 3º mês (03/2026 também estimado) → média **21** (os 4 REAIS restantes: 18, 22, 20, 24) → consumo 21; leitura 512 |
+| MIC-001 V4 | Sem leitura, **sem** anormalidade, um só mês de histórico (8) → consumo **8** (a média de um mês), tipo MÉDIA HIDRÔMETRO, leitura de faturamento 16 (8 + 8) — e **nenhuma** anormalidade de consumo |
+| MIC-003 V1 | Troca no meio do período: H5 (800 em 30/04) retirado com 812, H6 instalado com 3, leitura de 31/05 no H6: 15 → consumo **12 = 15 − 3** (só o trecho do H6), REAL, anormalidade **HIDRÔMETRO SUBSTITUÍDO INFORMADO**; a medição passa a ter anterior de faturamento **3** (a de instalação). Os **12 m³ do H5** (800 → 812) **não entram** |
+| MIC-003 V2 | Instalação numa ligação sem hidrômetro (leitura 0), leitura de 31/05: 9 → consumo **9**, tipo **ESTIMADO** (situação anterior "não realizada"), sem anormalidade |
+| MIC-003 V3 | Retirada sem reposição (400 em 30/04, retirada com 410) → consumo **NÃO MEDIDO 12** — o mínimo por **área** (80 m² → 12 m³), não o da tarifa (10); os **10 m³** registrados até a retirada **não entram** |
+
+### 22.5 Determinismo
+
+- **Captura**: **9 de 9** variações com as duas execuções **idênticas byte a byte** (`20261007T220053Z-capturar`). Antes,
+  seis rodadas exploratórias revelaram, uma a uma, o que a base não tem (F2-77: descrições longas demais, o tipo de
+  rateio, a situação anterior de uma medição sem mês anterior, o mínimo por área e a referência do sistema — F2-80,
+  F2-81) e levaram o roteiro a guardar o texto técnico das exceções nas evidências.
+- **Verificação independente** (3ª execução): lote 5c **9/9** conferem (`20261007T225625Z-verificar`).
+- **Regressão** — o roteiro mudou (comando da entrada, bloco `micromedicao`, exceções nas evidências): lotes 5, 5b e
+  piloto **32/34** (`20261007T232334Z-verificar`); as duas divergências — CEN-BAT-005 V1 e CEN-FAT-011 V1 — eram do
+  relógio da observação (F2-86) e **conferem** depois da correção, verificadas às 22h locais, dentro da janela
+  (`20261008T010002Z-verificar`). Regressão dos lotes
+  Online com a correção, à noite (22h–23h40 locais): **67/67** (`20261008T010734Z-verificar`). As **110** baselines conferem.
+
+### 22.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-77 | A base não tem **nada** da Micromedição: tipos de medição, situações e anormalidades de leitura e de consumo, ações paramétricas, tipo de rateio, hidrômetros e catálogos, consumo mínimo por área; nenhum processo com a etapa de consistência; o parâmetro CONSUMO_MINIMO_BOLSA_AGUA não existe (`Integer.valueOf` de nulo em todo imóvel com água); os **meses da média** (`parm_nnmesescalcmediacons`) e os limites de consumo das categorias são **nulos** | Exploração; `ControladorMicromedicao.determinarDadosFaturamentoAgua`, `obterVolumeMedioAguaEsgoto` | ⚙️ | Massa cria pelas constantes; checklist de instalação |
+| F2-78 | **Consumo REAL** = leitura atual − anterior de faturamento; a **média** é a divisão **inteira** dos consumos dos últimos N meses cujo tipo entra na média (REAL), retroagindo até 24 meses; sem nenhum, vale o mínimo | MIC-001 V1, V2; `:2803`, `:3263`, `obterVolumeMedioAguaEsgoto` | 🟢 | Responde V1 da especificação |
+| F2-79 | **Sem leitura**: com anormalidade, consumo e leitura vêm das **ações paramétricas** (média; anterior + média); a **reincidência** não tem regra própria — os meses estimados saem da média, que passa a ser a dos meses REAIS que restam na janela (21 → 20 → 21) | MIC-001 V3, V3b, V3c | 🟢 | Responde V3: o efeito da reincidência é o da janela da média |
+| F2-80 | Parte da consistência **relê** a referência de faturamento do **sistema** em vez da do cronograma — o consumo não medido por área usa `parm_amreferenciafaturamento` (201410 na base): sem faixa de 2014, **NPE** e a unidade termina com erro | Exploração de MIC-003 V3; `:37743-37747`, `:25869` | 🔵 | Mesmo padrão de F2-70; **CAND-16** |
+| F2-81 | **Primeira leitura** de hidrômetro novo (instalado no mês ou no anterior): a medição nasce com situação anterior "não realizada" e o consumo, medido, é tipificado **ESTIMADO** — que não entra na média seguinte; sem situação anterior, **NPE** | MIC-001 V2, MIC-003 V2; `determinarConsumoTipo:38163`, `gerarHistoricoMedicao:19533` | 🔵 | **CAND-15** |
+| F2-82 | Leitura **não informada sem anormalidade**: a anormalidade LEITURA NÃO INFORMADA só é atribuída se o consumo **já tinha** outra — condição invertida; o consumo sai pela média sem anormalidade | MIC-001 V4; `:3145-3161` (atribuição em `:3155`) | 🟡 | Registro (monitoramento) |
+| F2-83 | **Troca e retirada de hidrômetro**: a consistência usa só o trecho do hidrômetro **atual** (leitura atual − leitura de instalação) e ignora a **leitura de retirada** — o consumo entre a última leitura e a retirada (12 m³ na troca, 10 m³ na retirada) **não é faturado**. Responde a pergunta da especificação: nem soma dos trechos, nem regra alternativa | MIC-003 V1, V3; `determinarDadosFaturamentoAgua:2007-2014` | 🔴 | **CAND-14** — toca consumo faturado (oráculo 1 até decisão) |
+| F2-84 | Sem hidrômetro, o consumo **não medido** vem do mínimo por **área** construída (12), não do mínimo da tarifa (10), quando `parm_icnaomedidotarifa` ≠ 1 | MIC-003 V3; `obterConsumoNaoMedido:37737-37747` | 🟢 | Registro da fonte |
+| F2-85 | A consistência também é **`NotSupported`** na variante ativa: uma falha no meio deixa a medição atualizada sem o consumo do mês (observado na exploração, com a falta do tipo de rateio) | `descriptors/micromedicaoCOSANPA/META-INF/ejb-jar.xml:33-35` | 🔵 | Mesma natureza de F2-63 (CAND-02) |
+| F2-86 | **Mecanismo**: o JBoss da referência grava datas em America/Belem e o banco roda em UTC — observações que comparam uma data gravada pelo legado com o `current_date` do banco viram entre 21h e 24h locais. Corrigido na sessão de observação (`PGTZ`), sem tocar no legado | Regressão de 2026-10-08 00:04 UTC; `imagens/jboss/Dockerfile:60` | ⚙️ | Ferramenta corrigida; baselines inalteradas |

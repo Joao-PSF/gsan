@@ -1,0 +1,262 @@
+{
+  "cenario": "CEN-MIC-003",
+  "descricao": "IMV-M10: H8 (400 em 30/04) retirado em 15/05 com 410, sem reposição",
+  "efeitos_no_banco": {
+    "batch.funcionalidade_iniciada": 1,
+    "batch.processo_iniciado": 1,
+    "batch.unidade_iniciada": 1,
+    "faturamento.conta": 0,
+    "micromedicao.consumo_historico": 1,
+    "micromedicao.medicao_historico": "inalterado",
+    "seguranca.operacao_efetuada": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/micromedicao.md — CEN-MIC-003",
+  "fora_desta_fronteira": {
+    "a operação da OS (a–d, g, h)": "a substituição, a instalação e a retirada chegam pela massa, no estado em que a operação as deixaria; as operações de hidrômetro pela OS (e o indicador na OS) não são exercidas neste lote — as instalações aparecem como contexto",
+    "leitura de retirada": "é gravada pela operação de retirada; a pergunta aqui é se a consistência a usa"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/mic-catalogos.sql",
+      "sha256": "269664093f71b3f2c217e225c86d490663336ef46613bf9f4b80ff635e16791d"
+    },
+    {
+      "arquivo": "massas/deltas/mic-rota-r4-consistir-202605.sql",
+      "sha256": "52c24e51eda87ebb72c6e416ccb9f5b9689bdfede8373f795a63edbbf057b0d3"
+    },
+    {
+      "arquivo": "massas/deltas/mic-imv-retirada-hidrometro.sql",
+      "sha256": "289c370710a2fb5ae0f6722b8859825d0c3e5715c7aa6be93e30ed1ebfce2bb1"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "comando": {
+      "realizado": true
+    },
+    "consumos_detalhe": [
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 20,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 20,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100374,
+        "referencia": 202511,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 20,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 20,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100374,
+        "referencia": 202512,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 20,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 20,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100374,
+        "referencia": 202601,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 20,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 20,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100374,
+        "referencia": 202602,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 20,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 20,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100374,
+        "referencia": 202603,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 20,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 20,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100374,
+        "referencia": 202604,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 12,
+        "consumo_medio": 20,
+        "consumo_minimo": null,
+        "consumo_para_media": 12,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100374,
+        "referencia": 202605,
+        "tipo": "NAO MEDIDO"
+      }
+    ],
+    "funcionalidades": [
+      {
+        "descricao": "Consistir Leituras e Calcular Consumos",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 52,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "instalacoes": [
+      {
+        "data_instalacao": "15/01/2025",
+        "data_retirada": "15/05/2026",
+        "hidrometro": "SINT000008",
+        "instalacao_atual_da_ligacao": null,
+        "leitura_instalacao": 0,
+        "leitura_retirada": 410,
+        "matricula": 100374
+      }
+    ],
+    "medicoes": [
+      {
+        "analisado": 1,
+        "anormalidade_faturamento": null,
+        "anormalidade_informada": null,
+        "consumo_informado": null,
+        "consumo_medido": 20,
+        "consumo_medio_hidrometro": null,
+        "data_leitura_anterior": "31/03/2026",
+        "data_leitura_atual_faturamento": "30/04/2026",
+        "data_leitura_atual_informada": "30/04/2026",
+        "leitura_anterior_faturamento": 380,
+        "leitura_anterior_informada": 380,
+        "leitura_atual_faturamento": 400,
+        "leitura_atual_informada": 400,
+        "matricula": 100374,
+        "medicao": "LIGACAO DE AGUA",
+        "referencia": 202604,
+        "situacao_anterior": "REALIZADA",
+        "situacao_atual": "REALIZADA"
+      }
+    ],
+    "unidades": [
+      {
+        "funcionalidade": 52,
+        "processo": 1,
+        "rota": 4,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true,
+        "tipo_unidade": 1
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 2,
+      "detalhes": [
+        "micromedicao"
+      ],
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Consistir leituras e calcular consumos pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" com o comando da atividade CONSISTIR LEITURAS (FaturamentoAtividade 9) → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado → verificador do Quartz → unidade por rota → ControladorMicromedicao.consistirLeiturasCalcularConsumos → determinarDadosFaturamentoAgua. A medição da referência chega REGISTRADA pela massa (o que \"Efetuar Leitura\" gravaria); o que a consistência grava — leituras e consumo de faturamento, tipo e anormalidade de consumo — é lido do banco.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1 — por mapeamento semântico (a–d, g, h); igualdade exata em m³ (e)",
+  "ressalvas": {
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, hidrômetros, instalações, medições registradas e históricos chegam pela massa: são o que as etapas anteriores (instalação, Gerar Dados para Leitura, Efetuar Leitura) gravariam",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução"
+  },
+  "titulo": "Troca de hidrômetro na referência",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V3"
+}

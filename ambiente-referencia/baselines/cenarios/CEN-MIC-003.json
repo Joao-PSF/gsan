@@ -1,0 +1,159 @@
+{
+  "dominio": "micromedicao",
+  "lote": "batch-micromedicao",
+  "modo": "Batch",
+  "fronteira": "Consistir leituras e calcular consumos pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" com o comando da atividade CONSISTIR LEITURAS (FaturamentoAtividade 9) → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado → verificador do Quartz → unidade por rota → ControladorMicromedicao.consistirLeiturasCalcularConsumos → determinarDadosFaturamentoAgua. A medição da referência chega REGISTRADA pela massa (o que \"Efetuar Leitura\" gravaria); o que a consistência grava — leituras e consumo de faturamento, tipo e anormalidade de consumo — é lido do banco.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "o grupo G1 está em 05/2026 e o comando de CONSISTIR LEITURAS (ftac 2) não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 2",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "meses da média de consumo (sistema_parametros.parm_nnmesescalcmediacons) = 6",
+      "sql": "select parm_nnmesescalcmediacons from cadastro.sistema_parametros",
+      "esperado": "6"
+    },
+    {
+      "descricao": "referência de faturamento do sistema = a do comando (05/2026), como numa instalação em operação",
+      "sql": "select parm_amreferenciafaturamento from cadastro.sistema_parametros",
+      "esperado": "202605"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "micromedicao.consumo_historico",
+    {
+      "tabela": "micromedicao.medicao_historico",
+      "modo": "conteudo"
+    },
+    "seguranca.operacao_efetuada"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-MIC-003",
+  "titulo": "Troca de hidrômetro na referência",
+  "especificacao": "docs/modernizacao/testes/cenarios/micromedicao.md — CEN-MIC-003",
+  "oraculo": "1 — por mapeamento semântico (a–d, g, h); igualdade exata em m³ (e)",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, hidrômetros, instalações, medições registradas e históricos chegam pela massa: são o que as etapas anteriores (instalação, Gerar Dados para Leitura, Efetuar Leitura) gravariam"
+  },
+  "observaveis": {
+    "campos": [
+      "funcionalidades",
+      "unidades",
+      "instalacoes",
+      "medicoes",
+      "consumos_detalhe",
+      "comando"
+    ],
+    "fora_desta_fronteira": {
+      "a operação da OS (a–d, g, h)": "a substituição, a instalação e a retirada chegam pela massa, no estado em que a operação as deixaria; as operações de hidrômetro pela OS (e o indicador na OS) não são exercidas neste lote — as instalações aparecem como contexto",
+      "leitura de retirada": "é gravada pela operação de retirada; a pergunta aqui é se a consistência a usa"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-M08: H5 (800 em 30/04) retirado em 15/05 com 812; H6 instalado em 15/05 com 3; leitura de 31/05 no H6: 15",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-troca-hidrometro.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "IMV-M09: ligação sem hidrômetro; H7 instalado em 15/05 com 0; leitura de 31/05: 9",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-instalacao-hidrometro.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "IMV-M10: H8 (400 em 30/04) retirado em 15/05 com 410, sem reposição",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-retirada-hidrometro.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    }
+  }
+}

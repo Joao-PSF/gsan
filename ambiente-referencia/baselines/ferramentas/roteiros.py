@@ -365,10 +365,55 @@ def _rateio(ctx):
     }
 
 
-DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio}
+def _micromedicao(ctx):
+    """Medições e consumos como a consistência de leituras os deixou: leituras anterior/atual (informadas e de
+    faturamento), consumo medido, média do hidrômetro, situação e anormalidades; consumo faturado, para média, médio, tipo
+    e anormalidade de consumo (CEN-MIC-*)."""
+    return {
+        'medicoes': _linhas(ctx, "select m.lagu_id as matricula, m.mdhi_amleitura as referencia, t.medt_dsmedicaotipo as medicao,"
+                                 " m.mdhi_nnleitantfatmt as leitura_anterior_faturamento,"
+                                 " to_char(m.mdhi_dtleitantfatmt, 'DD/MM/YYYY') as data_leitura_anterior,"
+                                 " m.mdhi_nnleitantinformada as leitura_anterior_informada,"
+                                 " m.mdhi_nnleituraatualinformada as leitura_atual_informada,"
+                                 " to_char(m.mdhi_dtleituraatualinformada, 'DD/MM/YYYY') as data_leitura_atual_informada,"
+                                 " m.mdhi_nnleituraatualfaturamento as leitura_atual_faturamento,"
+                                 " to_char(m.mdhi_dtleituraatualfaturamento, 'DD/MM/YYYY') as data_leitura_atual_faturamento,"
+                                 " m.mdhi_nnconsumomedidomes as consumo_medido, m.mdhi_nnconsumoinformado as consumo_informado,"
+                                 " m.mdhi_nnconsumomediohidrometro as consumo_medio_hidrometro,"
+                                 " sa.ltst_dsleiturasituacao as situacao_atual, sp.ltst_dsleiturasituacao as situacao_anterior,"
+                                 " ai.ltan_dsleituraanormalidade as anormalidade_informada,"
+                                 " af.ltan_dsleituraanormalidade as anormalidade_faturamento, m.mdhi_icanalisado as analisado"
+                                 " from micromedicao.medicao_historico m join micromedicao.medicao_tipo t using (medt_id)"
+                                 " left join micromedicao.leitura_situacao sa on sa.ltst_id = m.ltst_idleiturasituacaoatual"
+                                 " left join micromedicao.leitura_situacao sp on sp.ltst_id = m.ltst_idleiturasituacaoanterior"
+                                 " left join micromedicao.leitura_anormalidade ai on ai.ltan_id = m.ltan_idleitanorminformada"
+                                 " left join micromedicao.leitura_anormalidade af on af.ltan_id = m.ltan_idleitanormfatmt"
+                                 " order by coalesce(m.lagu_id, m.imov_id), m.medt_id, m.mdhi_amleitura"),
+        'instalacoes': _linhas(ctx, "select i.lagu_id as matricula, d.hidr_nnhidrometro as hidrometro,"
+                                    " to_char(i.hidi_dtinstalacaohidrometro, 'DD/MM/YYYY') as data_instalacao,"
+                                    " i.hidi_nnleitinstalacaohidmt as leitura_instalacao,"
+                                    " to_char(i.hidi_dtretiradahidrometro, 'DD/MM/YYYY') as data_retirada,"
+                                    " i.hidi_nnleitretiradahidmt as leitura_retirada,"
+                                    " (l.hidi_id = i.hidi_id) as instalacao_atual_da_ligacao"
+                                    " from micromedicao.hidrometro_inst_hist i join micromedicao.hidrometro d using (hidr_id)"
+                                    " left join atendimentopublico.ligacao_agua l on l.lagu_id = i.lagu_id"
+                                    " order by i.lagu_id, i.hidi_dtinstalacaohidrometro, d.hidr_nnhidrometro"),
+        'consumos_detalhe': _linhas(ctx, "select h.imov_id as matricula, h.cshi_amfaturamento as referencia, l.lgti_dsligacaotipo as ligacao,"
+                                         " h.cshi_nnconsumofaturadomes as consumo_faturado, h.cshi_nnconsumocalculomedia as consumo_para_media,"
+                                         " h.cshi_nnconsumomedio as consumo_medio, h.cshi_nnconsumominimo as consumo_minimo,"
+                                         " t.cstp_dsconsumotipo as tipo, a.csan_dsconsumoanormalidade as anormalidade,"
+                                         " h.cshi_icfaturamento as indicador_faturamento, h.cshi_icajuste as ajuste"
+                                         " from micromedicao.consumo_historico h left join micromedicao.ligacao_tipo l using (lgti_id)"
+                                         " left join micromedicao.consumo_tipo t using (cstp_id)"
+                                         " left join micromedicao.consumo_anormalidade a using (csan_id)"
+                                         " order by h.imov_id, h.cshi_amfaturamento, h.lgti_id"),
+    }
 
 
-def _estado_faturamento(ctx, contas_no_inicio, detalhes=()):
+DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao}
+
+
+def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
     processos = _linhas(ctx, "select p.proi_id, pr.proc_dsprocesso as processo, s.prst_dsprocessosituacao as situacao,"
                              " u.usur_nmlogin as solicitante, p.proi_nngrupo as grupo,"
                              " (p.proi_tminicio is not null) as inicio_registrado, (p.proi_tmtermino is not null) as termino_registrado"
@@ -451,7 +496,7 @@ def _estado_faturamento(ctx, contas_no_inicio, detalhes=()):
         'grupo_faturamento': _linhas(ctx, "select ftgr_amreferencia as referencia_atual from faturamento.faturamento_grupo"
                                           " where ftgr_id = 1")[0],
         'comando': _linhas(ctx, "select (ftac_tmrealizacao is not null) as realizado from faturamento.fatur_ativ_cronograma"
-                                " where ftac_id = 1")[0],
+                                f" where ftac_id = {int(comando)}")[0],
         'contas_iniciadas': _contas_entregues(ctx) - contas_no_inicio,
         # Blocos de detalhe só quando a variação os pede: as baselines que não os declaram não mudam de forma.
         **{k: v for d in detalhes for k, v in DETALHES[d](ctx).items()},
@@ -491,7 +536,8 @@ def faturar_grupo(ctx, entrada):
     InserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado →
     verificador do Quartz → MDB por rota → ControladorFaturamentoFINAL.faturarGrupoFaturamento), com os passos da variação:
     disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (correção de causa) · reiniciar.
-    `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos` e `rateio`."""
+    `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos`, `rateio` e
+    `micromedicao` (medições e consumos detalhados)."""
     login = entrada['usuario']
     comando = str(int(entrada['comando']))
     ctx.nova_sessao()
@@ -519,7 +565,7 @@ def faturar_grupo(ctx, entrada):
         elif tipo == 'aguardar':
             r.update(_aguardar(ctx, passo.get('ate', 'terminal')))
         elif tipo == 'observar':
-            r['estado'] = _estado_faturamento(ctx, contas_no_inicio, detalhes)
+            r['estado'] = _estado_faturamento(ctx, contas_no_inicio, detalhes, comando)
         elif tipo == 'autorizar':
             proi = _ultimo_processo(ctx)
             html = ctx.atual.get('exibirAutorizarRelatoriosBatchAction.do?menu=sim')
@@ -556,8 +602,12 @@ def faturar_grupo(ctx, entrada):
         else:
             raise ValueError(f'passo desconhecido: {tipo}')
         passos.append(r)
-    final = _estado_faturamento(ctx, contas_no_inicio, detalhes)
-    return {'passos': passos, **final}
+    final = _estado_faturamento(ctx, contas_no_inicio, detalhes, comando)
+    # Só evidência (nenhum cenário projeta): as linhas de exceção e de código do legado nas exceções persistidas.
+    texto = ctx.sql("select coalesce(string_agg(substr(fuin_dserro, 1, 6000), chr(10)), '')"
+                    " from batch.funcionalidade_iniciada where fuin_dserro is not null")
+    erros = [l.strip() for l in texto.splitlines() if 'Exception' in l or 'Caused' in l or 'at gcom.' in l][:60]
+    return {'passos': passos, **final, 'erros_tecnicos': erros}
 
 
 # --- Segurança: autenticação e autorização -------------------------------------------------------

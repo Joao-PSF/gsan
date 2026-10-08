@@ -61,6 +61,10 @@ sobe o JBoss do zero → autentica o operador sintético → executa a operaçã
 passa de uma execução à outra: nem banco, nem sessão HTTP, nem cache estático do JBoss (~1 min por execução;
 ~2–3 min com a instância de inspeção também no ar).
 
+O relógio da observação é o do legado: o JBoss grava datas no fuso da imagem (America/Belem) e o banco roda em UTC, então
+a sessão `psql` das ferramentas usa `PGTZ=America/Belem` — o "hoje" com que as datas gravadas são comparadas é o do
+legado, a qualquer hora (relatório da Fase 2, F2-86).
+
 ⚠️ Capturas longas (dezenas de execuções) passam do limite de tempo de comandos em segundo plano de algumas
 sessões de agente: rode-as como processo independente e acompanhe pelo log. A interrupção não deixa baseline
 parcial — a gravação só acontece depois das execuções da variação.
@@ -88,8 +92,10 @@ quando a tela já não lista o comando), `aguardar` (`terminal`: todo processo n
 processos, etapas, unidades por rota, contas por matrícula com categorias e faixas, totais, consumos, referência do
 grupo e `contas_iniciadas` (números entregues pela sequência das contas, que não voltam num rollback) — sai sem ids nem
 carimbos de tempo. Blocos de detalhe opcionais (`"detalhes"` na entrada): `lancamentos` (débitos cobrados, créditos realizados e o que
-resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto) e `rateio` (micro-condomínio) — só entram
-nas baselines que os declaram.
+resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto), `rateio` (micro-condomínio) e
+`micromedicao` (instalações de hidrômetro, medições e consumos detalhados) — só entram nas baselines que os declaram. O
+mesmo roteiro dispara a **consistência de leituras** (outro comando, `"comando"` na entrada); o texto técnico das exceções
+persistidas fica só nas evidências (`erros_tecnicos` em `bruto.json`).
 
 ## Regras
 

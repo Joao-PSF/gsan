@@ -1,0 +1,255 @@
+{
+  "dominio": "micromedicao",
+  "lote": "batch-micromedicao",
+  "modo": "Batch",
+  "fronteira": "Consistir leituras e calcular consumos pelo processo comandado, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" com o comando da atividade CONSISTIR LEITURAS (FaturamentoAtividade 9) → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado → verificador do Quartz → unidade por rota → ControladorMicromedicao.consistirLeiturasCalcularConsumos → determinarDadosFaturamentoAgua. A medição da referência chega REGISTRADA pela massa (o que \"Efetuar Leitura\" gravaria); o que a consistência grava — leituras e consumo de faturamento, tipo e anormalidade de consumo — é lido do banco.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "o grupo G1 está em 05/2026 e o comando de CONSISTIR LEITURAS (ftac 2) não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 2",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "meses da média de consumo (sistema_parametros.parm_nnmesescalcmediacons) = 6",
+      "sql": "select parm_nnmesescalcmediacons from cadastro.sistema_parametros",
+      "esperado": "6"
+    },
+    {
+      "descricao": "referência de faturamento do sistema = a do comando (05/2026), como numa instalação em operação",
+      "sql": "select parm_amreferenciafaturamento from cadastro.sistema_parametros",
+      "esperado": "202605"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "micromedicao.consumo_historico",
+    {
+      "tabela": "micromedicao.medicao_historico",
+      "modo": "conteudo"
+    },
+    "seguranca.operacao_efetuada"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-MIC-001",
+  "titulo": "Consumo da referência por situação de leitura",
+  "especificacao": "docs/modernizacao/testes/cenarios/micromedicao.md — CEN-MIC-001",
+  "oraculo": "1",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, comando, hidrômetros, instalações, medições registradas e históricos chegam pela massa: são o que as etapas anteriores (instalação, Gerar Dados para Leitura, Efetuar Leitura) gravariam"
+  },
+  "observaveis": {
+    "campos": [
+      "funcionalidades",
+      "unidades",
+      "instalacoes",
+      "medicoes",
+      "consumos_detalhe",
+      "comando"
+    ],
+    "fora_desta_fronteira": {
+      "V5 situação especial": "PARALISAR_LEITURA_FATURAR_MEDIA exige o histórico de situação especial de faturamento — não exercido neste lote",
+      "reincidência em três consistências": "V3b e V3c representam o 2º e o 3º mês pelo que as consistências anteriores teriam gravado (massa), não por três execuções seguidas"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-M01 (perfil IMV-01): leituras anterior 1000 e atual 1027 realizadas; 6 referências de histórico",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-medido-real.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "IMV-M05 (perfil IMV-05): hidrômetro instalado em 10/04/2026 com leitura 5; primeira leitura, 32",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-hidrometro-novo.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "IMV-M06 (perfil IMV-06): leitura NÃO realizada, anormalidade \"imóvel fechado\" — 1º mês",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-sem-leitura-anormalidade.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    },
+    "V3b": {
+      "descricao": "IMV-M06 também sem leitura em 04/2026 — 2º mês",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-sem-leitura-anormalidade.sql",
+        "massas/deltas/mic-sem-leitura-2o-mes.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    },
+    "V3c": {
+      "descricao": "IMV-M06 também sem leitura em 03/2026 — 3º mês",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-sem-leitura-anormalidade.sql",
+        "massas/deltas/mic-sem-leitura-2o-mes.sql",
+        "massas/deltas/mic-sem-leitura-3o-mes.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "IMV-M07 (perfil IMV-07): leitura NÃO realizada, sem anormalidade, um só mês de histórico",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/mic-imv-sem-leitura-sem-historico.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao"
+        ]
+      }
+    }
+  }
+}

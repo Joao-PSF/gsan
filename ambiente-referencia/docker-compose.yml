@@ -125,6 +125,10 @@ services:
       # Mensagens do servidor em inglês: o cluster é pt_BR.ISO-8859-1 e os logs
       # das ferramentas ficam legíveis em qualquer terminal.
       PGOPTIONS: "-c lc_messages=C"
+      # A observação usa o RELÓGIO DO LEGADO: as datas que o JBoss grava seguem o fuso da imagem (imagens/jboss/Dockerfile,
+      # TZ=America/Belem) e o banco roda em UTC. Sem isto, entre 21h e 24h locais o "hoje" da sessão (current_date) já é o
+      # dia seguinte ao das datas gravadas pelo legado. Só a sessão das ferramentas muda; o legado e o banco, não.
+      PGTZ: America/Belem
       GSAN_ADMIN_SENHA: ${GSAN_ADMIN_SENHA:?defina GSAN_ADMIN_SENHA no .env}
       GSAN_MIGRACOES_CODIFICACAO: ${GSAN_MIGRACOES_CODIFICACAO:-detectar}
       GSAN_MIGRACOES_COMMIT: ${GSAN_MIGRACOES_COMMIT}

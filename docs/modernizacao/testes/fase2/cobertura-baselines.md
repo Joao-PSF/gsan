@@ -9,10 +9,10 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 27 | 27 | 221 | 98 | 98 |
+| **A** | 74 | 29 | 29 | 221 | 107 | 107 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 22 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 29.
+**P0 da classe A com baseline**: 24 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 31.
 
 ## Por domínio (classe A)
 
@@ -24,7 +24,7 @@
 | Cobrança | 7 | 0 | 0 |
 | Faturamento | 11 | 7 | 24 |
 | Financeiro e operacional | 8 | 0 | 0 |
-| Micromedição | 5 | 1 | 7 |
+| Micromedição | 5 | 3 | 16 |
 | Segurança | 8 | 8 | 33 |
 
 ## Cenários com definição executável
@@ -49,7 +49,9 @@
 | CEN-FAT-005 | P0 | batch-faturamento-conta | V1, V2, V3 | V1, V2, V3 | — | truncamento da base |
 | CEN-FAT-006 | P0 | batch-faturamento-conta | V1, V2 | V1, V2 | — | consumo do principal e dos micros, esgoto |
 | CEN-FAT-011 | P1 | batch-faturamento | V1 | V1 | — | V2, localizador da Fase 1 |
+| CEN-MIC-001 | P0 | batch-micromedicao | V1, V2, V3, V3b, V3c, V4 | V1, V2, V3, V3b, V3c, V4 | — | V5 situação especial, reincidência em três consistências |
 | CEN-MIC-002 | P0 | atendimento | V1, V2, V3, V4, V5, V6, V7 | V1, V2, V3, V4, V5, V6, V7 | — | precedência no faturamento, tipo de consumo quando o mínimo é faturado |
+| CEN-MIC-003 | P0 | batch-micromedicao | V1, V2, V3 | V1, V2, V3 | — | a operação da OS (a–d, g, h), leitura de retirada |
 | CEN-SEG-001 | P0 | seguranca | V1 | V1 | — | concessoes no contexto (c) |
 | CEN-SEG-002 | P0 | seguranca | V1, V2, V3 | V1, V2, V3 | — | — |
 | CEN-SEG-003 | P1 | seguranca | V1, V2, V3, V4, V5, V5b, V6 | V1, V2, V3, V4, V5, V5b, V6 | — | valor das senhas e do histórico, troca obrigatória pela tela completa |
