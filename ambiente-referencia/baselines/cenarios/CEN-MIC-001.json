@@ -250,6 +250,116 @@
           "micromedicao"
         ]
       }
+    },
+    "V5": {
+      "descricao": "IMV-12a — situação especial de faturamento PARALISAR LEITURA / FATURAR MÉDIA, sem leitura em 05/2026; média dos 6 meses REAIS = 26",
+      "lote": "batch-consumo-origem",
+      "modo": "Batch",
+      "roteiro": "faturar_grupo",
+      "fronteira": "Consistir leituras e calcular consumos pelo processo comandado, no EAR em modo Batch (o mesmo do lote 5c): a tela \"Inserir Processo Faturamento Comandado\" com o comando da atividade CONSISTIR LEITURAS → verificador do Quartz → ControladorMicromedicao.consistirLeiturasCalcularConsumos. A medição da referência chega REGISTRADA pela massa.",
+      "autenticacao": "roteiro",
+      "usuarios": {
+        "fase2.oper": "senha-operador"
+      },
+      "precondicoes": [
+        {
+          "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+          "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+          "esperado": "1"
+        },
+        {
+          "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+          "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+          "esperado": "true"
+        },
+        {
+          "descricao": "meses da média de consumo (sistema_parametros.parm_nnmesescalcmediacons) = 6",
+          "sql": "select parm_nnmesescalcmediacons from cadastro.sistema_parametros",
+          "esperado": "6"
+        },
+        {
+          "descricao": "referência de faturamento do sistema = a do grupo (05/2026), como numa instalação em operação no mês",
+          "sql": "select parm_amreferenciafaturamento from cadastro.sistema_parametros",
+          "esperado": "202605"
+        },
+        {
+          "descricao": "o grupo G1 está em 05/2026 e o comando de CONSISTIR LEITURAS (ftac 2) não foi realizado",
+          "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 2",
+          "esperado": "202605/true"
+        }
+      ],
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "batch.unidade_iniciada",
+        "faturamento.conta",
+        "faturamento.conta_categoria",
+        "faturamento.conta_catg_cons_fx",
+        "micromedicao.consumo_historico",
+        {
+          "tabela": "micromedicao.medicao_historico",
+          "modo": "conteudo"
+        },
+        "seguranca.operacao_efetuada",
+        {
+          "tabela": "faturamento.faturamento_grupo",
+          "modo": "conteudo"
+        }
+      ],
+      "normalizacoes": [],
+      "oraculo": "1",
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+        "massa": "cronograma, os dois comandos, hidrômetros, medições registradas, históricos e situações especiais chegam pela massa: são o que as etapas anteriores (comandar, instalar, gerar dados para leitura, efetuar leitura, informar situação especial) gravariam",
+        "precedencia": "os dois comandos existem antes do processamento; a precedência entre atividades do cronograma só é conferida ao COMANDAR (ControladorFaturamentoFINAL.selecionarAtividadeFaturamentoQuePodeSerComandada), não ao processar"
+      },
+      "observaveis": {
+        "campos": [
+          "funcionalidades",
+          "unidades",
+          "instalacoes",
+          "medicoes",
+          "consumos_detalhe",
+          "consumos_origem",
+          "comando"
+        ],
+        "fora_desta_fronteira": {
+          "a operação \"Informar Situação Especial de Faturamento\"": "a situação chega pela massa (histórico e imóvel); a configuração do tipo de situação é SINTÉTICA (cons-catalogos.sql) — a baseline caracteriza o mecanismo com ela",
+          "a conta": "a conta do mesmo imóvel é CEN-FAT-001 V4"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/cons-imv-situacao-media.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
     }
   }
 }

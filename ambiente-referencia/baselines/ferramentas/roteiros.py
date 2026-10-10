@@ -370,7 +370,7 @@ def _micromedicao(ctx):
     faturamento), consumo medido, média do hidrômetro, situação e anormalidades; consumo faturado, para média, médio, tipo
     e anormalidade de consumo (CEN-MIC-*)."""
     return {
-        'medicoes': _linhas(ctx, "select m.lagu_id as matricula, m.mdhi_amleitura as referencia, t.medt_dsmedicaotipo as medicao,"
+        'medicoes': _linhas(ctx, "select coalesce(m.lagu_id, m.imov_id) as matricula, m.mdhi_amleitura as referencia, t.medt_dsmedicaotipo as medicao,"
                                  " m.mdhi_nnleitantfatmt as leitura_anterior_faturamento,"
                                  " to_char(m.mdhi_dtleitantfatmt, 'DD/MM/YYYY') as data_leitura_anterior,"
                                  " m.mdhi_nnleitantinformada as leitura_anterior_informada,"
@@ -508,8 +508,45 @@ def _ciclo_conta(ctx):
     }
 
 
+def _conta_origem(ctx):
+    """Consumo pela origem, na conta (lote 5e): o que a conta fotografou do consumo — leituras, volumes, percentuais de
+    esgoto e coleta, volume de poço, situações das ligações, rota — e o consumo da referência processada, por ligação, com
+    tipo, anormalidade, indicador de faturamento, rota e situação especial de faturamento — só o que a execução gravou (o
+    histórico da massa fica de fora)."""
+    return {
+        'contas_origem': _linhas(ctx, "select c.imov_id as matricula, c.cnta_amreferenciaconta as referencia,"
+                                      " s.dcst_dsdebitocreditosituacao as situacao,"
+                                      " c.cnta_nnleituraanterior as leitura_anterior, c.cnta_nnleituraatual as leitura_atual,"
+                                      " c.cnta_nnconsumoagua as consumo_agua, c.cnta_nnconsumoesgoto as consumo_esgoto,"
+                                      " c.cnta_pcesgoto::text as percentual_esgoto, c.cnta_pccoleta::text as percentual_coleta,"
+                                      " c.cnta_nnvolumepoco as volume_poco, c.cnta_vlagua::text as valor_agua,"
+                                      " c.cnta_vlesgoto::text as valor_esgoto,"
+                                      " (c.cnta_vlagua + c.cnta_vlesgoto + c.cnta_vldebitos - c.cnta_vlcreditos"
+                                      "  - coalesce(c.cnta_vlimpostos, 0))::text as valor_total,"
+                                      " la.last_dsligacaoaguasituacao as situacao_agua, le.lest_dsligacaoesgotosituacao as situacao_esgoto,"
+                                      " r.rota_cdrota as rota"
+                                      " from faturamento.conta c join faturamento.debito_credito_situacao s on s.dcst_id = c.dcst_idatual"
+                                      " left join atendimentopublico.ligacao_agua_situacao la on la.last_id = c.last_id"
+                                      " left join atendimentopublico.ligacao_esgoto_situacao le on le.lest_id = c.lest_id"
+                                      " left join micromedicao.rota r on r.rota_id = c.rota_id"
+                                      " order by c.imov_id, c.cnta_amreferenciaconta, c.cnta_id"),
+        'consumos_origem': _linhas(ctx, "select h.imov_id as matricula, h.cshi_amfaturamento as referencia, l.lgti_dsligacaotipo as ligacao,"
+                                        " h.cshi_nnconsumofaturadomes as consumo_faturado, h.cshi_nnconsumocalculomedia as consumo_para_media,"
+                                        " h.cshi_nnconsumomedio as consumo_medio, t.cstp_dsconsumotipo as tipo,"
+                                        " a.csan_dsconsumoanormalidade as anormalidade, h.cshi_icfaturamento as indicador_faturamento,"
+                                        " r.rota_cdrota as rota, f.ftst_dsfaturamentosituacaotipo as situacao_especial"
+                                        " from micromedicao.consumo_historico h left join micromedicao.ligacao_tipo l using (lgti_id)"
+                                        " left join micromedicao.consumo_tipo t using (cstp_id)"
+                                        " left join micromedicao.consumo_anormalidade a using (csan_id)"
+                                        " left join micromedicao.rota r on r.rota_id = h.rota_id"
+                                        " left join faturamento.fatur_situacao_tipo f on f.ftst_id = h.ftst_id"
+                                        " where h.cshi_tmultimaalteracao::date = current_date"
+                                        " order by h.imov_id, h.cshi_amfaturamento, h.lgti_id"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
-            'ciclo_conta': _ciclo_conta}
+            'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -701,6 +738,8 @@ def _retificar(ctx, passo):
                 valor_agua=moeda(dados.get('valorAgua') or ''), valor_total=moeda(dados.get('valorTotal') or ''),
                 vencimento=dados.get('vencimentoConta'),
                 economias={c: v for c, v in re.findall(r'(?i)NAME="categoria(\d+)"[^>]*value="([^"]*)"', html)})
+    if 'leitura_atual' in passo:
+        tela.update(leitura_anterior=dados.get('leituraAnteriorAgua'), leitura_atual=dados.get('leituraAtualAgua'))
     r['tela'] = tela
     # O que a variação digita: o motivo, as economias por categoria e/ou o consumo de água.
     dados['motivoRetificacaoID'] = str(int(passo['motivo']))
@@ -708,6 +747,8 @@ def _retificar(ctx, passo):
         dados[f'categoria{int(categoria)}'] = str(int(quantidade))
     if 'consumo_agua' in passo:
         dados['consumoAgua'] = str(int(passo['consumo_agua']))
+    if 'leitura_atual' in passo:  # alteração da leitura faturada: a nova leitura atual de água
+        dados['leituraAtualAgua'] = str(int(passo['leitura_atual']))
     html = ctx.atual.post('retificarContaAction.do', dados)
     texto, botoes = _confirmacao(html)
     if texto is not None:  # consumo alterado: "substituir o consumo para o cálculo da média?"
@@ -799,15 +840,19 @@ def faturar_grupo(ctx, entrada):
     for passo in entrada['passos']:
         tipo, r = passo['tipo'], {'tipo': passo['tipo']}
         if tipo == 'disparar':
+            # O comando do passo (consistir, depois faturar, na mesma referência) ou o da entrada.
+            alvo = str(int(passo.get('comando', comando)))
+            if 'comando' in passo:
+                r['comando'] = int(alvo)
             html = ctx.atual.get('exibirInserirProcessoFaturamentoComandadoAction.do?menu=sim')
-            listado = any(re.search(r'(?i)\bvalue="' + comando + r'"', t)
+            listado = any(re.search(r'(?i)\bvalue="' + alvo + r'"', t)
                           for t in re.findall(r'(?is)<input\b[^>]*name="idFaturamentoAtividadeCronograma"[^>]*>', html))
             r['tela'] = {'http': ctx.atual.ultimo_estado, 'comando_listado': listado,
                          'mensagem': None if listado else (_mensagem(html) or _atencao(html))}
             if listado or passo.get('forjar'):
                 # Sem o comando na tela, o POST é o que a tela não deixaria enviar: o servidor aceita ou não.
                 r['forjado'] = not listado
-                html = ctx.atual.post('inserirProcessoFaturamentoComandadoAction.do', {'idFaturamentoAtividadeCronograma': comando})
+                html = ctx.atual.post('inserirProcessoFaturamentoComandadoAction.do', {'idFaturamentoAtividadeCronograma': alvo})
                 sucesso = 'inserido(s) com sucesso' in texto_visivel(html)
                 r.update(http=ctx.atual.ultimo_estado, resultado='inserido' if sucesso else 'recusado',
                          mensagem=None if sucesso else (_mensagem(html) or _atencao(html)))

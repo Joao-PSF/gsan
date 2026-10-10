@@ -1,0 +1,301 @@
+{
+  "cenario": "CEN-MIC-002",
+  "descricao": "não medido só com o mínimo por ÁREA (80 m² → 25 m³): consistir e faturar",
+  "efeitos_no_banco": {
+    "batch.funcionalidade_iniciada": 2,
+    "batch.processo_iniciado": 2,
+    "batch.unidade_iniciada": 2,
+    "faturamento.conta": 1,
+    "faturamento.conta_categoria": 1,
+    "faturamento.conta_catg_cons_fx": 2,
+    "faturamento.faturamento_grupo": "alterado",
+    "micromedicao.consumo_historico": 1,
+    "micromedicao.medicao_historico": "inalterado",
+    "seguranca.operacao_efetuada": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/micromedicao.md — CEN-MIC-002",
+  "fora_desta_fronteira": {
+    "V1, V2 e V7 ao faturar": "o mínimo da tarifa por categoria é o de CEN-FAT-001 (lote 5); o fator de economias, só pela tela",
+    "não medido por tarifa": "a instalação de referência calcula o não medido pela ÁREA (parm_icnaomedidotarifa = 2, parm_cdtipocalcnaomedido = 1) — a outra configuração é dado de instalação"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/mic-catalogos.sql",
+      "sha256": "269664093f71b3f2c217e225c86d490663336ef46613bf9f4b80ff635e16791d"
+    },
+    {
+      "arquivo": "massas/deltas/mic-rota-r4-consistir-202605.sql",
+      "sha256": "52c24e51eda87ebb72c6e416ccb9f5b9689bdfede8373f795a63edbbf057b0d3"
+    },
+    {
+      "arquivo": "massas/deltas/cons-comando-faturar-r4-202605.sql",
+      "sha256": "b7561b3407df25422946f18f838468e9a41061ebe31822149d96058f08e4a189"
+    },
+    {
+      "arquivo": "massas/deltas/cons-catalogos.sql",
+      "sha256": "ceffd010c993d3b30b4967891bacb2b703a40c4582eb1aec79a19834e42f4382"
+    },
+    {
+      "arquivo": "massas/deltas/cons-imv-nao-medido-area.sql",
+      "sha256": "6e73b6847ade4bd1889c579eab89736080d68ae6ee0add1aaf4b0a798f267900"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "comando": {
+      "realizado": true
+    },
+    "consumos_origem": [
+      {
+        "anormalidade": null,
+        "consumo_faturado": 25,
+        "consumo_medio": 10,
+        "consumo_para_media": 25,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100447,
+        "referencia": 202605,
+        "rota": 4,
+        "situacao_especial": null,
+        "tipo": "NAO MEDIDO"
+      }
+    ],
+    "contas": [
+      {
+        "autor": null,
+        "consumo_agua": 25,
+        "consumo_esgoto": 0,
+        "digito_verificador": 2,
+        "emitida_na_data_da_execucao": true,
+        "matricula": 100447,
+        "por_categoria": [
+          {
+            "categoria": "RESIDENCIAL",
+            "consumo_agua": 25,
+            "consumo_esgoto": null,
+            "consumo_minimo_agua": 10,
+            "economias": 1,
+            "faixas": [
+              {
+                "consumo_agua": 10,
+                "fim": 20,
+                "inicio": 11,
+                "tarifa": "4.15",
+                "valor_agua": "41.50"
+              },
+              {
+                "consumo_agua": 5,
+                "fim": 30,
+                "inicio": 21,
+                "tarifa": "5.20",
+                "valor_agua": "26.00"
+              }
+            ],
+            "subcategoria": null,
+            "tarifa_minima_agua": "32.50",
+            "valor_agua": "100.00",
+            "valor_esgoto": "0.00"
+          }
+        ],
+        "referencia": 202605,
+        "referencia_contabil": 202605,
+        "rota": 4,
+        "situacao": "NORMAL",
+        "tipo_impressao": "NORMAL",
+        "validade": "30/09/2026",
+        "valor_agua": "100.00",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_impostos": "0.00",
+        "valor_total": "100.00",
+        "vencimento": "10/06/2026"
+      }
+    ],
+    "contas_origem": [
+      {
+        "consumo_agua": 25,
+        "consumo_esgoto": 0,
+        "leitura_anterior": null,
+        "leitura_atual": null,
+        "matricula": 100447,
+        "percentual_coleta": "0",
+        "percentual_esgoto": "0.00",
+        "referencia": 202605,
+        "rota": 4,
+        "situacao": "NORMAL",
+        "situacao_agua": "LIGADO",
+        "situacao_esgoto": "POTENCIAL",
+        "valor_agua": "100.00",
+        "valor_esgoto": "0.00",
+        "valor_total": "100.00",
+        "volume_poco": null
+      }
+    ],
+    "funcionalidades": [
+      {
+        "descricao": "Consistir Leituras e Calcular Consumos",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 52,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      },
+      {
+        "descricao": "Faturar Grupo Faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 63,
+        "inicio_registrado": true,
+        "processo": 2,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "medicoes": [],
+    "passos": [
+      {
+        "comando": 2,
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "comando": 1,
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      }
+    ],
+    "unidades": [
+      {
+        "funcionalidade": 52,
+        "processo": 1,
+        "rota": 4,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true,
+        "tipo_unidade": 1
+      },
+      {
+        "funcionalidade": 63,
+        "processo": 2,
+        "rota": 4,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true,
+        "tipo_unidade": 1
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "detalhes": [
+        "micromedicao",
+        "conta_origem"
+      ],
+      "passos": [
+        {
+          "comando": 2,
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "comando": 1,
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Consistir e faturar em SEQUÊNCIA, na mesma referência e sobre a mesma massa, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" com o comando de CONSISTIR LEITURAS (atividade 9) → verificador do Quartz → ControladorMicromedicao.consistirLeiturasCalcularConsumos; depois, com o comando de FATURAR GRUPO (atividade 5) → ControladorFaturamentoFINAL.faturarGrupoFaturamento → gerarConta. A medição do mês chega REGISTRADA pela massa (o que \"Efetuar Leitura\" gravaria); o que a consistência grava é o que o faturamento lê: o consumo da referência, pela sua origem, vira a conta. Lido do banco, sem ids nem carimbos.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1",
+  "ressalvas": {
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, os dois comandos, hidrômetros, medições registradas, históricos e situações especiais chegam pela massa: são o que as etapas anteriores (comandar, instalar, gerar dados para leitura, efetuar leitura, informar situação especial) gravariam",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "precedencia": "os dois comandos existem antes do processamento; a precedência entre atividades do cronograma só é conferida ao COMANDAR (ControladorFaturamentoFINAL.selecionarAtividadeFaturamentoQuePodeSerComandada), não ao processar"
+  },
+  "titulo": "Consumo mínimo e precedência de overrides",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V5c"
+}

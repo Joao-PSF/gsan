@@ -119,7 +119,7 @@ bash scripts/baseline.sh verificar --lote piloto    # nova execução comparada 
 ```
 
 Cada execução recria os bancos dos modelos, aplica a massa sintética da variação, sobe o JBoss do zero **com o EAR do
-modo que o cenário declara** (`"modo": "Batch"`; padrão Online) e executa a operação pelas telas do legado; o executor
+modo que o cenário — ou a variação — declara** (`"modo": "Batch"`; padrão Online) e executa a operação pelas telas do legado; o executor
 recusa a execução se o rodapé mostrar outro modo. Os cenários Batch exigem o EAR Batch construído uma vez
 (`GSAN_TIPO=Batch bash scripts/referencia.sh build`). Depois de uma captura, o banco de trabalho fica com a massa da
 **última** execução.

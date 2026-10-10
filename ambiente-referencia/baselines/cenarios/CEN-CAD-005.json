@@ -1,0 +1,174 @@
+{
+  "dominio": "cadastro",
+  "lote": "batch-consumo-origem",
+  "modo": "Batch",
+  "fronteira": "Consistir e faturar em SEQUÊNCIA, na mesma referência e sobre a mesma massa, no EAR em modo Batch: a tela \"Inserir Processo Faturamento Comandado\" com o comando de CONSISTIR LEITURAS (atividade 9) → verificador do Quartz → ControladorMicromedicao.consistirLeiturasCalcularConsumos; depois, com o comando de FATURAR GRUPO (atividade 5) → ControladorFaturamentoFINAL.faturarGrupoFaturamento → gerarConta. A medição do mês chega REGISTRADA pela massa (o que \"Efetuar Leitura\" gravaria); o que a consistência grava é o que o faturamento lê: o consumo da referência, pela sua origem, vira a conta. Lido do banco, sem ids nem carimbos.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "meses da média de consumo (sistema_parametros.parm_nnmesescalcmediacons) = 6",
+      "sql": "select parm_nnmesescalcmediacons from cadastro.sistema_parametros",
+      "esperado": "6"
+    },
+    {
+      "descricao": "referência de faturamento do sistema = a do grupo (05/2026), como numa instalação em operação no mês",
+      "sql": "select parm_amreferenciafaturamento from cadastro.sistema_parametros",
+      "esperado": "202605"
+    },
+    {
+      "descricao": "o G1 está em 05/2026 e os DOIS comandos da referência — CONSISTIR LEITURAS (ftac 2) e FATURAR GRUPO (ftac 1) — não foram realizados",
+      "sql": "select g.ftgr_amreferencia::text || '/' || bool_and(c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id in (1, 2) group by g.ftgr_amreferencia",
+      "esperado": "202605/true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_catg_cons_fx",
+    "micromedicao.consumo_historico",
+    {
+      "tabela": "micromedicao.medicao_historico",
+      "modo": "conteudo"
+    },
+    "seguranca.operacao_efetuada",
+    {
+      "tabela": "faturamento.faturamento_grupo",
+      "modo": "conteudo"
+    }
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-CAD-005",
+  "titulo": "Rotas por finalidade",
+  "especificacao": "docs/modernizacao/testes/cenarios/cadastro-atendimento.md — CEN-CAD-005",
+  "oraculo": "1",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, os dois comandos, hidrômetros, medições registradas, históricos e situações especiais chegam pela massa: são o que as etapas anteriores (comandar, instalar, gerar dados para leitura, efetuar leitura, informar situação especial) gravariam",
+    "precedencia": "os dois comandos existem antes do processamento; a precedência entre atividades do cronograma só é conferida ao COMANDAR (ControladorFaturamentoFINAL.selecionarAtividadeFaturamentoQuePodeSerComandada), não ao processar"
+  },
+  "observaveis": {
+    "campos": [
+      "passos",
+      "funcionalidades",
+      "unidades",
+      "medicoes",
+      "consumos_origem",
+      "contas_origem",
+      "contas",
+      "comando"
+    ],
+    "fora_desta_fronteira": {
+      "rota de entrega": "rota_identrega só é lida na emissão e entrega das contas — fora deste lote",
+      "análise": "a análise de leituras é tela (CEN-MIC-005) — fora deste lote"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "R4 COMUM (comandada): IMV-M01 na quadra 4 sem alternativa; um imóvel da quadra 4 com alternativa R5; um da quadra 5 (R5, não comandada) com alternativa R4",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-comando-faturar-r4-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/mic-imv-medido-real.sql",
+        "massas/deltas/cons-rota-alternativa.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "disparar",
+            "comando": 1
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "os mesmos imóveis, com a R4 marcada como rota ALTERNATIVA",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-comando-faturar-r4-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/mic-imv-medido-real.sql",
+        "massas/deltas/cons-rota-alternativa.sql",
+        "massas/deltas/cons-rota-r4-alternativa.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "disparar",
+            "comando": 1
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
+    }
+  }
+}

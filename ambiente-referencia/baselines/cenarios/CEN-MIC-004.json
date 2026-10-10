@@ -1,0 +1,255 @@
+{
+  "dominio": "micromedicao",
+  "lote": "batch-consumo-origem",
+  "modo": "Batch",
+  "fronteira": "Consistir leituras e calcular consumos pelo processo comandado, no EAR em modo Batch (o mesmo do lote 5c): a tela \"Inserir Processo Faturamento Comandado\" com o comando da atividade CONSISTIR LEITURAS → verificador do Quartz → ControladorMicromedicao.consistirLeiturasCalcularConsumos. A medição da referência chega REGISTRADA pela massa.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "meses da média de consumo (sistema_parametros.parm_nnmesescalcmediacons) = 6",
+      "sql": "select parm_nnmesescalcmediacons from cadastro.sistema_parametros",
+      "esperado": "6"
+    },
+    {
+      "descricao": "referência de faturamento do sistema = a do grupo (05/2026), como numa instalação em operação no mês",
+      "sql": "select parm_amreferenciafaturamento from cadastro.sistema_parametros",
+      "esperado": "202605"
+    },
+    {
+      "descricao": "o grupo G1 está em 05/2026 e o comando de CONSISTIR LEITURAS (ftac 2) não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 2",
+      "esperado": "202605/true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "batch.unidade_iniciada",
+    "faturamento.conta",
+    "faturamento.conta_categoria",
+    "faturamento.conta_catg_cons_fx",
+    "micromedicao.consumo_historico",
+    {
+      "tabela": "micromedicao.medicao_historico",
+      "modo": "conteudo"
+    },
+    "seguranca.operacao_efetuada",
+    {
+      "tabela": "faturamento.faturamento_grupo",
+      "modo": "conteudo"
+    },
+    "atendimentopublico.ordem_servico"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-MIC-004",
+  "titulo": "Anormalidades: virada de hidrômetro e limiares de consumo",
+  "especificacao": "docs/modernizacao/testes/cenarios/micromedicao.md — CEN-MIC-004",
+  "oraculo": "1",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, os dois comandos, hidrômetros, medições registradas, históricos e situações especiais chegam pela massa: são o que as etapas anteriores (comandar, instalar, gerar dados para leitura, efetuar leitura, informar situação especial) gravariam",
+    "precedencia": "os dois comandos existem antes do processamento; a precedência entre atividades do cronograma só é conferida ao COMANDAR (ControladorFaturamentoFINAL.selecionarAtividadeFaturamentoQuePodeSerComandada), não ao processar"
+  },
+  "observaveis": {
+    "campos": [
+      "funcionalidades",
+      "unidades",
+      "instalacoes",
+      "medicoes",
+      "consumos_detalhe",
+      "consumos_origem",
+      "comando"
+    ],
+    "fora_desta_fronteira": {
+      "carta ou aviso": "a emissão de carta ou aviso de anormalidade é etapa do processo de faturamento/emissão — fora",
+      "consequência na conta": "o consumo faturado é o do histórico; a conta de cada perfil sai em CEN-FAT-001"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-09 — hidrômetro de 4 dígitos com VIRADA: 9990 → 0015 (consumo de virada = 25)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/cons-imv-virada-hidrometro.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "IMV-10 — média 26, consumo 60 (acima do ALTO CONSUMO: 50 m³ e 2 × a média)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/cons-imv-alto-consumo.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "IMV-10 — média 26, consumo 110 (acima do ESTOURO: 100 m³ e 3 × a média)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/cons-imv-estouro-consumo.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "IMV-10 — média 26, consumo 5 (abaixo de 50% da média)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/cons-imv-baixo-consumo.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
+    },
+    "V5": {
+      "descricao": "leitura atual MENOR que a anterior sem virada: 1000 → 990 (5 dígitos)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/mic-catalogos.sql",
+        "massas/deltas/mic-rota-r4-consistir-202605.sql",
+        "massas/deltas/cons-catalogos.sql",
+        "massas/deltas/cons-imv-leitura-menor.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 2,
+        "passos": [
+          {
+            "tipo": "disparar",
+            "comando": 2
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "micromedicao",
+          "conta_origem"
+        ]
+      }
+    }
+  }
+}

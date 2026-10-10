@@ -1,0 +1,307 @@
+{
+  "cenario": "CEN-MIC-001",
+  "descricao": "IMV-12a — situação especial de faturamento PARALISAR LEITURA / FATURAR MÉDIA, sem leitura em 05/2026; média dos 6 meses REAIS = 26",
+  "efeitos_no_banco": {
+    "batch.funcionalidade_iniciada": 1,
+    "batch.processo_iniciado": 1,
+    "batch.unidade_iniciada": 1,
+    "faturamento.conta": 0,
+    "faturamento.conta_categoria": 0,
+    "faturamento.conta_catg_cons_fx": 0,
+    "faturamento.faturamento_grupo": "inalterado",
+    "micromedicao.consumo_historico": 1,
+    "micromedicao.medicao_historico": "alterado",
+    "seguranca.operacao_efetuada": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/micromedicao.md — CEN-MIC-001",
+  "fora_desta_fronteira": {
+    "a conta": "a conta do mesmo imóvel é CEN-FAT-001 V4",
+    "a operação \"Informar Situação Especial de Faturamento\"": "a situação chega pela massa (histórico e imóvel); a configuração do tipo de situação é SINTÉTICA (cons-catalogos.sql) — a baseline caracteriza o mecanismo com ela"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/mic-catalogos.sql",
+      "sha256": "269664093f71b3f2c217e225c86d490663336ef46613bf9f4b80ff635e16791d"
+    },
+    {
+      "arquivo": "massas/deltas/mic-rota-r4-consistir-202605.sql",
+      "sha256": "52c24e51eda87ebb72c6e416ccb9f5b9689bdfede8373f795a63edbbf057b0d3"
+    },
+    {
+      "arquivo": "massas/deltas/cons-catalogos.sql",
+      "sha256": "ceffd010c993d3b30b4967891bacb2b703a40c4582eb1aec79a19834e42f4382"
+    },
+    {
+      "arquivo": "massas/deltas/cons-imv-situacao-media.sql",
+      "sha256": "6ddabcda077c666052d12f570f5b74ced86d919442c895e07f12166dd912de14"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "comando": {
+      "realizado": true
+    },
+    "consumos_detalhe": [
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 25,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 25,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202511,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 28,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 28,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202512,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 26,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 26,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202601,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 27,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 27,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202602,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 24,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 24,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202603,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 29,
+        "consumo_medio": null,
+        "consumo_minimo": null,
+        "consumo_para_media": 29,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202604,
+        "tipo": "REAL"
+      },
+      {
+        "ajuste": null,
+        "anormalidade": null,
+        "consumo_faturado": 26,
+        "consumo_medio": 26,
+        "consumo_minimo": null,
+        "consumo_para_media": 26,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202605,
+        "tipo": "MEDIA HIDROMETRO"
+      }
+    ],
+    "consumos_origem": [
+      {
+        "anormalidade": null,
+        "consumo_faturado": 26,
+        "consumo_medio": 26,
+        "consumo_para_media": 26,
+        "indicador_faturamento": 1,
+        "ligacao": "AGUA",
+        "matricula": 100404,
+        "referencia": 202605,
+        "rota": 4,
+        "situacao_especial": "PARALISAR LEITURA FATURAR MEDIA (SINTETICO)",
+        "tipo": "MEDIA HIDROMETRO"
+      }
+    ],
+    "funcionalidades": [
+      {
+        "descricao": "Consistir Leituras e Calcular Consumos",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 52,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "instalacoes": [
+      {
+        "data_instalacao": "15/01/2025",
+        "data_retirada": null,
+        "hidrometro": "SINT000040",
+        "instalacao_atual_da_ligacao": true,
+        "leitura_instalacao": 0,
+        "leitura_retirada": null,
+        "matricula": 100404
+      }
+    ],
+    "medicoes": [
+      {
+        "analisado": 1,
+        "anormalidade_faturamento": null,
+        "anormalidade_informada": null,
+        "consumo_informado": null,
+        "consumo_medido": 29,
+        "consumo_medio_hidrometro": null,
+        "data_leitura_anterior": "31/03/2026",
+        "data_leitura_atual_faturamento": "30/04/2026",
+        "data_leitura_atual_informada": "30/04/2026",
+        "leitura_anterior_faturamento": 971,
+        "leitura_anterior_informada": 971,
+        "leitura_atual_faturamento": 1000,
+        "leitura_atual_informada": 1000,
+        "matricula": 100404,
+        "medicao": "LIGACAO DE AGUA",
+        "referencia": 202604,
+        "situacao_anterior": "REALIZADA",
+        "situacao_atual": "REALIZADA"
+      },
+      {
+        "analisado": 2,
+        "anormalidade_faturamento": null,
+        "anormalidade_informada": null,
+        "consumo_informado": null,
+        "consumo_medido": null,
+        "consumo_medio_hidrometro": 26,
+        "data_leitura_anterior": "30/04/2026",
+        "data_leitura_atual_faturamento": "31/05/2026",
+        "data_leitura_atual_informada": null,
+        "leitura_anterior_faturamento": 1000,
+        "leitura_anterior_informada": 1000,
+        "leitura_atual_faturamento": 1026,
+        "leitura_atual_informada": null,
+        "matricula": 100404,
+        "medicao": "LIGACAO DE AGUA",
+        "referencia": 202605,
+        "situacao_anterior": "REALIZADA",
+        "situacao_atual": "NAO REALIZADA"
+      }
+    ],
+    "unidades": [
+      {
+        "funcionalidade": 52,
+        "processo": 1,
+        "rota": 4,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true,
+        "tipo_unidade": 1
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 2,
+      "detalhes": [
+        "micromedicao",
+        "conta_origem"
+      ],
+      "passos": [
+        {
+          "comando": 2,
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Consistir leituras e calcular consumos pelo processo comandado, no EAR em modo Batch (o mesmo do lote 5c): a tela \"Inserir Processo Faturamento Comandado\" com o comando da atividade CONSISTIR LEITURAS → verificador do Quartz → ControladorMicromedicao.consistirLeiturasCalcularConsumos. A medição da referência chega REGISTRADA pela massa.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1",
+  "ressalvas": {
+    "agendamento": "o disparo é pela tela; o instante em que o verificador do Quartz inicia o processo e o paralelismo das unidades são C4 (tecnologia) — fora da comparação",
+    "massa": "cronograma, os dois comandos, hidrômetros, medições registradas, históricos e situações especiais chegam pela massa: são o que as etapas anteriores (comandar, instalar, gerar dados para leitura, efetuar leitura, informar situação especial) gravariam",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "precedencia": "os dois comandos existem antes do processamento; a precedência entre atividades do cronograma só é conferida ao COMANDAR (ControladorFaturamentoFINAL.selecionarAtividadeFaturamentoQuePodeSerComandada), não ao processar"
+  },
+  "titulo": "Consumo da referência por situação de leitura",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V5"
+}

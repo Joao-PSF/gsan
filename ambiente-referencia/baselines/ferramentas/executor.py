@@ -2,7 +2,7 @@
 """Executor de cenários da Fase 2 — roda no contêiner `ferramentas` (rede interna).
 
   executor.py massa      CENARIO VARIACAO          arquivos da massa efetiva (base + deltas), em ordem
-  executor.py modo       CENARIO                   modo do EAR que o cenário exige (Online | Batch)
+  executor.py modo       CENARIO [VARIACAO]        modo do EAR que o cenário (ou a variação) exige (Online | Batch)
   executor.py executar   CENARIO VARIACAO SAIDA    uma execução sobre o estado já restaurado
   executor.py consolidar capturar|verificar CENARIO VARIACAO SAIDA... [--substituir]
   executor.py lista      [LOTE]                    CENARIO:VARIACAO de um lote (ou de todos)
@@ -76,6 +76,19 @@ def dominio(c):
 
 
 # --- massa efetiva -----------------------------------------------------------------------------
+# Campos que uma variação pode declarar para si (lote 5e): a mesma especificação, observada noutra fronteira — o
+# faturamento em grupo de um cenário cuja definição nasceu na simulação, por exemplo. Ausentes na variação, valem os do
+# cenário: as variações que não os declaram não mudam em nada.
+SOBREPONIVEIS = ('lote', 'modo', 'fronteira', 'autenticacao', 'usuarios', 'precondicoes', 'efeitos', 'normalizacoes',
+                 'oraculo', 'ressalvas', 'observaveis')
+
+
+def efetivo(c, variacao):
+    """A definição que vale para a variação: a do cenário, com o que a variação sobrepõe."""
+    v = c['variacoes'][variacao]
+    return {**c, **{k: v[k] for k in SOBREPONIVEIS if k in v}}
+
+
 def modo_ear(c):
     """Modo do EAR que o cenário exige: Online (padrão) ou Batch (agendador de processos)."""
     m = c.get('modo', 'Online')
@@ -204,7 +217,7 @@ def credenciais_efemeras(usuarios):
 
 
 def executar(ident, variacao, saida):
-    c = cenario(ident)
+    c = efetivo(cenario(ident), variacao)
     v = c['variacoes'][variacao]
     inicio = datetime.datetime.now(datetime.timezone.utc)
     hoje = datetime.date.fromisoformat(sql('select current_date'))
@@ -361,9 +374,9 @@ def lista(lote):
     for arq in sorted(glob.glob(os.path.join(BASE, 'cenarios', '*.json'))):
         with open(arq, encoding='utf-8') as f:
             c = json.load(f)
-        if lote and c.get('lote') != lote:
-            continue
-        for v in c['variacoes']:
+        for v, d in c['variacoes'].items():
+            if lote and d.get('lote', c.get('lote')) != lote:
+                continue
             print(f"{c['cenario']}:{v}")
 
 
@@ -374,8 +387,9 @@ def main():
         sys.exit(2)
     if a[0] == 'massa':
         print('\n'.join(massa_efetiva(cenario(a[1]), a[2])))
-    elif a[0] == 'modo':
-        print(modo_ear(cenario(a[1])))
+    elif a[0] == 'modo':  # modo CENARIO [VARIACAO]
+        c = cenario(a[1])
+        print(modo_ear(efetivo(c, a[2]) if len(a) > 2 else c))
     elif a[0] == 'executar':
         executar(a[1], a[2], a[3])
     elif a[0] == 'consolidar':

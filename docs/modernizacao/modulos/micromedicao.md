@@ -112,10 +112,10 @@ Grupo de Faturamento (cronograma AAAAMM, atividades 0–7, datas por rota)
 
 1. Base: `leituraAtualFaturamento − leituraAnteriorFaturamento` (campos "de faturamento", não os informados).
 2. Sem leitura ou com anormalidade de leitura: aplicam-se as **ações paramétricas** da anormalidade (qual leitura faturar, qual consumo cobrar — com/sem leitura).
-3. Virada: se leitura atual < anterior dentro da faixa esperada da virada, consumo = (10^dígitos − anterior) + atual; anormalidade `VIRADA_HIDROMETRO` registrada (código em `ControladorMicromedicao`, região das linhas 2986–3035).
+3. Virada: se leitura atual < anterior dentro da faixa esperada da virada, consumo = (10^dígitos − anterior) + atual; anormalidade `VIRADA_HIDROMETRO` registrada (código em `ControladorMicromedicao`, região das linhas 2986–3035). 🆕 🔴 **Medido na Fase 2 (lote 5e, 2026-10-08)**: a virada **não é reconhecida** — `verificarViradaDeHidrometro` compara o tipo de medição por referência (`getId() == MedicaoTipo.LIGACAO_AGUA`, constante `new Integer(1)`), falha com a medição vinda do banco e conta 0 dígitos; a leitura menor vai à **média**, com LEITURA ATUAL MENOR QUE ANTERIOR, e a leitura de faturamento é ajustada com 9999, não 10.000 (CEN-MIC-004 V1; [relatório §24](../testes/fase2/fase2-caracterizacao-baselines.md#24-lote-5e--consumo-pela-origem-na-conta-consistir-e-faturar-em-sequência-2026-10-08), F2-110; CAND-25).
 4. Troca de hidrômetro na referência: leituras de fronteira da instalação (retirada do antigo, instalação do novo) delimitam os trechos; anormalidade `HIDROMETRO_SUBSTITUIDO_INFORMADO` cobre divergências. (A composição exata do consumo do mês de troca é caso crítico de caracterização — ver §13.)
-5. Crítica de consumo: limiares da Categoria sobre a média → BAIXO/ALTO/ESTOURO etc.; ação escalonada por mês de reincidência pode ajustar o consumo (fator) e gerar carta.
-6. Situação da ligação e paralisações modulam o resultado: `last_icconsumoreal` ("só faturar consumo real"), `last_icfaturamento`, `FaturamentoSituacaoTipo` (faturar média/taxa mínima; paralisar) — a decisão final de faturabilidade é do Faturamento (`permiteFaturamentoParaAgua/Esgoto` em `ControladorFaturamentoFINAL`).
+5. Crítica de consumo: limiares da Categoria sobre a média → BAIXO/ALTO/ESTOURO etc.; ação escalonada por mês de reincidência pode ajustar o consumo (fator) e gerar carta. 🆕 **Medido (lote 5e)**: alto e baixo consumo faturam o **real** com a anormalidade; o **estouro** fatura a **média** (ESTOURO COBRANÇA MÉDIA), com o medido preservado na medição; nenhuma OS gerada (CEN-MIC-004 V2–V5, F2-111).
+6. Situação da ligação e paralisações modulam o resultado: `last_icconsumoreal` ("só faturar consumo real"), `last_icfaturamento`, `FaturamentoSituacaoTipo` (faturar média/taxa mínima; paralisar) — a decisão final de faturabilidade é do Faturamento (`permiteFaturamentoParaAgua/Esgoto` em `ControladorFaturamentoFINAL`). 🆕 **Medido (lote 5e)**: a consistência **consulta** essa decisão e, quando a ligação não pode faturar, grava o consumo como **0** (`ControladorMicromedicao:2395-2449`) — com mínimo na situação, a ligação só fatura com consumo ≥ ao mínimo e o tipo de consumo associado à situação (`lig_agua_sit_cons_tipo`, dado de instalação). Situação especial: média, taxa mínima (FIXO SITUAÇÃO ESPECIAL) e paralisar emissão (consumo gravado, sem conta) (F2-103, F2-105).
 7. Escrita: `consumo_historico` por imóvel+referência+tipo de ligação (água/esgoto), com tipo de consumo, médio, mínimo e campo separado para médias futuras. Retificações preservam versão anterior. Tanto `ControladorMicromedicao` quanto `ControladorFaturamentoFINAL` gravam consumo — a orquestração exata dentro do FATURAR_GRUPO será detalhada no mapa do Faturamento.
 
 ## 6. Casos especiais
@@ -190,10 +190,10 @@ OSs executam instalação/substituição/retirada/aferição de hidrômetro e fi
 6. Estouro/alto/baixo consumo pelos limiares da Categoria × média (com fator e carta por mês).
 7. Imóvel sem hidrômetro (mínimo por categoria/situação/ligação/área — precedência).
 8. Primeira leitura após instalação (base = leitura de instalação).
-9. Rota alternativa definida × não definida (mesmo imóvel, processos de leitura/análise).
+9. Rota alternativa definida × não definida (mesmo imóvel, processos de leitura/análise). 🆕 **Caracterizado (CEN-CAD-005, lote 5e)**: na consistência e no faturamento, o **indicador da rota** decide — rota comum: imóveis da quadra sem alternativa; rota marcada alternativa: só os que a apontam (CAND-28).
 10. Condomínio com rateio (área comum/não medido) referenciando o consumo do principal.
 11. Leitura alterada/confirmada em análise (situações 3/4; anormalidade de faturamento ≠ informada).
-12. Poço (medição tipo 2) compondo esgoto.
+12. Poço (medição tipo 2) compondo esgoto. 🆕 🔴 **Caracterizado (CEN-FAT-003 V3, lote 5e)**: o poço medido com leitura derruba a consistência da **rota inteira** (NullPointerException — o consumo de esgoto é criado sem imóvel) e nenhum consumo da rota é gravado (F2-108; CAND-26).
 
 ## 14. Funcionalidades futuras identificadas (`gsan_comercial`)
 

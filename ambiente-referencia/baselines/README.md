@@ -63,7 +63,9 @@ passa de uma execução à outra: nem banco, nem sessão HTTP, nem cache estáti
 
 O relógio da observação é o do legado: o JBoss grava datas no fuso da imagem (America/Belem) e o banco roda em UTC, então
 a sessão `psql` das ferramentas usa `PGTZ=America/Belem` — o "hoje" com que as datas gravadas são comparadas é o do
-legado, a qualquer hora (relatório da Fase 2, F2-86).
+legado, a qualquer hora (relatório da Fase 2, F2-86). O "hoje" é o do momento da **observação**: uma execução que atravessa
+a meia-noite local diverge só nas datas relativas à execução — reverifique a variação; não é motivo de nova baseline
+(F2-114).
 
 ⚠️ Capturas longas (dezenas de execuções) passam do limite de tempo de comandos em segundo plano de algumas
 sessões de agente: rode-as como processo independente e acompanhe pelo log. A interrupção não deixa baseline
@@ -83,10 +85,16 @@ valor do hash nunca sai do executor), `auditoria` (registro de operação e tril
 
 ### Cenários de processamento — EAR em modo Batch
 
+🆕 **Campos por variação**: uma variação pode declarar para si `lote`, `modo`, `fronteira`, `autenticacao`, `usuarios`,
+`precondicoes`, `efeitos`, `normalizacoes`, `oraculo`, `ressalvas` e `observaveis` (e `roteiro`, como antes); ausentes,
+valem os do cenário. É como uma especificação capturada numa fronteira (a simulação, por exemplo) ganha variações noutra
+(o faturamento em grupo) sem mudar as baselines existentes. `executor.py modo CENARIO VARIACAO` responde o modo da
+variação; `executor.py lista LOTE` filtra pelo lote da variação.
+
 Um cenário com `"modo": "Batch"` roda no EAR Batch (volume `ear-batch`, agendador Quartz ativo): `baseline.sh` sobe o
 JBoss com esse EAR e o executor recusa a execução se o rodapé mostrar outro modo. O roteiro `faturar_grupo` dispara o
 processo pela tela "Inserir Processo Faturamento Comandado" e segue os **passos** da variação: `disparar` (com `forjar`
-quando a tela já não lista o comando), `aguardar` (`terminal`: todo processo num estado final e nada mudando por 15 s;
+quando a tela já não lista o comando, e `comando` para disparar consistir e depois faturar na mesma execução), `aguardar` (`terminal`: todo processo num estado final e nada mudando por 15 s;
 `ciclo`: 75 s, uma passagem do verificador), `observar` (fotografia intermediária), `autorizar`, `aplicar` (arquivo de
 `massas/passos/`, com o sha256 no resultado), `reiniciar` (`etapas`: `com_erro` ou `concluidas`) e, para a manutenção de
 conta, `retificar` e `cancelar` (pela lista de Manter Conta, com as confirmações que o legado pede respondidas pela
@@ -96,7 +104,9 @@ processos, etapas, unidades por rota, contas por matrícula com categorias e fai
 grupo e `contas_iniciadas` (números entregues pela sequência das contas, que não voltam num rollback) — sai sem ids nem
 carimbos de tempo. Blocos de detalhe opcionais (`"detalhes"` na entrada): `lancamentos` (débitos cobrados, créditos realizados e o que
 resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto), `rateio` (micro-condomínio) e
-`micromedicao` (instalações de hidrômetro, medições e consumos detalhados) e `ciclo_conta` (cada conta pela identidade
+`micromedicao` (instalações de hidrômetro, medições e consumos detalhados), `conta_origem` (o consumo pela origem, na
+conta: leituras, percentuais de esgoto e coleta, poço, situações, rota; consumos gravados na execução com tipo,
+anormalidade, rota e situação especial) e `ciclo_conta` (cada conta pela identidade
 documental — matrícula, referência e ordem de criação —, contas gerais sem documento, pagamentos e RA pela conta a que
 apontam, consumos e a trilha de auditoria das operações) — só entram nas baselines que os declaram. O
 mesmo roteiro dispara a **consistência de leituras** (outro comando, `"comando"` na entrada); o texto técnico das exceções

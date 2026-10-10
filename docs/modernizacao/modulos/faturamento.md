@@ -283,9 +283,9 @@ A instalação analisada acopla o faturamento a NF/tributação: schema `fiscal`
 1. Residencial simples, 1 economia, leitura normal (caso base ao centavo).
 2. Múltiplas economias na mesma categoria.
 3. Múltiplas categorias no mesmo imóvel (distribuição + mínimos por categoria).
-4. Conta por média (paralisação/situação) e por taxa mínima.
+4. Conta por média (paralisação/situação) e por taxa mínima. 🆕 **Caracterizado (lote 5e, 2026-10-08)**, consistindo e faturando em sequência: média → 26 m³, R$ 105,20; taxa mínima → o mínimo da tarifa, R$ 32,50; paralisar emissão → sem conta (CEN-FAT-001 V4/V5, CEN-CAD-004 V8; [relatório §24](../testes/fase2/fase2-caracterizacao-baselines.md#24-lote-5e--consumo-pela-origem-na-conta-consistir-e-faturar-em-sequência-2026-10-08)).
 5. Consumo mínimo com override (ligação e situação) × mínimo tarifário.
-6. Esgoto: percentual padrão, percentual alternativo acima do limite, e poço compondo volume.
+6. Esgoto: percentual padrão, percentual alternativo acima do limite, e poço compondo volume. 🆕 **Caracterizado (lote 5e)**: o alternativo (menor) só vale com o consumo por economia ≤ ao limite (80% → 88,32; 50% → 55,20); 🔴 o poço medido derruba a consistência da rota e a conta sai pelo mínimo (CEN-FAT-003 V2, V2b, V3; CAND-26, CAND-27).
 7. Conta com débitos cobrados (parcela de serviço/parcelamento) e créditos realizados.
 8. Impostos deduzidos (cliente público).
 9. Retificação: mesma referência antes/depois (cadeia origem, situações, valores). 🆕 **Caracterizado (Fase 2, lote 5d, 2026-10-08)**: conta NORMAL → documento novo RETIFICADO e a original CANCELADA POR RETIFICAÇÃO com valores preservados; a cadeia é **implícita** (`cnta_idorigem` nulo); a segunda retificação no mesmo mês contábil **sobrescreve**; conta paga → o pagamento **migra** para a nova ([relatório §23](../testes/fase2/fase2-caracterizacao-baselines.md#23-lote-5d--ciclo-de-vida-da-conta-retificação-cancelamento-e-prescrição-2026-10-08); CAND-17, CAND-19, CAND-21).

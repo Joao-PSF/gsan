@@ -290,8 +290,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~5b — Faturamento na conta~~ ✅ **capturado em 2026-10-07** (§21) — reordenado: os P0 que já cabiam na fronteira do lote 5 | FAT-004 (V1–V4, com V1b, V2b, V3b, V3c), FAT-005 (V1–V3), FAT-006 (V1, V2); ATE-008 (valor de cada prestação na conta) respondido por FAT-004 V1/V1b. **Ficam**: FAT-004 V5 (taxa de emissão — processo de emissão) | Faturar grupo — Batch | Lançamentos, cliente responsável federal e impostos, micro-condomínio |
 | ~~5c — Micromedição~~ ✅ **capturado em 2026-10-07** (§22) — os dois P0 | MIC-001 (V1–V4, V3b, V3c), MIC-003 (V1–V3). **Ficam**: MIC-001 V5 (situação especial), as operações de hidrômetro pela OS (MIC-003 a–d, h) | Consistir leituras e calcular consumos — Batch | Catálogos da Micromedição; hidrômetros, instalações, medições registradas, históricos |
 | ~~5d — Ciclo de vida da conta~~ ✅ **capturado em 2026-10-08** (§23) | FAT-007 (V1, V1b, V2, V2b, V3, V4, V4b), FAT-008 (V1, V1b, V1c, V2, V2b). **Ficam**: a retificação por alteração da leitura faturada (motivo 104, imóvel hidrometrado) → 5e; a posição de dívida → 6 | Retificar e cancelar conta pela tela, sobre as contas que o faturamento em grupo gera na própria execução; prescrição em lote e manual — **Batch** | Catálogos da manutenção de conta; histórico de consumo; Arrecadação mínima e pagamento (passo); RA de alteração de conta; contas antigas; processo de prescrição |
-| **5e — Consumo pela origem, na conta** (recomendado a seguir) | MIC-004/005, FAT-001 V4/V5 e observáveis e/f, FAT-002 na conta, CAD-005, FAT-003 V2/V3 e percentuais na conta, CAD-004 (situação especial), MIC-002 (precedência ao faturar), MIC-001 V5; 🆕 a retificação por alteração da leitura faturada (FAT-007, motivo 104) | Consistir e faturar em sequência — Batch | Situações especiais, vigências tarifárias, poço, rota alternativa (IMV-11a/b, 12a/b, 17, 18) |
-| 6 — Arrecadação, cobrança, financeiro | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
+| ~~5e — Consumo pela origem, na conta~~ ✅ **capturado em 2026-10-08** (§24) | FAT-001 V4/V5, MIC-001 V5, CAD-004 V8/V9, FAT-002 V1c, FAT-003 V2/V2b/V3, MIC-002 V3c/V4c/V4d/V5c/V6c/V8, FAT-007 V2c, MIC-004 V1–V5, CAD-005 V1/V2. **Ficam**: MIC-005 (análise de leitura — tela); FAT-002 V2/V3 na conta | Consistir e faturar em sequência — Batch | Situações especiais, vigências tarifárias, poço, rota alternativa (IMV-11a/b, 12a/b, 17, 18) |
+| **6 — Arrecadação, cobrança, financeiro** (recomendado a seguir; MIC-005 em paralelo, pela tela de análise) | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
 registram horários, mas nenhuma medição foi tratada como baseline.
@@ -332,6 +332,9 @@ registram horários, mas nenhuma medição foi tratada como baseline.
   execução (não vêm da massa); pagamento, RA e as contas antigas da prescrição chegam pela massa — o pagamento, por um passo
   aplicado depois do faturamento. A referência contábil e as datas de retificação/cancelamento saem relativas ao relógio; a
   prescrição compara o vencimento com hoje − 10 anos (as contas da massa estão longe dessa fronteira).
+- **Dois comandos pela massa**: no lote 5e, os comandos de consistir e de faturar existem antes do processamento — a
+  precedência entre atividades só é conferida ao comandar (F2-109); as ações de cada situação especial e a associação
+  situação × tipo de consumo são configuração SINTÉTICA (F2-101).
 - **Processo pela massa**: no lote 5, cronograma, comando e consumos nascem por SQL; o objeto é o processo de faturar.
   A correção de causa de BAT-002 V2/V3 é aplicada por SQL **no meio** da execução (`massas/passos/`), porque a
   manutenção do imóvel é outra fronteira. O disparo **agendado** e o paralelismo das unidades são C4.
@@ -343,7 +346,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
-| Já capturado | **122 variações** de 33 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12) — 52% das 234 | Cobertura |
+| Já capturado | **145 variações** de 35 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12 + lote 5e 23) — 62% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -353,7 +356,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; o teste negativo do piloto acusa 1 centavo |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; 🆕 lote 5e **23/23** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d e o piloto de novo **55/55**; o teste negativo do piloto acusa 1 centavo |
 | Cobre os comportamentos priorizados | 🟡 **26 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), na conta (3: lançamentos, impostos, rateio) e 🆕 do documento (2: retificação; cancelamento e prescrição), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
@@ -1201,3 +1204,120 @@ Contas da prescrição (V2, V2b):
 | F2-98 | **Processo batch preso sem erro**: uma exceção na montagem da tarefa (`TarefaBatch.executar`, antes do envio ao MDB) não encerra nem registra a etapa. Com a situação de cobrança vazia, a prescrição lança `StringIndexOutOfBoundsException` (`Util.removerUltimosCaracteres` de lista vazia) no job do Quartz e o processo fica **EM PROCESSAMENTO** para sempre — indistinguível de um em andamento | Exploração (log do JBoss); `TarefaBatchGerarPrescreverDebitosDeImoveis:51` | 🔵 | **CAND-23**; massa traz a situação de cobrança |
 | F2-99 | **Erro de banco engolido**: em `cancelarConta` e em `atualizarFaturaItemContaRetificada`, a falha do repositório marca a transação para rollback e cria uma `ControladorException` **sem lançá-la** — a operação é desfeita, mas a tela segue como se tivesse dado certo | Código: `ControladorFaturamentoFINAL:8637`, `:8808` (`cancelarConta`), `ControladorRetificarConta:836`; o mesmo padrão se repete em outros pontos do controlador | 🟡 | Registro (não exercido) |
 | F2-100 | **RA exigido só na tela, no cancelamento**: sem a permissão e sem RA, a exibição recusa; o POST enviado mesmo assim cancela a conta — o controlador só procura o RA para ligá-lo (`verificarExistenciaRegistroAtendimentoSemLevantarExcecao`) e não recusa. Na retificação, o controlador recusa (`ControladorRetificarConta:426`, `:521`) | FAT-008 V1c; `ExibirCancelarContaAction`, `ControladorFaturamentoFINAL.cancelarConta` | 🔴 | Achado de segurança 36; **CAND-24** (mesma família de D-19, proposta) |
+
+## 24. Lote 5e — Consumo pela origem, na conta: consistir e faturar em sequência (2026-10-08)
+
+Décimo lote, no EAR em modo Batch: a mesma massa e a mesma referência passam pelos **dois** processos do ciclo —
+**consistir leituras e calcular consumos** e, em seguida, **faturar o grupo** —, de modo que a conta é feita do consumo que a
+consistência acabou de gravar, com a sua **origem** (medido, média, mínimo, não medido, situação especial). Fecha as
+variações que dependiam de `gerarConta` (FAT-001 V4/V5, FAT-002 e FAT-003 na conta, CAD-004 por situação especial, MIC-002
+ao faturar), acrescenta MIC-004 e CAD-005 e a retificação por alteração da leitura faturada que ficou do lote 5d.
+
+### 24.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações (fronteira deste lote) | Observa |
+| ------- | ------ | - | -------------------------------- | ------- |
+| CEN-FAT-001 — valor de água pela origem do consumo | A (1) | P0 | V4 (situação especial: média), V5 (situação especial: taxa mínima) | Consistir → faturar |
+| CEN-MIC-001 — consumo por situação de leitura | A (1) | P0 | V5 (situação especial PARALISAR LEITURA / FATURAR MÉDIA) | Só consistir (como V1–V4) |
+| CEN-CAD-004 — faturabilidade por situação | A (1) | P0 | V8 (PARALISAR EMISSÃO), V9 (FATURAR NORMAL) | Consistir → faturar |
+| CEN-FAT-002 — vigência no meio do período | A (1) | P0 | V1c (V1 na conta) | Consistir → faturar |
+| CEN-FAT-003 — esgoto | A (1) | P0 | V2 (alternativo, acima do limite), V2b (dentro), V3 (poço) | Consistir → faturar |
+| CEN-MIC-002 — consumo mínimo e precedência | A (1) | P0 | V3c, V4c, V4d, V5c, V6c (não medido), V8 (medido) | Consistir → faturar |
+| CEN-FAT-007 — retificação | A (1·2) | P0 | V2c (alteração da leitura faturada, motivo 104) | Consistir → faturar → retificar |
+| 🆕 CEN-MIC-004 — anormalidades e limiares | A (1) | P1 | V1–V5 | Só consistir |
+| 🆕 CEN-CAD-005 — rotas por finalidade | A (1) | P1 | V1 (rota comum), V2 (rota marcada alternativa) | Consistir → faturar |
+
+Sufixo **c** nas variações: a mesma entrada da especificação, observada **na conta** (consistência e faturamento em grupo) —
+a variação de mesmo número sem sufixo já foi capturada noutra fronteira (simulação, tela). Os observáveis a–f de FAT-001
+V1–V3 na conta já estão na baseline de CEN-BAT-005 V1 (lote 5: as mesmas contas, com categorias e faixas) — não foram
+recapturados.
+
+**Fora do lote, com motivo**: CEN-MIC-005 (leitura informada × de faturamento) — a análise de leitura é uma **tela** própria
+(alterar/confirmar a leitura em análise), outra fronteira; FAT-002 V2/V3 na conta (vigência no dia da leitura; duas mudanças)
+— só pela simulação; a rota de **entrega** (só a emissão a lê); a emissão de carta/aviso de anormalidade.
+
+### 24.2 Massa
+
+A base de consistência do lote 5c (rota R4, cronograma de 05/2026 com o comando de CONSISTIR) recebe o comando de
+FATURAR da mesma rota e referência; um imóvel por perfil, cada um com hidrômetro, histórico e a medição do mês registrada.
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `cons-comando-faturar-r4-202605.sql` | O comando de FATURAR GRUPO de 05/2026 para a R4, no mesmo cronograma do comando de CONSISTIR |
+| `cons-catalogos.sql` | Tipos de situação especial (1, 2, 3, 5, pelas constantes) com ações SINTÉTICAS coerentes com o nome; motivo de situação; o tipo de consumo FIXO SITUAÇÃO ESPECIAL (10); um tipo de poço |
+| `cons-imv-situacao-*.sql` | Um imóvel por situação especial (média e taxa mínima sem leitura; paralisar emissão e faturar normal com leitura), com o histórico vigente de 05 a 07/2026 |
+| `cons-imv-nao-medido-area.sql` · `cons-override-ligacao-30.sql` · `cons-situacao-ligado-tipo-nao-medido.sql` | Um não medido de 80 m² com mínimo por área de 25 m³; o mínimo fixado de 30 m³ na ligação; a associação situação LIGADO × NÃO MEDIDO (com `mic-override-situacao-15.sql` do lote 4) |
+| `cons-imv-esgoto-alternativo.sql` · `cons-esgoto-alternativo-limite-30.sql` · `cons-imv-esgoto-poco.sql` | Esgoto LIGADO a 80% com alternativo de 50% até 20 (depois 30) m³; esgoto com poço medido (hidrômetro do imóvel) |
+| `tar01-vigencia-2026-05-16.sql` | Uma vigência da TAR-01 que começa no meio do período de leitura de 05/2026 |
+| `cons-imv-virada-hidrometro.sql` e os de alto, estouro, baixo e leitura menor | Um imóvel por anormalidade (CEN-MIC-004) |
+| `cons-rota-alternativa.sql` · `cons-rota-r4-alternativa.sql` | A rota R5 (quadra 5), um imóvel de cada quadra com a rota alternativa apontando a outra; a R4 marcada como alternativa |
+| `cons-retificacao-leitura-catalogos.sql` | O que a retificação exige (situações, motivo 104 ALTERAÇÃO DA LEITURA FATURADA, permissão, concessões, cliente usuário) |
+
+### 24.3 Mecanismo — o que mudou
+
+- **Sobreposição por variação** no executor: uma variação pode declarar `lote`, `modo`, `fronteira`, `precondicoes`,
+  `efeitos`, `observaveis`, `oraculo`, `ressalvas` (…); sem eles, valem os do cenário. É o que permite observar a mesma
+  especificação noutra fronteira sem tocar as baselines existentes: FAT-001, cuja definição nasceu na simulação (Online),
+  ganha V4/V5 no faturamento em grupo (Batch). `baseline.sh` passa a variação ao pedir o modo. **Prova** antes da captura:
+  para as 122 variações existentes, a definição efetiva é **idêntica** à do cenário (comparação de dicionários).
+- Roteiro `faturar_grupo`: o passo `disparar` aceita o **comando** do passo — consistir (2) e depois faturar (1) na mesma
+  execução; `retificar` aceita a **leitura atual**; novo bloco `conta_origem` (contas com leituras, consumos, percentuais de
+  esgoto e coleta, volume de poço, situações das ligações e rota; consumos gravados na execução com tipo, anormalidade,
+  indicador de faturamento, rota e situação especial); a medição de poço sai pela matrícula do imóvel.
+
+### 24.4 Baselines do lote
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| FAT-001 V4 · MIC-001 V5 | Situação PARALISAR LEITURA / FATURAR MÉDIA, sem leitura: consumo **26** (média), tipo **MÉDIA HIDRÔMETRO**, leitura de faturamento **1026** (anterior + média); o consumo registra a situação especial; conta de **26 m³, R$ 105,20** |
+| FAT-001 V5 | Situação PARALISAR LEITURA / FATURAR TAXA MÍNIMA, sem leitura: consumo **10** (mínimo da tarifa × economias), tipo **FIXO SITUAÇÃO ESPECIAL**, leitura de faturamento = a anterior (1000); conta de **10 m³, R$ 32,50** |
+| CAD-004 V8 | PARALISAR EMISSÃO DE CONTAS: a consistência **calcula e grava** o consumo REAL de 27 m³, com indicador de faturamento **NÃO**; **nenhuma conta** |
+| CAD-004 V9 | FATURAR NORMAL: como sem situação — 27 m³ REAL, conta de R$ 110,40; a situação fica registrada no consumo |
+| FAT-002 V1c | Vigência nova em 16/05, leituras em 30/04 e 31/05: cálculo **proporcional por dias** com **os dois dias de leitura** no período (32 dias: 16 + 16) — tarifa mínima 33,80, faixas 4,32 e 5,41 (médias das vigências) → **R$ 114,82** (uma vigência: 110,40; a nova sozinha: 119,24). A conta não registra quais vigências usou, e a faixa grava a tarifa **média arredondada** (4,32) com o valor da tarifa **não arredondada** (10 × 4,315 = 43,15 ≠ 10 × 4,32) |
+| FAT-003 V2 | Esgoto 27 m³ (água × coleta 100%); 27 por economia **acima** do limite de 20 → percentual **padrão 80%**: esgoto **R$ 88,32**, total 198,72; o percentual fotografado na conta é o aplicado |
+| FAT-003 V2b | Limite de 30: 27 **dentro** → o **alternativo 50%** (menor que o padrão): esgoto **R$ 55,20**, total 165,60 |
+| FAT-003 V3 | Poço medido: a consistência da R4 termina **CONCLUÍDA COM ERRO** (NullPointerException) e **nenhum** consumo de 05/2026 é gravado; o faturamento, comandado, roda mesmo assim e fatura o imóvel pelo **mínimo**: água R$ 32,50 (0 m³) + esgoto R$ 26,00 (80% do mínimo) = **R$ 58,50**; o grupo avança |
+| MIC-002 V3c | Não medido com mínimo **fixado na ligação** 30 e mínimo por área 25 → **30**, tipo CONSUMO MÍNIMO FIXADO, conta R$ 126,00: a ligação prevalece sobre a área |
+| MIC-002 V4c | Mínimo de 15 na **situação** LIGADO (área 25): a ligação não pode faturar — sem o tipo de consumo associado à situação —, e a consistência grava o consumo como **0**, indicador NÃO; **nenhuma conta** |
+| MIC-002 V4d | O mesmo mínimo de 15 na situação, com o tipo NÃO MEDIDO **associado** à situação: 25 (área) ≥ 15 → fatura os **25** NÃO MEDIDO, conta R$ 100,00 — o mínimo da situação **libera** o faturamento, não eleva o consumo |
+| MIC-002 V5c | Só o mínimo por **área** (80 m² → 25): **25 NÃO MEDIDO**, conta R$ 100,00 — a regra de não medido da instalação de referência é a área |
+| MIC-002 V6c | Os três (ligação 30, situação 15, área 25): consumo **0**, tipo CONSUMO MÍNIMO FIXADO, indicador NÃO; **nenhuma conta** — o limiar da situação anula até o fixado |
+| MIC-002 V8 | **Medido** 1000 → 1027 (27) com mínimo fixado de 30 na ligação: fatura **30** (CONSUMO MÍNIMO FIXADO), conta R$ 126,00 — com as leituras 1000 → 1027 impressas |
+| FAT-007 V2c | Retificar com o motivo **ALTERAÇÃO DA LEITURA FATURADA** a conta gerada na sequência (1027 → 1020): conta nova de 20 m³, R$ 74,00; a **leitura de faturamento** da medição vira 1020 **em lugar** (a informada continua 1027; o consumo medido continua 27); o consumo **faturado** do histórico vira **20 em lugar** e a média é recalculada (25); a auditoria registra só a conta |
+| MIC-004 V1 | Virada de hidrômetro de 4 dígitos (9990 → 0015, consumo de virada 25): **não reconhecida** — consumo pela **média 26**, anormalidade LEITURA ATUAL MENOR QUE ANTERIOR; leitura de faturamento **17** (9990 + 26 − 9999) |
+| MIC-004 V2 | Alto consumo (60 > 50 e > 2 × 26): fatura os **60** REAL, anormalidade ALTO CONSUMO |
+| MIC-004 V3 | Estouro (110 > 100 e > 3 × 26): fatura a **média 26** (ESTOURO COBRANÇA MÉDIA), leitura de faturamento 1026; o consumo medido de 110 fica na medição |
+| MIC-004 V4 | Baixo consumo (5 < 50% de 26): fatura os **5** REAL, anormalidade BAIXO CONSUMO |
+| MIC-004 V5 | Leitura menor sem virada (1000 → 990): consumo pela **média 26**, LEITURA ATUAL MENOR QUE ANTERIOR, leitura de faturamento 1026. Em nenhuma anormalidade há OS gerada |
+| CAD-005 V1 | R4 **comum**: só o imóvel da quadra 4 **sem** alternativa é consistido e faturado; o da quadra 4 com alternativa R5 e o da quadra 5 com alternativa R4 ficam de fora |
+| CAD-005 V2 | R4 marcada **alternativa**: só o imóvel que **aponta** a R4 é consistido e faturado (conta na R4); o imóvel da própria quadra 4, sem alternativa, **deixa de ser lido e faturado** |
+
+### 24.5 Determinismo
+
+- **Captura**: **23 de 23** variações com as duas execuções **idênticas byte a byte** (`20261008T211822Z-capturar`). Antes, duas rodadas de exploração dirigida (todos os perfis na mesma rota — foi assim que o poço revelou a falha da rota inteira e o faturamento pelo mínimo) e uma passada exploratória das 22 primeiras variações, sem gravar (`20261008T193822Z-verificar`), que levaram à V4d e à matrícula da medição de poço.
+- **Verificação independente** (3ª execução): lote 5e **23/23** conferem (`20261009T004524Z-verificar`) — a maior parte entre 21h e 23h30 locais, a janela em que o relógio da observação já errou (F2-86): as datas relativas à execução conferem.
+- **Regressão** — executor (sobreposição por variação, provada sem efeito nas variações existentes) e roteiro (aditivos):
+  lotes 5, 5b, 5c, 5d e o piloto **55/55** conferem — o lote 5 em `20261009T022845Z-verificar` (interrompida por um
+  desligamento do computador, sem baseline parcial), os demais em `20261010T011729Z-verificar` (44 de 45) e a CEN-FAT-008 V1,
+  que divergiu só nas datas relativas à execução por ter atravessado a meia-noite local (F2-114), de novo em
+  `20261010T032824Z-verificar`. As 67 baselines Online dos lotes de Segurança, 3 e 4 usam roteiros que não mudaram, e o
+  executor só muda o resultado de uma variação que declare campos próprios. As **145** baselines conferem.
+
+### 24.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-101 | A base não tem nada da situação especial de faturamento (tipos, motivos), nem o tipo de consumo FIXO SITUAÇÃO ESPECIAL (10) que ela grava, nem tipo de poço, nem a associação **situação da ligação × tipo de consumo** (`lig_agua_sit_cons_tipo`) que decide se uma ligação com mínimo na situação fatura. As **ações** de cada situação especial (consumo e leitura a faturar, com e sem leitura) são configuração de instalação | Exploração; `cons-catalogos.sql` | ⚙️ | Massa cria com configuração SINTÉTICA coerente com o nome; checklist de instalação |
+| F2-102 | **Consistir → faturar**: a conta é feita do que a consistência gravou — leituras de faturamento, consumo e a sua origem, e a situação especial vigente, que o consumo registra | Todas as variações em sequência | 🟢 | O consumo pela origem chega à conta sem transformação |
+| F2-103 | **Situação especial**: média → MÉDIA HIDRÔMETRO e leitura anterior + média; taxa mínima → o mínimo da tarifa, FIXO SITUAÇÃO ESPECIAL, leitura = anterior; paralisar emissão → o consumo é calculado e gravado, mas não fatura (sem conta); faturar normal → normal | FAT-001 V4/V5, MIC-001 V5, CAD-004 V8/V9; `dadosFaturamentoEspecialMedido`, `verificarNaoGeracaoConta` | 🟢 | Responde FAT-001 V4/V5, MIC-001 V5 e a forma de faturamento de CAD-004 |
+| F2-104 | **Precedência do mínimo ao faturar**: no não medido, o mínimo **fixado na ligação** prevalece sobre o por **área**, que é a regra da instalação (não a tarifa); no medido, o fixado vale quando o consumo é menor (27 → 30) — a conta imprime as leituras (27) com consumo 30 | MIC-002 V3c, V5c, V8; `ControladorMicromedicao:2134-2165`, `verificarConsumoMinimoCobrado` | 🟢 | Responde a precedência que CEN-MIC-002 deixou ao faturamento |
+| F2-105 | O **mínimo na situação** da ligação é um **limiar**, não um piso: a ligação só fatura com consumo ≥ ao mínimo **e** o tipo de consumo associado à situação; senão, a consistência grava o consumo como **0** e não há conta — inclusive com o mínimo fixado na ligação (V6c). Com o tipo associado (V4d), a ligação fatura o consumo calculado (25) — o mínimo da situação não o eleva. | MIC-002 V4c, V4d, V6c; `permiteFaturamentoParaAgua:1957-1990`, `ControladorMicromedicao:2395-2449` | 🔵 | Depende de dado de instalação; responde V4/V6 de MIC-002 ao faturar |
+| F2-106 | **Vigência no meio do período, na conta**: proporção por dias com **os dois dias de leitura** incluídos (o dia da leitura anterior entra também no período do mês anterior); a conta não guarda as vigências usadas; a linha de faixa não fecha por multiplicação (tarifa média arredondada × consumo ≠ valor) | FAT-002 V1c; `calculoProporcionalMaisDeUmaTarifa` (`qtdDiasLeitura += 1`) | 🔵 | Refina F2-05 (dias corridos); a linha do documento é de CEN-FAT-009 |
+| F2-107 | **Esgoto**: volume = consumo de água × coleta; o alternativo, menor que o padrão, vale só com o consumo por economia ≤ ao limite; o percentual aplicado é o fotografado na conta | FAT-003 V2, V2b; `ControladorFaturamentoFINAL:53030-53080` | 🟢 | Responde V2 de FAT-003 |
+| F2-108 | **Um poço medido derruba a consistência da rota inteira**: o consumo de esgoto é criado **sem imóvel** e o ramo do poço com leitura imprime `consumoHistorico.getImovel().getId()` — NullPointerException; como a consistência grava a rota **em bloco, no fim** (ao contrário do faturamento, imóvel a imóvel — F2-63), **nenhum** imóvel da rota fica com consumo | FAT-003 V3; exploração (todos os perfis na mesma rota); `ControladorMicromedicao:1700`, `:3269`, `:1715-1720` | 🔴 | O volume de poço nunca compõe o esgoto quando há leitura — **CAND-26** |
+| F2-109 | **Faturamento sem a consistência**: com o comando de faturar já existente, o processo roda mesmo com a consistência da rota falha e **fatura todos pelo mínimo** (consumo 0), avançando o grupo; a precedência entre atividades só é conferida ao **comandar** | FAT-003 V3; exploração (11 contas pelo mínimo); `selecionarAtividadeFaturamentoQuePodeSerComandada:6103` | 🔴 | **CAND-27** (família de CAND-11) |
+| F2-110 | **Virada de hidrômetro nunca reconhecida**: `verificarViradaDeHidrometro` compara o tipo de medição por **referência** (`getId() == MedicaoTipo.LIGACAO_AGUA`, constante `new Integer(1)`); com a medição vinda do banco, a comparação falha, o número de dígitos fica 0 e o consumo de virada sai negativo — a leitura é tratada como **menor que a anterior** e o mês, faturado pela **média**. A leitura de faturamento é ajustada com 9999, não 10.000 (17 em vez de 16) | MIC-004 V1; `ControladorMicromedicao.verificarViradaDeHidrometro`, `obterNumeroLimiteHidrometro`; explicação pelo código, comportamento pela baseline | 🔴 | Toca consumo faturado — **CAND-25** (oráculo 1 até decisão) |
+| F2-111 | **Limiares**: alto consumo fatura o real com anormalidade; estouro fatura a **média** (o medido fica na medição); baixo consumo fatura o real; leitura menor sem virada vai à média. Nenhuma anormalidade gerou OS | MIC-004 V2–V5 | 🟢 | Responde V2–V5 de MIC-004 |
+| F2-112 | **Rota alternativa por indicador da rota**: rota comum lê os imóveis da quadra **sem** alternativa; rota marcada alternativa lê **só** os que a apontam e **abandona** os da própria quadra; imóvel com alternativa apontando uma rota comum **não é lido por nenhuma** | CAD-005 V1, V2; `pesquisarImovelParaConsistirLeitura` | 🔵 | Responde CAD-005 (a alternativa só prevalece se a rota estiver marcada) — **CAND-28** (imóveis órfãos) |
+| F2-113 | **Retificação por alteração da leitura faturada** (motivo 104): corrige **em lugar** a leitura de faturamento da medição e o consumo **faturado** do histórico, e recalcula a média; a leitura informada e o consumo medido da medição **não** mudam; a auditoria registra só a conta | FAT-007 V2c; `ControladorRetificarConta:148-170`, `:262-273` | 🔵 | Responde o caminho que o lote 5d deixou; evidência para o **alcance de D-14** (só este caminho corrige o faturado) |
+| F2-114 | **Execução que atravessa a meia-noite local**: as datas relativas à execução (`data da execução`) comparam a data gravada pelo legado com o `current_date` **no momento da observação**; uma execução que começa antes da meia-noite (America/Belem) e observa depois vê a conta emitida "ontem" e diverge só nessas datas. Não é comportamento do GSAN | Regressão `20261010T011729Z-verificar`, CEN-FAT-008 V1 (início 23:58, fim 00:00 locais); reverificada às 00:28 — confere | ⚙️ | Limitação da ferramenta registrada (complementa F2-86); a divergência nessas datas, com a execução atravessando a meia-noite local, pede reverificação — não nova baseline; baselines inalteradas |
