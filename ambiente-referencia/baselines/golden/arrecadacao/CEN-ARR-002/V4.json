@@ -1,0 +1,513 @@
+{
+  "cenario": "CEN-ARR-002",
+  "descricao": "IMV-03 paga R$ 10,00 A MAIS que a conta, no prazo",
+  "efeitos_no_banco": {
+    "arrecadacao.arrecadador_contrato": "alterado",
+    "arrecadacao.arrecadador_mov_item": "alterado",
+    "arrecadacao.arrecadador_movimento": "alterado",
+    "arrecadacao.aviso_bancario": "alterado",
+    "arrecadacao.devolucao": 0,
+    "arrecadacao.pagamento": "alterado",
+    "batch.funcionalidade_iniciada": 2,
+    "batch.processo_iniciado": 2,
+    "faturamento.conta": 3
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/arrecadacao.md — CEN-ARR-002",
+  "fora_desta_fronteira": {
+    "VALOR A BAIXAR (4) e VALOR EM EXCESSO (3)": "nenhuma variação os produziu: a classificação não atribui essas situações (são de manutenção manual)",
+    "acréscimos por impontualidade (V2)": "o pagamento em atraso é classificado contra o valor da conta; os acréscimos são gerados como débito a cobrar no encerramento da arrecadação (CEN-ARR-010) e o valor atualizado da tela depende do dia — fora da comparação"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/batch-faturamento-g1-202605.sql",
+      "sha256": "0ed2b2838ce3938407e2e92341ef3e9bd187fd9b98e88f9080bbb74e11c45b28"
+    },
+    {
+      "arquivo": "massas/deltas/arr-arrecadador.sql",
+      "sha256": "077380c2f08f3f4b26baea7e759a36404b9db2439690d78b845e8db8cd7128f1"
+    },
+    {
+      "arquivo": "massas/deltas/arr-parametros.sql",
+      "sha256": "92437517ec8ee265cb961a751557dbcddbac2ab61ac223fac8bf1dd6278a7570"
+    },
+    {
+      "arquivo": "massas/deltas/arr-processo-classificar.sql",
+      "sha256": "f96d15f12a6ad65a3244cbaf5f5f23d7dbd83a1fe48d4beb0bfb0eeac0dae77a"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-catalogos.sql",
+      "sha256": "c859246d9955ae4cc7cfae4f13b752f290fc15d9c58507612af40bd30037e076"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+      "sha256": "633a1317c98545f154fccfbe24782c772671205b38d0a14463a79d842d7c4e1a"
+    },
+    {
+      "arquivo": "massas/deltas/arr-clientes-usuarios.sql",
+      "sha256": "c0724a3797af2ac895e70b54d154e4b5b0c90324cdef1bfeddc275285cd642a4"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "avisos": [
+      {
+        "arrecadacao_calculado": "262.60",
+        "arrecadacao_informado": "262.60",
+        "com_conta_bancaria": true,
+        "contabilizado": "0.00",
+        "credito_debito": 1,
+        "data_lancamento": "11/06/2026",
+        "data_prevista": "11/06/2026",
+        "data_realizada": "11/06/2026",
+        "devolucao_calculado": "0.00",
+        "devolucao_informado": "0.00",
+        "documento": 0,
+        "forma": "GUICHE DE CAIXA (SINTETICO)",
+        "nsa": 1,
+        "ordem": 1,
+        "realizado": "262.60",
+        "referencia_arrecadacao": 202606,
+        "sequencial": 0
+      }
+    ],
+    "contas_ciclo": [
+      {
+        "autor": null,
+        "clientes": 1,
+        "consumo_agua": 27,
+        "consumo_esgoto": 0,
+        "data_cancelamento": null,
+        "data_emissao": "data da execuÃ§Ã£o",
+        "data_retificacao": null,
+        "economias": 1,
+        "indicador_alteracao_vencimento": 2,
+        "indicador_historico": 2,
+        "ligada_a_ra": false,
+        "matricula": 100013,
+        "motivo_cancelamento": null,
+        "motivo_retificacao": null,
+        "ordem": 1,
+        "origem": null,
+        "referencia": 202605,
+        "referencia_contabil": "202605",
+        "retificacoes": null,
+        "situacao": "NORMAL",
+        "situacao_anterior": null,
+        "valor_agua": "110.40",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_total": "110.40",
+        "vencimento": "10/06/2026"
+      },
+      {
+        "autor": null,
+        "clientes": 1,
+        "consumo_agua": 47,
+        "consumo_esgoto": 0,
+        "data_cancelamento": null,
+        "data_emissao": "data da execuÃ§Ã£o",
+        "data_retificacao": null,
+        "economias": 3,
+        "indicador_alteracao_vencimento": 2,
+        "indicador_historico": 2,
+        "ligada_a_ra": false,
+        "matricula": 100021,
+        "motivo_cancelamento": null,
+        "motivo_retificacao": null,
+        "ordem": 1,
+        "origem": null,
+        "referencia": 202605,
+        "referencia_contabil": "202605",
+        "retificacoes": null,
+        "situacao": "NORMAL",
+        "situacao_anterior": null,
+        "valor_agua": "168.09",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_total": "168.09",
+        "vencimento": "10/06/2026"
+      },
+      {
+        "autor": null,
+        "clientes": 1,
+        "consumo_agua": 58,
+        "consumo_esgoto": 0,
+        "data_cancelamento": null,
+        "data_emissao": "data da execuÃ§Ã£o",
+        "data_retificacao": null,
+        "economias": 3,
+        "indicador_alteracao_vencimento": 2,
+        "indicador_historico": 2,
+        "ligada_a_ra": false,
+        "matricula": 100030,
+        "motivo_cancelamento": null,
+        "motivo_retificacao": null,
+        "ordem": 1,
+        "origem": null,
+        "referencia": 202605,
+        "referencia_contabil": "202605",
+        "retificacoes": null,
+        "situacao": "NORMAL",
+        "situacao_anterior": null,
+        "valor_agua": "252.60",
+        "valor_creditos": "0.00",
+        "valor_debitos": "0.00",
+        "valor_esgoto": "0.00",
+        "valor_total": "252.60",
+        "vencimento": "10/06/2026"
+      }
+    ],
+    "contratos": [
+      {
+        "contrato": "901",
+        "nsa_retorno_codigo_barras": 1
+      }
+    ],
+    "devolucoes": [],
+    "funcionalidades": [
+      {
+        "descricao": "Faturar Grupo Faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 63,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      },
+      {
+        "descricao": "Classificar Pagamentos e Devolucoes",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 545,
+        "inicio_registrado": true,
+        "processo": 2,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "itens": [
+      {
+        "aceitacao": 1,
+        "codigo": "G",
+        "conta": {
+          "matricula": 100030,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "matricula": 100030,
+        "nsa": 1,
+        "ocorrencia": "OK",
+        "ordem": 1,
+        "registro": "G00010000000000000000202606102026061182600000002526009010010001000300105202620003000000026260000000000000002000000011                       1        *",
+        "valor_documento": "262.60"
+      }
+    ],
+    "movimentos": [
+      {
+        "banco": 901,
+        "convenio": "901",
+        "data_geracao": "11/06/2026",
+        "empresa": "EMPRESA SINTETICA",
+        "nome_banco": "BANCO SINTETICO",
+        "nsa": 1,
+        "registros": 3,
+        "remessa": 2,
+        "servico": "CODIGO DE BARRAS",
+        "valor_total": "262.60",
+        "versao_layout": 4
+      }
+    ],
+    "pagamentos_arrecadacao": [
+      {
+        "aviso": 1,
+        "conta": {
+          "matricula": 100030,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "data_pagamento": "10/06/2026",
+        "documento_agregador": "CONTA",
+        "documento_tipo": "CONTA",
+        "excedente": "10.00",
+        "expurgado": null,
+        "forma": "GUICHE DE CAIXA (SINTETICO)",
+        "indicador_recuperacao_credito": 2,
+        "item": {
+          "nsa": 1,
+          "ordem": 1
+        },
+        "localidade": 1,
+        "matricula": 100030,
+        "processamento_registrado": true,
+        "referencia_arrecadacao": 202606,
+        "referencia_pagamento": 202605,
+        "situacao": "VALOR NAO CONFERE",
+        "situacao_anterior": null,
+        "valor": "262.60"
+      }
+    ],
+    "passos": [
+      {
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+        "sha256": "396a950fe66d8d09164044258edc0d6e779a9bf52ea287d2866b9476030914b5",
+        "tipo": "aplicar"
+      },
+      {
+        "arquivo": {
+          "linhas": [
+            "A2901                 EMPRESA SINTETICA   901BANCO SINTETICO     2026061100000104CODIGO DE BARRAS                                                     ",
+            "G00010000000000000000202606102026061182600000002526009010010001000300105202620003000000026260000000000000002000000011                       1         ",
+            "Z00000300000000000026260                                                                                                                              "
+          ],
+          "nome": "MOVIMENTO000001.ARR",
+          "registros": [
+            {
+              "conta_no_envio": true,
+              "imovel": 100030,
+              "referencia": 202605,
+              "valor_documento": "252.60",
+              "valor_recebido": "262.60"
+            }
+          ],
+          "sha256": "c970a7ef97de6bf40e6c924cc488dad126f42a2c140500c24d8cbc4b3fecbb7d",
+          "total_trailer": "262.60"
+        },
+        "http": 200,
+        "resultado": "enviado",
+        "tela": {
+          "convenio_listado": true,
+          "http": 200
+        },
+        "tipo": "movimento"
+      },
+      {
+        "movimento_gravado": true,
+        "nsa": 1,
+        "tipo": "aguardar_movimento"
+      },
+      {
+        "http": 200,
+        "resultado": "inserido",
+        "tela": {
+          "http": 200,
+          "processo": "CLASSIFICAR PAGAMENTOS (SINTETICO)"
+        },
+        "tipo": "iniciar_processo"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "debitos": {
+          "100013": {
+            "contas": [
+              {
+                "referencia": "05/2026",
+                "situacao": "NOR",
+                "valor_agua": "110.40",
+                "valor_conta": "110.40",
+                "valor_creditos": "0.00",
+                "valor_debitos": "0.00",
+                "valor_esgoto": "0.00",
+                "valor_impostos": "0.00",
+                "vencimento": "10/06/2026"
+              }
+            ],
+            "contas_inconformes": [],
+            "creditos_a_realizar": [],
+            "debitos_a_cobrar": [],
+            "guias": [],
+            "http": 200,
+            "total_contas": {
+              "documentos": "1 doc(s)",
+              "valor_contas": "110.40"
+            },
+            "valor_total_debitos": "110.40"
+          },
+          "100021": {
+            "contas": [
+              {
+                "referencia": "05/2026",
+                "situacao": "NOR",
+                "valor_agua": "168.09",
+                "valor_conta": "168.09",
+                "valor_creditos": "0.00",
+                "valor_debitos": "0.00",
+                "valor_esgoto": "0.00",
+                "valor_impostos": "0.00",
+                "vencimento": "10/06/2026"
+              }
+            ],
+            "contas_inconformes": [],
+            "creditos_a_realizar": [],
+            "debitos_a_cobrar": [],
+            "guias": [],
+            "http": 200,
+            "total_contas": {
+              "documentos": "1 doc(s)",
+              "valor_contas": "168.09"
+            },
+            "valor_total_debitos": "168.09"
+          },
+          "100030": {
+            "contas": [],
+            "contas_inconformes": [
+              {
+                "data_pagamento": "10/06/2026",
+                "referencia": "05/2026",
+                "situacao_anterior": null,
+                "situacao_atual": "NCONF",
+                "valor_conta": "252.60",
+                "valor_pagamento": "262.60"
+              }
+            ],
+            "creditos_a_realizar": [],
+            "debitos_a_cobrar": [],
+            "guias": [],
+            "http": 200,
+            "total_contas": null,
+            "valor_total_debitos": "0.00"
+          }
+        },
+        "tipo": "consultar_debitos"
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "detalhes": [
+        "arrecadacao",
+        "ciclo_conta"
+      ],
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+          "tipo": "aplicar"
+        },
+        {
+          "nsa": 1,
+          "registros": [
+            {
+              "imovel": 100030,
+              "referencia": 202605,
+              "valor_recebido": "+10.00"
+            }
+          ],
+          "tipo": "movimento"
+        },
+        {
+          "nsa": 1,
+          "tipo": "aguardar_movimento"
+        },
+        {
+          "processo": 3201,
+          "tipo": "iniciar_processo",
+          "tipo_processo": 4
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "imoveis": [
+            100013,
+            100021,
+            100030
+          ],
+          "tipo": "consultar_debitos"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+    "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+    "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+    "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução"
+  },
+  "titulo": "Classificação contra conta vigente, por valor e prazo",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V4"
+}

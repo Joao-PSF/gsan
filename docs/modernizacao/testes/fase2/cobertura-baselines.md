@@ -9,16 +9,16 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 33 | 33 | 221 | 142 | 142 |
+| **A** | 74 | 38 | 38 | 221 | 163 | 163 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 26 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 35.
+**P0 da classe A com baseline**: 30 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 40.
 
 ## Por domínio (classe A)
 
 | Domínio | Cenários A | Com baseline | Baselines gravadas |
 | ------- | ---------- | ------------ | ------------------ |
-| Arrecadação | 11 | 0 | 0 |
+| Arrecadação | 11 | 5 | 21 |
 | Batch, relatórios e integrações | 11 | 5 | 9 |
 | Cadastro e atendimento | 13 | 7 | 29 |
 | Cobrança | 7 | 0 | 0 |
@@ -31,6 +31,11 @@
 
 | Cenário | Prioridade | Lote | Variações definidas | Baselines | Fora do lote | Fora desta fronteira |
 | ------- | ---------- | ---- | ------------------- | --------- | ------------ | -------------------- |
+| CEN-ARR-001 | P1 | batch-arrecadacao | V1, V2, V2b, V3, V4, V5 | V1, V2, V2b, V3, V4, V5 | — | classificação, e-mail do processamento, débito automático, ficha de compensação, cartão |
+| CEN-ARR-002 | P0 | batch-arrecadacao | V1, V1b, V1c, V2, V3, V4 | V1, V1b, V1c, V2, V3, V4 | — | acréscimos por impontualidade (V2), VALOR A BAIXAR (4) e VALOR EM EXCESSO (3) |
+| CEN-ARR-003 | P0 | batch-arrecadacao | V1, V2, V5 | V1, V2, V5 | — | V1 — reclassificação manual, V3 — conta prescrita, V4 — conta parcelada, conta cancelada de referência contábil anterior à de faturamento |
+| CEN-ARR-004 | P0 | batch-arrecadacao | V1, V1b, V1c | V1, V1b, V1c | — | V2–V4 — devolução (guia, crédito a realizar, RA) |
+| CEN-ARR-005 | P0 | batch-arrecadacao | V1, V2, V3 | V1, V2, V3 | — | V4 — conta arquivada |
 | CEN-ATE-007 | P0 | atendimento | V1 | V1 | — | situação derivada do imóvel, V2 religação e V3 ligação de esgoto, o encerramento não é gatilho |
 | CEN-ATE-008 | P0 | atendimento | V1, V1b, V2, V3, V3b, V4, V5 | V1, V1b, V2, V3, V3b, V4, V5 | — | valor de cada parcela e distribuição de centavos |
 | CEN-BAT-001 | P1 | batch-faturamento | V1, V2 | V1, V2 | — | V3 processo de relatório, usuário técnico de batch (USR-11), parâmetros gravados |

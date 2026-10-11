@@ -20,10 +20,9 @@ class Sessao:
         self.abridor = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.jar))
         self.respostas = []
 
-    def _pedir(self, caminho, dados=None, registrar_corpo=True, cabecalhos=None):
+    def _pedir(self, caminho, dados=None, registrar_corpo=True, cabecalhos=None, corpo=None):
         url = f'{self.base}/{caminho.lstrip("/")}'
-        corpo = None
-        if dados is not None:
+        if dados is not None and corpo is None:
             corpo = urllib.parse.urlencode(dados, encoding=CODIFICACAO).encode('ascii')
         pedido = urllib.request.Request(url, data=corpo, headers=cabecalhos or {})
         # Erro HTTP (ex.: 500 do legado) é resultado observável, não falha do roteiro.
@@ -50,6 +49,26 @@ class Sessao:
 
     def post(self, caminho, dados, registrar_corpo=True, cabecalhos=None):
         return self._pedir(caminho, dados, registrar_corpo=registrar_corpo, cabecalhos=cabecalhos)
+
+    def post_multipart(self, caminho, campos, arquivo=None):
+        """Formulário multipart/form-data (envio de arquivo): `campos` na ordem do formulário e `arquivo` =
+        (campo, nome, bytes). No registro da resposta ficam os campos e o arquivo pelo nome, tamanho e sha256."""
+        import hashlib
+        fronteira = '----gsanfase2' + hashlib.sha256(repr((campos, arquivo)).encode()).hexdigest()[:24]
+        partes = []
+        for nome, valor in campos:
+            partes.append(f'--{fronteira}\r\nContent-Disposition: form-data; name="{nome}"\r\n\r\n{valor}\r\n'
+                          .encode(CODIFICACAO))
+        registro = dict(campos)
+        if arquivo:
+            campo, nome_arquivo, conteudo = arquivo
+            partes.append(f'--{fronteira}\r\nContent-Disposition: form-data; name="{campo}"; filename="{nome_arquivo}"\r\n'
+                          'Content-Type: application/octet-stream\r\n\r\n'.encode(CODIFICACAO) + conteudo + b'\r\n')
+            registro[campo] = {'arquivo': nome_arquivo, 'bytes': len(conteudo),
+                               'sha256': hashlib.sha256(conteudo).hexdigest()}
+        corpo = b''.join(partes) + f'--{fronteira}--\r\n'.encode(CODIFICACAO)
+        return self._pedir(caminho, registro, cabecalhos={'Content-Type': f'multipart/form-data; boundary={fronteira}'},
+                           corpo=corpo)
 
     def tentar_login(self, login, senha):
         """Uma tentativa de login, sem registrar o corpo (a senha). Devolve o HTML da resposta."""

@@ -12,6 +12,7 @@ import re
 import secrets
 import time
 import zipfile
+from decimal import Decimal
 
 from gsan_http import Sessao, moeda, texto_visivel, valor_campo
 
@@ -545,8 +546,77 @@ def _conta_origem(ctx):
     }
 
 
+def _arrecadacao(ctx):
+    """Recepção e classificação (lote 6): cada movimento pelo NSA, com o cabeçalho e os totais do trailer; os itens na
+    ordem do arquivo (registro original, ocorrência, aceitação, imóvel e documento); os pagamentos pela matrícula e
+    referência, com valor, excedente, datas, referências, situações atual e anterior, a conta pela identidade documental e
+    o item do movimento de origem; os avisos bancários (calculado × informado); as devoluções; o NSA do contrato. Ids
+    técnicos nunca saem."""
+    item = ("(select json_build_object('nsa', m.armv_nnnsa, 'ordem', (select count(*) from arrecadacao.arrecadador_mov_item k"
+            " where k.armv_id = i.armv_id and k.amit_id <= i.amit_id)) from arrecadacao.arrecadador_mov_item i"
+            " join arrecadacao.arrecadador_movimento m using (armv_id) where i.amit_id = {c})")
+    aviso = "(select count(*) from arrecadacao.aviso_bancario k where k.avbc_id <= {c})"
+    conta = ("case when {c} is null then null else coalesce((select " + IDENT_JSON.format(a='x') +
+             " from ident x where x.cnta_id = {c}), json_build_object('conta_geral_sem_documento', true)) end")
+    return {
+        'movimentos': _linhas(ctx, "select m.armv_nnnsa as nsa, m.armv_cdremessa as remessa, m.armv_cdconvenio as convenio,"
+                                   " m.armv_nmempresa as empresa, m.armv_cdbanco as banco, m.armv_nmbanco as nome_banco,"
+                                   " to_char(m.armv_dtgeracao, 'DD/MM/YYYY') as data_geracao, m.armv_nnversaolayout as versao_layout,"
+                                   " m.armv_dsidentificacaoservico as servico, m.armv_nnregistrosmovimento as registros,"
+                                   " m.armv_vltotalmovimento::text as valor_total"
+                                   " from arrecadacao.arrecadador_movimento m order by m.armv_id"),
+        'itens': _linhas(ctx, IDENT +
+                         "select m.armv_nnnsa as nsa, row_number() over (partition by i.armv_id order by i.amit_id) as ordem,"
+                         " r.rgcd_cdregistrocodigo as codigo, i.amit_cnregistro as registro, i.amit_dsocorrencia as ocorrencia,"
+                         " i.amit_icaceitacao as aceitacao, i.imov_id as matricula, i.amit_vldocumento::text as valor_documento,"
+                         f" {conta.format(c='i.cnta_id')} as conta"
+                         " from arrecadacao.arrecadador_mov_item i join arrecadacao.arrecadador_movimento m using (armv_id)"
+                         " left join arrecadacao.registro_codigo r using (rgcd_id) order by i.armv_id, i.amit_id"),
+        'pagamentos_arrecadacao': _linhas(ctx, IDENT +
+                                          "select p.imov_id as matricula, p.pgmt_amreferenciapagamento as referencia_pagamento,"
+                                          " p.pgmt_vlpagamento::text as valor, p.pgmt_vlexcedente::text as excedente,"
+                                          " to_char(p.pgmt_dtpagamento, 'DD/MM/YYYY') as data_pagamento,"
+                                          " p.pgmt_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                          " sa.pgst_dspagamentosituacao as situacao, sp.pgst_dspagamentosituacao as situacao_anterior,"
+                                          " d.dotp_dsdocumentotipo as documento_tipo, da.dotp_dsdocumentotipo as documento_agregador,"
+                                          f" {conta.format(c='p.cnta_id')} as conta, p.loca_id as localidade,"
+                                          " f.arfm_dsarrecadacaoforma as forma,"
+                                          f" {item.format(c='p.amit_id')} as item, {aviso.format(c='p.avbc_id')} as aviso,"
+                                          " p.pgmt_icclassrecupcredito as indicador_recuperacao_credito,"
+                                          " p.pgmt_icexpurgado as expurgado, (p.pgmt_tmprocessamento is not null) as processamento_registrado"
+                                          " from arrecadacao.pagamento p"
+                                          " left join arrecadacao.pagamento_situacao sa on sa.pgst_id = p.pgst_idatual"
+                                          " left join arrecadacao.pagamento_situacao sp on sp.pgst_id = p.pgst_idanterior"
+                                          " left join cobranca.documento_tipo d on d.dotp_id = p.dotp_id"
+                                          " left join cobranca.documento_tipo da on da.dotp_id = p.dotp_idagregador"
+                                          " left join arrecadacao.arrecadacao_forma f on f.arfm_id = p.arfm_id"
+                                          " order by p.imov_id, p.pgmt_amreferenciapagamento, p.pgmt_dtpagamento, p.pgmt_id"),
+        'avisos': _linhas(ctx, "select row_number() over (order by a.avbc_id) as ordem, m.armv_nnnsa as nsa,"
+                               " to_char(a.avbc_dtlancamento, 'DD/MM/YYYY') as data_lancamento,"
+                               " to_char(a.avbc_dtprevista, 'DD/MM/YYYY') as data_prevista,"
+                               " to_char(a.avbc_dtrealizada, 'DD/MM/YYYY') as data_realizada, a.avbc_nnsequencial as sequencial,"
+                               " a.avbc_amreferenciaarrecadacao as referencia_arrecadacao,"
+                               " a.avbc_vlarrecadacaocalculado::text as arrecadacao_calculado,"
+                               " a.avbc_vlarrecadacaoinformado::text as arrecadacao_informado,"
+                               " a.avbc_vldevolucaocalculado::text as devolucao_calculado,"
+                               " a.avbc_vldevolucaoinformado::text as devolucao_informado, a.avbc_vlrealizado::text as realizado,"
+                               " a.avbc_vlcontabilizado::text as contabilizado, a.avbc_iccreditodebito as credito_debito,"
+                               " a.avbc_nndocumento as documento, f.arfm_dsarrecadacaoforma as forma,"
+                               " (a.ctbc_id is not null) as com_conta_bancaria"
+                               " from arrecadacao.aviso_bancario a left join arrecadacao.arrecadador_movimento m using (armv_id)"
+                               " left join arrecadacao.arrecadacao_forma f on f.arfm_id = a.arfm_id order by a.avbc_id"),
+        'devolucoes': _linhas(ctx, "select d.imov_id as matricula, d.devl_vldevolucao::text as valor,"
+                                   " to_char(d.devl_dtdevolucao, 'DD/MM/YYYY') as data_devolucao,"
+                                   " d.devl_amreferenciaarrecadacao as referencia_arrecadacao, s.dvst_dsdevolucaosituacao as situacao"
+                                   " from arrecadacao.devolucao d left join arrecadacao.devolucao_situacao s on s.dvst_id = d.dvst_idatual"
+                                   " order by d.devl_id"),
+        'contratos': _linhas(ctx, "select c.arct_nncontrato as contrato, c.arct_nnnsaretornocdbarras as nsa_retorno_codigo_barras"
+                                  " from arrecadacao.arrecadador_contrato c order by c.arct_id"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
-            'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem}
+            'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -820,16 +890,193 @@ def _iniciar_processo(ctx, passo):
     return r
 
 
+# --- Arrecadação: recepção do movimento do arrecadador (lote 6) --------------------------------------------------------
+# O arquivo é o retorno de um arrecadador no layout de 150 posições que a recepção valida — registros A, G e Z
+# (ControladorArrecadacao.registrarMovimentoArrecadadores:1679, distribuirdadosRegistroMovimentoArrecadador:10949) — e o
+# código de barras de cada registro G é o que o GSAN imprime na conta (obterRepresentacaoNumericaCodigoBarra:38166,
+# obterIdentificacaoPagamento:38350): localidade, matrícula, referência e dígito da conta lidos do banco, como a emissão os
+# leria. Dinheiro em centavos exatos (Decimal), nunca float. O arquivo inteiro sai no resultado: é a entrada da variação.
+
+def _dv_modulo10(numero):
+    """Util.obterDigitoVerificadorModulo10: pesos 2 e 1 a partir da direita, somando os algarismos dos produtos."""
+    soma, peso = 0, 2
+    for d in reversed(str(numero)):
+        soma += sum(int(x) for x in str(int(d) * peso))
+        peso = 3 - peso
+    return (10 - soma % 10) % 10
+
+
+def _centavos(valor):
+    c = Decimal(str(valor)) * 100
+    if c != c.to_integral_value() or c < 0:
+        raise ValueError(f'valor fora de centavos: {valor!r}')
+    return int(c)
+
+
+def _registro_g(ctx, reg, sequencia):
+    """Um registro G: o código de barras da conta (ou de um documento que não existe) e o valor recebido pelo banco."""
+    imovel, ref = int(reg['imovel']), int(reg['referencia'])
+    situacoes = ', '.join(str(int(s)) for s in reg.get('situacoes', (0, 1, 2)))
+    conta = _linhas(ctx, "select loca_id, cnta_dgverificadorconta as dv, (cnta_vlagua + cnta_vlesgoto + cnta_vldebitos"
+                         " - cnta_vlcreditos - coalesce(cnta_vlimpostos, 0))::text as valor from faturamento.conta"
+                         f" where imov_id = {imovel} and cnta_amreferenciaconta = {ref} and dcst_idatual in ({situacoes})"
+                         " order by cnta_id desc limit 1")
+    if conta:
+        loca, dv, valor_conta = conta[0]['loca_id'], conta[0]['dv'], conta[0]['valor']
+    else:  # documento que não existe: o dígito como a emissão o calcularia (a recepção não o confere)
+        loca, dv, valor_conta = int(ctx.sql(f'select loca_id from cadastro.imovel where imov_id = {imovel}')), _dv_modulo10(ref), None
+    documento = reg.get('valor_documento', 'conta')
+    valor_doc = valor_conta if documento == 'conta' else documento
+    if valor_doc is None:
+        raise ValueError(f'sem conta de {imovel} em {ref} para o valor do documento')
+    recebido = reg.get('valor_recebido', 'documento')
+    if recebido == 'documento':
+        valor_rec = _centavos(valor_doc)
+    elif recebido[0] in '+-':
+        valor_rec = _centavos(valor_doc) + (1 if recebido[0] == '+' else -1) * _centavos(recebido[1:])
+    else:
+        valor_rec = _centavos(recebido)
+    empresa = reg.get('empresa') or ctx.sql("select lpad(parm_cdempresafebraban::text, 4, '0') from cadastro.sistema_parametros")
+    ident = f'{int(loca):03d}{imovel:09d}01{ref % 100:02d}{ref // 100:04d}{int(dv)}000'
+    sem_dv = '826' + f'{_centavos(valor_doc):011d}' + empresa + ident + '3'
+    barras = sem_dv[:3] + str(_dv_modulo10(sem_dv)) + sem_dv[3:]
+    linha = ('G' + '0001' + '0' * 16 + reg.get('data_pagamento', '20260610') + reg.get('data_credito', '20260611') + barras
+             + f'{valor_rec:012d}' + '0' * 7 + f'{sequencia:08d}' + '00000001' + reg.get('forma', '1')
+             + ' ' * 23 + '1' + ' ' * 9)
+    assert len(linha) == 150, len(linha)
+    return linha, valor_rec, {'imovel': imovel, 'referencia': ref, 'conta_no_envio': bool(conta),
+                              'valor_documento': f'{Decimal(_centavos(valor_doc)) / 100:.2f}',
+                              'valor_recebido': f'{Decimal(valor_rec) / 100:.2f}'}
+
+
+def _arquivo_movimento(ctx, passo):
+    """Cabeçalho A (remessa 2, convênio, banco, NSA, layout, CODIGO DE BARRAS), registros G e trailer Z (total de
+    registros, inclusive A e Z, e valor total recebido) — `total` e `registros` só quando a variação os força."""
+    nsa, geracao = int(passo.get('nsa', 1)), passo.get('data_geracao', '20260611')
+    a = ('A2' + f'{"901":<20}' + f'{"EMPRESA SINTETICA":<20}' + '901' + f'{"BANCO SINTETICO":<20}' + geracao + f'{nsa:06d}'
+         + passo.get('versao_layout', '04') + f'{"CODIGO DE BARRAS":<17}' + ' ' * 52)
+    linhas, total, registros = [a], 0, []
+    for i, reg in enumerate(passo['registros']):
+        g, valor, desc = _registro_g(ctx, reg, i + 2)
+        linhas.append(g)
+        total += valor
+        registros.append(desc)
+    if 'total' in passo:
+        total = total + _centavos(passo['total'][1:]) * (1 if passo['total'][0] == '+' else -1)
+    z = 'Z' + f'{int(passo.get("registros_trailer", len(linhas) + 1)):06d}' + f'{total:017d}' + ' ' * 126
+    linhas.append(z)
+    assert all(len(l) == 150 for l in linhas)
+    return linhas, registros, f'{Decimal(total) / 100:.2f}'
+
+
+def _enviar_movimento(ctx, passo):
+    """Registrar Movimento dos Arrecadadores (RegistrarMovimentoArrecadadoresAction): agente e tipo de movimento, o
+    convênio que a tela lista para eles e o arquivo .ARR; o processamento segue por mensagem (fila do controlador de
+    Arrecadação) — a resposta da tela é só o envio."""
+    linhas, registros, total = _arquivo_movimento(ctx, passo)
+    conteudo = ('\n'.join(linhas) + '\n').encode('ascii')
+    nome = f'MOVIMENTO{int(passo.get("nsa", 1)):06d}.ARR'
+    r = {'arquivo': {'nome': nome, 'linhas': linhas, 'registros': registros, 'total_trailer': total,
+                     'sha256': hashlib.sha256(conteudo).hexdigest()}}
+    ctx.atual.get('exibirRegistrarMovimentoArredadadoresAction.do')
+    campos = [('codigoAgente', '901'), ('idTipoMovimento', 'CODIGO DE BARRAS')]
+    html = ctx.atual.post_multipart('exibirRegistrarMovimentoArredadadoresAction.do?objetoConsulta=1', campos)
+    r['tela'] = {'http': ctx.atual.ultimo_estado,
+                 'convenio_listado': bool(re.search(r'(?is)<option value="901">\s*901\s*</option>', html))}
+    html = ctx.atual.post_multipart('registrarMovimentoArredadadoresAction.do',
+                                    campos[:1] + [('idTipoMovimento', 'CODIGO DE BARRAS'), ('codigoConvenio', '901')],
+                                    ('uploadPicture', nome, conteudo))
+    sucesso = 'Enviado para Processamento' in texto_visivel(html)
+    r.update(http=ctx.atual.ultimo_estado, resultado='enviado' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
+def _aguardar_movimento(ctx, passo):
+    """O processamento do arquivo é uma transação só (registrarMovimentoArrecadadores, Required): o movimento do NSA
+    aparece com tudo o que gravou, ou nada aparece (a transação voltou). Espera até `segundos` e mais 5 s de quietude."""
+    nsa, limite = int(passo.get('nsa', 1)), int(passo.get('segundos', 120))
+    inicio = time.monotonic()
+    while time.monotonic() - inicio < limite:
+        if ctx.sql(f'select count(*) from arrecadacao.arrecadador_movimento where armv_nnnsa = {nsa}') != '0':
+            time.sleep(5)
+            return {'nsa': nsa, 'movimento_gravado': True}
+        time.sleep(3)
+    return {'nsa': nsa, 'movimento_gravado': False, 'segundos': limite}
+
+
+SECOES_DEBITO = (('contas', r'<strong>\s*Contas\s*</strong>'), ('contas_inconformes', r'<strong>\s*Contas Inconformes\s*</strong>'),
+                 ('debitos_a_cobrar', r'D&eacute;bitos\s+A Cobrar'), ('creditos_a_realizar', r'Cr&eacute;ditos\s+A Realizar'),
+                 ('guias', r'Guias de Pagamento'), ('totais', r'Valor Total dos D'))
+
+
+def _secoes_debito(html):
+    """As linhas de dados de cada quadro da tela, na ordem da tela: o texto de cada célula."""
+    marcas = []
+    for nome, padrao in SECOES_DEBITO:
+        m = re.search(padrao, html)
+        if m:
+            marcas.append((m.start(), nome))
+    marcas.sort()
+    fim_tela = html.find('class="footer"')
+    secoes = {}
+    for i, (ini, nome) in enumerate(marcas):
+        fim = marcas[i + 1][0] if i + 1 < len(marcas) else (fim_tela if fim_tela > ini else len(html))
+        trecho = html[ini:fim]
+        secoes[nome] = [[texto_visivel(td) for td in re.findall(r'(?is)<td\b[^>]*>(.*?)</td>', tr)]
+                        for tr in re.findall(r'(?is)<tr bgcolor="#(?:FFFFFF|cbe5fe)">(.*?)</tr>', trecho)]
+    return secoes
+
+
+def _consultar_debitos(ctx, passo):
+    """Consultar Débitos do imóvel (ConsultarDebitoAction → ExibirConsultarDebitoImovelAction →
+    Fachada.obterDebitoImovelOuCliente): a posição de dívida que a Cobrança calcula — as contas em débito, as contas
+    "inconformes" (com pagamento que não confere), débitos a cobrar, créditos a realizar, guias e o total dos débitos.
+    Fora do resultado, por dependerem do dia em que roda: os acréscimos por impontualidade e os totais atualizado e à
+    vista (ficam na evidência)."""
+    r = {}
+    for imovel in passo['imoveis']:
+        html = ctx.atual.post('consultarDebitoAction.do', {'codigoImovel': str(int(imovel))})
+        s = _secoes_debito(html)
+        contas, total_contas = [], None
+        for c in s.get('contas', []):
+            # Mês/ano, vencimento, água, esgoto, débitos, créditos, impostos, valor da conta, acréscimos, situação — os
+            # acréscimos (e a coluna que os soma na linha de total) ficam de fora.
+            cel = [x for x in c if x != '']
+            if len(cel) == 10 and re.fullmatch(r'\d{2}/\d{4}', cel[0]):
+                contas.append({'referencia': cel[0], 'vencimento': cel[1], 'valor_agua': moeda(cel[2]),
+                               'valor_esgoto': moeda(cel[3]), 'valor_debitos': moeda(cel[4]), 'valor_creditos': moeda(cel[5]),
+                               'valor_impostos': moeda(cel[6]), 'valor_conta': moeda(cel[7]), 'situacao': cel[9]})
+            elif cel and cel[0] == 'Total' and len(cel) >= 8:
+                total_contas = {'documentos': cel[1], 'valor_contas': moeda(cel[7])}
+            else:
+                raise ValueError(f'linha de conta fora do formato esperado: {cel!r}')
+        totais = s.get('totais', [[]])
+        r[str(int(imovel))] = {
+            'http': ctx.atual.ultimo_estado, 'contas': contas, 'total_contas': total_contas,
+            'contas_inconformes': [{'referencia': c[0], 'valor_conta': moeda(c[1]), 'valor_pagamento': moeda(c[2]),
+                                    'data_pagamento': c[3], 'situacao_anterior': c[4] or None, 'situacao_atual': c[5] or None}
+                                   for c in s.get('contas_inconformes', []) if len(c) == 6],
+            'debitos_a_cobrar': [[x for x in c if x] for c in s.get('debitos_a_cobrar', [])],
+            'creditos_a_realizar': [[x for x in c if x] for c in s.get('creditos_a_realizar', [])],
+            'guias': [[x for x in c if x] for c in s.get('guias', [])],
+            'valor_total_debitos': moeda(totais[0][0]) if totais and totais[0] else None,
+        }
+    return {'debitos': r}
+
+
 def faturar_grupo(ctx, entrada):
     """Faturar grupo pelo processo comandado (ExibirInserirProcessoFaturamentoComandadoAction →
     InserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado →
     verificador do Quartz → MDB por rota → ControladorFaturamentoFINAL.faturarGrupoFaturamento), com os passos da variação:
     disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (arquivo de massas/passos: a correção de causa
     do lote 5, o pagamento do lote 5d) · reiniciar · retificar · cancelar (manutenção de conta pela tela) ·
-    iniciar_processo (processo mensal/eventual, ex.: a prescrição).
+    iniciar_processo (processo mensal/eventual, ex.: a prescrição, a classificação de pagamentos) · movimento (envio do
+    arquivo do arrecadador pela tela) · aguardar_movimento · consultar_debitos (a posição de dívida pela tela).
     `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos`, `rateio`,
-    `micromedicao` (medições e consumos detalhados) e `ciclo_conta` (contas pela identidade documental, pagamentos, RA,
-    consumos e auditoria)."""
+    `micromedicao` (medições e consumos detalhados), `ciclo_conta` (contas pela identidade documental, pagamentos, RA,
+    consumos e auditoria), `conta_origem` e `arrecadacao` (movimentos, itens, pagamentos, avisos, devoluções, contrato)."""
     login = entrada['usuario']
     comando = str(int(entrada['comando']))
     ctx.nova_sessao()
@@ -884,6 +1131,12 @@ def faturar_grupo(ctx, entrada):
             r.update(_cancelar(ctx, passo))
         elif tipo == 'iniciar_processo':
             r.update(_iniciar_processo(ctx, passo))
+        elif tipo == 'movimento':
+            r.update(_enviar_movimento(ctx, passo))
+        elif tipo == 'aguardar_movimento':
+            r.update(_aguardar_movimento(ctx, passo))
+        elif tipo == 'consultar_debitos':
+            r.update(_consultar_debitos(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.

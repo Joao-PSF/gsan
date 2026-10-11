@@ -99,14 +99,24 @@ quando a tela já não lista o comando, e `comando` para disparar consistir e de
 `massas/passos/`, com o sha256 no resultado), `reiniciar` (`etapas`: `com_erro` ou `concluidas`) e, para a manutenção de
 conta, `retificar` e `cancelar` (pela lista de Manter Conta, com as confirmações que o legado pede respondidas pela
 variação; `forjar` no cancelamento que a tela recusa) e `iniciar_processo` (Inserir Processo mensal/eventual, ex.: a
-prescrição). O estado final —
+prescrição, a classificação de pagamentos). 🆕 Para a **Arrecadação** (lote 6): `movimento` monta o arquivo de retorno do
+arrecadador (150 posições, registros A, G e Z) com o **código de barras que o GSAN imprime na conta** — localidade,
+matrícula, referência e dígito lidos do banco — e o valor recebido da variação (`valor_recebido`: `documento`, `+X`,
+`-X` ou um valor; `valor_documento` para um documento que não existe; `total` e `registros_trailer` para forçar o
+trailer), e o envia pela tela Registrar Movimento dos Arrecadadores (multipart); o arquivo inteiro vai para o resultado;
+`aguardar_movimento` espera o movimento do NSA (o processamento é uma transação: aparece tudo ou nada) ou o prazo;
+`consultar_debitos` lê a tela Consultar Débitos por seção — contas em débito, contas inconformes, débitos a cobrar,
+créditos, guias, total —, sem os acréscimos e os totais atualizado/à vista, que dependem do dia. O estado final —
 processos, etapas, unidades por rota, contas por matrícula com categorias e faixas, totais, consumos, referência do
 grupo e `contas_iniciadas` (números entregues pela sequência das contas, que não voltam num rollback) — sai sem ids nem
 carimbos de tempo. Blocos de detalhe opcionais (`"detalhes"` na entrada): `lancamentos` (débitos cobrados, créditos realizados e o que
 resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto), `rateio` (micro-condomínio) e
 `micromedicao` (instalações de hidrômetro, medições e consumos detalhados), `conta_origem` (o consumo pela origem, na
 conta: leituras, percentuais de esgoto e coleta, poço, situações, rota; consumos gravados na execução com tipo,
-anormalidade, rota e situação especial) e `ciclo_conta` (cada conta pela identidade
+anormalidade, rota e situação especial), 🆕 `arrecadacao` (movimentos pelo NSA, itens na ordem do arquivo com o registro
+original, pagamentos pela matrícula, referência, data e valor — com situação atual e anterior, excedente, a conta pela
+identidade documental e o item de origem —, avisos bancários calculado × informado, devoluções e o NSA do contrato) e
+`ciclo_conta` (cada conta pela identidade
 documental — matrícula, referência e ordem de criação —, contas gerais sem documento, pagamentos e RA pela conta a que
 apontam, consumos e a trilha de auditoria das operações) — só entram nas baselines que os declaram. O
 mesmo roteiro dispara a **consistência de leituras** (outro comando, `"comando"` na entrada); o texto técnico das exceções

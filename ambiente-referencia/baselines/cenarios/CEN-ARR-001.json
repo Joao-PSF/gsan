@@ -1,0 +1,458 @@
+{
+  "dominio": "arrecadacao",
+  "lote": "batch-arrecadacao",
+  "modo": "Batch",
+  "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "relógio: as datas dos arquivos (pagamento até 20/06/2026, crédito e geração até 22/06/2026) não são posteriores à data do banco — a recepção recusa pagamento com data futura",
+      "sql": "select (current_date >= date '2026-06-22')::text",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "referências do sistema: faturamento 05/2026 (o passo de encerramento a avança) e arrecadação 06/2026",
+      "sql": "select parm_amreferenciafaturamento::text || '/' || parm_amreferenciaarrecadacao::text from cadastro.sistema_parametros",
+      "esperado": "202605/202606"
+    },
+    {
+      "descricao": "empresa FEBRABAN 0901 e layout 04; o contrato do arrecadador 901 espera o NSA 1",
+      "sql": "select p.parm_cdempresafebraban::text || '/' || p.parm_nnlayoutfebraban::text || '/' || c.arct_nnnsaretornocdbarras::text from cadastro.sistema_parametros p, arrecadacao.arrecadador_contrato c where c.arct_id = 901",
+      "esperado": "901/4/0"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "faturamento.conta",
+    {
+      "tabela": "arrecadacao.arrecadador_movimento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.arrecadador_mov_item",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.pagamento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.aviso_bancario",
+      "modo": "conteudo"
+    },
+    "arrecadacao.devolucao",
+    {
+      "tabela": "arrecadacao.arrecadador_contrato",
+      "modo": "conteudo"
+    }
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-ARR-001",
+  "titulo": "Recepção do movimento do arrecadador",
+  "especificacao": "docs/modernizacao/testes/cenarios/arrecadacao.md — CEN-ARR-001",
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+    "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+    "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+    "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução"
+  },
+  "observaveis": {
+    "campos": [
+      "passos",
+      "funcionalidades",
+      "movimentos",
+      "itens",
+      "pagamentos_arrecadacao",
+      "avisos",
+      "contratos"
+    ],
+    "fora_desta_fronteira": {
+      "classificação": "CEN-ARR-002 a 005 — aqui o pagamento é observado como a recepção o deixa (sem situação)",
+      "e-mail do processamento": "o relatório e o e-mail de falha do processamento não são observados (o envio em falha está comentado no código: ControladorArrecadacao:3810-3816)",
+      "débito automático, ficha de compensação, cartão": "outros tipos de movimento — CEN-ARR-009 e lotes seguintes"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "Arquivo coerente: três registros G (IMV-01, IMV-02 e IMV-03, valor integral das contas de 05/2026), trailer certo",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100021,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100030,
+                "referencia": 202605
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          }
+        ],
+        "detalhes": [
+          "arrecadacao"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "Trailer com o VALOR TOTAL divergente (+R$ 1,00) e a conferência de valor da tela desligada (parm_icvlmovarrec = 2, o padrão da base)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100021,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100030,
+                "referencia": 202605
+              }
+            ],
+            "total": "+1.00"
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          }
+        ],
+        "detalhes": [
+          "arrecadacao"
+        ]
+      }
+    },
+    "V2b": {
+      "descricao": "Conferência de valor ligada (parm_icvlmovarrec = 1): o arquivo com trailer divergente (+R$ 1,00) e, em seguida, o mesmo arquivo com o trailer certo",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-conferir-valor-trailer.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              }
+            ],
+            "total": "+1.00"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          }
+        ],
+        "detalhes": [
+          "arrecadacao"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "Rejeição por registro: IMV-01 correto, IMV-02 com data de pagamento inválida (13/2026), IMV-03 com código de barras de outra empresa (0902)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100021,
+                "referencia": 202605,
+                "data_pagamento": "20261399"
+              },
+              {
+                "imovel": 100030,
+                "referencia": 202605,
+                "empresa": "0902"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          }
+        ],
+        "detalhes": [
+          "arrecadacao"
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "Reenvio: o arquivo de NSA 1 é aceito e um segundo arquivo com o MESMO NSA é enviado",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100021,
+                "referencia": 202605
+              }
+            ]
+          }
+        ],
+        "detalhes": [
+          "arrecadacao"
+        ]
+      }
+    },
+    "V5": {
+      "descricao": "Trailer com a QUANTIDADE de registros errada (9 em vez de 3): a tela aceita o envio; depois, o arquivo certo com o mesmo NSA",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              }
+            ],
+            "registros_trailer": 9
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1,
+            "segundos": 90
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          }
+        ],
+        "detalhes": [
+          "arrecadacao"
+        ]
+      }
+    }
+  }
+}

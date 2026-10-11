@@ -291,7 +291,9 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~5c — Micromedição~~ ✅ **capturado em 2026-10-07** (§22) — os dois P0 | MIC-001 (V1–V4, V3b, V3c), MIC-003 (V1–V3). **Ficam**: MIC-001 V5 (situação especial), as operações de hidrômetro pela OS (MIC-003 a–d, h) | Consistir leituras e calcular consumos — Batch | Catálogos da Micromedição; hidrômetros, instalações, medições registradas, históricos |
 | ~~5d — Ciclo de vida da conta~~ ✅ **capturado em 2026-10-08** (§23) | FAT-007 (V1, V1b, V2, V2b, V3, V4, V4b), FAT-008 (V1, V1b, V1c, V2, V2b). **Ficam**: a retificação por alteração da leitura faturada (motivo 104, imóvel hidrometrado) → 5e; a posição de dívida → 6 | Retificar e cancelar conta pela tela, sobre as contas que o faturamento em grupo gera na própria execução; prescrição em lote e manual — **Batch** | Catálogos da manutenção de conta; histórico de consumo; Arrecadação mínima e pagamento (passo); RA de alteração de conta; contas antigas; processo de prescrição |
 | ~~5e — Consumo pela origem, na conta~~ ✅ **capturado em 2026-10-08** (§24) | FAT-001 V4/V5, MIC-001 V5, CAD-004 V8/V9, FAT-002 V1c, FAT-003 V2/V2b/V3, MIC-002 V3c/V4c/V4d/V5c/V6c/V8, FAT-007 V2c, MIC-004 V1–V5, CAD-005 V1/V2. **Ficam**: MIC-005 (análise de leitura — tela); FAT-002 V2/V3 na conta | Consistir e faturar em sequência — Batch | Situações especiais, vigências tarifárias, poço, rota alternativa (IMV-11a/b, 12a/b, 17, 18) |
-| **6 — Arrecadação, cobrança, financeiro** (recomendado a seguir; MIC-005 em paralelo, pela tela de análise) | ARR-*, COB-*, FIN-*, OPE-* | Recepção de movimento, ações, contabilização — Batch/Online | DOC-*, movimentos de arrecadação, CTB-*, OPR-* |
+| ~~6 — Arrecadação: recepção e classificação~~ ✅ **capturado em 2026-10-10** (§25) | ARR-001 V1/V2/V2b/V3/V4/V5, ARR-002 V1/V1b/V1c/V2/V3/V4, ARR-003 V1/V2/V5, ARR-004 V1/V1b/V1c, ARR-005 V1/V2/V3. **Ficam**: a devolução e a reclassificação manual (ARR-004 V2–V4, ARR-003 V1 parte 2), a prescrita (ARR-003 V3), a parcelada (ARR-003 V4 → Cobrança), a arquivada (ARR-005 V4) | Arquivo do arrecadador pela tela e fila; classificação por processo eventual; posição de dívida pela tela — Batch | Arrecadador, contrato, tarifa, catálogos, parâmetros FEBRABAN, processo de classificação, clientes das contas; arquivos SINTÉTICOS |
+| **6b — Arrecadação: devolução, reclassificação e arquivamento** (recomendado a seguir; MIC-005 em paralelo, pela tela de análise) | ARR-004 V2–V4, ARR-003 V1 (reclassificação) e V3, ARR-005 V4, ARR-006, ARR-010, ARR-007 | Pagamentos a Classificar e guia de devolução — Online; encerramento da arrecadação (histórico) — Batch | Contas antigas prescritas/canceladas; o histórico do encerramento |
+| 7 — Cobrança, financeiro, operacional | COB-*, FIN-*, OPE-*, ARR-008 | Ações, parcelamento, contabilização — Batch/Online | DOC-*, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
 registram horários, mas nenhuma medição foi tratada como baseline.
@@ -335,6 +337,10 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 - **Dois comandos pela massa**: no lote 5e, os comandos de consistir e de faturar existem antes do processamento — a
   precedência entre atividades só é conferida ao comandar (F2-109); as ações de cada situação especial e a associação
   situação × tipo de consumo são configuração SINTÉTICA (F2-101).
+- **Arrecadação**: no lote 6, o arquivo do arrecadador é SINTÉTICO (o layout que a recepção valida, com o código de barras
+  que o GSAN imprime); a referência de faturamento avança por um **passo** depois do faturamento (o encerramento é outra
+  fronteira); a posição de dívida da tela só enxerga contas com cliente (massa); os acréscimos e os totais atualizados da
+  tela dependem do dia e ficam fora; a falha do processamento do arquivo só se vê pela ausência do movimento (espera de 90 s).
 - **Processo pela massa**: no lote 5, cronograma, comando e consumos nascem por SQL; o objeto é o processo de faturar.
   A correção de causa de BAT-002 V2/V3 é aplicada por SQL **no meio** da execução (`massas/passos/`), porque a
   manutenção do imóvel é outra fronteira. O disparo **agendado** e o paralelismo das unidades são C4.
@@ -346,7 +352,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
-| Já capturado | **145 variações** de 35 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12 + lote 5e 23) — 62% das 234 | Cobertura |
+| Já capturado | **166 variações** de 40 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12 + lote 5e 23 + lote 6 21) — 71% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -356,8 +362,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; 🆕 lote 5e **23/23** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d e o piloto de novo **55/55**; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **26 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), na conta (3: lançamentos, impostos, rateio) e 🆕 do documento (2: retificação; cancelamento e prescrição), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; 🆕 lote 5e **23/23** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d e o piloto de novo **55/55**; 🆕 lote 6 **21/21** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d, 5e e o piloto de novo **78/78**; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **30 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), na conta (3: lançamentos, impostos, rateio) e 🆕 do documento (2: retificação; cancelamento e prescrição), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual) e 🆕 arrecadação (4: classificação por valor e prazo, situação especial, duplicidade, conta retificada); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -1321,3 +1327,117 @@ FATURAR da mesma rota e referência; um imóvel por perfil, cada um com hidrôme
 | F2-112 | **Rota alternativa por indicador da rota**: rota comum lê os imóveis da quadra **sem** alternativa; rota marcada alternativa lê **só** os que a apontam e **abandona** os da própria quadra; imóvel com alternativa apontando uma rota comum **não é lido por nenhuma** | CAD-005 V1, V2; `pesquisarImovelParaConsistirLeitura` | 🔵 | Responde CAD-005 (a alternativa só prevalece se a rota estiver marcada) — **CAND-28** (imóveis órfãos) |
 | F2-113 | **Retificação por alteração da leitura faturada** (motivo 104): corrige **em lugar** a leitura de faturamento da medição e o consumo **faturado** do histórico, e recalcula a média; a leitura informada e o consumo medido da medição **não** mudam; a auditoria registra só a conta | FAT-007 V2c; `ControladorRetificarConta:148-170`, `:262-273` | 🔵 | Responde o caminho que o lote 5d deixou; evidência para o **alcance de D-14** (só este caminho corrige o faturado) |
 | F2-114 | **Execução que atravessa a meia-noite local**: as datas relativas à execução (`data da execução`) comparam a data gravada pelo legado com o `current_date` **no momento da observação**; uma execução que começa antes da meia-noite (America/Belem) e observa depois vê a conta emitida "ontem" e diverge só nessas datas. Não é comportamento do GSAN | Regressão `20261010T011729Z-verificar`, CEN-FAT-008 V1 (início 23:58, fim 00:00 locais); reverificada às 00:28 — confere | ⚙️ | Limitação da ferramenta registrada (complementa F2-86); a divergência nessas datas, com a execução atravessando a meia-noite local, pede reverificação — não nova baseline; baselines inalteradas |
+
+## 25. Lote 6 — Arrecadação: recepção do movimento e classificação dos pagamentos (2026-10-10)
+
+Décimo primeiro lote e o primeiro da **Arrecadação**, no EAR em modo Batch: as contas de 05/2026 que o faturamento em
+grupo gera no início da execução são **pagas** por um arquivo de retorno de arrecadador enviado pela tela do legado; o
+processamento do arquivo (fila de mensagens) grava movimento, itens, pagamentos e aviso bancário; a **classificação**
+(processo eventual, por localidade) decide a situação de cada pagamento; e a **posição de dívida** é lida da tela Consultar
+Débitos — o que a Cobrança considera quitado. Valores comparados **ao centavo**; pagamentos por matrícula, referência, data
+e valor; documentos pela identidade documental — nunca por identificador.
+
+### 25.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações (fronteira deste lote) | Observa |
+| ------- | ------ | - | -------------------------------- | ------- |
+| CEN-ARR-001 — recepção do movimento | A (1) | P1 | V1 (coerente), V2 (valor do trailer divergente, sem conferência), V2b (com conferência), V3 (rejeição por registro), V4 (reenvio do NSA), V5 (quantidade de registros errada) | Faturar → enviar o arquivo |
+| CEN-ARR-002 — classificação por valor e prazo | A (1) | P0 | V1 (integral), V1b (±R$ 0,03), V1c (±R$ 2,00 e −R$ 2,01), V2 (em atraso), V3 (a menor), V4 (a maior) | → classificar → dívida |
+| CEN-ARR-003 — situação especial | A (1) | P0 | V1 (documento inexistente), V2 (conta cancelada), V5 (referência contábil aberta) | → classificar → dívida |
+| CEN-ARR-004 — duplicidade | A (1) | P0 | V1 (no mesmo arquivo), V1b (entre arquivos), V1c (depois de um classificado pela tolerância) | → classificar (duas vezes) |
+| CEN-ARR-005 — conta retificada | A (1) | P0 | V1 (retificar a conta paga), V2 (pagar A depois de retificar), V3 (pagar B) | Retificar ↔ pagar → classificar |
+
+**Fora do lote, com motivo** — próximo sub-lote da Arrecadação: a **devolução** e a reclassificação manual (tela Pagamentos
+a Classificar; CEN-ARR-004 V2–V4, CEN-ARR-003 V1 parte 2), a conta **prescrita** (exige a prescrição do lote 5d antes do
+pagamento) e a **arquivada** (exige o histórico — com CEN-ARR-006 e 010); a conta **parcelada** (Cobrança); a conciliação
+do aviso (CEN-ARR-007), o débito automático (009) e a Fatura (011). Acréscimos por impontualidade: gerados no encerramento
+(CEN-ARR-010).
+
+### 25.2 Massa
+
+A base não tem **nada** da Arrecadação (F2-115); tudo o que entra é SINTÉTICO, com os ids das constantes do código onde ele
+os fixa.
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `arr-arrecadador.sql` | Banco, agência e conta bancária; arrecadador (agente 901) com **contrato** (convênio 901, NSA de retorno 0) e **tarifa** da forma GUICHÊ DE CAIXA (conta de depósito); tipo de documento CONTA; as **situações de pagamento** de `PagamentoSituacao` (0–5, 7, 9–14); o código de registro G; os e-mails do processamento (4 e 5, domínio `.invalid`); as concessões de Registrar Movimento e Consultar Débitos |
+| `arr-parametros.sql` | Empresa FEBRABAN 0901, layout 04 (nulos na base), referência de arrecadação 06/2026 e de faturamento 05/2026 |
+| `arr-processo-classificar.sql` | O processo EVENTUAL "CLASSIFICAR PAGAMENTOS" com a etapa 545 por LOCALIDADE (nenhum processo da base a tem) e as concessões de Inserir Processo |
+| `arr-clientes-usuarios.sql` | Cliente USUÁRIO de IMV-02 e IMV-03 (IMV-01 já tem, pelo lote 5d): a dívida da tela só enxerga contas com cliente |
+| `arr-conferir-valor-trailer.sql` | A conferência do valor do trailer ligada (CEN-ARR-001 V2b) |
+| `massas/passos/arr-faturamento-encerrado-202605.sql` | **Passo**, depois do faturamento: a referência de faturamento avança para 06/2026, como o encerramento do faturamento de 05/2026 a deixaria (CEN-ARR-003 V5 não o aplica) |
+
+### 25.3 Mecanismo — o que mudou
+
+- Roteiro `faturar_grupo`, três passos novos: **`movimento`** monta o arquivo de retorno de 150 posições (A, G, Z) com o
+  **código de barras que o GSAN imprime na conta** (`obterRepresentacaoNumericaCodigoBarra`/`obterIdentificacaoPagamento`:
+  produto 8, segmento 2, valor real 6, DV módulo 10, empresa, localidade, matrícula, MMAAAA, dígito da conta) e o valor
+  recebido da variação, e o envia pela tela Registrar Movimento dos Arrecadadores; **`aguardar_movimento`** espera o
+  movimento do NSA aparecer (o processamento é uma transação) ou o prazo vencer; **`consultar_debitos`** lê a tela
+  Consultar Débitos por seção (contas, contas inconformes, débitos a cobrar, créditos, guias, total) — sem os acréscimos e
+  os totais atualizados, que dependem do dia. Novo bloco **`arrecadacao`** (movimentos, itens, pagamentos, avisos,
+  devoluções, contrato). A classificação usa o passo `iniciar_processo` do lote 5d.
+- `gsan_http`: envio **multipart** (arquivo); o caminho das requisições existentes não muda (o corpo só é montado de outra
+  forma quando o envio é de arquivo).
+
+### 25.4 Baselines do lote
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| ARR-001 V1 | Três registros G integrais: movimento NSA 1 (5 registros, R$ 531,09), três itens OK aceitos com o registro original, três pagamentos **sem situação** com o valor recebido e a referência de arrecadação 06/2026, um aviso (11/06/2026) calculado = informado = realizado = R$ 531,09; contrato no NSA 1 |
+| ARR-001 V2 | Trailer com R$ 1,00 a mais e a conferência desligada: **aceito**; o movimento guarda R$ 532,09 (o trailer) e o aviso, R$ 531,09 (os registros) |
+| ARR-001 V2b | Conferência ligada: o arquivo divergente é **recusado na tela** ("O valor dos registros do arquivo é inválido."); o certo, aceito em seguida |
+| ARR-001 V3 | IMV-01 aceito; IMV-02 (data 13/2026) recusado — "DATA DE DEBITO/PAGAMENTO INVALIDA", fora do aviso; IMV-03 (empresa 0902) recusado — "CÓDIGO DE BARRAS NAO PERTENCE A …", mas no **informado**: aviso calculado R$ 110,40 × informado R$ 363,00; um pagamento |
+| ARR-001 V4 | O segundo arquivo com o NSA 1 é recusado na tela: "Arquivo de Movimento está fora de sequência."; nada novo gravado |
+| ARR-001 V5 | Trailer com 9 registros (eram 3): a tela responde **"enviado"**; nada é gravado em 90 s e o NSA não avança; o arquivo certo, com o mesmo NSA, é aceito depois |
+| ARR-002 V1 | R$ 110,40 para R$ 110,40 → **CLASSIFICADO**, conta vinculada, sem excedente; dívida de IMV-01 **0,00**; IMV-02 e IMV-03, sem pagamento, devem as contas inteiras |
+| ARR-002 V1b | −R$ 0,03 (R$ 110,37) e +R$ 0,03 (R$ 168,12) → **CLASSIFICADOS**, sem excedente — a diferença não fica registrada |
+| ARR-002 V1c | −R$ 2,00 (R$ 108,40) → CLASSIFICADO sem excedente; +R$ 2,00 (R$ 170,09) → CLASSIFICADO com excedente R$ 2,00; −R$ 2,01 (R$ 250,59) → **VALOR NÃO CONFERE** — e a conta sai da dívida como inconforme |
+| ARR-002 V2 | Pago em 20/06/2026 (vencimento 10/06) pelo valor da conta → CLASSIFICADO; nenhum acréscimo na classificação |
+| ARR-002 V3 | R$ 158,09 para R$ 168,09 → **VALOR NÃO CONFERE**, sem excedente, conta vinculada; dívida de IMV-02 **0,00**, a conta listada como **inconforme** (pagamento R$ 158,09, situação NCONF) |
+| ARR-002 V4 | R$ 262,60 para R$ 252,60 → **VALOR NÃO CONFERE** com excedente **R$ 10,00** (não VALOR EM EXCESSO); inconforme, dívida 0,00 |
+| ARR-003 V1 | Código de barras de 04/2026 (sem conta), R$ 50,00: item aceito com "CONTA INEXISTENTE"; pagamento sem conta → **DOC INEXISTENTE**, excedente R$ 50,00; a conta de 05/2026 de IMV-01 continua devida (R$ 110,40) |
+| ARR-003 V2 | Conta cancelada pela tela, depois paga pelo código dela: recepção "CONTA INEXISTENTE" (sem conta); classificação → **INEX CONTA CANCELADA**, conta vinculada, excedente R$ 110,40 |
+| ARR-003 V5 | Sem o encerramento do faturamento (contábil 202605 = faturamento): integral → **CLASSIFICADO com excedente R$ 110,40**; R$ 158,09 → NÃO CONFERE com excedente **R$ 158,09**; R$ 262,60 → NÃO CONFERE com excedente R$ 10,00 |
+| ARR-004 V1 | Dois pagamentos de R$ 110,40 no mesmo arquivo (10/06 e 12/06): o de 10/06 **CLASSIFICADO**, o de 12/06 **EM DUPLICIDADE** com excedente R$ 110,40 |
+| ARR-004 V1b | O segundo chega noutro arquivo (NSA 2, 15/06), depois da classificação: o primeiro continua CLASSIFICADO (situação anterior **CLASSIFICADO**), o segundo **EM DUPLICIDADE**, excedente R$ 110,40; dois avisos |
+| ARR-004 V1c | R$ 168,06 (classificado pela tolerância) e, noutro arquivo, R$ 168,09: o exato fica CLASSIFICADO e o primeiro vira **VALOR NÃO CONFERE sem conta**, excedente R$ 168,06 |
+| ARR-005 V1 | Pago A (R$ 110,40) e classificado; retificada (2 economias, R$ 94,05) com a confirmação "A conta do mês 05/2026 já está paga.": o pagamento passa a apontar **B**, ainda CLASSIFICADO; a reclassificação → **VALOR NÃO CONFERE**, excedente **R$ 16,35**; inconforme (R$ 94,05 × R$ 110,40), dívida 0,00 |
+| ARR-005 V2 | Retificada antes; paga com o código de barras de **A** (R$ 110,40): o item e o pagamento já apontam **B**; → VALOR NÃO CONFERE, excedente R$ 16,35 |
+| ARR-005 V3 | Retificada antes; paga com o código de B (R$ 94,05) → **CLASSIFICADO** em B — mas com excedente **R$ 94,05**: a retificadora tem a referência contábil do **mês da execução**, "aberta" frente à de faturamento (06/2026), e o pagamento passa por DOCUMENTO A CONTABILIZAR (o mecanismo de CAND-32) |
+
+### 25.5 Determinismo
+
+- **Exploração** (sem gravar): três rodadas dirigidas, 14 variações (`20261010T190135Z`, `20261010T191010Z` e
+  `20261010T194158Z-verificar`) — foi assim que apareceram a tolerância de R$ 2,00 (o −R$ 0,04 que saiu CLASSIFICADO), a
+  desclassificação do pagamento anterior, o excedente da contábil aberta e a dívida que some com o pagamento a menor; a
+  posição de dívida exigiu o cliente das contas.
+- **Captura**: **21 de 21** variações com as duas execuções **idênticas byte a byte** (`20261010T200947Z-capturar`), entre
+  17h e 20h30 locais.
+- **Verificação independente** (3ª execução): lote 6 **21/21** conferem (`20261010T233354Z-verificar`).
+- **Conferência dos documentos**: cada número e situação afirmados neste relatório, nas especificações e nos candidatos foi
+  conferido contra os goldens (um script de checagem) — a conferência corrigiu ARR-005 V3, que a exploração não tinha
+  coberto (o excedente da retificadora).
+- **Regressão** — roteiro `faturar_grupo` (passos e bloco novos, aditivos) e `gsan_http` (o corpo só muda no envio de
+  arquivo): lotes 5, 5b, 5c, 5d, 5e e o piloto **78/78** conferem (`20261011T011544Z-verificar`, das 22h às 2h30
+  locais — atravessando a meia-noite sem divergência). As 67 baselines Online dos lotes de Segurança, 3 e 4 usam roteiros
+  que não mudaram e o mesmo caminho de requisição do `gsan_http` (o piloto, Online, conferiu). As **166** baselines conferem.
+
+### 25.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-115 | A base não tem **nada** da Arrecadação: banco, arrecadador, contrato, tarifa, forma de arrecadação, tipo de documento, situação de pagamento, código de registro; os e-mails do processamento (4, 5); o processo de classificação; os parâmetros FEBRABAN (empresa, layout) estão **nulos** — sem eles, a tela de envio quebra (layout) ou todo registro é rejeitado (empresa). A dívida da tela só enxerga contas com cliente | Exploração; `arr-*.sql`; `RepositorioCobrancaHBM.pesquisarContasImovel:295` | ⚙️ | Massa SINTÉTICA com ids das constantes; checklist de instalação |
+| F2-116 | **Recepção**: a tela valida o cabeçalho (remessa, banco = agente, layout ≤ parâmetro, tipo de movimento) e o **NSA = último + 1** do contrato — o reenvio é recusado ("fora de sequência"); o processamento corre **por mensagem**, numa transação: movimento com o cabeçalho e os totais do trailer como vieram; um item por registro G, com o **registro original** (149 posições + `*` quando a linha termina em brancos), ocorrência e aceitação **por item**; o pagamento nasce **sem situação**; um aviso por data prevista e forma, calculado × informado; o NSA do contrato avança. O valor do trailer só é conferido **na tela** e só com o parâmetro ligado | CEN-ARR-001 V1, V2, V2b, V4; `RegistrarMovimentoArrecadadoresAction:157-227`, `validarArquivoMovimentoArrecadador:4236-4390`, `registrarMovimentoArrecadadores:1679` | 🟢 | Responde ARR-01/02 e a dúvida §23.3 do mapa (idempotência pelo NSA) |
+| F2-117 | O **valor do pagamento é o recebido** (registro G, 82–93), não o do código de barras — que só identifica o documento; o item guarda o recebido como "valor do documento" | CEN-ARR-001, CEN-ARR-002 V3/V4; `distribuirdadosRegistroMovimentoArrecadador:11099` (o código de barras lido com 56 posições) | 🔵 | O valor do documento sai da conta na classificação |
+| F2-118 | **Rejeição por registro**: data inválida → item recusado e fora do aviso; código de barras de outra empresa → item recusado, mas o valor entra no **informado** do aviso (calculado ≠ informado) | CEN-ARR-001 V3; `registrarMovimentoArrecadadores:2405-2445`, `:2869-2983` | 🔵 | A diferença calculado × informado do aviso nasce do registro recusado — conciliação (CEN-ARR-007) |
+| F2-119 | **Falha do processamento depois do "enviado"**: com a quantidade de registros do trailer errada, a tela responde "enviado para processamento" e o processamento volta **tudo** (nada gravado, NSA não avança); o e-mail de falha está **comentado** no código — ninguém é avisado | CEN-ARR-001 V5; `registrarMovimentoArrecadadores:1867`, `:3787-3824` | 🔴 | **CAND-33** (família de CAND-23) |
+| F2-120 | **Classificação**: por localidade → imóvel → referência; a conta é escolhida por **imóvel + referência** (NORMAL/RETIFICADA/INCLUÍDA antes de PRESCRITA/CANCELADA/PARCELADA) — não pelo documento do código de barras; **reprocessa** todos os pagamentos do mês de arrecadação a cada execução (a situação anterior registra a passagem) | CEN-ARR-002 a 005; `classificarPagamentosDevolucoes:14185`, `classificarPagamentosConta:34147`, `pesquisarPagamentosPorConta:2463` | 🟢 | Responde a classificação (ARR-03) |
+| F2-121 | **Valor**: diferença até R$ 0,03 → CLASSIFICADO, sem registro; acima → VALOR NÃO CONFERE, mas o que difere até **R$ 2,00** volta a CLASSIFICADO no fim da execução (`double`); acima de R$ 2,00, a menor fica sem excedente e a maior com excedente = diferença. **VALOR EM EXCESSO e VALOR A BAIXAR nunca** são atribuídos | CEN-ARR-002 V1, V1b, V1c, V3, V4; `processarPagamentoConta:14852-14912`, `reclassificarPagamentosValorNaoConfere` | 🔴 | Corrige a especificação (V4 esperava VALOR EM EXCESSO); **CAND-30** (até R$ 2,00 absorvidos sem registro) |
+| F2-122 | **Atraso**: o pagamento em atraso é classificado contra o valor da conta; a classificação não cobra acréscimo | CEN-ARR-002 V2 | 🟢 | Acréscimos: encerramento (CEN-ARR-010) |
+| F2-123 | **Dívida**: a conta com **qualquer** pagamento vinculado sai da posição de dívida — inclusive o VALOR NÃO CONFERE a menor, listado como "conta inconforme"; a falta deixa de ser cobrada | CEN-ARR-002 V3, V1c; `RepositorioCobrancaHBM.pesquisarContasImovel:295` (`HAVING sum(pgmt_vlpagamento) = 0`) | 🔴 | ⚠️ **Quitação**: **CAND-29** |
+| F2-124 | **Nada é descartado**: documento inexistente → item aceito com "CONTA INEXISTENTE", pagamento sem conta, DOC INEXISTENTE com excedente = valor; conta cancelada → a recepção não a acha (só NORMAL/RETIFICADA/INCLUÍDA), a classificação acha → INEX CONTA CANCELADA, conta vinculada, excedente = valor | CEN-ARR-003 V1, V2; `pesquisarExistenciaContaComSituacaoAtual`, `selecionarContaPorImovelAnoMesReferencia:3107` | 🟢 | Responde V1/V2; ressalva pelo código: com a contábil anterior à de faturamento, a cancelada não recebe situação (a caracterizar) |
+| F2-125 | **Referência contábil aberta** (a conta do mês de faturamento ainda não encerrado): o pagamento passa por DOCUMENTO A CONTABILIZAR e termina **CLASSIFICADO com excedente = valor pago**; o a menor, NÃO CONFERE com excedente = valor | CEN-ARR-003 V5, CEN-ARR-005 V3 (a retificadora tem a contábil do mês corrente); `classificarPagamentosConta:34252-34288` | 🔴 | **CAND-32** |
+| F2-126 | **Duplicidade**: o pagamento mais antigo fica CLASSIFICADO; o outro, EM DUPLICIDADE com excedente = valor — no mesmo arquivo ou noutro | CEN-ARR-004 V1, V1b; `processarPagamentoAMenorOUAMaior:14989` | 🟢 | Responde V1 |
+| F2-127 | **Um pagamento exato desclassifica o anterior**: o pagamento classificado pela tolerância (−R$ 0,03), com a chegada do exato, vira VALOR NÃO CONFERE **sem conta** (o vínculo é apagado) | CEN-ARR-004 V1c; `processarPagamentoValorNaoConfereIdentificadorDocumentoIgualANulo` | 🔴 | **CAND-31** |
+| F2-128 | **Retificação × pagamento**: o código de barras da conta A paga a retificadora B (imóvel + referência); retificar a conta paga move o pagamento para B (lote 5d) e a reclassificação o compara com B → VALOR NÃO CONFERE (excedente R$ 16,35); a conta fica "inconforme" e fora da dívida | CEN-ARR-005 V1, V2, V3 | 🔴 | Evidência para **CAND-19**; corrige a especificação ("o pagamento não migra") |
