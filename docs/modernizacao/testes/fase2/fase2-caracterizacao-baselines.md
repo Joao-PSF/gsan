@@ -292,7 +292,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~5d — Ciclo de vida da conta~~ ✅ **capturado em 2026-10-08** (§23) | FAT-007 (V1, V1b, V2, V2b, V3, V4, V4b), FAT-008 (V1, V1b, V1c, V2, V2b). **Ficam**: a retificação por alteração da leitura faturada (motivo 104, imóvel hidrometrado) → 5e; a posição de dívida → 6 | Retificar e cancelar conta pela tela, sobre as contas que o faturamento em grupo gera na própria execução; prescrição em lote e manual — **Batch** | Catálogos da manutenção de conta; histórico de consumo; Arrecadação mínima e pagamento (passo); RA de alteração de conta; contas antigas; processo de prescrição |
 | ~~5e — Consumo pela origem, na conta~~ ✅ **capturado em 2026-10-08** (§24) | FAT-001 V4/V5, MIC-001 V5, CAD-004 V8/V9, FAT-002 V1c, FAT-003 V2/V2b/V3, MIC-002 V3c/V4c/V4d/V5c/V6c/V8, FAT-007 V2c, MIC-004 V1–V5, CAD-005 V1/V2. **Ficam**: MIC-005 (análise de leitura — tela); FAT-002 V2/V3 na conta | Consistir e faturar em sequência — Batch | Situações especiais, vigências tarifárias, poço, rota alternativa (IMV-11a/b, 12a/b, 17, 18) |
 | ~~6 — Arrecadação: recepção e classificação~~ ✅ **capturado em 2026-10-10** (§25) | ARR-001 V1/V2/V2b/V3/V4/V5, ARR-002 V1/V1b/V1c/V2/V3/V4, ARR-003 V1/V2/V5, ARR-004 V1/V1b/V1c, ARR-005 V1/V2/V3. **Ficam**: a devolução e a reclassificação manual (ARR-004 V2–V4, ARR-003 V1 parte 2), a prescrita (ARR-003 V3), a parcelada (ARR-003 V4 → Cobrança), a arquivada (ARR-005 V4) | Arquivo do arrecadador pela tela e fila; classificação por processo eventual; posição de dívida pela tela — Batch | Arrecadador, contrato, tarifa, catálogos, parâmetros FEBRABAN, processo de classificação, clientes das contas; arquivos SINTÉTICOS |
-| **6b — Arrecadação: devolução, reclassificação e arquivamento** (recomendado a seguir; MIC-005 em paralelo, pela tela de análise) | ARR-004 V2–V4, ARR-003 V1 (reclassificação) e V3, ARR-005 V4, ARR-006, ARR-010, ARR-007 | Pagamentos a Classificar e guia de devolução — Online; encerramento da arrecadação (histórico) — Batch | Contas antigas prescritas/canceladas; o histórico do encerramento |
+| ~~6b — Arrecadação: recuperação de crédito, manutenção e devolução~~ ✅ **capturado em 2026-10-12** (§26) | ARR-003 V1b/V2b/V2c/V3/V3b, ARR-004 V2/V2b/V2c/V2d/V2e/V3/V3b. **Ficam**: ARR-004 V4 (RA que transfere a duplicidade) e o Refaturar da conta arquivada → 6c | Recuperar Crédito, Manter Pagamento, Guia de Devolução, Inserir Devoluções — pelas telas, no EAR Batch | Catálogos de crédito e devolução; RA de devolução; contas antigas prescritas e cancelada |
+| **6c — Arrecadação: encerramento e arquivamento** (recomendado a seguir; MIC-005 em paralelo, pela tela de análise) | ARR-010, ARR-006, ARR-005 V4, ARR-004 V4, ARR-007 | Encerramento da competência e geração do histórico — Batch; Transferir Devolução de Valores Pagos em Duplicidade — Online | Catálogos contábeis do encerramento; RA com o pagamento em duplicidade |
 | 7 — Cobrança, financeiro, operacional | COB-*, FIN-*, OPE-*, ARR-008 | Ações, parcelamento, contabilização — Batch/Online | DOC-*, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -352,7 +353,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
-| Já capturado | **166 variações** de 40 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12 + lote 5e 23 + lote 6 21) — 71% das 234 | Cobertura |
+| Já capturado | **178 variações** de 40 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12 + lote 5e 23 + lote 6 21 + lote 6b 12) — 76% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -362,7 +363,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; 🆕 lote 5e **23/23** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d e o piloto de novo **55/55**; 🆕 lote 6 **21/21** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d, 5e e o piloto de novo **78/78**; o teste negativo do piloto acusa 1 centavo |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; 🆕 lote 5e **23/23** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d e o piloto de novo **55/55**; 🆕 lote 6 **21/21** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d, 5e e o piloto de novo **78/78**; 🆕 lote 6b **12/12** idênticas na captura (V2d e V2e recapturadas depois de a V2d original revelar a guia recusada sem RA) e conferidas numa 3ª execução, com os lotes 6 e 5d de novo **33/33**; o teste negativo do piloto acusa 1 centavo |
 | Cobre os comportamentos priorizados | 🟡 **30 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), na conta (3: lançamentos, impostos, rateio) e 🆕 do documento (2: retificação; cancelamento e prescrição), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual) e 🆕 arrecadação (4: classificação por valor e prazo, situação especial, duplicidade, conta retificada); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
@@ -1441,3 +1442,95 @@ os fixa.
 | F2-126 | **Duplicidade**: o pagamento mais antigo fica CLASSIFICADO; o outro, EM DUPLICIDADE com excedente = valor — no mesmo arquivo ou noutro | CEN-ARR-004 V1, V1b; `processarPagamentoAMenorOUAMaior:14989` | 🟢 | Responde V1 |
 | F2-127 | **Um pagamento exato desclassifica o anterior**: o pagamento classificado pela tolerância (−R$ 0,03), com a chegada do exato, vira VALOR NÃO CONFERE **sem conta** (o vínculo é apagado) | CEN-ARR-004 V1c; `processarPagamentoValorNaoConfereIdentificadorDocumentoIgualANulo` | 🔴 | **CAND-31** |
 | F2-128 | **Retificação × pagamento**: o código de barras da conta A paga a retificadora B (imóvel + referência); retificar a conta paga move o pagamento para B (lote 5d) e a reclassificação o compara com B → VALOR NÃO CONFERE (excedente R$ 16,35); a conta fica "inconforme" e fora da dívida | CEN-ARR-005 V1, V2, V3 | 🔴 | Evidência para **CAND-19**; corrige a especificação ("o pagamento não migra") |
+
+## 26. Lote 6b — Arrecadação: recuperação de crédito, manutenção e devolução (2026-10-12)
+
+Décimo segundo lote, no EAR em modo Batch, continuação do lote 6: o pagamento que a classificação **não apropriou**
+(duplicidade, conta cancelada, documento inexistente, conta prescrita, pagamento a maior) é tratado pelas telas do legado —
+**Recuperar Crédito** (devolver como crédito a realizar ou refaturar), **Manter Pagamento**, **Guia de Devolução** a partir
+de um RA e **Inserir Devoluções** no aviso bancário — e a classificação seguinte decide o que fica. Valores ao centavo; o
+efeito na posição de dívida, pela tela Consultar Débitos.
+
+### 26.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações (fronteira deste lote) | Observa |
+| ------- | ------ | - | -------------------------------- | ------- |
+| CEN-ARR-003 — situação especial | A (1) | P0 | V1b (Manter Pagamento), V2b (cancelada → crédito), V2c (cancelada → refaturar), V3 (prescrita no mês), V3b (prescrita em mês fechado; cancelada antiga) | Tratamento → nova classificação → dívida |
+| CEN-ARR-004 — duplicidade e devolução | A (1) | P0 | V2 (guia + devolução), V2b (devolução acima da guia), V2c (devolução sem guia), V2d (devolução do excedente a maior, com guia), V2e (a maior, sem RA nem guia), V3 (crédito a realizar), V3b (guia depois do crédito) | Tratamento → nova classificação → dívida |
+
+**Fora do lote, com motivo**: CEN-ARR-004 V4 — o RA que informa a duplicidade e transfere o valor como crédito para contas
+do imóvel (assistente "Transferir Devolução de Valores Pagos em Duplicidade" do Atendimento); o Refaturar da conta cancelada
+já arquivada (exige o histórico — com o encerramento, CEN-ARR-006/010); a realização do crédito a realizar na conta seguinte
+(outro faturamento, CEN-FAT-004).
+
+### 26.2 Massa
+
+| Delta | Conteúdo |
+| ----- | -------- |
+| `arr-devolucao.sql` | Tipos de crédito DEVOLUÇÃO DE PAGAMENTOS EM DUPLICIDADE (5) e DE OUTROS VALORES (7), com o item contábil OUTROS SERVIÇOS ÁGUA e valor limite; origens 1, 12 e 13; as situações de devolução 1–5; as situações de pagamento da recuperação de crédito (15, 16); as concessões de Recuperar Crédito (inclusive o Refaturar), Manter Pagamento, Guia de Devolução e Devoluções |
+| `arr-ra-devolucao.sql` | Um RA PENDENTE de IMV-01 cuja especificação permite gerar crédito (unidade, meio, tipo e especificação SINTÉTICOS) |
+| `arr-contas-antigas.sql` | Contas de IMV-03: 06/2014 prescrita no mês corrente (contábil 06/2026), 07/2014 prescrita num mês fechado (05/2026), 08/2014 cancelada em 2014 (10/2014) |
+
+### 26.3 Mecanismo — o que mudou
+
+- Roteiro `faturar_grupo`, quatro passos novos, todos pelas telas: **`recuperar_credito`** (filtra a situação na tela
+  Recuperar Crédito, confere se o pagamento está na lista e aciona Devolver ou Refaturar), **`manter_pagamento`** (corrige a
+  referência do documento), **`inserir_guia_devolucao`** (a partir do RA pendente do imóvel) e **`inserir_devolucao`** (no
+  aviso do movimento, com ou sem a guia; a confirmação "valor superior ao da guia" é respondida pela variação); o pagamento é
+  escolhido por matrícula, data e valor — o id só navega. Bloco novo **`devolucao`** (guias, devoluções, créditos a
+  realizar), à parte: o bloco `arrecadacao` do lote 6 não muda de forma.
+- As variações novas declaram os próprios campos (lote, fronteira, efeitos, observáveis, ressalvas): as 6 do lote 6 nos
+  mesmos cenários — e o topo dos dois arquivos — têm a definição **idêntica** à do commit anterior (comparação de
+  dicionários). Por isso a coluna "fora desta fronteira" da cobertura, que é a do cenário, continua a das variações do
+  lote 6 (os goldens delas a carregam); o que este lote cobriu está nas variações novas.
+
+### 26.4 Baselines do lote
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| ARR-003 V1b | Documento inexistente (R$ 110,40 para 04/2026) corrigido em Manter Pagamento para 05/2026 — "Pagamento atualizado com sucesso.": o pagamento passa a apontar a conta, mas fica **DOC INEXISTENTE com excedente R$ 110,40**; a classificação seguinte o deixa **CLASSIFICADO com o excedente de R$ 110,40** e **sem situação anterior**; dívida de IMV-01 0,00 |
+| ARR-003 V2b | Conta cancelada paga (INEX CONTA CANCELADA) → Recuperar Crédito "Devolver" ("Pagamentos selecionados já classificados"): pagamento **CLASS RECUP CANCEL**, indicador de recuperação ligado; **crédito a realizar de R$ 110,40** (DEVOLUÇÃO OUTROS VALORES, origem RECUPERAÇÃO CRÉDITO CONTA CANCELADA, referência 05/2026, cobrança 06/2026); dívida de IMV-01 **−R$ 110,40** (o crédito) |
+| ARR-003 V2c | Conta cancelada paga → Recuperar Crédito "Refaturar" (o botão é oferecido): **HTTP 500**; nada muda — o pagamento continua INEX CONTA CANCELADA |
+| ARR-003 V3 | Conta de 06/2014 prescrita com contábil 06/2026, paga (R$ 72,00): recepção "CONTA INEXISTENTE"; classificação → **INEX DEB PRESCRITO**, conta vinculada, excedente R$ 72,00 |
+| ARR-003 V3b | Prescrita com contábil 05/2026 (R$ 73,00) e cancelada em 2014 (R$ 74,00): os dois pagamentos ficam **sem situação e sem conta** depois da classificação; aviso R$ 147,00 |
+| ARR-004 V2 | Duplicidade (R$ 110,40 em 10/06 e 12/06): Guia de Devolução a partir do RA ("Guia de Devolução <n> inserida com sucesso.": CONTA 05/2026, R$ 110,40, DEVOLUÇÃO PAGTOS DUPLICIDADE, contábil 06/2026, 30 dias); devolução de R$ 110,40 no aviso (devolução calculada **110,40 × informada 0,00**); a classificação → devolução **CLASSIFICADA** e o pagamento de 12/06 **DUPLIC EXC DEVOLVIDO** (anterior EM DUPLICIDADE); o RA continua PENDENTE |
+| ARR-004 V2b | Devolução de R$ 120,00 para a guia de R$ 110,40, confirmando "Valor da Devolução 120,00 é superior ao valor da Guia de Devolução 110,40. Confirma Operação?": **devolução calculada do aviso R$ 240,00** (uma devolução de R$ 120,00); a classificação → devolução **VALOR NÃO CONFERE**; o pagamento continua EM DUPLICIDADE |
+| ARR-004 V2c | Devolução de R$ 110,40 **sem guia**: devolução **GUIA NÃO INFORMADA**, mas o pagamento de 12/06 vai a **DUPLIC EXC DEVOLVIDO** |
+| ARR-004 V2d | Pagamento a maior de IMV-01 (R$ 120,40 para R$ 110,40: VALOR NÃO CONFERE, excedente R$ 10,00), guia de R$ 10,00 e devolução de R$ 10,00: a classificação → devolução **CLASSIFICADA** e o pagamento **DUPLIC EXC DEVOLVIDO** com a situação anterior **EM DUPLICIDADE** (ele era VALOR NÃO CONFERE) |
+| ARR-004 V2e | Pagamento a maior de IMV-03 (excedente R$ 10,00): a Guia de Devolução é recusada — "Informe Registro de Atendimento." (HTTP 500; o imóvel não tem RA pendente) — e a devolução de R$ 10,00 entra **sem guia**: devolução **GUIA NÃO INFORMADA** e o pagamento **DUPLIC EXC DEVOLVIDO**, anterior EM DUPLICIDADE |
+| ARR-004 V3 | Duplicidade → Recuperar Crédito "Devolver": pagamento de 12/06 **CLASS RECUP DUPLIC**; **crédito a realizar R$ 110,40** (DEVOLUÇÃO PAGTOS DUPLICIDADE, origem CONTAS PAGAS EM DUPLICIDADE/EXCESSO); dívida de IMV-01 **−R$ 110,40** |
+| ARR-004 V3b | Depois do crédito, a Guia de Devolução da mesma conta: recusada — "A conta referente ao mês/Ano 05/2026 de valor R$110,40 já foi devolvida." (HTTP 500) |
+
+### 26.5 Determinismo
+
+- **Exploração** (sem gravar, num cenário provisório já apagado): seis rodadas dirigidas, 9 variações
+  (`20261012T043705Z` a `20261012T061531Z-verificar`) — foi assim que apareceram os catálogos que a base não tem (a
+  violação de chave e o "Erro ao recuperar credito"), a concessão do botão Refaturar e o HTTP 500 dele, o excedente que o
+  Manter Pagamento não zera, a devolução somada duas vezes ao aviso e a guia recusada sem RA pendente.
+- **Captura**: **11 de 11** variações com as duas execuções **idênticas byte a byte** (`20261012T062203Z-capturar`). A V2d
+  dessa captura (pagamento a maior de IMV-03 devolvido "por guia") gravou a guia **recusada** — IMV-03 não tem RA
+  pendente —, o que a descrição não dizia: virou **V2e**, com a descrição corrigida, e uma **V2d** nova (IMV-01, o imóvel
+  do RA) foi definida; as duas recapturadas com execuções idênticas (`20261012T120639Z-capturar`). Total **12 de 12**.
+- **Verificação independente** (3ª execução): **11/11** (`20261012T084127Z-verificar`) e V2d/V2e **2/2**
+  (`20261012T123525Z-verificar`).
+- **Conferência dos documentos**: cada número e situação afirmados neste relatório, nas especificações e nos candidatos foi
+  conferido contra os 12 goldens (um script de checagem): sem divergência.
+- **Regressão** — `roteiros.py` só ganhou código (passos `recuperar_credito`, `manter_pagamento`,
+  `inserir_guia_devolucao`, `inserir_devolucao` e o bloco `devolucao`, pedidos só pelas variações novas; a única linha
+  alterada é o registro do bloco): lotes **6** (os mesmos cenários e passos de arrecadação) e **5d** (o cancelamento usado
+  em V2b/V2c e o RA de alteração de conta, exclusivo com o RA de devolução) **33/33** conferem
+  (`20261012T095031Z-verificar`). Os demais lotes não pedem nada do que mudou. As **178** baselines conferem.
+
+### 26.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-129 | A base não tem o que o tratamento grava: tipos de crédito DEVOLUÇÃO (5, 7), origens (1, 12, 13), situações de devolução (1–5) e as situações de pagamento da recuperação (15, 16) — sem estas, violação de chave estrangeira e "Erro ao recuperar credito" (HTTP 500, o texto no lugar da chave de mensagem); o botão Refaturar é a operação 15044 ("Devolver Crédito") | Exploração; `arr-devolucao.sql`; `ControladorArrecadacao.recuperarCredito:51821-51839` | ⚙️ | Massa SINTÉTICA com ids das constantes |
+| F2-130 | **Recuperação de crédito ("Devolver")**: o pagamento EM DUPLICIDADE ou INEX CONTA CANCELADA vira CLASS RECUP DUPLIC (16) ou CANCEL (15), com o indicador de recuperação ligado — sai das classificações seguintes — e o excedente mantido; nasce um **crédito a realizar no valor do pagamento** (tipo DEVOLUÇÃO DE PAGAMENTOS EM DUPLICIDADE ou DE OUTROS VALORES; origem pela situação; referência do pagamento, cobrança = a do grupo, contábil = a de faturamento); a posição de dívida fica **negativa** (o crédito) | CEN-ARR-004 V3, CEN-ARR-003 V2b; `incluirCreditoPagamentosResolvidos`, `setParametros` | 🟢 | Responde V3 de ARR-004 |
+| F2-131 | **Refaturar a conta cancelada ainda não arquivada nunca funciona**: a busca só acha a conta no histórico; na tabela de contas, a consulta faz *fetch* de `quadra`, que em `Conta` é um número — NullPointerException do Hibernate, HTTP 500, nada muda | CEN-ARR-003 V2c; `ControladorFaturamento.pesquisarContaOuContaHistorico:14165-14175`, `RepositorioFaturamentoHBM:55355-55368` | 🔴 | **CAND-34** (família de CAND-20) |
+| F2-132 | **Manter Pagamento** corrige a referência e vincula a conta, mas não muda a situação nem o excedente; a classificação seguinte deixa o pagamento **CLASSIFICADO com o excedente = valor** e **sem situação anterior** — a "situação anterior preservada" da especificação só vale quando o operador informa a situação | CEN-ARR-003 V1b; `AtualizarPagamentosAction`, `RepositorioArrecadacaoHBM.processarPagamentoConta:1675` | 🔴 | Evidência para **CAND-32** (excedente) |
+| F2-133 | **Conta prescrita**: com a referência contábil do mês corrente, INEX DEB PRESCRITO, conta vinculada, excedente = valor; com a contábil num mês já fechado — e o mesmo na conta cancelada antiga — o pagamento fica **sem situação e sem conta** a cada classificação | CEN-ARR-003 V3, V3b; `classificarPagamentosConta:34252-34288` | 🔴 | **CAND-35** — "nada é descartado" vira "nunca classificado" |
+| F2-134 | **Guia de devolução**: nasce de um RA aberto cuja especificação gera crédito; tipo DEVOLUÇÃO DE PAGAMENTOS EM DUPLICIDADE; referência contábil = a de arrecadação; validade de 30 dias; limite = soma dos pagamentos da conta; recusada se a referência já tem crédito a realizar ("…já foi devolvida.") e se o imóvel não tem RA pendente ("Informe Registro de Atendimento."); o RA continua PENDENTE depois da guia e da devolução | CEN-ARR-004 V2, V3b; `inserirGuiaDevolucao:17384-17580`, `validarExibirInserirGuiaDevolucao:32016` | 🟢 | Responde V2 de ARR-004 |
+| F2-135 | **Devolução e classificação**: a devolução soma à devolução **calculada** do aviso (a informada continua 0,00); a classificação compara, por imóvel e referência, a soma das devoluções com a dos excedentes: iguais → pagamento DUPLIC EXC DEVOLVIDO e devolução CLASSIFICADA; diferentes → devolução VALOR NÃO CONFERE e o pagamento continua EM DUPLICIDADE | CEN-ARR-004 V2, V2b; `processarDevolucaoPagamento:15348` | 🟢 | Responde V2 |
+| F2-136 | **A confirmação soma a devolução ao aviso duas vezes**: a ação atualiza o aviso antes das validações e de novo no POST confirmado — R$ 240,00 de devolução calculada para uma devolução de R$ 120,00 | CEN-ARR-004 V2b; `InserirDevolucoesAction` (atualizaValorArrecadacaoAvisoBancaraio antes da confirmação) | 🔴 | ⚠️ **Valor**: **CAND-36** |
+| F2-137 | **Devolução sem guia marca o pagamento como devolvido**: a devolução fica GUIA NÃO INFORMADA, mas, com o valor igual ao excedente, o pagamento vai a DUPLIC EXC DEVOLVIDO; a situação anterior gravada é sempre **EM DUPLICIDADE** — também quando o pagamento era VALOR NÃO CONFERE a maior | CEN-ARR-004 V2c, V2d, V2e; `processarDevolucaoPagamento:15348-15420` | 🔴 | **CAND-37** |

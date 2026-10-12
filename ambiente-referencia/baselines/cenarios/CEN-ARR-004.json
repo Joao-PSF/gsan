@@ -372,6 +372,1167 @@
           "ciclo_conta"
         ]
       }
+    },
+    "V2": {
+      "descricao": "Pagamento EM DUPLICIDADE devolvido por guia: Guia de Devolução a partir do RA (R$ 110,40) e a devolução no aviso bancário (R$ 110,40); nova classificação",
+      "lote": "batch-devolucao",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O pagamento que a classificação não apropriou é tratado pelas telas do legado: Recuperar Crédito (ExibirFiltrarPagamentosAClassificarAction → FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction \"Devolver\" ou RefaturarPagamentosNaoClassificadosAction → ControladorArrecadacao.recuperarCredito), Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction), Inserir Guia de Devolução a partir de um RA (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) e Inserir Devoluções no aviso bancário (InserirDevolucoesAction); a classificação seguinte casa devoluções e pagamentos (classificarDevolucoesDuplicidadeExcesso → processarDevolucaoPagamento).",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.guia_devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "faturamento.credito_a_realizar",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "atendimentopublico.registro_atendimento",
+          "modo": "conteudo"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "tratamento": "os catálogos do tratamento (tipos e origens de crédito, situações de devolução, as situações de pagamento da recuperação de crédito) são SINTÉTICOS com os ids das constantes; o RA de devolução chega pela massa (a abertura do RA é de CEN-ATE-001); as contas antigas prescritas e cancelada chegam no estado em que a prescrição ou o cancelamento as deixariam"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "contas_ciclo",
+          "itens",
+          "pagamentos_arrecadacao",
+          "avisos",
+          "guias_devolucao",
+          "devolucoes_detalhe",
+          "creditos_a_realizar_devolucao",
+          "registros_atendimento"
+        ],
+        "fora_desta_fronteira": {
+          "V4 — RA que informa a duplicidade (Transferir Devolução de Valores Pagos em Duplicidade)": "assistente do Atendimento que transfere o valor como crédito para contas do imóvel e encerra o RA — próximo sub-lote",
+          "Refaturar conta cancelada já arquivada": "o Refaturar só acha a conta no histórico (ControladorFaturamento.incluirContasParaRefaturarPagamentos); exige o encerramento — com CEN-ARR-006/010",
+          "realização do crédito a realizar": "o crédito gerado é observado; a conta seguinte que o realiza é de outro faturamento (CEN-FAT-004)"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-devolucao.sql",
+        "massas/deltas/arr-ra-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "inserir_guia_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "110.40"
+          },
+          {
+            "tipo": "inserir_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "110.40"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2b": {
+      "descricao": "Devolução de R$ 120,00 para a guia de R$ 110,40, confirmando \"valor superior ao da guia\"; nova classificação",
+      "lote": "batch-devolucao",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O pagamento que a classificação não apropriou é tratado pelas telas do legado: Recuperar Crédito (ExibirFiltrarPagamentosAClassificarAction → FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction \"Devolver\" ou RefaturarPagamentosNaoClassificadosAction → ControladorArrecadacao.recuperarCredito), Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction), Inserir Guia de Devolução a partir de um RA (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) e Inserir Devoluções no aviso bancário (InserirDevolucoesAction); a classificação seguinte casa devoluções e pagamentos (classificarDevolucoesDuplicidadeExcesso → processarDevolucaoPagamento).",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.guia_devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "faturamento.credito_a_realizar",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "atendimentopublico.registro_atendimento",
+          "modo": "conteudo"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "tratamento": "os catálogos do tratamento (tipos e origens de crédito, situações de devolução, as situações de pagamento da recuperação de crédito) são SINTÉTICOS com os ids das constantes; o RA de devolução chega pela massa (a abertura do RA é de CEN-ATE-001); as contas antigas prescritas e cancelada chegam no estado em que a prescrição ou o cancelamento as deixariam"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "contas_ciclo",
+          "itens",
+          "pagamentos_arrecadacao",
+          "avisos",
+          "guias_devolucao",
+          "devolucoes_detalhe",
+          "creditos_a_realizar_devolucao",
+          "registros_atendimento"
+        ],
+        "fora_desta_fronteira": {
+          "V4 — RA que informa a duplicidade (Transferir Devolução de Valores Pagos em Duplicidade)": "assistente do Atendimento que transfere o valor como crédito para contas do imóvel e encerra o RA — próximo sub-lote",
+          "Refaturar conta cancelada já arquivada": "o Refaturar só acha a conta no histórico (ControladorFaturamento.incluirContasParaRefaturarPagamentos); exige o encerramento — com CEN-ARR-006/010",
+          "realização do crédito a realizar": "o crédito gerado é observado; a conta seguinte que o realiza é de outro faturamento (CEN-FAT-004)"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-devolucao.sql",
+        "massas/deltas/arr-ra-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "inserir_guia_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "110.40"
+          },
+          {
+            "tipo": "inserir_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "120.00",
+            "confirmar": "ok"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2c": {
+      "descricao": "Devolução de R$ 110,40 SEM guia de devolução; nova classificação",
+      "lote": "batch-devolucao",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O pagamento que a classificação não apropriou é tratado pelas telas do legado: Recuperar Crédito (ExibirFiltrarPagamentosAClassificarAction → FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction \"Devolver\" ou RefaturarPagamentosNaoClassificadosAction → ControladorArrecadacao.recuperarCredito), Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction), Inserir Guia de Devolução a partir de um RA (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) e Inserir Devoluções no aviso bancário (InserirDevolucoesAction); a classificação seguinte casa devoluções e pagamentos (classificarDevolucoesDuplicidadeExcesso → processarDevolucaoPagamento).",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.guia_devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "faturamento.credito_a_realizar",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "atendimentopublico.registro_atendimento",
+          "modo": "conteudo"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "tratamento": "os catálogos do tratamento (tipos e origens de crédito, situações de devolução, as situações de pagamento da recuperação de crédito) são SINTÉTICOS com os ids das constantes; o RA de devolução chega pela massa (a abertura do RA é de CEN-ATE-001); as contas antigas prescritas e cancelada chegam no estado em que a prescrição ou o cancelamento as deixariam"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "contas_ciclo",
+          "itens",
+          "pagamentos_arrecadacao",
+          "avisos",
+          "guias_devolucao",
+          "devolucoes_detalhe",
+          "creditos_a_realizar_devolucao",
+          "registros_atendimento"
+        ],
+        "fora_desta_fronteira": {
+          "V4 — RA que informa a duplicidade (Transferir Devolução de Valores Pagos em Duplicidade)": "assistente do Atendimento que transfere o valor como crédito para contas do imóvel e encerra o RA — próximo sub-lote",
+          "Refaturar conta cancelada já arquivada": "o Refaturar só acha a conta no histórico (ControladorFaturamento.incluirContasParaRefaturarPagamentos); exige o encerramento — com CEN-ARR-006/010",
+          "realização do crédito a realizar": "o crédito gerado é observado; a conta seguinte que o realiza é de outro faturamento (CEN-FAT-004)"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-devolucao.sql",
+        "massas/deltas/arr-ra-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "inserir_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "110.40",
+            "com_guia": false
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2d": {
+      "descricao": "Pagamento A MAIOR de IMV-01 (R$ 120,40 para R$ 110,40, VALOR NÃO CONFERE, excedente R$ 10,00) e a devolução do excedente por guia: Guia de Devolução a partir do RA (R$ 10,00) e a devolução no aviso (R$ 10,00); nova classificação",
+      "lote": "batch-devolucao",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O pagamento que a classificação não apropriou é tratado pelas telas do legado: Recuperar Crédito (ExibirFiltrarPagamentosAClassificarAction → FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction \"Devolver\" ou RefaturarPagamentosNaoClassificadosAction → ControladorArrecadacao.recuperarCredito), Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction), Inserir Guia de Devolução a partir de um RA (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) e Inserir Devoluções no aviso bancário (InserirDevolucoesAction); a classificação seguinte casa devoluções e pagamentos (classificarDevolucoesDuplicidadeExcesso → processarDevolucaoPagamento).",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.guia_devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "faturamento.credito_a_realizar",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "atendimentopublico.registro_atendimento",
+          "modo": "conteudo"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "tratamento": "os catálogos do tratamento (tipos e origens de crédito, situações de devolução, as situações de pagamento da recuperação de crédito) são SINTÉTICOS com os ids das constantes; o RA de devolução chega pela massa (a abertura do RA é de CEN-ATE-001); as contas antigas prescritas e cancelada chegam no estado em que a prescrição ou o cancelamento as deixariam"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "contas_ciclo",
+          "itens",
+          "pagamentos_arrecadacao",
+          "avisos",
+          "guias_devolucao",
+          "devolucoes_detalhe",
+          "creditos_a_realizar_devolucao",
+          "registros_atendimento"
+        ],
+        "fora_desta_fronteira": {
+          "V4 — RA que informa a duplicidade (Transferir Devolução de Valores Pagos em Duplicidade)": "assistente do Atendimento que transfere o valor como crédito para contas do imóvel e encerra o RA — próximo sub-lote",
+          "Refaturar conta cancelada já arquivada": "o Refaturar só acha a conta no histórico (ControladorFaturamento.incluirContasParaRefaturarPagamentos); exige o encerramento — com CEN-ARR-006/010",
+          "realização do crédito a realizar": "o crédito gerado é observado; a conta seguinte que o realiza é de outro faturamento (CEN-FAT-004)"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-devolucao.sql",
+        "massas/deltas/arr-ra-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "valor_recebido": "+10.00"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "inserir_guia_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "10.00"
+          },
+          {
+            "tipo": "inserir_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "10.00"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2e": {
+      "descricao": "Pagamento A MAIOR de IMV-03 (R$ 262,60 para R$ 252,60, VALOR NÃO CONFERE, excedente R$ 10,00): a Guia de Devolução é recusada (o imóvel não tem RA pendente) e a devolução do excedente (R$ 10,00) entra SEM guia; nova classificação",
+      "lote": "batch-devolucao",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O pagamento que a classificação não apropriou é tratado pelas telas do legado: Recuperar Crédito (ExibirFiltrarPagamentosAClassificarAction → FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction \"Devolver\" ou RefaturarPagamentosNaoClassificadosAction → ControladorArrecadacao.recuperarCredito), Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction), Inserir Guia de Devolução a partir de um RA (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) e Inserir Devoluções no aviso bancário (InserirDevolucoesAction); a classificação seguinte casa devoluções e pagamentos (classificarDevolucoesDuplicidadeExcesso → processarDevolucaoPagamento).",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.guia_devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "faturamento.credito_a_realizar",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "atendimentopublico.registro_atendimento",
+          "modo": "conteudo"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "tratamento": "os catálogos do tratamento (tipos e origens de crédito, situações de devolução, as situações de pagamento da recuperação de crédito) são SINTÉTICOS com os ids das constantes; o RA de devolução chega pela massa (a abertura do RA é de CEN-ATE-001); as contas antigas prescritas e cancelada chegam no estado em que a prescrição ou o cancelamento as deixariam"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "contas_ciclo",
+          "itens",
+          "pagamentos_arrecadacao",
+          "avisos",
+          "guias_devolucao",
+          "devolucoes_detalhe",
+          "creditos_a_realizar_devolucao",
+          "registros_atendimento"
+        ],
+        "fora_desta_fronteira": {
+          "V4 — RA que informa a duplicidade (Transferir Devolução de Valores Pagos em Duplicidade)": "assistente do Atendimento que transfere o valor como crédito para contas do imóvel e encerra o RA — próximo sub-lote",
+          "Refaturar conta cancelada já arquivada": "o Refaturar só acha a conta no histórico (ControladorFaturamento.incluirContasParaRefaturarPagamentos); exige o encerramento — com CEN-ARR-006/010",
+          "realização do crédito a realizar": "o crédito gerado é observado; a conta seguinte que o realiza é de outro faturamento (CEN-FAT-004)"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-devolucao.sql",
+        "massas/deltas/arr-ra-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100030,
+                "referencia": 202605,
+                "valor_recebido": "+10.00"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "inserir_guia_devolucao",
+            "imovel": 100030,
+            "referencia": "05/2026",
+            "valor": "10.00"
+          },
+          {
+            "tipo": "inserir_devolucao",
+            "imovel": 100030,
+            "referencia": "05/2026",
+            "valor": "10.00"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "Pagamento EM DUPLICIDADE → Recuperar Crédito, \"Devolver\" (crédito a realizar); nova classificação",
+      "lote": "batch-devolucao",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O pagamento que a classificação não apropriou é tratado pelas telas do legado: Recuperar Crédito (ExibirFiltrarPagamentosAClassificarAction → FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction \"Devolver\" ou RefaturarPagamentosNaoClassificadosAction → ControladorArrecadacao.recuperarCredito), Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction), Inserir Guia de Devolução a partir de um RA (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) e Inserir Devoluções no aviso bancário (InserirDevolucoesAction); a classificação seguinte casa devoluções e pagamentos (classificarDevolucoesDuplicidadeExcesso → processarDevolucaoPagamento).",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.guia_devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "faturamento.credito_a_realizar",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "atendimentopublico.registro_atendimento",
+          "modo": "conteudo"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "tratamento": "os catálogos do tratamento (tipos e origens de crédito, situações de devolução, as situações de pagamento da recuperação de crédito) são SINTÉTICOS com os ids das constantes; o RA de devolução chega pela massa (a abertura do RA é de CEN-ATE-001); as contas antigas prescritas e cancelada chegam no estado em que a prescrição ou o cancelamento as deixariam"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "contas_ciclo",
+          "itens",
+          "pagamentos_arrecadacao",
+          "avisos",
+          "guias_devolucao",
+          "devolucoes_detalhe",
+          "creditos_a_realizar_devolucao",
+          "registros_atendimento"
+        ],
+        "fora_desta_fronteira": {
+          "V4 — RA que informa a duplicidade (Transferir Devolução de Valores Pagos em Duplicidade)": "assistente do Atendimento que transfere o valor como crédito para contas do imóvel e encerra o RA — próximo sub-lote",
+          "Refaturar conta cancelada já arquivada": "o Refaturar só acha a conta no histórico (ControladorFaturamento.incluirContasParaRefaturarPagamentos); exige o encerramento — com CEN-ARR-006/010",
+          "realização do crédito a realizar": "o crédito gerado é observado; a conta seguinte que o realiza é de outro faturamento (CEN-FAT-004)"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "recuperar_credito",
+            "situacao": 1,
+            "acao": "devolver",
+            "imovel": 100013,
+            "data_pagamento": "20260612",
+            "valor": "110.40"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V3b": {
+      "descricao": "Depois do crédito a realizar da duplicidade, a Guia de Devolução da mesma conta",
+      "lote": "batch-devolucao",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O pagamento que a classificação não apropriou é tratado pelas telas do legado: Recuperar Crédito (ExibirFiltrarPagamentosAClassificarAction → FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction \"Devolver\" ou RefaturarPagamentosNaoClassificadosAction → ControladorArrecadacao.recuperarCredito), Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction), Inserir Guia de Devolução a partir de um RA (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) e Inserir Devoluções no aviso bancário (InserirDevolucoesAction); a classificação seguinte casa devoluções e pagamentos (classificarDevolucoesDuplicidadeExcesso → processarDevolucaoPagamento).",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.guia_devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.devolucao",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "faturamento.credito_a_realizar",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "atendimentopublico.registro_atendimento",
+          "modo": "conteudo"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "tratamento": "os catálogos do tratamento (tipos e origens de crédito, situações de devolução, as situações de pagamento da recuperação de crédito) são SINTÉTICOS com os ids das constantes; o RA de devolução chega pela massa (a abertura do RA é de CEN-ATE-001); as contas antigas prescritas e cancelada chegam no estado em que a prescrição ou o cancelamento as deixariam"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "contas_ciclo",
+          "itens",
+          "pagamentos_arrecadacao",
+          "avisos",
+          "guias_devolucao",
+          "devolucoes_detalhe",
+          "creditos_a_realizar_devolucao",
+          "registros_atendimento"
+        ],
+        "fora_desta_fronteira": {
+          "V4 — RA que informa a duplicidade (Transferir Devolução de Valores Pagos em Duplicidade)": "assistente do Atendimento que transfere o valor como crédito para contas do imóvel e encerra o RA — próximo sub-lote",
+          "Refaturar conta cancelada já arquivada": "o Refaturar só acha a conta no histórico (ControladorFaturamento.incluirContasParaRefaturarPagamentos); exige o encerramento — com CEN-ARR-006/010",
+          "realização do crédito a realizar": "o crédito gerado é observado; a conta seguinte que o realiza é de outro faturamento (CEN-FAT-004)"
+        }
+      },
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-devolucao.sql",
+        "massas/deltas/arr-ra-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "recuperar_credito",
+            "situacao": 1,
+            "acao": "devolver",
+            "imovel": 100013,
+            "data_pagamento": "20260612",
+            "valor": "110.40"
+          },
+          {
+            "tipo": "inserir_guia_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "110.40"
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "ciclo_conta"
+        ]
+      }
     }
   }
 }

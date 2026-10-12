@@ -106,7 +106,11 @@ matrícula, referência e dígito lidos do banco — e o valor recebido da varia
 trailer), e o envia pela tela Registrar Movimento dos Arrecadadores (multipart); o arquivo inteiro vai para o resultado;
 `aguardar_movimento` espera o movimento do NSA (o processamento é uma transação: aparece tudo ou nada) ou o prazo;
 `consultar_debitos` lê a tela Consultar Débitos por seção — contas em débito, contas inconformes, débitos a cobrar,
-créditos, guias, total —, sem os acréscimos e os totais atualizado/à vista, que dependem do dia. O estado final —
+créditos, guias, total —, sem os acréscimos e os totais atualizado/à vista, que dependem do dia. 🆕 Para o pagamento
+não classificado (lote 6b): `recuperar_credito` (Recuperar Crédito: a situação filtrada, se o pagamento foi listado e a
+ação `devolver` ou `refaturar`), `manter_pagamento` (a referência corrigida; a confirmação respondida pela variação),
+`inserir_guia_devolucao` (a partir do RA pendente do imóvel) e `inserir_devolucao` (no aviso do movimento, com ou sem a
+guia); o pagamento é escolhido por matrícula, data e valor — o id só navega. O estado final —
 processos, etapas, unidades por rota, contas por matrícula com categorias e faixas, totais, consumos, referência do
 grupo e `contas_iniciadas` (números entregues pela sequência das contas, que não voltam num rollback) — sai sem ids nem
 carimbos de tempo. Blocos de detalhe opcionais (`"detalhes"` na entrada): `lancamentos` (débitos cobrados, créditos realizados e o que
@@ -115,7 +119,8 @@ resta a cobrar e a realizar), `impostos` (base, alíquota e valor por imposto), 
 conta: leituras, percentuais de esgoto e coleta, poço, situações, rota; consumos gravados na execução com tipo,
 anormalidade, rota e situação especial), 🆕 `arrecadacao` (movimentos pelo NSA, itens na ordem do arquivo com o registro
 original, pagamentos pela matrícula, referência, data e valor — com situação atual e anterior, excedente, a conta pela
-identidade documental e o item de origem —, avisos bancários calculado × informado, devoluções e o NSA do contrato) e
+identidade documental e o item de origem —, avisos bancários calculado × informado, devoluções e o NSA do contrato), 🆕 `devolucao` (guias de devolução, devoluções com a guia e o aviso, créditos a realizar
+com tipo, origem e referências) e
 `ciclo_conta` (cada conta pela identidade
 documental — matrícula, referência e ordem de criação —, contas gerais sem documento, pagamentos e RA pela conta a que
 apontam, consumos e a trilha de auditoria das operações) — só entram nas baselines que os declaram. O

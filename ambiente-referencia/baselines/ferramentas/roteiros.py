@@ -615,8 +615,52 @@ def _arrecadacao(ctx):
     }
 
 
+def _devolucao(ctx):
+    """Tratamento do pagamento não classificado (lote 6b): as guias de devolução (imóvel, documento, referência, valor,
+    tipo de crédito, situação, RA de origem), as devoluções com a guia, o aviso e a referência, e os créditos a realizar
+    com tipo, origem, valor, referências e situação — num bloco à parte, para o bloco `arrecadacao` (lote 6) não mudar."""
+    return {
+        'guias_devolucao': _linhas(ctx, IDENT +
+                                   "select g.imov_id as matricula, d.dotp_dsdocumentotipo as documento,"
+                                   " g.gdev_amreferenciaguiadevolucao as referencia, g.gdev_vldevolucao::text as valor,"
+                                   " t.crti_dscreditotipo as credito_tipo, s.dcst_dsdebitocreditosituacao as situacao,"
+                                   " g.gdev_amreferenciacontabil as referencia_contabil, (g.rgat_id is not null) as com_ra,"
+                                   f" {_data_relativa('g.gdev_dtemissao')} as data_emissao,"
+                                   " (g.gdev_dtvalidade - g.gdev_dtemissao) as dias_validade,"
+                                   " case when g.cnta_id is null then null else (select " + IDENT_JSON.format(a='x') +
+                                   "  from ident x where x.cnta_id = g.cnta_id) end as conta"
+                                   " from arrecadacao.guia_devolucao g left join cobranca.documento_tipo d using (dotp_id)"
+                                   " left join faturamento.credito_tipo t using (crti_id)"
+                                   " left join faturamento.debito_credito_situacao s on s.dcst_id = g.dcst_idatual order by g.gdev_id"),
+        'devolucoes_detalhe': _linhas(ctx, "select d.imov_id as matricula, d.devl_vldevolucao::text as valor,"
+                                           " to_char(d.devl_dtdevolucao, 'DD/MM/YYYY') as data_devolucao,"
+                                           " d.devl_amreferenciadevolucao as referencia_devolucao,"
+                                           " d.devl_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                           " sa.dvst_dsdevolucaosituacao as situacao, sp.dvst_dsdevolucaosituacao as situacao_anterior,"
+                                           " (d.gdev_id is not null) as com_guia,"
+                                           " (select count(*) from arrecadacao.aviso_bancario k where k.avbc_id <= d.avbc_id) as aviso"
+                                           " from arrecadacao.devolucao d"
+                                           " left join arrecadacao.devolucao_situacao sa on sa.dvst_id = d.dvst_idatual"
+                                           " left join arrecadacao.devolucao_situacao sp on sp.dvst_id = d.dvst_idanterior order by d.devl_id"),
+        'creditos_a_realizar_devolucao': _linhas(ctx, "select r.imov_id as matricula, t.crti_dscreditotipo as tipo,"
+                                                      " o.crog_dscreditoorigem as origem, r.crar_vlcredito::text as valor,"
+                                                      " r.crar_amreferenciacredito as referencia_credito,"
+                                                      " r.crar_amcobrancacredito as referencia_cobranca,"
+                                                      " r.crar_amreferenciacontabil as referencia_contabil,"
+                                                      " r.crar_nnprestacaocredito as prestacoes, r.crar_nnprestacaorealizadas as realizadas,"
+                                                      " s.dcst_dsdebitocreditosituacao as situacao, (r.rgat_id is not null) as com_ra,"
+                                                      " u.usur_nmlogin as autor"
+                                                      " from faturamento.credito_a_realizar r join faturamento.credito_tipo t using (crti_id)"
+                                                      " join faturamento.credito_origem o using (crog_id)"
+                                                      " join faturamento.debito_credito_situacao s on s.dcst_id = r.dcst_idatual"
+                                                      " left join seguranca.usuario u using (usur_id)"
+                                                      " order by r.imov_id, r.crar_id"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
-            'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao}
+            'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao,
+            'devolucao': _devolucao}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -1066,6 +1110,144 @@ def _consultar_debitos(ctx, passo):
     return {'debitos': r}
 
 
+# --- Arrecadação: o pagamento não classificado (lote 6b) ---------------------------------------------------------------
+# O pagamento é escolhido pela matrícula, data e valor (o id só serve à navegação e nunca sai no resultado).
+
+def _pagamento_alvo(ctx, passo):
+    return ctx.sql(f"select max(pgmt_id) from arrecadacao.pagamento where imov_id = {int(passo['imovel'])}"
+                   f" and pgmt_dtpagamento = to_date('{passo.get('data_pagamento', '20260610')}', 'YYYYMMDD')"
+                   f" and pgmt_vlpagamento = {Decimal(passo['valor'])}") or None
+
+
+def _sucesso(html):
+    """A mensagem da página de sucesso do legado (o que vem depois do título "Sucesso"), com os números (ids) mascarados."""
+    t = texto_visivel(html)
+    if not re.search(r'com sucesso|j\S* classificados', t):
+        return None
+    m = re.search(r'Sucesso\s+(.*?)\s+(?:Menu Principal|Voltar|Inserir outr|Fazer outr|Atualizar |Imprimir )', t)
+    return re.sub(r'\d+', '<n>', m.group(1).strip()) if m else 'sucesso'
+
+
+def _recuperar_credito(ctx, passo):
+    """Recuperar Crédito / Pagamentos a Classificar (ExibirFiltrarPagamentosAClassificarAction →
+    FiltrarPagamentosAClassificarAction → ClassificarPagamentosAction "Devolver" ou RefaturarPagamentosNaoClassificadosAction
+    → ControladorArrecadacao.recuperarCredito): a situação filtrada, o que a lista mostrou e o resultado."""
+    alvo = _pagamento_alvo(ctx, passo)
+    ctx.atual.get('exibirFiltrarPagamentosAClassificarAction.do?menu=sim')
+    html = ctx.atual.post('filtrarPagamentosRecuperacaoDeCreditoAction.do',
+                          {'idSituacaoPagamento': str(int(passo['situacao'])), 'referenciaArrecadacao': passo.get('referencia_arrecadacao', '06/2026'),
+                           'dataPagamento': '', 'matriculaImovel': ''})
+    listados = re.findall(r'(?i)name="idRegistrosClassificacao"\s+value="(\d+)"', html)
+    r = {'tela': {'http': ctx.atual.ultimo_estado, 'listados': len(listados), 'alvo_listado': bool(alvo) and str(alvo) in listados,
+                  'refaturar_oferecido': 'refaturar(document.forms[0])' in html and 'value="Refaturar"' in html}}
+    if not listados:
+        r['tela'].update(_recusa(html, ctx.atual.ultimo_estado))
+    if not alvo or str(alvo) not in listados:
+        r['resultado'] = 'nao_listado'
+        return r
+    caminho = {'devolver': 'classificarPagamentosAction.do?devolver=1',
+               'refaturar': 'refaturarPagamentosNaoClassificadosAction.do?devolver=0'}[passo['acao']]
+    html = ctx.atual.post(caminho, {'idRegistrosClassificacao': str(alvo), 'idSituacaoPagamento': str(int(passo['situacao']))})
+    sucesso = _sucesso(html)
+    r.update(acao=passo['acao'], http=ctx.atual.ultimo_estado, mensagem=sucesso, resultado='concluido' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
+def _manter_pagamento(ctx, passo):
+    """Manter Pagamento (ExibirAtualizarPagamentosAction → AtualizarPagamentosAction): a referência (e, se a variação
+    pedir, a situação) que o operador corrige; a confirmação que o legado pede é respondida pela variação."""
+    alvo = _pagamento_alvo(ctx, passo)
+    if not alvo:
+        return {'resultado': 'sem_pagamento'}
+    html = ctx.atual.get(f'exibirAtualizarPagamentosAction.do?idRegistroAtualizacao={alvo}')
+    dados = _formulario(html, 'ManterPagamentoActionForm')
+    tela = {'http': ctx.atual.ultimo_estado, 'referencia': dados.get('referenciaConta'), 'valor': dados.get('valorPagamento'),
+            'documento': dados.get('idTipoDocumento')}
+    r = {'tela': tela}
+    if 'referenciaConta' not in dados:
+        tela.update(_recusa(html, ctx.atual.ultimo_estado))
+        r['resultado'] = 'recusado_na_exibicao'
+        return r
+    dados['referenciaConta'] = passo['referencia_nova']
+    if 'situacao' in passo:
+        dados['idSituacaoAtualPagamento'] = str(int(passo['situacao']))
+    html = ctx.atual.post('atualizarPagamentosAction.do', dados)
+    texto, botoes = _confirmacao(html)
+    if texto is not None:
+        r.update(confirmacao=texto, resposta=passo.get('confirmar'))
+        if passo.get('confirmar') not in botoes:
+            r['resultado'] = 'nao_confirmado'
+            return r
+        html = ctx.atual.post(botoes[passo['confirmar']], dados)
+    sucesso = _sucesso(html)
+    r.update(http=ctx.atual.ultimo_estado, mensagem=sucesso, resultado='atualizado' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
+def _inserir_guia_devolucao(ctx, passo):
+    """Inserir Guia de Devolução (InserirGuiaDevolucaoAction → ControladorArrecadacao.inserirGuiaDevolucao) a partir do RA
+    pendente do imóvel, para uma conta (documento CONTA) da referência e no valor da variação."""
+    ra = ctx.sql(f"select max(rgat_id) from atendimentopublico.registro_atendimento where imov_id = {int(passo['imovel'])}"
+                 " and rgat_cdsituacao = 1")
+    ctx.atual.get('exibirInserirGuiaDevolucaoAction.do?menu=sim')
+    dados = {'idRegistroAtendimento': ra or '', 'idOrdemServico': '', 'documentoTipo': '1', 'documentoTipoHidden': '1',
+             'idLocalidade': '1', 'idLocalidadeHidden': '1', 'idImovel': str(int(passo['imovel'])),
+             'referenciaConta': passo['referencia'], 'idGuiaPagamento': '', 'idDebitoACobrar': '', 'idTipoDebito': '',
+             'idTipoDebitoHidden': '', 'valorDevolucao': passo['valor'].replace('.', ','), 'idFuncionarioAnalista': '',
+             'idFuncionarioAutorizador': ''}
+    html = ctx.atual.post('inserirGuiaDevolucaoAction.do', dados)
+    texto, botoes = _confirmacao(html)
+    r = {'ra_pendente': bool(ra)}
+    if texto is not None:
+        r.update(confirmacao=texto, resposta=passo.get('confirmar'))
+        if passo.get('confirmar') not in botoes:
+            r['resultado'] = 'nao_confirmado'
+            return r
+        html = ctx.atual.post(botoes[passo['confirmar']], dados)
+    sucesso = _sucesso(html)
+    r.update(http=ctx.atual.ultimo_estado, mensagem=sucesso,
+             resultado='inserida' if sucesso else 'recusada')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
+def _inserir_devolucao(ctx, passo):
+    """Inserir Devoluções (InserirDevolucoesAction): a devolução no aviso bancário do movimento (NSA), com a guia de
+    devolução do imóvel, a data, a referência e o valor da variação; a confirmação (valor acima da guia) é respondida pela
+    variação."""
+    aviso = ctx.sql("select max(a.avbc_id) from arrecadacao.aviso_bancario a join arrecadacao.arrecadador_movimento m using (armv_id)"
+                    f" where m.armv_nnnsa = {int(passo.get('nsa', 1))}")
+    guia = ctx.sql(f"select max(gdev_id) from arrecadacao.guia_devolucao where imov_id = {int(passo['imovel'])}") or ''
+    valor_guia = ctx.sql(f"select gdev_vldevolucao from arrecadacao.guia_devolucao where gdev_id = {int(guia)}") if guia else ''
+    ctx.atual.get('exibirInserirDevolucoesAction.do?menu=sim')
+    dados = {'avisoBancario': aviso, 'dataDevolucao': passo.get('data', '20/06/2026'), 'valorDevolucao': passo['valor'].replace('.', ','),
+             'guiaDevolucao': guia if passo.get('com_guia', True) else '', 'localidade': '1', 'localidadeClone': '1',
+             'codigoImovel': str(int(passo['imovel'])), 'codigoImovelClone': str(int(passo['imovel'])),
+             'referenciaDevolucao': passo['referencia'], 'referenciaDevolucaoClone': passo['referencia'],
+             'valorGuiaDevolucao': (valor_guia or '').replace('.', ',') if passo.get('com_guia', True) else '',
+             'tipoDebito': '', 'tipoDebitoClone': ''}
+    html = ctx.atual.post('inserirDevolucoesAction.do', dados)
+    texto, botoes = _confirmacao(html)
+    r = {'com_guia': bool(dados['guiaDevolucao'])}
+    if texto is not None:
+        r.update(confirmacao=texto, resposta=passo.get('confirmar'))
+        if passo.get('confirmar') not in botoes:
+            r['resultado'] = 'nao_confirmado'
+            return r
+        html = ctx.atual.post(botoes[passo['confirmar']], dados)
+    sucesso = _sucesso(html)
+    r.update(http=ctx.atual.ultimo_estado, mensagem=sucesso,
+             resultado='inserida' if sucesso else 'recusada')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
 def faturar_grupo(ctx, entrada):
     """Faturar grupo pelo processo comandado (ExibirInserirProcessoFaturamentoComandadoAction →
     InserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado →
@@ -1137,6 +1319,14 @@ def faturar_grupo(ctx, entrada):
             r.update(_aguardar_movimento(ctx, passo))
         elif tipo == 'consultar_debitos':
             r.update(_consultar_debitos(ctx, passo))
+        elif tipo == 'recuperar_credito':
+            r.update(_recuperar_credito(ctx, passo))
+        elif tipo == 'manter_pagamento':
+            r.update(_manter_pagamento(ctx, passo))
+        elif tipo == 'inserir_guia_devolucao':
+            r.update(_inserir_guia_devolucao(ctx, passo))
+        elif tipo == 'inserir_devolucao':
+            r.update(_inserir_devolucao(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.
