@@ -658,9 +658,113 @@ def _devolucao(ctx):
     }
 
 
+# Identidade documental que alcança também a conta arquivada (faturamento.conta_historico guarda o mesmo cnta_id).
+IDENT_H = ("with identh as (select cnta_id, imov_id, referencia, historico, row_number() over (partition by imov_id,"
+           " referencia, historico order by cnta_id) as ordem from (select cnta_id, imov_id, cnta_amreferenciaconta as referencia,"
+           " false as historico from faturamento.conta union all select cnta_id, imov_id, cnhi_amreferenciaconta, true"
+           " from faturamento.conta_historico) u) ")
+IDENTH_JSON = ("json_build_object('matricula', {a}.imov_id, 'referencia', {a}.referencia, 'ordem', {a}.ordem,"
+               " 'historico', {a}.historico)")
+
+
+def _encerramento(ctx):
+    """Encerramento da arrecadação e arquivamento (lote 6c): as referências do sistema; o resumo da arrecadação linha a
+    linha (tipo de recebimento, tipo e item de lançamento pelas constantes do legado, sequências, categoria e valor); os
+    pagamentos atuais com a conta pela identidade documental que alcança também a conta arquivada; e o que foi para o
+    histórico — pagamentos (com a conta e o item do movimento de origem), contas, devoluções e créditos a realizar. Num
+    bloco à parte: os blocos dos lotes 6 e 6b não mudam. Ids técnicos nunca saem."""
+    item = ("(select json_build_object('nsa', m.armv_nnnsa, 'ordem', (select count(*) from arrecadacao.arrecadador_mov_item k"
+            " where k.armv_id = i.armv_id and k.amit_id <= i.amit_id)) from arrecadacao.arrecadador_mov_item i"
+            " join arrecadacao.arrecadador_movimento m using (armv_id) where i.amit_id = {c})")
+    conta = ("case when {c} is null then null else coalesce((select " + IDENTH_JSON.format(a='x') +
+             " from identh x where x.cnta_id = {c}), json_build_object('conta_geral_sem_documento', true)) end")
+    return {
+        'parametros': _linhas(ctx, "select parm_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                   " parm_amreferenciafaturamento as referencia_faturamento from cadastro.sistema_parametros"),
+        'resumo_arrecadacao': _linhas(ctx, "select r.rarr_amreferencia as referencia, r.loca_id as localidade,"
+                                           " r.greg_id as gerencia, r.uneg_id as unidade_negocio, c.catg_dscategoria as categoria,"
+                                           " r.rctp_id as recebimento_tipo, t.rctp_dsrecebimentotipo as recebimento,"
+                                           " r.lctp_id as lancamento_tipo, r.lcit_id as lancamento_item,"
+                                           " ic.lict_dsitemlancamentocontabil as item_contabil,"
+                                           " r.rarr_nnsequenciatipolancamento as sequencia_tipo,"
+                                           " r.rarr_nnseqitemtplanc as sequencia_item, r.rarr_vlitemarrecadacao::text as valor"
+                                           " from arrecadacao.resumo_arrecadacao r"
+                                           " left join cadastro.categoria c using (catg_id)"
+                                           " left join arrecadacao.recebimento_tipo t using (rctp_id)"
+                                           " left join financeiro.lancamento_item_contabil ic using (lict_id)"
+                                           " order by r.rarr_amreferencia, r.loca_id, r.rarr_nnsequenciatipolancamento,"
+                                           " r.rarr_nnseqitemtplanc, r.catg_id, r.lcit_id, r.lict_id, r.rctp_id, r.rarr_vlitemarrecadacao"),
+        'pagamentos_documento': _linhas(ctx, IDENT_H +
+                                        "select p.imov_id as matricula, p.pgmt_amreferenciapagamento as referencia_pagamento,"
+                                        " p.pgmt_vlpagamento::text as valor, p.pgmt_vlexcedente::text as excedente,"
+                                        " to_char(p.pgmt_dtpagamento, 'DD/MM/YYYY') as data_pagamento,"
+                                        " p.pgmt_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                        " sa.pgst_dspagamentosituacao as situacao, sp.pgst_dspagamentosituacao as situacao_anterior,"
+                                        f" {conta.format(c='p.cnta_id')} as conta"
+                                        " from arrecadacao.pagamento p"
+                                        " left join arrecadacao.pagamento_situacao sa on sa.pgst_id = p.pgst_idatual"
+                                        " left join arrecadacao.pagamento_situacao sp on sp.pgst_id = p.pgst_idanterior"
+                                        " order by p.imov_id, p.pgmt_amreferenciapagamento, p.pgmt_dtpagamento, p.pgmt_vlpagamento, p.pgmt_id"),
+        'pagamentos_historico': _linhas(ctx, IDENT_H +
+                                        "select p.imov_id as matricula, p.pghi_amreferenciapagamento as referencia_pagamento,"
+                                        " p.pghi_vlpagamento::text as valor, p.pghi_vlexcedente::text as excedente,"
+                                        " to_char(p.pghi_dtpagamento, 'DD/MM/YYYY') as data_pagamento,"
+                                        " p.pghi_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                        " sa.pgst_dspagamentosituacao as situacao, sp.pgst_dspagamentosituacao as situacao_anterior,"
+                                        " d.dotp_dsdocumentotipo as documento_tipo, da.dotp_dsdocumentotipo as documento_agregador,"
+                                        f" {conta.format(c='p.cnta_id')} as conta, p.loca_id as localidade,"
+                                        " f.arfm_dsarrecadacaoforma as forma, p.pghi_cdagente as agente,"
+                                        f" {item.format(c='p.amit_id')} as item,"
+                                        " (select count(*) from arrecadacao.aviso_bancario k where k.avbc_id <= p.avbc_id) as aviso,"
+                                        " p.pghi_icexpurgado as expurgado, (p.pghi_tmprocessamento is not null) as processamento_registrado"
+                                        " from arrecadacao.pagamento_historico p"
+                                        " left join arrecadacao.pagamento_situacao sa on sa.pgst_id = p.pgst_idatual"
+                                        " left join arrecadacao.pagamento_situacao sp on sp.pgst_id = p.pgst_idanterior"
+                                        " left join cobranca.documento_tipo d on d.dotp_id = p.dotp_id"
+                                        " left join cobranca.documento_tipo da on da.dotp_id = p.dotp_idagregador"
+                                        " left join arrecadacao.arrecadacao_forma f on f.arfm_id = p.arfm_id"
+                                        " order by p.imov_id, p.pghi_amreferenciapagamento, p.pghi_dtpagamento, p.pghi_vlpagamento, p.pghi_id"),
+        'contas_historico': _linhas(ctx, IDENT_H +
+                                    "select " + IDENTH_JSON.format(a='x') + " as conta,"
+                                    " sa.dcst_dsdebitocreditosituacao as situacao, sp.dcst_dsdebitocreditosituacao as situacao_anterior,"
+                                    " (h.cnhi_vlagua + h.cnhi_vlesgoto + h.cnhi_vldebitos - h.cnhi_vlcreditos)::text as valor_total,"
+                                    " h.cnhi_amreferenciacontabil as referencia_contabil,"
+                                    " h.cnhi_amreferenciabaixacontabil as referencia_baixa_contabil,"
+                                    " to_char(h.cnhi_dtvencimentoconta, 'DD/MM/YYYY') as vencimento,"
+                                    " g.cntg_ichistorico as indicador_historico,"
+                                    " exists (select 1 from faturamento.conta k where k.cnta_id = h.cnta_id) as ainda_na_tabela_de_contas"
+                                    " from faturamento.conta_historico h join identh x on x.cnta_id = h.cnta_id and x.historico"
+                                    " join faturamento.conta_geral g on g.cnta_id = h.cnta_id"
+                                    " left join faturamento.debito_credito_situacao sa on sa.dcst_id = h.dcst_idatual"
+                                    " left join faturamento.debito_credito_situacao sp on sp.dcst_id = h.dcst_idanterior"
+                                    " order by h.imov_id, h.cnhi_amreferenciaconta, h.cnta_id"),
+        'devolucoes_historico': _linhas(ctx, "select d.imov_id as matricula, d.dehi_vldevolucao::text as valor,"
+                                             " to_char(d.dehi_dtdevolucao, 'DD/MM/YYYY') as data_devolucao,"
+                                             " d.dehi_amreferenciadevolucao as referencia_devolucao,"
+                                             " d.dehi_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                             " sa.dvst_dsdevolucaosituacao as situacao, sp.dvst_dsdevolucaosituacao as situacao_anterior,"
+                                             " (d.gdev_id is not null) as com_guia, (d.crar_id is not null) as com_credito,"
+                                             " (select count(*) from arrecadacao.aviso_bancario k where k.avbc_id <= d.avbc_id) as aviso"
+                                             " from arrecadacao.devolucao_historico d"
+                                             " left join arrecadacao.devolucao_situacao sa on sa.dvst_id = d.dvst_idatual"
+                                             " left join arrecadacao.devolucao_situacao sp on sp.dvst_id = d.dvst_idanterior"
+                                             " order by d.imov_id, d.dehi_dtdevolucao, d.dehi_vldevolucao, d.dehi_id"),
+        'creditos_a_realizar_historico': _linhas(ctx, "select r.imov_id as matricula, t.crti_dscreditotipo as tipo,"
+                                                      " o.crog_dscreditoorigem as origem, r.carh_vlcredito::text as valor,"
+                                                      " r.carh_amreferenciacredito as referencia_credito,"
+                                                      " r.carh_amcobrancacredito as referencia_cobranca,"
+                                                      " s.dcst_dsdebitocreditosituacao as situacao"
+                                                      " from faturamento.cred_a_realiz_hist r"
+                                                      " left join faturamento.credito_tipo t using (crti_id)"
+                                                      " left join faturamento.credito_origem o using (crog_id)"
+                                                      " left join faturamento.debito_credito_situacao s on s.dcst_id = r.dcst_idatual"
+                                                      " order by r.imov_id, r.crar_id"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
             'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao,
-            'devolucao': _devolucao}
+            'devolucao': _devolucao, 'encerramento': _encerramento}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -931,6 +1035,10 @@ def _iniciar_processo(ctx, passo):
     r.update(http=ctx.atual.ultimo_estado, resultado='inserido' if sucesso else 'recusado')
     if not sucesso:
         r.update(_recusa(html, ctx.atual.ultimo_estado))
+        # A recusa cujo texto o legado lança no lugar da chave aparece como "???pt_BR.<texto>???" (lote 6c).
+        m = re.search(r'\?\?\?[a-z]{2}_[A-Z]{2}\.(.*?)\?\?\?', texto_visivel(html))
+        if not r.get('mensagem') and m:
+            r['mensagem'] = m.group(1).strip()
     return r
 
 
@@ -961,10 +1069,16 @@ def _registro_g(ctx, reg, sequencia):
     """Um registro G: o código de barras da conta (ou de um documento que não existe) e o valor recebido pelo banco."""
     imovel, ref = int(reg['imovel']), int(reg['referencia'])
     situacoes = ', '.join(str(int(s)) for s in reg.get('situacoes', (0, 1, 2)))
-    conta = _linhas(ctx, "select loca_id, cnta_dgverificadorconta as dv, (cnta_vlagua + cnta_vlesgoto + cnta_vldebitos"
-                         " - cnta_vlcreditos - coalesce(cnta_vlimpostos, 0))::text as valor from faturamento.conta"
-                         f" where imov_id = {imovel} and cnta_amreferenciaconta = {ref} and dcst_idatual in ({situacoes})"
-                         " order by cnta_id desc limit 1")
+    if reg.get('arquivada'):  # a conta já no histórico (lote 6c): o código de barras que ela tinha impresso
+        conta = _linhas(ctx, "select loca_id, cnhi_dgverificadorconta as dv, (cnhi_vlagua + cnhi_vlesgoto + cnhi_vldebitos"
+                             " - cnhi_vlcreditos - coalesce(cnhi_vlimpostos, 0))::text as valor from faturamento.conta_historico"
+                             f" where imov_id = {imovel} and cnhi_amreferenciaconta = {ref} and dcst_idatual in ({situacoes})"
+                             " order by cnta_id desc limit 1")
+    else:
+        conta = _linhas(ctx, "select loca_id, cnta_dgverificadorconta as dv, (cnta_vlagua + cnta_vlesgoto + cnta_vldebitos"
+                             " - cnta_vlcreditos - coalesce(cnta_vlimpostos, 0))::text as valor from faturamento.conta"
+                             f" where imov_id = {imovel} and cnta_amreferenciaconta = {ref} and dcst_idatual in ({situacoes})"
+                             " order by cnta_id desc limit 1")
     if conta:
         loca, dv, valor_conta = conta[0]['loca_id'], conta[0]['dv'], conta[0]['valor']
     else:  # documento que não existe: o dígito como a emissão o calcularia (a recepção não o confere)
@@ -1248,6 +1362,46 @@ def _inserir_devolucao(ctx, passo):
     return r
 
 
+# --- Arrecadação: encerramento e arquivamento (lote 6c) ----------------------------------------------------------------
+
+def _pagamentos_das_contas(html):
+    """O quadro "Pagamentos das Contas" da consulta: cada linha (mês/ano, valor da conta, valor e data do pagamento,
+    situações anterior e atual) e se a tela a mostra como HISTÓRICO (a tela pinta de vermelho o pagamento arquivado);
+    e os totais atual e histórico que a tela soma."""
+    i = html.find('Pagamentos das Contas')
+    j = html.find('Pagamentos das Guias de Pagamento', i)
+    secao = html[i:j] if i >= 0 else ''
+    linhas = []
+    for tr in re.findall(r'(?is)<tr\b[^>]*>(.*?)</tr>', secao):
+        if '<strong>' in tr.lower():
+            continue  # cabeçalhos e totais
+        cel = [texto_visivel(c) for c in re.findall(r'(?is)<td\b[^>]*>(.*?)</td>', tr)]
+        if len(cel) != 6 or not re.fullmatch(r'\d{2}/\d{4}', cel[0]):
+            continue
+        linhas.append({'historico': 'ff0000' in tr.lower(), 'referencia': cel[0], 'valor_conta': moeda(cel[1]),
+                       'valor_pagamento': moeda(cel[2]), 'data_pagamento': cel[3],
+                       'situacao_anterior': cel[4] or None, 'situacao_atual': cel[5] or None})
+    totais = {k.lower().replace('ó', 'o'): {'quantidade': int(q.replace('.', '')), 'valor': moeda(v)}
+              for k, q, v in re.findall(r'Total (Atual|Hist\S*rico)\s+Qtd -\s+([\d.]+)\s+Valor do Pagamento -\s+(-?[\d.]*\d,\d{2})',
+                                        texto_visivel(secao))}
+    return linhas, totais
+
+
+def _consultar_pagamentos(ctx, passo):
+    """Consultar Pagamentos do imóvel (exibirFiltrarPagamentoConsultaAction → FiltrarPagamentoAction → ExibirConsultarPagamentoAction,
+    UC0255) com a opção "Ambos": os pagamentos atuais e os arquivados, como a tela os mostra a partir do imóvel e da conta.
+    O id do pagamento (que muda no arquivamento) só existe no link da tela e nunca sai no resultado."""
+    r = {}
+    for imovel in passo['imoveis']:
+        ctx.atual.get('exibirFiltrarPagamentoConsultaAction.do?menu=sim')
+        html = ctx.atual.post('consultarPagamentoAction.do', {'idImovel': str(int(imovel)),
+                                                             'opcaoPagamento': passo.get('opcao', 'ambos')})
+        linhas, totais = _pagamentos_das_contas(html)
+        r[str(int(imovel))] = {'http': ctx.atual.ultimo_estado, 'pagamentos_das_contas': linhas, 'totais': totais,
+                               'mensagem': None if linhas or totais else (_mensagem(html) or _atencao(html))}
+    return {'consulta': r}
+
+
 def faturar_grupo(ctx, entrada):
     """Faturar grupo pelo processo comandado (ExibirInserirProcessoFaturamentoComandadoAction →
     InserirProcessoFaturamentoComandadoAction → ControladorBatchSEJB.inserirProcessoIniciadoFaturamentoComandado →
@@ -1255,10 +1409,14 @@ def faturar_grupo(ctx, entrada):
     disparar · aguardar (terminal | ciclo) · observar · autorizar · aplicar (arquivo de massas/passos: a correção de causa
     do lote 5, o pagamento do lote 5d) · reiniciar · retificar · cancelar (manutenção de conta pela tela) ·
     iniciar_processo (processo mensal/eventual, ex.: a prescrição, a classificação de pagamentos) · movimento (envio do
-    arquivo do arrecadador pela tela) · aguardar_movimento · consultar_debitos (a posição de dívida pela tela).
+    arquivo do arrecadador pela tela) · aguardar_movimento · consultar_debitos (a posição de dívida pela tela) ·
+    recuperar_credito · manter_pagamento · inserir_guia_devolucao · inserir_devolucao (lote 6b) · consultar_pagamentos
+    (os pagamentos atuais e arquivados do imóvel pela tela, lote 6c).
     `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos`, `rateio`,
     `micromedicao` (medições e consumos detalhados), `ciclo_conta` (contas pela identidade documental, pagamentos, RA,
-    consumos e auditoria), `conta_origem` e `arrecadacao` (movimentos, itens, pagamentos, avisos, devoluções, contrato)."""
+    consumos e auditoria), `conta_origem`, `arrecadacao` (movimentos, itens, pagamentos, avisos, devoluções, contrato),
+    `devolucao` (guias, devoluções, créditos a realizar) e `encerramento` (referências, resumo da arrecadação,
+    histórico)."""
     login = entrada['usuario']
     comando = str(int(entrada['comando']))
     ctx.nova_sessao()
@@ -1327,6 +1485,8 @@ def faturar_grupo(ctx, entrada):
             r.update(_inserir_guia_devolucao(ctx, passo))
         elif tipo == 'inserir_devolucao':
             r.update(_inserir_devolucao(ctx, passo))
+        elif tipo == 'consultar_pagamentos':
+            r.update(_consultar_pagamentos(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.

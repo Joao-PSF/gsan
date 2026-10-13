@@ -1,0 +1,353 @@
+{
+  "dominio": "arrecadacao",
+  "lote": "batch-encerramento",
+  "modo": "Batch",
+  "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. O encerramento e o arquivamento pela tela Inserir Processo (mensal) → verificador do Quartz: processo 50 (Encerrar Arrecadação do Mês → ControladorArrecadacao.encerrarArrecadacaoMes, por localidade: o resumo da arrecadação do mês); processo 3301 (Gerar Histórico para Encerrar Arrecadação do Mês → gerarHistoricoParaEncerrarArrecadacaoMes: guias, débitos, créditos, pagamentos e devoluções para o histórico — e, ao concluir a etapa, atualizarAnoMesArrecadacao); processo 3302 (Gerar Histórico Conta → gerarHistoricoConta → ControladorFaturamento.transferirContasParaHistorico). A consulta pela tela Consultar Pagamento (UC0255: exibirFiltrarPagamentoConsultaAction → FiltrarPagamentoAction → ExibirConsultarPagamentoAction, opção Ambos — atuais e arquivados).",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "relógio: as datas dos arquivos (pagamento até 20/06/2026, crédito e geração até 22/06/2026) não são posteriores à data do banco — a recepção recusa pagamento com data futura",
+      "sql": "select (current_date >= date '2026-06-22')::text",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "referências do sistema: faturamento 05/2026 (o passo de encerramento a avança) e arrecadação 06/2026",
+      "sql": "select parm_amreferenciafaturamento::text || '/' || parm_amreferenciaarrecadacao::text from cadastro.sistema_parametros",
+      "esperado": "202605/202606"
+    },
+    {
+      "descricao": "empresa FEBRABAN 0901 e layout 04; o contrato do arrecadador 901 espera o NSA 1",
+      "sql": "select p.parm_cdempresafebraban::text || '/' || p.parm_nnlayoutfebraban::text || '/' || c.arct_nnnsaretornocdbarras::text from cadastro.sistema_parametros p, arrecadacao.arrecadador_contrato c where c.arct_id = 901",
+      "esperado": "901/4/0"
+    },
+    {
+      "descricao": "relógio: o mês corrente é posterior ao de arrecadação (06/2026) — o encerramento recusa fechar o mês corrente (encerrarArrecadacaoMes:19540-19545) — e as datas do arquivo de 07/2026 (até 06/07/2026) não são posteriores à data do banco",
+      "sql": "select (current_date >= date '2026-07-06')::text",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "faturamento.conta",
+    {
+      "tabela": "arrecadacao.arrecadador_movimento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.arrecadador_mov_item",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.pagamento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.aviso_bancario",
+      "modo": "conteudo"
+    },
+    "arrecadacao.devolucao",
+    {
+      "tabela": "arrecadacao.arrecadador_contrato",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.resumo_arrecadacao",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.pagamento_historico",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.devolucao_historico",
+      "modo": "conteudo"
+    },
+    "faturamento.conta_historico",
+    "faturamento.cred_a_realiz_hist",
+    {
+      "tabela": "cadastro.sistema_parametros",
+      "modo": "conteudo"
+    }
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-ARR-006",
+  "titulo": "Identidade do pagamento no arquivamento",
+  "especificacao": "docs/modernizacao/testes/cenarios/arrecadacao.md — CEN-ARR-006",
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+    "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+    "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+    "relogio": "datas de pagamento, crédito e geração são as dos arquivos (06/2026 e, no mês seguinte, 07/2026); o encerramento só fecha um mês anterior ao corrente (pré-condição); as datas que o legado grava pelo relógio saem relativas à execução",
+    "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+    "encerramento": "os catálogos do resumo (16 tipos de recebimento, 32 tipos e 53 itens de lançamento) e os três processos são SINTÉTICOS com os ids das constantes do legado (a base não tem nenhum); o resumo é observado linha a linha pelas constantes e sequências que o legado grava",
+    "identidade": "o pagamento arquivado recebe outro identificador (seq_pagamento_historico): o resultado nunca traz ids — pagamento pela matrícula, referência, data e valor; conta pela identidade documental, com a marca de atual ou arquivada"
+  },
+  "observaveis": {
+    "campos": [
+      "passos",
+      "funcionalidades",
+      "pagamentos_arrecadacao",
+      "devolucoes_detalhe",
+      "parametros",
+      "pagamentos_documento",
+      "pagamentos_historico",
+      "devolucoes_historico"
+    ],
+    "fora_desta_fronteira": {
+      "identificador do pagamento": "muda no arquivamento por construção (seq_pagamento_historico) — nunca sai no resultado",
+      "conta arquivada": "o legado não arquiva conta nesta instalação (CEN-ARR-010 V4, CAND-38): aqui a conta continua atual; a conta arquivada é vista em CEN-ARR-005 V4 (massa)"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "O pagamento CLASSIFICADO de IMV-01 (R$ 110,40, 10/06/2026) consultado pela tela e pelo banco antes e depois do arquivamento",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-encerramento-catalogos.sql",
+        "massas/deltas/arr-processo-encerrar.sql",
+        "massas/deltas/arr-consulta-pagamentos.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_pagamentos",
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 50
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3301
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_pagamentos",
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "encerramento"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "O pagamento devolvido (DUPLIC EXC DEVOLVIDO, anterior EM DUPLICIDADE) e o CLASSIFICADO de IMV-01, com a devolução, consultados antes e depois do arquivamento",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-encerramento-catalogos.sql",
+        "massas/deltas/arr-processo-encerrar.sql",
+        "massas/deltas/arr-consulta-pagamentos.sql",
+        "massas/deltas/arr-devolucao.sql",
+        "massas/deltas/arr-ra-devolucao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "inserir_guia_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "110.40"
+          },
+          {
+            "tipo": "inserir_devolucao",
+            "imovel": 100013,
+            "referencia": "05/2026",
+            "valor": "110.40"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_pagamentos",
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 50
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3301
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_pagamentos",
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "arrecadacao",
+          "devolucao",
+          "encerramento"
+        ]
+      }
+    }
+  }
+}
