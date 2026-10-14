@@ -762,9 +762,39 @@ def _encerramento(ctx):
     }
 
 
+def _cobranca(ctx):
+    """Posição de dívida e acréscimos (lote 7): cada conta pela identidade documental com situação, valor, vencimento, o
+    motivo e a data da revisão e o indicador de multa já cobrada; e os débitos a cobrar de ACRÉSCIMO (multa, juros,
+    atualização — os tipos das constantes) com as referências de débito e de cobrança. Num bloco à parte: os anteriores
+    não mudam."""
+    return {
+        'contas_cobranca': _linhas(ctx, IDENT +
+                                   "select " + IDENT_JSON.format(a='x') + " as conta, s.dcst_dsdebitocreditosituacao as situacao,"
+                                   " (c.cnta_vlagua + c.cnta_vlesgoto + c.cnta_vldebitos - c.cnta_vlcreditos"
+                                   " - coalesce(c.cnta_vlimpostos, 0))::text as valor_total,"
+                                   " to_char(c.cnta_dtvencimentoconta, 'DD/MM/YYYY') as vencimento,"
+                                   " m.cmrv_dsmotivorevisaoconta as motivo_revisao,"
+                                   f" {_data_relativa('c.cnta_dtrevisao')} as data_revisao,"
+                                   " c.cnta_iccobrancamulta as indicador_cobranca_multa"
+                                   " from faturamento.conta c join ident x using (cnta_id)"
+                                   " left join faturamento.debito_credito_situacao s on s.dcst_id = c.dcst_idatual"
+                                   " left join faturamento.conta_motivo_revisao m using (cmrv_id)"
+                                   " order by c.imov_id, c.cnta_amreferenciaconta, c.cnta_id"),
+        'debitos_acrescimos': _linhas(ctx, "select d.imov_id as matricula, t.dbtp_dsdebitotipo as tipo, d.dbac_vldebito::text as valor,"
+                                           " d.dbac_amreferenciadebito as referencia_debito, d.dbac_amcobrancadebito as referencia_cobranca,"
+                                           " d.dbac_nnprestacaodebito as prestacoes, d.dbac_nnprestacaocobradas as cobradas,"
+                                           " s.dcst_dsdebitocreditosituacao as situacao, f.cbfm_dscobrancaforma as forma_cobranca"
+                                           " from faturamento.debito_a_cobrar d join faturamento.debito_tipo t using (dbtp_id)"
+                                           " join faturamento.debito_credito_situacao s on s.dcst_id = d.dcst_idatual"
+                                           " left join cobranca.cobranca_forma f using (cbfm_id)"
+                                           " where d.dbtp_id in (80, 91, 94, 100)"
+                                           " order by d.imov_id, d.dbac_amreferenciadebito, d.dbtp_id"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
             'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao,
-            'devolucao': _devolucao, 'encerramento': _encerramento}
+            'devolucao': _devolucao, 'encerramento': _encerramento, 'cobranca': _cobranca}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -1167,12 +1197,17 @@ def _aguardar_movimento(ctx, passo):
 SECOES_DEBITO = (('contas', r'<strong>\s*Contas\s*</strong>'), ('contas_inconformes', r'<strong>\s*Contas Inconformes\s*</strong>'),
                  ('debitos_a_cobrar', r'D&eacute;bitos\s+A Cobrar'), ('creditos_a_realizar', r'Cr&eacute;ditos\s+A Realizar'),
                  ('guias', r'Guias de Pagamento'), ('totais', r'Valor Total dos D'))
+# A página do débito do CLIENTE (lote 7) quebra os títulos dos quadros em linhas: os mesmos quadros, espaços flexíveis.
+SECOES_DEBITO_CLIENTE = (('contas', r'<strong>\s*Contas\s*</strong>'), ('contas_inconformes', r'Contas\s+Inconformes'),
+                         ('debitos_a_cobrar', r'D&eacute;bitos\s+A\s+Cobrar'),
+                         ('creditos_a_realizar', r'Cr&eacute;ditos\s+A\s+Realizar'),
+                         ('guias', r'Guias\s+de\s+Pagamento'), ('totais', r'Valor\s+Total\s+dos'))
 
 
-def _secoes_debito(html):
+def _secoes_debito(html, secoes=SECOES_DEBITO):
     """As linhas de dados de cada quadro da tela, na ordem da tela: o texto de cada célula."""
     marcas = []
-    for nome, padrao in SECOES_DEBITO:
+    for nome, padrao in secoes:
         m = re.search(padrao, html)
         if m:
             marcas.append((m.start(), nome))
@@ -1187,41 +1222,112 @@ def _secoes_debito(html):
     return secoes
 
 
+def _contas_da_posicao(s, acrescimos):
+    """As linhas do quadro Contas: mês/ano, vencimento, água, esgoto, débitos, créditos, impostos, valor da conta,
+    acréscimos, situação — na posição do cliente, com a matrícula antes. Os acréscimos (e a coluna que os soma na linha
+    de total) só entram quando a variação os pede."""
+    contas, total_contas = [], None
+    for c in s.get('contas', []):
+        cel = [x for x in c if x != '']
+        k = next((n for n, x in enumerate(cel) if re.fullmatch(r'\d{2}/\d{4}', x)), None)
+        if k is not None and len(cel) - k == 10:
+            linha = {'referencia': cel[k], 'vencimento': cel[k + 1], 'valor_agua': moeda(cel[k + 2]),
+                     'valor_esgoto': moeda(cel[k + 3]), 'valor_debitos': moeda(cel[k + 4]), 'valor_creditos': moeda(cel[k + 5]),
+                     'valor_impostos': moeda(cel[k + 6]), 'valor_conta': moeda(cel[k + 7]), 'situacao': cel[k + 9]}
+            if k:
+                linha = dict(matricula=cel[k - 1], **linha)
+            if acrescimos:
+                linha['acrescimos'] = moeda(cel[k + 8])
+            contas.append(linha)
+        elif cel and cel[0] == 'Total' and len(cel) >= 8:
+            # Na posição do imóvel a linha de total traz a quantidade de documentos; na do cliente, não.
+            j = 2 if 'doc' in cel[1] else 1
+            total_contas = {'documentos': cel[1] if j == 2 else None, 'valor_contas': moeda(cel[j + 5])}
+            if acrescimos:
+                total_contas['acrescimos'] = moeda(cel[j + 6]) if len(cel) > j + 6 else None
+        else:
+            raise ValueError(f'linha de conta fora do formato esperado: {cel!r}')
+    return contas, total_contas
+
+
+def _posicao(html, s, acrescimos):
+    contas, total_contas = _contas_da_posicao(s, acrescimos)
+    totais = s.get('totais', [[]])
+    r = {
+        'contas': contas, 'total_contas': total_contas,
+        'contas_inconformes': [{'referencia': c[0], 'valor_conta': moeda(c[1]), 'valor_pagamento': moeda(c[2]),
+                                'data_pagamento': c[3], 'situacao_anterior': c[4] or None, 'situacao_atual': c[5] or None}
+                               for c in s.get('contas_inconformes', []) if len(c) == 6],
+        'debitos_a_cobrar': [[x for x in c if x] for c in s.get('debitos_a_cobrar', [])],
+        'creditos_a_realizar': [[x for x in c if x] for c in s.get('creditos_a_realizar', [])],
+        'guias': [[x for x in c if x] for c in s.get('guias', [])],
+        'valor_total_debitos': moeda(totais[0][0]) if totais and totais[0] else None,
+    }
+    if acrescimos:  # o total atualizado (com os acréscimos) e o pagamento à vista, como a tela os mostra
+        t = (totais[0] + ['', '', '', ''])[:4] if totais and totais[0] else ['', '', '', '']
+        r['totais'] = {'debitos': moeda(t[0]), 'debitos_atualizado': moeda(t[1]), 'desconto_a_vista': moeda(t[2]),
+                       'pagamento_a_vista': moeda(t[3])}
+    return r
+
+
 def _consultar_debitos(ctx, passo):
     """Consultar Débitos do imóvel (ConsultarDebitoAction → ExibirConsultarDebitoImovelAction →
     Fachada.obterDebitoImovelOuCliente): a posição de dívida que a Cobrança calcula — as contas em débito, as contas
     "inconformes" (com pagamento que não confere), débitos a cobrar, créditos a realizar, guias e o total dos débitos.
     Fora do resultado, por dependerem do dia em que roda: os acréscimos por impontualidade e os totais atualizado e à
-    vista (ficam na evidência)."""
+    vista (ficam na evidência) — salvo quando a variação os pede (`acrescimos`, lote 7: os índices da massa tornam o
+    resultado independente do dia). `clientes` (lote 7): a mesma consulta pelo cliente (ExibirConsultarDebitoClienteAction),
+    com a relação (USUÁRIO, RESPONSÁVEL…) da variação."""
     r = {}
-    for imovel in passo['imoveis']:
+    acrescimos = bool(passo.get('acrescimos'))
+    for imovel in passo.get('imoveis', []):
         html = ctx.atual.post('consultarDebitoAction.do', {'codigoImovel': str(int(imovel))})
-        s = _secoes_debito(html)
-        contas, total_contas = [], None
-        for c in s.get('contas', []):
-            # Mês/ano, vencimento, água, esgoto, débitos, créditos, impostos, valor da conta, acréscimos, situação — os
-            # acréscimos (e a coluna que os soma na linha de total) ficam de fora.
-            cel = [x for x in c if x != '']
-            if len(cel) == 10 and re.fullmatch(r'\d{2}/\d{4}', cel[0]):
-                contas.append({'referencia': cel[0], 'vencimento': cel[1], 'valor_agua': moeda(cel[2]),
-                               'valor_esgoto': moeda(cel[3]), 'valor_debitos': moeda(cel[4]), 'valor_creditos': moeda(cel[5]),
-                               'valor_impostos': moeda(cel[6]), 'valor_conta': moeda(cel[7]), 'situacao': cel[9]})
-            elif cel and cel[0] == 'Total' and len(cel) >= 8:
-                total_contas = {'documentos': cel[1], 'valor_contas': moeda(cel[7])}
-            else:
-                raise ValueError(f'linha de conta fora do formato esperado: {cel!r}')
-        totais = s.get('totais', [[]])
-        r[str(int(imovel))] = {
-            'http': ctx.atual.ultimo_estado, 'contas': contas, 'total_contas': total_contas,
-            'contas_inconformes': [{'referencia': c[0], 'valor_conta': moeda(c[1]), 'valor_pagamento': moeda(c[2]),
-                                    'data_pagamento': c[3], 'situacao_anterior': c[4] or None, 'situacao_atual': c[5] or None}
-                                   for c in s.get('contas_inconformes', []) if len(c) == 6],
-            'debitos_a_cobrar': [[x for x in c if x] for c in s.get('debitos_a_cobrar', [])],
-            'creditos_a_realizar': [[x for x in c if x] for c in s.get('creditos_a_realizar', [])],
-            'guias': [[x for x in c if x] for c in s.get('guias', [])],
-            'valor_total_debitos': moeda(totais[0][0]) if totais and totais[0] else None,
-        }
-    return {'debitos': r}
+        r[str(int(imovel))] = dict(http=ctx.atual.ultimo_estado, **_posicao(html, _secoes_debito(html), acrescimos))
+    saida = {'debitos': r}
+    if passo.get('clientes'):
+        rc = {}
+        for cli in passo['clientes']:
+            relacao = cli.get('relacao')
+            # O formulário da tela fica na sessão: a matrícula da consulta anterior vai vazia, como o navegador a enviaria.
+            html = ctx.atual.post('consultarDebitoAction.do', {'codigoImovel': '', 'codigoClienteSuperior': '',
+                                                              'codigoCliente': str(int(cli['codigo'])),
+                                                              'tipoRelacao': str(int(relacao)) if relacao else '-1'})
+            chave = f"{int(cli['codigo'])}" + (f"/{int(relacao)}" if relacao else '')
+            rc[chave] = dict(http=ctx.atual.ultimo_estado,
+                             **_posicao(html, _secoes_debito(html, SECOES_DEBITO_CLIENTE), acrescimos))
+        saida['debitos_cliente'] = rc
+    return saida
+
+
+def _colocar_revisao(ctx, passo):
+    """Colocar Conta em Revisão a partir de Manter Conta (ExibirColocarRevisaoContaAction → ColocarRevisaoContaAction →
+    Fachada.colocarRevisaoConta), com o motivo da variação. O efeito é lido do banco (bloco `cobranca`). `forjar`: se a
+    tela recusa, o POST é enviado mesmo assim (o servidor aceita ou não) — sem ele, a recusa encerra o passo."""
+    r = {}
+    conta = _conta_alvo(ctx, passo['imovel'], passo['referencia'], passo.get('situacoes', (0, 1, 2)))
+    r['manter_conta'], marca = _manter_conta(ctx, passo['imovel'], conta)
+    if not marca:
+        r['resultado'] = 'conta_nao_listada'
+        return r
+    html = ctx.atual.get(f'exibirColocarRevisaoContaAction.do?conta={marca}&idImovel={int(passo["imovel"])}')
+    tela = {'http': ctx.atual.ultimo_estado, 'motivos': re.findall(r'(?is)<option\b[^>]*value="(\d+)"', html)}
+    dados = _formulario(html, 'ColocarRevisaoContaActionForm')
+    if ctx.atual.ultimo_estado >= 400 or not tela['motivos']:
+        tela.update(_recusa(html, ctx.atual.ultimo_estado))
+        if not passo.get('forjar'):
+            r.update(tela=tela, resultado='recusado_na_exibicao')
+            return r
+        r['forjado'] = True  # o que a tela não deixaria enviar
+        dados = {}
+    r['tela'] = tela
+    dados.update(contaSelected=marca, motivoRevisaoContaID=str(int(passo['motivo'])))
+    html = ctx.atual.post('colocarRevisaoContaAction.do', dados)
+    recusa = _recusa(html, ctx.atual.ultimo_estado)
+    aceito = ctx.atual.ultimo_estado < 400 and not recusa['chaves']
+    r.update(http=ctx.atual.ultimo_estado, resultado='aceito' if aceito else 'recusado', mensagem=_sucesso(html))
+    if not aceito:
+        r.update(recusa)
+    return r
 
 
 # --- Arrecadação: o pagamento não classificado (lote 6b) ---------------------------------------------------------------
@@ -1487,6 +1593,8 @@ def faturar_grupo(ctx, entrada):
             r.update(_inserir_devolucao(ctx, passo))
         elif tipo == 'consultar_pagamentos':
             r.update(_consultar_pagamentos(ctx, passo))
+        elif tipo == 'colocar_revisao':
+            r.update(_colocar_revisao(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.

@@ -544,6 +544,388 @@
           "ciclo_conta"
         ]
       }
+    },
+    "V2b": {
+      "descricao": "Contas de 05/2026 (vencimento 10/06/2026) pagas em 20/06 (IMV-01, em atraso), 10/06 (IMV-02, em dia) e 12/06 (IMV-03, dois dias úteis depois); classificação; ACRÉSCIMOS do encerramento (multa, juros, atualização); a posição com acréscimos",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260620",
+                "data_credito": "20260621"
+              },
+              {
+                "imovel": 100021,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100030,
+                "referencia": 202605,
+                "data_pagamento": "20260612",
+                "data_credito": "20260615"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3305
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "arrecadacao"
+        ]
+      },
+      "lote": "batch-cobranca",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. Depois, os ACRÉSCIMOS do encerramento pela tela Inserir Processo (mensal) → verificador do Quartz → TarefaBatchGerarDebitosACobrarAcrescimosImpontualidade (modo \"encerrando a arrecadação\", todas as rotas) → ControladorFaturamentoCOSANPASEJB.gerarDebitosACobrarDeAcrescimosPorImpontualidade, por rota: débitos a cobrar de multa, juros e atualização para as contas pagas em atraso no mês.",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        "arrecadacao.devolucao",
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        "faturamento.debito_a_cobrar",
+        "faturamento.credito_a_realizar",
+        "faturamento.debito_cobrado",
+        "faturamento.credito_realizado"
+      ],
+      "precondicoes": [
+        {
+          "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+          "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+          "esperado": "1"
+        },
+        {
+          "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+          "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+          "esperado": "true"
+        },
+        {
+          "descricao": "relógio: as datas dos arquivos (pagamento até 20/06/2026, crédito e geração até 22/06/2026) não são posteriores à data do banco — a recepção recusa pagamento com data futura",
+          "sql": "select (current_date >= date '2026-06-22')::text",
+          "esperado": "true"
+        },
+        {
+          "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+          "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+          "esperado": "202605/true"
+        },
+        {
+          "descricao": "referências do sistema: faturamento 05/2026 (o passo de encerramento a avança) e arrecadação 06/2026",
+          "sql": "select parm_amreferenciafaturamento::text || '/' || parm_amreferenciaarrecadacao::text from cadastro.sistema_parametros",
+          "esperado": "202605/202606"
+        },
+        {
+          "descricao": "empresa FEBRABAN 0901 e layout 04; o contrato do arrecadador 901 espera o NSA 1",
+          "sql": "select p.parm_cdempresafebraban::text || '/' || p.parm_nnlayoutfebraban::text || '/' || c.arct_nnnsaretornocdbarras::text from cadastro.sistema_parametros p, arrecadacao.arrecadador_contrato c where c.arct_id = 901",
+          "esperado": "901/4/0"
+        },
+        {
+          "descricao": "relógio: a data do banco é posterior em mais de 31 dias ao vencimento das contas (10/06/2026) — os juros diários da massa atingem o teto (1,00%) e o acréscimo de uma conta não paga deixa de depender do dia",
+          "sql": "select (current_date >= date '2026-07-11')::text",
+          "esperado": "true"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "acrescimos": "os índices de acréscimo são SINTÉTICOS (a base não tem nenhum) e desenhados para que o acréscimo de uma conta não paga — calculado com a data de HOJE — não dependa do dia: multa mensal de 2,00%, juros diários de 0,0333% com teto de 1,00% (atingido 31 dias depois do vencimento) e atualização pela razão entre os fatores de 06/2026 e 05/2026 (1,0100); a pré-condição de relógio garante o teto",
+        "lancamentos": "o débito de serviço (3 × R$ 33,33), o parcelamento (6 × R$ 50,00) e o crédito (R$ 30,00) de IMV-01 são a massa SINTÉTICA do lote 5b; a conta de 05/2026 cobra uma prestação de cada e realiza o crédito"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "pagamentos_arrecadacao",
+          "debitos_a_cobrar",
+          "contas_cobranca",
+          "debitos_acrescimos"
+        ],
+        "fora_desta_fronteira": {
+          "o resumo do encerramento": "CEN-ARR-010 — aqui só a etapa dos acréscimos",
+          "a cobrança dos acréscimos na conta seguinte": "outro faturamento (CEN-FAT-004)"
+        }
+      }
+    },
+    "V2c": {
+      "descricao": "A conta de 05/2026 de IMV-01 paga em atraso (20/06/2026) e classificada; os ACRÉSCIMOS do encerramento gerados DUAS vezes (o processo inserido de novo)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260620",
+                "data_credito": "20260621"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3305
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3305
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "arrecadacao"
+        ]
+      },
+      "lote": "batch-cobranca",
+      "fronteira": "Recepção do movimento do arrecadador pela tela do legado, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução (o disparo do lote 5): Registrar Movimento dos Arrecadadores (exibirRegistrarMovimentoArredadadoresAction → registrarMovimentoArredadadoresAction → mensagem para a fila do controlador de Arrecadação → ControladorArrecadacao.registrarMovimentoArrecadadores, variante COSANPA) com um arquivo de retorno de 150 posições (registros A, G, Z) cujo código de barras é o que o GSAN imprime na conta. O que a recepção grava é lido do banco: movimento pelo NSA, itens pela ordem no arquivo, pagamentos pela matrícula, referência, data e valor, contas pela identidade documental — nunca pela chave. Depois, a classificação pela tela Inserir Processo (eventual) → verificador do Quartz → TarefaBatchClassificarPagamentosDevolucoes → ControladorArrecadacao.classificarPagamentosDevolucoes, por localidade; e a posição de dívida pela tela Consultar Débitos (ConsultarDebitoAction → Fachada.obterDebitoImovelOuCliente), de onde saem as contas em débito, as contas inconformes e o total. Depois, os ACRÉSCIMOS do encerramento pela tela Inserir Processo (mensal) → verificador do Quartz → TarefaBatchGerarDebitosACobrarAcrescimosImpontualidade (modo \"encerrando a arrecadação\", todas as rotas) → ControladorFaturamentoCOSANPASEJB.gerarDebitosACobrarDeAcrescimosPorImpontualidade, por rota: débitos a cobrar de multa, juros e atualização para as contas pagas em atraso no mês.",
+      "efeitos": [
+        "batch.processo_iniciado",
+        "batch.funcionalidade_iniciada",
+        "faturamento.conta",
+        {
+          "tabela": "arrecadacao.arrecadador_movimento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.arrecadador_mov_item",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.pagamento",
+          "modo": "conteudo"
+        },
+        {
+          "tabela": "arrecadacao.aviso_bancario",
+          "modo": "conteudo"
+        },
+        "arrecadacao.devolucao",
+        {
+          "tabela": "arrecadacao.arrecadador_contrato",
+          "modo": "conteudo"
+        },
+        "faturamento.debito_a_cobrar",
+        "faturamento.credito_a_realizar",
+        "faturamento.debito_cobrado",
+        "faturamento.credito_realizado"
+      ],
+      "precondicoes": [
+        {
+          "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+          "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+          "esperado": "1"
+        },
+        {
+          "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+          "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+          "esperado": "true"
+        },
+        {
+          "descricao": "relógio: as datas dos arquivos (pagamento até 20/06/2026, crédito e geração até 22/06/2026) não são posteriores à data do banco — a recepção recusa pagamento com data futura",
+          "sql": "select (current_date >= date '2026-06-22')::text",
+          "esperado": "true"
+        },
+        {
+          "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+          "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+          "esperado": "202605/true"
+        },
+        {
+          "descricao": "referências do sistema: faturamento 05/2026 (o passo de encerramento a avança) e arrecadação 06/2026",
+          "sql": "select parm_amreferenciafaturamento::text || '/' || parm_amreferenciaarrecadacao::text from cadastro.sistema_parametros",
+          "esperado": "202605/202606"
+        },
+        {
+          "descricao": "empresa FEBRABAN 0901 e layout 04; o contrato do arrecadador 901 espera o NSA 1",
+          "sql": "select p.parm_cdempresafebraban::text || '/' || p.parm_nnlayoutfebraban::text || '/' || c.arct_nnnsaretornocdbarras::text from cadastro.sistema_parametros p, arrecadacao.arrecadador_contrato c where c.arct_id = 901",
+          "esperado": "901/4/0"
+        },
+        {
+          "descricao": "relógio: a data do banco é posterior em mais de 31 dias ao vencimento das contas (10/06/2026) — os juros diários da massa atingem o teto (1,00%) e o acréscimo de uma conta não paga deixa de depender do dia",
+          "sql": "select (current_date >= date '2026-07-11')::text",
+          "esperado": "true"
+        }
+      ],
+      "ressalvas": {
+        "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+        "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+        "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+        "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+        "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+        "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+        "acrescimos": "os índices de acréscimo são SINTÉTICOS (a base não tem nenhum) e desenhados para que o acréscimo de uma conta não paga — calculado com a data de HOJE — não dependa do dia: multa mensal de 2,00%, juros diários de 0,0333% com teto de 1,00% (atingido 31 dias depois do vencimento) e atualização pela razão entre os fatores de 06/2026 e 05/2026 (1,0100); a pré-condição de relógio garante o teto",
+        "lancamentos": "o débito de serviço (3 × R$ 33,33), o parcelamento (6 × R$ 50,00) e o crédito (R$ 30,00) de IMV-01 são a massa SINTÉTICA do lote 5b; a conta de 05/2026 cobra uma prestação de cada e realiza o crédito"
+      },
+      "observaveis": {
+        "campos": [
+          "passos",
+          "funcionalidades",
+          "pagamentos_arrecadacao",
+          "debitos_a_cobrar",
+          "contas_cobranca",
+          "debitos_acrescimos"
+        ],
+        "fora_desta_fronteira": {
+          "o resumo do encerramento": "CEN-ARR-010 — aqui só a etapa dos acréscimos",
+          "a cobrança dos acréscimos na conta seguinte": "outro faturamento (CEN-FAT-004)"
+        }
+      }
     }
   }
 }

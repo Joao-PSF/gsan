@@ -9,19 +9,19 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 40 | 40 | 221 | 184 | 184 |
+| **A** | 74 | 41 | 41 | 221 | 191 | 191 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 32 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 42.
+**P0 da classe A com baseline**: 33 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 43.
 
 ## Por domínio (classe A)
 
 | Domínio | Cenários A | Com baseline | Baselines gravadas |
 | ------- | ---------- | ------------ | ------------------ |
-| Arrecadação | 11 | 7 | 42 |
+| Arrecadação | 11 | 7 | 44 |
 | Batch, relatórios e integrações | 11 | 5 | 9 |
 | Cadastro e atendimento | 13 | 7 | 29 |
-| Cobrança | 7 | 0 | 0 |
+| Cobrança | 7 | 1 | 5 |
 | Faturamento | 11 | 9 | 43 |
 | Financeiro e operacional | 8 | 0 | 0 |
 | Micromedição | 5 | 4 | 28 |
@@ -32,7 +32,7 @@
 | Cenário | Prioridade | Lote | Variações definidas | Baselines | Fora do lote | Fora desta fronteira |
 | ------- | ---------- | ---- | ------------------- | --------- | ------------ | -------------------- |
 | CEN-ARR-001 | P1 | batch-arrecadacao | V1, V2, V2b, V3, V4, V5 | V1, V2, V2b, V3, V4, V5 | — | classificação, e-mail do processamento, débito automático, ficha de compensação, cartão |
-| CEN-ARR-002 | P0 | batch-arrecadacao | V1, V1b, V1c, V2, V3, V4 | V1, V1b, V1c, V2, V3, V4 | — | acréscimos por impontualidade (V2), VALOR A BAIXAR (4) e VALOR EM EXCESSO (3) |
+| CEN-ARR-002 | P0 | batch-arrecadacao | V1, V1b, V1c, V2, V3, V4, V2b, V2c | V1, V1b, V1c, V2, V2b, V2c, V3, V4 | — | acréscimos por impontualidade (V2), VALOR A BAIXAR (4) e VALOR EM EXCESSO (3) |
 | CEN-ARR-003 | P0 | batch-arrecadacao | V1, V2, V5, V1b, V2b, V2c, V3, V3b | V1, V1b, V2, V2b, V2c, V3, V3b, V5 | — | V1 — reclassificação manual, V3 — conta prescrita, V4 — conta parcelada, conta cancelada de referência contábil anterior à de faturamento |
 | CEN-ARR-004 | P0 | batch-arrecadacao | V1, V1b, V1c, V2, V2b, V2c, V2d, V2e, V3, V3b | V1, V1b, V1c, V2, V2b, V2c, V2d, V2e, V3, V3b | — | V2–V4 — devolução (guia, crédito a realizar, RA) |
 | CEN-ARR-005 | P0 | batch-arrecadacao | V1, V2, V3, V4 | V1, V2, V3, V4 | — | V4 — conta arquivada |
@@ -50,6 +50,7 @@
 | CEN-CAD-003 | P0 | piloto | V1, V2, V3 | V1, V2, V3 | — | categoria principal, coerência do denormalizado |
 | CEN-CAD-004 | P0 | cadastro-faturamento | V1, V2, V3, V4, V5, V6, V7, V8, V9 | V1, V2, V3, V4, V5, V6, V7, V8, V9 | — | semântica do valor 4 e completude de imovel_situacao, forma de faturamento (leitura, média, mínimo) por situação especial, situação derivada do imóvel e tipos de solicitação habilitados |
 | CEN-CAD-005 | P1 | batch-consumo-origem | V1, V2 | V1, V2 | — | rota de entrega, análise |
+| CEN-COB-001 | P0 | batch-cobranca | V1, V1b, V1c, V2, V3 | V1, V1b, V1c, V2, V3 | — | ação de cobrança sobre a conta em revisão, situação especial de cobrança, conta parcelada, guia de pagamento não quitada, contas retificada, cancelada, prescrita e paga, desconto e valor do pagamento à vista |
 | CEN-FAT-001 | P0 | piloto | V1, V2, V3, V6, V7, V4, V5 | V1, V2, V3, V4, V5, V6, V7 | V4, V5 | a, b, c, e, f |
 | CEN-FAT-002 | P0 | piloto | V1, V2, V3, V1c | V1, V1c, V2, V3 | — | parcela por vigência, contexto congelado |
 | CEN-FAT-003 | P0 | cadastro-faturamento | V1, V1b, V2, V2b, V3 | V1, V1b, V2, V2b, V3 | V2, V3 | percentuais fotografados na conta, composição do volume de esgoto pelo consumo da ligação |

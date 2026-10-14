@@ -103,6 +103,14 @@ Observados executando o legado ([relatório da Fase 2 §23](../testes/fase2/fase
 
 🔵 **Correlatos, não de segurança** (registrados no relatório): retificar conta paga **move o pagamento** para a conta nova (CAND-19); a segunda retificação no mesmo mês **sobrescreve** o documento e o valor anterior só sobrevive na trilha de auditoria, como texto (CAND-17); cancelar a retificada a **exclui** (CAND-18); a mudança do consumo para média do histórico não entra na trilha de auditoria (F2-93).
 
+## Achados de 2026-10-13 (Fase 2 — lote 7, Cobrança)
+
+Observados executando o legado ([relatório da Fase 2 §28](../testes/fase2/fase2-caracterizacao-baselines.md#28-lote-7--cobrança-posição-de-dívida-e-acréscimos-por-impontualidade-2026-10-13)). Nada foi corrigido no legado.
+
+| # | Achado | Evidência | Risco | Prioridade / ação |
+| - | ------ | --------- | ----- | ----------------- |
+| 37 | **Exigência de RA na revisão de conta verificada só na tela** — sem RA do imóvel, a tela Colocar Conta em Revisão recusa ("Não existe RA que permita manutenção de conta para o imóvel…"), mas o POST de Colocar Conta em Revisão é **aceito**: a conta entra em revisão sem RA | `ExibirColocarRevisaoContaAction:50-51` chama `verificarExistenciaRegistroAtendimento`; `ColocarRevisaoContaAction` não repete a verificação. Baseline CEN-COB-001 V1c | Contas retiradas das ações de cobrança sem o atendimento que a regra exige | **P1** em instalação operante (exige Manter Conta, a operação de colocar em revisão e, para conta vencida há mais de 30 dias, a permissão especial). No OpenGSAN: a exigência no caso de uso, no servidor (CAND-24) |
+
 ### Defeito funcional correlato (não é segurança, registrado aqui por proximidade)
 
 🟢 `ServicoSMS.getJson:41-58` **ignora o parâmetro `tipoMensagem`** e sempre monta o texto de confirmação de cadastro no Portal. `ControladorFaturamento:15268` solicita aviso de vencimento e o cliente recebe a mensagem errada. `ControladorCobranca:62373` tem o SMS de corte comentado (inativo). Registrado em [`modulos/integracoes.md §8.2`](../modulos/integracoes.md).

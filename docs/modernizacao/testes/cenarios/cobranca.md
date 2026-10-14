@@ -2,7 +2,7 @@
 
 > Parte de [`cenarios-criticos.md`](../cenarios-criticos.md). Modelo e regras em [`estrategia-testes.md`](../estrategia-testes.md).
 >
-> ⚠️ **Nenhum valor desta página foi capturado.** Baseline: `⬜ A CAPTURAR NA FASE 2` em todos os cenários.
+> ⚠️ Baseline: `⬜ A CAPTURAR NA FASE 2` em todos os cenários, **exceto** 🆕 CEN-COB-001 (Fase 2, lote 7, 2026-10-13).
 
 🔴 **Leitura da área**: a **obrigação** nasce com o documento emitido; a Cobrança atua sobre a **posição em aberto**, que é **derivada** de documentos e recebimentos. Por isso CEN-COB-001 está na Etapa 5 — valida o conceito **antes** de o módulo existir — e todos os demais dependem dele.
 
@@ -23,7 +23,7 @@
 - **Observações semânticas**: **conjunto de documentos em aberto**, por identidade · valor de cada um · acréscimos reconhecidos · total · documentos **presentes mas excluídos de ação** · efeito da situação especial de cobrança
 - **Localizadores GSAN**: `obterDebitoImovelOuCliente`; identidades `ContaGeral`, `GuiaPagamentoGeral`, `DébitoACobrarGeral`
 - **Resultado semântico esperado**: 🟢 a posição é **consulta, não entidade**: contas vencidas exigíveis (retificadas pela versão corrente) + guias não quitadas + débitos a cobrar pendentes (inclusive prestações) + acréscimos − pagamentos classificados − créditos aplicáveis − cancelamentos, prescrições e inclusões em parcelamento. 🟢 Conta **em revisão aparece no débito, mas fica excluída de ação**. 🟢 Situação especial de cobrança **suspende a ação, não o saldo**
-- **Baseline concreta do legado**: ⬜ A CAPTURAR NA FASE 2
+- **Baseline concreta do legado**: 🟢 **CAPTURADA EM PARTE** (Fase 2, lote 7, 2026-10-13) — V1, V1b, V1c, V2, V3 em [`golden/cobranca/CEN-COB-001/`](../../../../ambiente-referencia/baselines/golden/cobranca/CEN-COB-001/). 🟢 V1: a posição de IMV-01 é a conta vencida de 05/2026 (R$ 163,73: água R$ 110,40 + débitos R$ 83,33 − crédito R$ 30,00, já na conta) com acréscimos de R$ 6,55, mais os débitos a cobrar **restantes** (serviço R$ 66,67; parcelamento R$ 250,00) — total R$ 480,40, atualizado R$ 486,95; o crédito já realizado não aparece; o acréscimo incide **só na conta**; IMV-02 e IMV-03 com acréscimos de R$ 6,72 e R$ 10,11 — **cada componente arredondado antes da soma** (multa 2%, juros 1% no teto, atualização 1%: 5,05 + 2,53 + 2,53 = 10,11, não 10,10). 🟢 V1b: a conta colocada **em revisão** (com o RA de alteração de conta) **continua na posição**, NORMAL, com os mesmos acréscimos. 🔴 V1c: sem RA, a tela recusa a revisão, mas o POST é **aceito** (**CAND-24**). 🟢 V2: pelo cliente USUÁRIO, as contas dos três imóveis com matrícula e os débitos a cobrar — total R$ 901,09, atualizado R$ 924,47, a soma das posições dos imóveis; igual por todas as relações. 🔴 V3: depois do pagamento a menor (R$ 60,40 de R$ 110,40), IMV-01 sai da posição **com os acréscimos** — posição 0,00, a conta só entre as inconformes (**CAND-29**). ⬜ fora: conta parcelada e guia não quitada na posição (com o parcelamento, sub-lote 7b), situação especial de cobrança, a exclusão da conta em revisão das ações (CEN-COB-002), desconto à vista. Os acréscimos da consulta são calculados com a data de HOJE: os índices da massa os tornam independentes do dia. [relatório §28](../fase2/fase2-caracterizacao-baselines.md#28-lote-7--cobrança-posição-de-dívida-e-acréscimos-por-impontualidade-2026-10-13) — F2-148 a F2-153
 - **Normalizações**: ordem de listagem sem semântica; chaves técnicas
 - **Divergência permitida**: nenhuma
 - **Oráculo**: **1** — por mapeamento semântico, **ao centavo** nos valores

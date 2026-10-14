@@ -108,6 +108,8 @@ Determinada no ciclo de cancelamento de contas (faturamento.md §15): motivo PRE
 - **Em revisão**: a conta carrega `cmrv_id` (`ContaMotivoRevisao`) — as consultas de débito da cobrança **carregam o motivo de revisão junto** (colunas `idMotivoRevisao` nas queries) para tratá-la à parte: conta em revisão compõe o débito exibido, mas é **excluída das ações** até a revisão ser resolvida (retificação ou liberação — o vínculo `cmrv_id` também existe no consumo, micromedição).
 - **"Retidas"**: termo operacional desta instalação (tabelas `backup_medicao_historico_fat_*_contas_retidas` no `gsan_comercial`) — retenção de emissão/entrega em situações especiais; **não há funcionalidade nomeada "reter conta" no código** — permanece como dúvida a esclarecer com dados/tela (registrada).
 
+🆕 **Medido na Fase 2 (lote 7, 2026-10-13)**: 🟢 colocar em revisão exige RA de alteração de conta do imóvel e, para a conta vencida há mais de 30 dias, a permissão especial ENVIAR CONTA PARA REVISÃO; a conta em revisão **continua na posição de dívida**, NORMAL, com os mesmos acréscimos (CEN-COB-001 V1b); 🔴 sem RA, a tela recusa e o POST é aceito (CEN-COB-001 V1c; CAND-24).
+
 ## 21. Cliente e responsabilidade pela dívida
 
 **A dívida é do imóvel; a responsabilização é resolvida pela relação cliente×imóvel com papel e vigência** (cadastro.md §3.3): a conta fotografa os clientes da emissão (`cliente_conta`), o estoque pode ser consultado por cliente e papel (`obterDebitoImovelOuCliente(..., codigoCliente, clienteRelacaoTipo, ...)`), e a **negativação atinge o cliente** (CPF/CNPJ) conforme critério (tipo de cliente/CPF). Troca de cliente não move a dívida do imóvel; a responsabilidade de períodos passados é rastreável pelas fotografias. Guias podem ser emitidas diretamente para cliente.
@@ -124,6 +126,8 @@ ESTOQUE = Contas (identidade ContaGeral) vencidas em situação exigível (NORMA
         − Cancelamentos / prescrição / inclusões em parcelamento (contas INCLUIDA saem, prestações entram)
         [recortes: revisão em separado; situação especial de cobrança suspende ação, não o saldo]
 ```
+
+🆕 **Medido na Fase 2 (lote 7, 2026-10-13)** — Consultar Débitos (CEN-COB-001): 🟢 a posição soma as contas vencidas (com os débitos e créditos já nelas), os débitos a cobrar **restantes** e os créditos não realizados; o acréscimo incide **só na conta**, calculado com a data de HOJE (multa, juros com teto, atualização pela razão dos fatores), **cada componente arredondado antes da soma**; a posição do cliente é a soma das dos imóveis; 🔴 o pagamento a menor tira a conta da posição com os acréscimos (CAND-29). Os acréscimos do encerramento da arrecadação viram débitos a cobrar (multa com trava "já cobrada"; 🔴 juros duplicados numa nova geração — CAND-40) (CEN-ARR-002 V2b, V2c).
 
 ## 23. Estados relevantes (planos distintos — não misturar)
 
