@@ -407,9 +407,7 @@
     ],
     "parcelamentos": [
       {
-        "com_motivo_desfazer": false,
         "data_parcelamento": "data da execuÃ§Ã£o",
-        "desfeito_por_usuario": false,
         "forma_cobranca": "COBRANCA EM CONTA",
         "ic_acrescimos": 1,
         "ic_confirmacao": 1,
@@ -419,17 +417,19 @@
         "ic_guias": 1,
         "ic_restabelecimento": null,
         "matricula": 100013,
+        "motivo_desfazer": null,
         "pcdescontoacrescimos": "0.00",
         "pcdescontoantiguidade": "0.00",
         "pcdescontoinatividade": "0.00",
         "perfil": 7001,
         "prestacoes": 3,
         "rd": "RD 7001/2026",
-        "referencia_faturamento": 202610,
+        "referencia_faturamento": "mês da execução",
         "situacao": "NORMAL",
         "tipo": "POR IMOVEL",
         "txjuros": "0.00",
         "usuario": "fase2.oper",
+        "usuario_desfazimento": null,
         "vlatualizacaomonetaria": "1.24",
         "vlconta": "123.73",
         "vlcreditoarealizar": "0.00",
@@ -678,7 +678,7 @@
                 }
               ],
               "referencia": 202605,
-              "referencia_contabil": 202610,
+              "referencia_contabil": "mês da execução",
               "rota": 1,
               "situacao": "PARCELADA",
               "tipo_impressao": "NORMAL",
@@ -1010,24 +1010,6 @@
                 {
                   "categoria": "RESIDENCIAL",
                   "economias": 1,
-                  "valor": "10.00"
-                }
-              ],
-              "prestacao": 1,
-              "prestacoes": 24,
-              "referencia_conta": 202605,
-              "referencia_debito": 202605,
-              "tipo": "SERVICO SINTETICO",
-              "valor": "10.00"
-            },
-            {
-              "cobranca": 202605,
-              "financiamento": "SERVICO NORMAL",
-              "matricula": 100013,
-              "por_categoria": [
-                {
-                  "categoria": "RESIDENCIAL",
-                  "economias": 1,
                   "valor": "33.33"
                 }
               ],
@@ -1037,6 +1019,24 @@
               "referencia_debito": 202605,
               "tipo": "SERVICO SINTETICO",
               "valor": "33.33"
+            },
+            {
+              "cobranca": 202605,
+              "financiamento": "SERVICO NORMAL",
+              "matricula": 100013,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "economias": 1,
+                  "valor": "10.00"
+                }
+              ],
+              "prestacao": 1,
+              "prestacoes": 24,
+              "referencia_conta": 202605,
+              "referencia_debito": 202605,
+              "tipo": "SERVICO SINTETICO",
+              "valor": "10.00"
             }
           ],
           "funcionalidades": [
@@ -1153,9 +1153,7 @@
           ],
           "parcelamentos": [
             {
-              "com_motivo_desfazer": false,
               "data_parcelamento": "data da execuÃ§Ã£o",
-              "desfeito_por_usuario": false,
               "forma_cobranca": "COBRANCA EM CONTA",
               "ic_acrescimos": 1,
               "ic_confirmacao": 1,
@@ -1165,17 +1163,19 @@
               "ic_guias": 1,
               "ic_restabelecimento": null,
               "matricula": 100013,
+              "motivo_desfazer": null,
               "pcdescontoacrescimos": "0.00",
               "pcdescontoantiguidade": "0.00",
               "pcdescontoinatividade": "0.00",
               "perfil": 7001,
               "prestacoes": 3,
               "rd": "RD 7001/2026",
-              "referencia_faturamento": 202610,
+              "referencia_faturamento": "mês da execução",
               "situacao": "NORMAL",
               "tipo": "POR IMOVEL",
               "txjuros": "0.00",
               "usuario": "fase2.oper",
+              "usuario_desfazimento": null,
               "vlatualizacaomonetaria": "1.24",
               "vlconta": "123.73",
               "vlcreditoarealizar": "0.00",

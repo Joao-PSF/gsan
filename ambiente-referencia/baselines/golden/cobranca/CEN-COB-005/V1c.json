@@ -1,0 +1,684 @@
+{
+  "cenario": "CEN-COB-005",
+  "descricao": "O parcelamento com a conta de 05/2026 como ENTRADA (EP), não paga, e o desfazimento automático",
+  "efeitos_no_banco": {
+    "arrecadacao.arrecadador_contrato": "inalterado",
+    "arrecadacao.arrecadador_mov_item": "inalterado",
+    "arrecadacao.arrecadador_movimento": "inalterado",
+    "arrecadacao.aviso_bancario": "inalterado",
+    "arrecadacao.devolucao": 0,
+    "arrecadacao.pagamento": "inalterado",
+    "batch.funcionalidade_iniciada": 2,
+    "batch.processo_iniciado": 2,
+    "cobranca.parcelamento": 1,
+    "cobranca.parcelamento_item": 3,
+    "faturamento.conta": 3,
+    "faturamento.credito_a_realizar": 0,
+    "faturamento.credito_realizado": 1,
+    "faturamento.debito_a_cobrar": 6,
+    "faturamento.debito_cobrado": 1,
+    "faturamento.guia_pagamento": 0,
+    "seguranca.operacao_efetuada": 2,
+    "seguranca.tabela_linha_alteracao": 7
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/cobranca.md — CEN-COB-005",
+  "fora_desta_fronteira": {
+    "cancelamento de parcelamento": "outra operação (Cancelar Parcelamento, permissão especial) — fora deste lote",
+    "desfazimento com prestação já cobrada": "a tela e o desfazimento automático o excluem; exige o parcelamento com prestação cobrada pelo assistente — ver ARR-008",
+    "estornos de desconto no desfazimento": "os parcelamentos desfeitos aqui não têm desconto (RD 7001)",
+    "termo e relatórios": "fora desta fronteira"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/batch-faturamento-g1-202605.sql",
+      "sha256": "0ed2b2838ce3938407e2e92341ef3e9bd187fd9b98e88f9080bbb74e11c45b28"
+    },
+    {
+      "arquivo": "massas/deltas/arr-arrecadador.sql",
+      "sha256": "077380c2f08f3f4b26baea7e759a36404b9db2439690d78b845e8db8cd7128f1"
+    },
+    {
+      "arquivo": "massas/deltas/arr-parametros.sql",
+      "sha256": "92437517ec8ee265cb961a751557dbcddbac2ab61ac223fac8bf1dd6278a7570"
+    },
+    {
+      "arquivo": "massas/deltas/arr-processo-classificar.sql",
+      "sha256": "f96d15f12a6ad65a3244cbaf5f5f23d7dbd83a1fe48d4beb0bfb0eeac0dae77a"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-catalogos.sql",
+      "sha256": "c859246d9955ae4cc7cfae4f13b752f290fc15d9c58507612af40bd30037e076"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+      "sha256": "633a1317c98545f154fccfbe24782c772671205b38d0a14463a79d842d7c4e1a"
+    },
+    {
+      "arquivo": "massas/deltas/arr-clientes-usuarios.sql",
+      "sha256": "c0724a3797af2ac895e70b54d154e4b5b0c90324cdef1bfeddc275285cd642a4"
+    },
+    {
+      "arquivo": "massas/deltas/fat-lancamentos-catalogos.sql",
+      "sha256": "c9b6eb5db242b2006b5fe0c5e15553893dd5df484c645dc72f7e87416d8a414d"
+    },
+    {
+      "arquivo": "massas/deltas/fat-debito-servico-3x.sql",
+      "sha256": "178c40fab3ffa433a7a73d21202699cf8270c5816a5ad58b1a4d5ac070bcaaf3"
+    },
+    {
+      "arquivo": "massas/deltas/fat-credito-30.sql",
+      "sha256": "508b4cfaba851b61127f5ebd725fc85b85d440cca9de8ffc6e9f33a3d3468f7d"
+    },
+    {
+      "arquivo": "massas/deltas/cob-acrescimos-indices.sql",
+      "sha256": "0092bd4dcf24d7147c0c7f8c670e51c637f8d8f745450d8f55d069e4d83f5670"
+    },
+    {
+      "arquivo": "massas/deltas/cob-acrescimos-encerramento.sql",
+      "sha256": "08da6e6ea341b040a091e03e551b122da93696839e03bb8b6f0f7587c2dd4543"
+    },
+    {
+      "arquivo": "massas/deltas/cob-parcelamento-catalogos.sql",
+      "sha256": "dca6735a45e999fa183e32fe229f3fd29faa73f3fdc7467d42ca9235b00641eb"
+    },
+    {
+      "arquivo": "massas/deltas/cob-guia-servico.sql",
+      "sha256": "f2a697d1fc38335151922b73b226babce9e6f6b94d14ff353ca014d3e65b6ec0"
+    },
+    {
+      "arquivo": "massas/deltas/cob-parcelamento-sem-boleto-bb.sql",
+      "sha256": "41c2a4a35ce5db18fff102fda5a5dc00c5850dcb3480431220c3b51cf542db5b"
+    },
+    {
+      "arquivo": "massas/deltas/cob-parcelamento-desfazer.sql",
+      "sha256": "ddf77e814a757bc04e6c0ca452aa110e2d7c9748dc35972bccdd8e1545e266bc"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "contas_cobranca": [
+      {
+        "conta": {
+          "matricula": 100013,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "data_revisao": "data da execuÃ§Ã£o",
+        "indicador_cobranca_multa": 2,
+        "motivo_revisao": "REVISAO ENTRADA DE PARCELAMENTO",
+        "situacao": "NORMAL",
+        "valor_total": "113.73",
+        "vencimento": "data da execuÃ§Ã£o + 3 dias"
+      },
+      {
+        "conta": {
+          "matricula": 100021,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "data_revisao": null,
+        "indicador_cobranca_multa": 2,
+        "motivo_revisao": null,
+        "situacao": "NORMAL",
+        "valor_total": "168.09",
+        "vencimento": "10/06/2026"
+      },
+      {
+        "conta": {
+          "matricula": 100030,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "data_revisao": null,
+        "indicador_cobranca_multa": 2,
+        "motivo_revisao": null,
+        "situacao": "NORMAL",
+        "valor_total": "252.60",
+        "vencimento": "10/06/2026"
+      }
+    ],
+    "creditos_a_realizar": [
+      {
+        "matricula": 100013,
+        "prestacoes": 1,
+        "realizadas": 1,
+        "referencia_ultima_prestacao": 202605,
+        "residual": "0.00",
+        "residual_concedido_mes": "0.00",
+        "situacao": "NORMAL",
+        "tipo": "CREDITO SINTETICO",
+        "valor": "30.00"
+      }
+    ],
+    "debitos_a_cobrar": [
+      {
+        "cobradas": 0,
+        "de_parcelamento": true,
+        "matricula": 100013,
+        "prestacoes": 3,
+        "referencia_ultima_prestacao": null,
+        "situacao": "NORMAL",
+        "tipo": "PARCELAMENTO GUIAS PAGAMENTO",
+        "valor": "50.00"
+      },
+      {
+        "cobradas": 0,
+        "de_parcelamento": true,
+        "matricula": 100013,
+        "prestacoes": 3,
+        "referencia_ultima_prestacao": null,
+        "situacao": "NORMAL",
+        "tipo": "PARCELAMENTO ACRESCIMOS",
+        "valor": "4.55"
+      },
+      {
+        "cobradas": 0,
+        "de_parcelamento": true,
+        "matricula": 100013,
+        "prestacoes": 3,
+        "referencia_ultima_prestacao": null,
+        "situacao": "NORMAL",
+        "tipo": "PARCELAMENTO DEB COBRAR CP",
+        "valor": "66.67"
+      },
+      {
+        "cobradas": 0,
+        "de_parcelamento": true,
+        "matricula": 100013,
+        "prestacoes": 1,
+        "referencia_ultima_prestacao": null,
+        "situacao": "PARCELADA",
+        "tipo": "MULTA POR IMPONTUALIDADE",
+        "valor": "2.27"
+      },
+      {
+        "cobradas": 0,
+        "de_parcelamento": true,
+        "matricula": 100013,
+        "prestacoes": 1,
+        "referencia_ultima_prestacao": null,
+        "situacao": "PARCELADA",
+        "tipo": "JUROS DE MORA",
+        "valor": "1.14"
+      },
+      {
+        "cobradas": 0,
+        "de_parcelamento": true,
+        "matricula": 100013,
+        "prestacoes": 1,
+        "referencia_ultima_prestacao": null,
+        "situacao": "PARCELADA",
+        "tipo": "ATUALIZACAO MONETARIA",
+        "valor": "1.14"
+      },
+      {
+        "cobradas": 1,
+        "de_parcelamento": false,
+        "matricula": 100013,
+        "prestacoes": 3,
+        "referencia_ultima_prestacao": 202605,
+        "situacao": "PARCELADA",
+        "tipo": "SERVICO SINTETICO",
+        "valor": "100.00"
+      }
+    ],
+    "debitos_cobrados": [
+      {
+        "cobranca": 202605,
+        "financiamento": "SERVICO NORMAL",
+        "matricula": 100013,
+        "por_categoria": [
+          {
+            "categoria": "RESIDENCIAL",
+            "economias": 1,
+            "valor": "33.33"
+          }
+        ],
+        "prestacao": 1,
+        "prestacoes": 3,
+        "referencia_conta": 202605,
+        "referencia_debito": 202605,
+        "tipo": "SERVICO SINTETICO",
+        "valor": "33.33"
+      }
+    ],
+    "funcionalidades": [
+      {
+        "descricao": "Faturar Grupo Faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 63,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      },
+      {
+        "descricao": "Desfazer Parcel por Entrada nao Paga sem ano mes faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 16044,
+        "inicio_registrado": true,
+        "processo": 2,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "guias_pagamento": [
+      {
+        "dias_para_vencimento": 31,
+        "do_parcelamento": false,
+        "documento": "GUIA DE PAGAMENTO",
+        "emissao": "20/05/2026",
+        "ic_cobranca_multa": 2,
+        "matricula": 100013,
+        "prestacao": 1,
+        "prestacoes": 1,
+        "situacao": "PARCELADA",
+        "tipo": "SERVICO SINTETICO",
+        "valor": "50.00"
+      }
+    ],
+    "imoveis_parcelamento": [
+      {
+        "matricula": 100013,
+        "parcelamentos": 1,
+        "reparcelamentos": 0,
+        "reparcelamentos_consecutivos": 0
+      },
+      {
+        "matricula": 100021,
+        "parcelamentos": null,
+        "reparcelamentos": null,
+        "reparcelamentos_consecutivos": null
+      },
+      {
+        "matricula": 100030,
+        "parcelamentos": null,
+        "reparcelamentos": null,
+        "reparcelamentos_consecutivos": null
+      }
+    ],
+    "itens_parcelamento": [
+      {
+        "conta": {
+          "historico": false,
+          "matricula": 100013,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "credito_a_realizar": null,
+        "debito_a_cobrar": null,
+        "documento": "CONTA",
+        "guia": null,
+        "parcelamento_imovel": 100013
+      },
+      {
+        "conta": null,
+        "credito_a_realizar": null,
+        "debito_a_cobrar": {
+          "tipo": "SERVICO SINTETICO",
+          "valor": "100.00"
+        },
+        "documento": "DEBITO A COBRAR",
+        "guia": null,
+        "parcelamento_imovel": 100013
+      },
+      {
+        "conta": null,
+        "credito_a_realizar": null,
+        "debito_a_cobrar": null,
+        "documento": "GUIA DE PAGAMENTO",
+        "guia": {
+          "tipo": "SERVICO SINTETICO",
+          "valor": "50.00"
+        },
+        "parcelamento_imovel": 100013
+      }
+    ],
+    "pagamentos_arrecadacao": [],
+    "parcelamentos": [
+      {
+        "data_parcelamento": "data da execuÃ§Ã£o",
+        "forma_cobranca": "COBRANCA EM CONTA",
+        "ic_acrescimos": 1,
+        "ic_confirmacao": 1,
+        "ic_contas_revisao": 2,
+        "ic_credito": 1,
+        "ic_debito_a_cobrar": 1,
+        "ic_guias": 1,
+        "ic_restabelecimento": null,
+        "matricula": 100013,
+        "motivo_desfazer": null,
+        "pcdescontoacrescimos": "0.00",
+        "pcdescontoantiguidade": "0.00",
+        "pcdescontoinatividade": "0.00",
+        "perfil": 7001,
+        "prestacoes": 3,
+        "rd": "RD 7001/2026",
+        "referencia_faturamento": "mês da execução",
+        "situacao": "NORMAL",
+        "tipo": "POR IMOVEL",
+        "txjuros": "0.00",
+        "usuario": "fase2.oper",
+        "usuario_desfazimento": null,
+        "vlatualizacaomonetaria": "1.14",
+        "vlconta": "113.73",
+        "vlcreditoarealizar": "0.00",
+        "vldebitoatualizado": "234.95",
+        "vldescontoacrescimos": "0.00",
+        "vldescontoantiguidade": "0.00",
+        "vldescontodebtotal": null,
+        "vldescontofaixa": "0.00",
+        "vldescontoinatividade": "0.00",
+        "vldescontosancao": "0.00",
+        "vldescontotarsoc": "0.00",
+        "vlentrada": "113.73",
+        "vlguiapapagamento": "50.00",
+        "vljurosmora": "1.14",
+        "vljurosparcelamento": "0.00",
+        "vlmulta": "2.27",
+        "vlparcelamentosacobrar": "0.00",
+        "vlprestacao": "40.41",
+        "vlservicosacobrar": "66.67"
+      }
+    ],
+    "passos": [
+      {
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+        "sha256": "396a950fe66d8d09164044258edc0d6e779a9bf52ea287d2866b9476030914b5",
+        "tipo": "aplicar"
+      },
+      {
+        "http": 200,
+        "mensagem": "Parcelamento de Débitos do Imóvel <n> efetuado com sucesso.",
+        "passos_assistente": [
+          {
+            "http": 200,
+            "passo": 1,
+            "resolucoes": [
+              "7001",
+              "7002"
+            ],
+            "situacao_agua": "LIGADO",
+            "situacao_esgoto": "POTENCIAL",
+            "valores": {
+              "numeroPagina": "1",
+              "valorDebitoACobrarParcelamentoCurtoPrazo": "0,00",
+              "valorDebitoACobrarParcelamentoLongoPrazo": "0,00",
+              "valorDebitoACobrarServicoCurtoPrazo": "66,67",
+              "valorDebitoACobrarServicoLongoPrazo": "0,00"
+            }
+          },
+          {
+            "contas": [
+              "05/2026 10/06/2026 113,73 4,55"
+            ],
+            "http": 200,
+            "passo": 2,
+            "valores": {
+              "numeroPagina": "2"
+            }
+          },
+          {
+            "http": 200,
+            "opcoes": [
+              "1 113,73 121,22 0,00",
+              "2 113,73 60,61 0,00",
+              "3 113,73 40,41 0,00",
+              "4 113,73 31,53 1,00",
+              "5 113,73 25,48 1,00",
+              "6 113,73 21,45 1,00",
+              "7 113,73 19,22 1,50",
+              "8 113,73 17,07 1,50",
+              "9 113,73 15,40 1,50",
+              "10 113,73 14,07 1,50",
+              "11 113,73 12,98 1,50",
+              "12 113,73 12,08 1,50"
+            ],
+            "passo": 3,
+            "valores": {
+              "numeroPagina": "3",
+              "parcelamentoPerfilId": "7001",
+              "percentualDescontoAntiguidadeDebito": "0.00",
+              "percentualDescontoInatividadeLigacaoAgua": "0.00",
+              "valorEntradaInformado": "113,73",
+              "valorEntradaInformadoAntes": "113,73",
+              "valorTotalDescontos": "0,00"
+            }
+          },
+          {
+            "http": 200,
+            "passo": 4,
+            "valores": {
+              "numeroPagina": "4",
+              "valorNegociado": "234,95",
+              "valorTotalDescontos": "0,00"
+            }
+          }
+        ],
+        "resultado": "efetuado",
+        "tipo": "efetuar_parcelamento"
+      },
+      {
+        "arquivo": "massas/passos/cob-relogio-entrada-vencida.sql",
+        "sha256": "6ed56bb37e50c510a2543890b0571cb453c92dfefc6bd94deec617fc64f3220b",
+        "tipo": "aplicar"
+      },
+      {
+        "http": 200,
+        "resultado": "inserido",
+        "tela": {
+          "http": 200,
+          "processo": "DESFAZER PARC ENTRADA NAO PAGA (SINT)"
+        },
+        "tipo": "iniciar_processo"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "debitos": {
+          "100013": {
+            "contas": [
+              {
+                "acrescimos": "0.00",
+                "referencia": "05/2026",
+                "situacao": "NOR",
+                "valor_agua": "110.40",
+                "valor_conta": "113.73",
+                "valor_creditos": "30.00",
+                "valor_debitos": "33.33",
+                "valor_esgoto": "0.00",
+                "valor_impostos": "0.00",
+                "vencimento": "data da execução + 3 dias"
+              }
+            ],
+            "contas_inconformes": [],
+            "creditos_a_realizar": [],
+            "debitos_a_cobrar": [
+              [
+                "PARCELAMENTO GUIAS PAGAMENTO",
+                "06/2026",
+                "06/2026",
+                "3",
+                "50,00"
+              ],
+              [
+                "PARCELAMENTO ACRESCIMOS",
+                "06/2026",
+                "06/2026",
+                "3",
+                "4,55"
+              ],
+              [
+                "PARCELAMENTO DEB COBRAR CP",
+                "06/2026",
+                "06/2026",
+                "3",
+                "66,67"
+              ],
+              [
+                "Total",
+                "121,22"
+              ]
+            ],
+            "guias": [],
+            "http": 200,
+            "totais": {
+              "debitos": "234.95",
+              "debitos_atualizado": "234.95",
+              "desconto_a_vista": null,
+              "pagamento_a_vista": null
+            },
+            "total_contas": {
+              "acrescimos": "0.00",
+              "documentos": "1 doc(s)",
+              "valor_contas": "113.73"
+            },
+            "valor_total_debitos": "234.95"
+          }
+        },
+        "tipo": "consultar_debitos"
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "detalhes": [
+        "lancamentos",
+        "cobranca",
+        "parcelamento",
+        "arrecadacao"
+      ],
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+          "tipo": "aplicar"
+        },
+        {
+          "contas": {
+            "202605": 1
+          },
+          "entrada": null,
+          "imovel": 100013,
+          "prestacoes": 3,
+          "rd": 7001,
+          "tipo": "efetuar_parcelamento"
+        },
+        {
+          "arquivo": "massas/passos/cob-relogio-entrada-vencida.sql",
+          "tipo": "aplicar"
+        },
+        {
+          "processo": 3307,
+          "tipo": "iniciar_processo",
+          "tipo_processo": 3
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "acrescimos": true,
+          "imoveis": [
+            100013
+          ],
+          "tipo": "consultar_debitos"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Desfazimento e reparcelamento, no EAR em modo Batch, sobre o parcelamento efetuado pela tela (lote 7b): o desfazimento por entrada não paga pela tela Inserir Processo (etapa 16044, Desfazer Parcel por Entrada nao Paga sem ano mes faturamento → ControladorCobranca.desfazerParcelamentosPorEntradaNaoPagaSemAnoMesReferencia); o desfazimento manual pela tela Consultar Parcelamento (ExibirConsultarParcelamentoDebitoAction) e pelo botão Desfazer (ExibirDesfazerParcelamentoDebitoAction → Fachada.desfazerParcelamentosDebito); e o reparcelamento pelo assistente sobre o saldo de um parcelamento com uma prestação paga. Situação dos originais, débitos e créditos, guias, contadores do imóvel, motivo e usuário do desfazimento lidos do banco; a posição pela tela.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "acrescimos": "os índices de acréscimo são SINTÉTICOS (a base não tem nenhum) e desenhados para que o acréscimo de uma conta não paga — calculado com a data de HOJE — não dependa do dia: multa mensal de 2,00%, juros diários de 0,0333% com teto de 1,00% (atingido 31 dias depois do vencimento) e atualização pela razão entre os fatores de 06/2026 e 05/2026 (1,0100); a pré-condição de relógio garante o teto",
+    "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo); a guia de entrada é paga pelo código de barras que a emissão da guia imprime (tipo 1: localidade, matrícula e número da guia — o número sai no arquivo)",
+    "boleto_bb": "a emissão do boleto da entrada pela API do Banco do Brasil é integração EXTERNA, fora da fronteira: desligada por delta de configuração (parm_icgeracaoboletobb = 2); a tela Consultar Parcelamento tenta o registro do boleto mesmo assim (pela existência de guia de entrada) e falha antes de qualquer chamada de rede — o cliente sintético não tem CPF/CNPJ (de propósito: com ele, a tela chamaria a API)",
+    "data_pagamento": "o pagamento é de 20/06/2026 (a arrecadação da massa está em 06/2026), anterior à emissão da guia de entrada pelo relógio (10/2026): a recepção e a classificação não comparam as duas datas",
+    "data_relativa": "a data do parcelamento, a emissão e o vencimento da guia de entrada e o vencimento da conta tomada como entrada saem relativos à execução ('data da execução', '+ N dias')",
+    "lancamentos": "o débito de serviço (3 × R$ 33,33) e o crédito (R$ 30,00) de IMV-01 são a massa SINTÉTICA do lote 5b; a conta de 05/2026 cobra uma prestação e realiza o crédito — restam R$ 66,67 a cobrar",
+    "massa": "a conta de 05/2026 é a que o faturamento em grupo gera no início da execução (massa do lote 5); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria (a conta da referência corrente não entra no parcelamento)",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "parcelamento": "RD, perfil, faixas de prestação (3× sem juros, até 6× a 1,00% e até 12× a 1,50%, entrada mínima de 10% ou 20%), grupos, tipos de débito e de crédito do parcelamento são SINTÉTICOS com os ids das constantes (a base não tem nenhum); a guia de serviço de R$ 50,00 e o débito de 24 prestações são massa SINTÉTICA",
+    "relogio_desfazimento": "o desfazimento por entrada não paga compara o vencimento da guia de entrada + 7 dias (cobranca.parametro) com o RELÓGIO; um passo de massa leva a emissão e o vencimento da guia de entrada para 12/06 e 15/06/2026 (o tempo da massa, os mesmos 3 dias de prazo) — simulação do relógio, não operação"
+  },
+  "titulo": "Desfazimento e reparcelamento",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V1c"
+}

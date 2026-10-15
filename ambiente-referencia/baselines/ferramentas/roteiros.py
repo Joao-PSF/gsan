@@ -308,7 +308,7 @@ def _lancamentos(ctx):
                                          "   join cadastro.categoria g using (catg_id) where k.dbcb_id = d.dbcb_id) as por_categoria"
                                          " from faturamento.debito_cobrado d join faturamento.conta c using (cnta_id)"
                                          " join faturamento.debito_tipo t using (dbtp_id) join financeiro.financiamento_tipo f on f.fntp_id = d.fntp_id"
-                                         " order by c.imov_id, c.cnta_amreferenciaconta, d.dbtp_id, d.dbcb_nnprestacaodebito"),
+                                         " order by c.imov_id, c.cnta_amreferenciaconta, d.dbtp_id, d.dbcb_nnprestacaodebito, d.dbcb_nnprestacao, d.dbcb_vlprestacao"),
         'creditos_realizados': _linhas(ctx, "select c.imov_id as matricula, c.cnta_amreferenciaconta as referencia_conta,"
                                             " t.crti_dscreditotipo as tipo, o.crog_dscreditoorigem as origem,"
                                             " r.crrz_nnprestacaocredito as prestacao, r.crrz_nnprestacao as prestacoes,"
@@ -316,7 +316,7 @@ def _lancamentos(ctx):
                                             " from faturamento.credito_realizado r join faturamento.conta c using (cnta_id)"
                                             " left join faturamento.credito_tipo t using (crti_id)"
                                             " join faturamento.credito_origem o using (crog_id)"
-                                            " order by c.imov_id, c.cnta_amreferenciaconta, r.crti_id, r.crrz_nnprestacaocredito"),
+                                            " order by c.imov_id, c.cnta_amreferenciaconta, r.crti_id, r.crrz_nnprestacaocredito, r.crrz_nnprestacao, r.crrz_vlcredito"),
         'debitos_a_cobrar': _linhas(ctx, "select d.imov_id as matricula, t.dbtp_dsdebitotipo as tipo, d.dbac_vldebito::text as valor,"
                                          " d.dbac_nnprestacaodebito as prestacoes, d.dbac_nnprestacaocobradas as cobradas,"
                                          " d.dbac_amreferenciaprestacao as referencia_ultima_prestacao, (d.parc_id is not null) as de_parcelamento,"
@@ -431,6 +431,20 @@ def _data_do_dia(coluna):
     return (f"case when {coluna} is null then null when {coluna}::date = current_date then 'data da execução'"
             f" when {coluna}::date > current_date then 'data da execução + ' || ({coluna}::date - current_date)::text || ' dias'"
             f" else to_char({coluna}, 'DD/MM/YYYY') end")
+
+
+def _hoje(ctx):
+    return datetime.date.fromisoformat(ctx.sql("select current_date::text").strip())  # o dia do relógio do legado
+
+
+def _mes_do_dia(valor, hoje):
+    """Uma referência (AAAAMM) que o legado tira do relógio — a do mês corrente ou posterior (a referência contábil da
+    conta parcelada ou refaturada, a do parcelamento: lotes 6b e 7b) — sai relativa ao mês da execução; as da massa são
+    todas anteriores e saem como estão (inteiras)."""
+    if not isinstance(valor, int) or not hoje:
+        return valor
+    n = (valor // 100 - hoje.year) * 12 + (valor % 100 - hoje.month)
+    return valor if n < 0 else 'mês da execução' + (f' + {n} meses' if n > 1 else ' + 1 mês' if n == 1 else '')
 
 
 def _ciclo_conta(ctx):
@@ -813,8 +827,8 @@ def _parcelamento(ctx):
          " pcdescontoantiguidade pcdescontoinatividade vlguiapapagamento vlcreditoarealizar vlparcelamentosacobrar txjuros"
          " vldescontosancao vldescontotarsoc vldescontodebtotal vldescontofaixa").split()[1:]
     valores = ', '.join(f'p.parc_{c}::text as {c}' for c in v)
-    return {
-        'parcelamentos': _linhas(ctx, "select p.imov_id as matricula, s.pcst_dsparcelamentosituacao as situacao,"
+    hoje = _hoje(ctx)
+    parcelamentos = _linhas(ctx, "select p.imov_id as matricula, s.pcst_dsparcelamentosituacao as situacao,"
                                       " t.pctp_dsparcelamentotipo as tipo, r.rdir_nnresolucaodiretoria as rd, p.pcpf_id as perfil,"
                                       f" {_data_relativa('p.parc_tmparcelamento')} as data_parcelamento,"
                                       " p.parc_amreferenciafaturamento as referencia_faturamento, p.parc_nnprestacoes as prestacoes,"
@@ -823,14 +837,20 @@ def _parcelamento(ctx):
                                       " p.parc_icguiaspagamento as ic_guias, p.parc_iccreditoarealizar as ic_credito,"
                                       " p.parc_icrestabelecimento as ic_restabelecimento, p.parc_icconfirmacao as ic_confirmacao,"
                                       " f.cbfm_dscobrancaforma as forma_cobranca, u.usur_nmlogin as usuario,"
-                                      " (p.usur_iddesfaz is not null) as desfeito_por_usuario, (p.pmdz_id is not null) as com_motivo_desfazer"
+                                      " m.pmdz_dsparcmtmotivodesfazer as motivo_desfazer, ud.usur_nmlogin as usuario_desfazimento"
                                       " from cobranca.parcelamento p"
                                       " left join cobranca.parcelamento_situacao s using (pcst_id)"
                                       " left join cobranca.parcelamento_tipo t using (pctp_id)"
                                       " left join cobranca.resolucao_diretoria r using (rdir_id)"
                                       " left join cobranca.cobranca_forma f using (cbfm_id)"
                                       " left join seguranca.usuario u on u.usur_id = p.usur_id"
-                                      " order by p.imov_id, p.parc_id"),
+                                      " left join seguranca.usuario ud on ud.usur_id = p.usur_iddesfaz"
+                                      " left join cobranca.parcel_motivo_desfazer m on m.pmdz_id = p.pmdz_id"
+                                      " order by p.imov_id, p.parc_id")
+    for p in parcelamentos:
+        p['referencia_faturamento'] = _mes_do_dia(p['referencia_faturamento'], hoje)
+    return {
+        'parcelamentos': parcelamentos,
         'itens_parcelamento': _linhas(ctx, IDENT_H +
                                       "select p.imov_id as parcelamento_imovel, d.dotp_dsdocumentotipo as documento,"
                                       " case when i.cnta_id is null then null else (select " + IDENTH_JSON.format(a='x') +
@@ -917,8 +937,11 @@ def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
                           " left join micromedicao.rota r on r.rota_id = c.rota_id left join seguranca.usuario u using (usur_id)"
                           " left join faturamento.conta_impressao i using (cnta_id) left join faturamento.conta_tipo t using (cttp_id)"
                           " order by c.imov_id, c.cnta_amreferenciaconta, c.cnta_id")
+    hoje = _hoje(ctx)
     for c in contas:
         cnta = c.pop('cnta_id')
+        c['vencimento'] = _datas_do_dia([c['vencimento']], hoje)[0] if c['vencimento'] else None
+        c['referencia_contabil'] = _mes_do_dia(c['referencia_contabil'], hoje)
         c['por_categoria'] = _linhas(ctx, "select g.catg_dscategoria as categoria, sc.scat_dssubcategoria as subcategoria,"
                                           " k.ctcg_qteconomia as economias, k.ctcg_nnconsumoagua as consumo_agua,"
                                           " k.ctcg_vlagua::text as valor_agua, k.ctcg_nnconsumominimoagua as consumo_minimo_agua,"
@@ -1169,6 +1192,8 @@ def _centavos(valor):
 
 def _registro_g(ctx, reg, sequencia):
     """Um registro G: o código de barras da conta (ou de um documento que não existe) e o valor recebido pelo banco."""
+    if reg.get('guia_entrada'):
+        return _registro_g_guia_entrada(ctx, reg, sequencia)
     imovel, ref = int(reg['imovel']), int(reg['referencia'])
     situacoes = ', '.join(str(int(s)) for s in reg.get('situacoes', (0, 1, 2)))
     if reg.get('arquivada'):  # a conta já no histórico (lote 6c): o código de barras que ela tinha impresso
@@ -1205,6 +1230,32 @@ def _registro_g(ctx, reg, sequencia):
              + ' ' * 23 + '1' + ' ' * 9)
     assert len(linha) == 150, len(linha)
     return linha, valor_rec, {'imovel': imovel, 'referencia': ref, 'conta_no_envio': bool(conta),
+                              'valor_documento': f'{Decimal(_centavos(valor_doc)) / 100:.2f}',
+                              'valor_recebido': f'{Decimal(valor_rec) / 100:.2f}'}
+
+
+def _registro_g_guia_entrada(ctx, reg, sequencia):
+    """Um registro G da guia de ENTRADA do parcelamento do imóvel (lote 7c): o código de barras que a emissão da guia
+    imprime — tipo de pagamento 1, guia com identificação da matrícula (ControladorArrecadacao.obterIdentificacaoPagamento
+    :38350, a emissão em :30444 escolhe o tipo 1 para guia de imóvel): localidade, matrícula e o número da guia — e o
+    valor da guia."""
+    imovel = int(reg['imovel'])
+    guia = _linhas(ctx, "select gpag_id, loca_id, gpag_vldebito::text as valor from faturamento.guia_pagamento"
+                        f" where imov_id = {imovel} and dotp_id = 2 and parc_id is not null order by gpag_id desc limit 1")
+    if not guia:
+        raise ValueError(f'sem guia de entrada de parcelamento para {imovel}')
+    gpag, loca, valor_doc = int(guia[0]['gpag_id']), int(guia[0]['loca_id']), guia[0]['valor']
+    recebido = reg.get('valor_recebido', 'documento')
+    valor_rec = _centavos(valor_doc) if recebido == 'documento' else _centavos(recebido)
+    empresa = reg.get('empresa') or ctx.sql("select lpad(parm_cdempresafebraban::text, 4, '0') from cadastro.sistema_parametros")
+    ident = f'{loca:03d}{imovel:09d}{gpag:09d}001'
+    sem_dv = '826' + f'{_centavos(valor_doc):011d}' + empresa + ident + '1'
+    barras = sem_dv[:3] + str(_dv_modulo10(sem_dv)) + sem_dv[3:]
+    linha = ('G' + '0001' + '0' * 16 + reg.get('data_pagamento', '20260610') + reg.get('data_credito', '20260611') + barras
+             + f'{valor_rec:012d}' + '0' * 7 + f'{sequencia:08d}' + '00000001' + reg.get('forma', '1')
+             + ' ' * 23 + '1' + ' ' * 9)
+    assert len(linha) == 150, len(linha)
+    return linha, valor_rec, {'imovel': imovel, 'guia_entrada': True,
                               'valor_documento': f'{Decimal(_centavos(valor_doc)) / 100:.2f}',
                               'valor_recebido': f'{Decimal(valor_rec) / 100:.2f}'}
 
@@ -1366,7 +1417,7 @@ def _consultar_debitos(ctx, passo):
     com a relação (USUÁRIO, RESPONSÁVEL…) da variação."""
     r = {}
     acrescimos = bool(passo.get('acrescimos'))
-    hoje = datetime.date.fromisoformat(ctx.sql("select current_date::text").strip())  # o dia do relógio do legado
+    hoje = _hoje(ctx)
     for imovel in passo.get('imoveis', []):
         html = ctx.atual.post('consultarDebitoAction.do', {'codigoImovel': str(int(imovel))})
         r[str(int(imovel))] = dict(http=ctx.atual.ultimo_estado, **_posicao(html, _secoes_debito(html), acrescimos, hoje))
@@ -1520,9 +1571,43 @@ def _efetuar_parcelamento(ctx, passo):
     if not url:
         r['resultado'] = 'sem_concluir'
         return r
+    if passo.get('forjar_conclusao'):  # lote 7c (CAND-44): campos do formulário trocados no POST de conclusão
+        r['forjado'] = {k: {'tela': dados.get(k), 'enviado': str(v)} for k, v in sorted(passo['forjar_conclusao'].items())}
+        dados.update({k: str(v) for k, v in passo['forjar_conclusao'].items()})
     html = ctx.atual.post(url, dados)
     sucesso = _sucesso(html)
     r.update(http=ctx.atual.ultimo_estado, mensagem=sucesso, resultado='efetuado' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
+def _desfazer_parcelamento(ctx, passo):
+    """Desfazer Parcelamento pela tela: Consultar Parcelamento de Débitos do imóvel (ExibirConsultarParcelamentoDebitoAction
+    — a tela só oferece o Desfazer ao parcelamento NORMAL, sem prestação cobrada e com a entrada não paga) e o botão
+    Desfazer com o motivo da variação (ExibirDesfazerParcelamentoDebitoAction → Fachada.desfazerParcelamentosDebito).
+    O parcelamento é o último NORMAL do imóvel (o id só navega). `forjar`: se a tela não oferece o Desfazer, a URL do botão
+    é enviada assim mesmo (o servidor aceita ou não)."""
+    imovel = int(passo['imovel'])
+    parc = ctx.sql(f"select max(parc_id) from cobranca.parcelamento where imov_id = {imovel} and pcst_id = 1") or None
+    if not parc:
+        return {'resultado': 'sem_parcelamento_normal'}
+    ctx.atual.get('exibirConsultarListaParcelamentoDebitoAction.do?menu=sim')
+    html = ctx.atual.get(f'exibirConsultarParcelamentoDebitoAction.do?codigoImovel={imovel}&codigoParcelamento={int(parc)}')
+    oferece = 'Desfazer Parcelamento' in html and 'parcelamentoMotivoDesfazer' in html
+    tela = {'http': ctx.atual.ultimo_estado, 'oferece_desfazer': oferece,
+            'motivos': re.findall(r'(?is)<option[^>]*value="(\d+)"', re.search(r'(?is)<select[^>]*name="parcelamentoMotivoDesfazer".*?</select>', html).group(0)) if re.search(r'(?is)<select[^>]*name="parcelamentoMotivoDesfazer".*?</select>', html) else []}
+    if ctx.atual.ultimo_estado >= 400:
+        tela.update(_recusa(html, ctx.atual.ultimo_estado))
+    r = {'tela': tela}
+    if not oferece:
+        if not passo.get('forjar'):
+            r['resultado'] = 'nao_oferecido'
+            return r
+        r['forjado'] = True  # o que a tela não deixaria enviar
+    html = ctx.atual.get(f'exibirDesfazerParcelamentoDebitoAction.do?codigoParcelamento={int(parc)}&motivo={int(passo["motivo"])}')
+    sucesso = _sucesso(html)
+    r.update(http=ctx.atual.ultimo_estado, mensagem=sucesso, resultado='desfeito' if sucesso else 'recusado')
     if not sucesso:
         r.update(_recusa(html, ctx.atual.ultimo_estado))
     return r
@@ -1796,6 +1881,8 @@ def faturar_grupo(ctx, entrada):
             r.update(_colocar_revisao(ctx, passo))
         elif tipo == 'efetuar_parcelamento':
             r.update(_efetuar_parcelamento(ctx, passo))
+        elif tipo == 'desfazer_parcelamento':
+            r.update(_desfazer_parcelamento(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.

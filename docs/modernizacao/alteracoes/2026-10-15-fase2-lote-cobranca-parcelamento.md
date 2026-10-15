@@ -20,6 +20,12 @@
   regressão do lote 7 e dos lotes 6, 6b e 6c (49/49); `caracterizacao.py verificar`, `cobertura.py verificar`.
 - **Risco**: baixo (laboratório, dados sintéticos). **Rollback**: `git revert`. **Migration do OpenGSAN**: nenhuma.
 
+> 🆕 **Nota (lote 7c, 2026-10-15)**: 8 destas baselines (V1, V1b, V1c, V1d, V2, V3, V4, V6) dependiam do relógio — a referência
+> do parcelamento e a contábil da conta saíam como o mês corrente e o vencimento da conta tomada como entrada como data absoluta —
+> e divergiriam no dia ou no mês seguinte. A ferramenta foi corrigida e elas foram **recapturadas com `--substituir`** no lote 7c,
+> só nesses campos ([F2-170](../testes/fase2/fase2-caracterizacao-baselines.md#306-achados);
+> [registro do lote 7c](2026-10-15-fase2-lote-cobranca-pos-parcelamento.md)).
+
 ## 1. Estado de entrada
 
 `master` = `origin/master` = `d6eb5f2` (lote 7). Cobertura: 33 de 42 P0 da classe A; 194 baselines; 43 cenários com baseline.

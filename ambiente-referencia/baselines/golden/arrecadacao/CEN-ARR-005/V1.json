@@ -592,7 +592,7 @@
                 }
               ],
               "referencia": 202605,
-              "referencia_contabil": 202610,
+              "referencia_contabil": "mês da execução",
               "rota": 1,
               "situacao": "CANCELADA POR RETIFICACAO",
               "tipo_impressao": "NORMAL",
@@ -635,7 +635,7 @@
                 }
               ],
               "referencia": 202605,
-              "referencia_contabil": 202610,
+              "referencia_contabil": "mês da execução",
               "rota": 1,
               "situacao": "RETIFICADA",
               "tipo_impressao": null,

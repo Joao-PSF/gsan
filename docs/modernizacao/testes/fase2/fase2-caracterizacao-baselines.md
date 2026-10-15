@@ -296,7 +296,8 @@ Ordem proposta — a de captura da [estratégia](../estrategia-testes.md#prioriz
 | ~~6c — Arrecadação: encerramento e arquivamento~~ ✅ **capturado em 2026-10-13** (§27) | ARR-010 V1/V1b/V2/V3/V4/V5, ARR-006 V1/V2, ARR-005 V4. **Ficam**: ARR-004 V4 (RA que transfere a duplicidade), ARR-007 (conciliação), os acréscimos e as retenções do encerramento | Encerrar e arquivar pela tela Inserir Processo — Batch; Consultar Pagamento | Catálogos do resumo; processos de encerramento e arquivamento; conta arquivada |
 | ~~7 — Cobrança: posição de dívida e acréscimos por impontualidade~~ ✅ **capturado em 2026-10-13** (§28) | COB-001 V1/V1b/V1c/V2/V3, ARR-002 V2b/V2c. **Ficam**: o parcelamento (COB-004, 005, ARR-008) → 7b; a situação especial de cobrança e as ações (COB-002) | Consultar Débitos por imóvel e por cliente; Colocar Conta em Revisão; acréscimos do encerramento — Batch | Índices de acréscimo; tipos de débito de acréscimo; o que a revisão exige |
 | ~~7b — Cobrança: efetuar parcelamento~~ ✅ **capturado em 2026-10-15** (§29) | COB-004 V1/V1b/V1c/V1d/V2/V3/V4/V5/V6. **Ficam**: o pagamento da entrada e da prestação (ARR-008), o desfazimento e o reparcelamento (COB-005) → 7c; o desconto por antiguidade (duas referências) e o à vista por inatividade | Efetuar Parcelamento (assistente) — tela | RD, perfil, faixas, grupos, tipos de débito e crédito do parcelamento; guia; débito de 24 prestações |
-| **7c — Cobrança: depois do parcelamento** (recomendado a seguir; MIC-005 em paralelo, pela tela de análise) | ARR-008, COB-005, COB-001 (conta parcelada na posição) | Recepção do pagamento da guia de entrada; faturamento da prestação; Desfazer Parcelamento — tela; desfazimento por entrada não paga — Batch; reparcelamento — tela | Motivo de desfazimento; processo do desfazimento automático; movimento com a guia de entrada |
+| ~~7c — Cobrança: depois do parcelamento~~ ✅ **capturado em 2026-10-15** (§30) | ARR-008 V1/V2, COB-005 V1/V1b/V1c/V2/V2b/V2c/V3, COB-004 V7; 9 baselines dos lotes 7b e 6b recapturadas (relógio). **Ficam**: a classificação definitiva da entrada e a prestação de parcelamento do assistente na conta (relógio × massa), o desfazimento com prestação cobrada e o estorno de descontos, o cancelamento de parcelamento | Arrecadador e classificação; Inserir Processo (desfazimento automático); Consultar e Desfazer Parcelamento; Efetuar Parcelamento — Batch/telas | Situações e motivos de desfazimento, usuário de rotina batch, processo 3307; passo de relógio da guia de entrada |
+| **8 — Cobrança: ação de cobrança e conta em cobrança** (recomendado a seguir; MIC-005 em paralelo, pela tela de análise) | COB-002, COB-007 | Ação de cobrança (comando, documento, aviso) e pagamento antes ou depois; retificação, cancelamento e prescrição de conta em cobrança — Batch/telas | Critérios, ações e documentos de cobrança; a conta em cobrança |
 | 7 — Cobrança, financeiro, operacional | COB-*, FIN-*, OPE-*, ARR-008 | Ações, parcelamento, contabilização — Batch/Online | DOC-*, CTB-*, OPR-* |
 
 Em paralelo: a **baseline de performance** do plano (inicialização, login, telas, lote) — os manifestos de execução já
@@ -356,7 +357,7 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 | Variações a capturar | **234** (221 A + 13 C) | Matriz |
 | Execuções | ~**700** (2 na captura + 1 na verificação, por variação) | Regra do mecanismo |
 | Tempo de máquina | ~**12 h** online, sequencial, a ~1 min por execução. 🆕 Batch: **~3–6 min por execução** (o verificador inicia o processo no minuto seguinte; reinícios e autorização somam ciclos) | Piloto; lotes de Segurança; lote 5 |
-| Já capturado | **203 variações** de 44 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12 + lote 5e 23 + lote 6 21 + lote 6b 12 + lote 6c 9 + lote 7 7 + lote 7b 9) — 87% das 234 | Cobertura |
+| Já capturado | **213 variações** de 46 cenários (piloto 11 + Segurança 19 + Segurança restante 15 + lote 3 16 + lote 4 17 + lote 5 10 + lote 5b 13 + lote 5c 9 + lote 5d 12 + lote 5e 23 + lote 6 21 + lote 6b 12 + lote 6c 9 + lote 7 7 + lote 7b 9 + lote 7c 10) — 91% das 234 | Cobertura |
 | Massas efetivas | ~**100** — no piloto, 11 variações usaram 5 (≈ 45%); extrapolação, não medida | Piloto |
 | Custo real | **Autoria de massa e roteiros** (achar a fronteira, os pré-requisitos do schema e as concessões), não a execução | Piloto |
 
@@ -366,8 +367,8 @@ registram horários, mas nenhuma medição foi tratada como baseline.
 
 | Critério de aceite do plano | Situação |
 | --------------------------- | -------- |
-| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; 🆕 lote 5e **23/23** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d e o piloto de novo **55/55**; 🆕 lote 6 **21/21** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d, 5e e o piloto de novo **78/78**; 🆕 lote 6b **12/12** idênticas na captura (V2d e V2e recapturadas depois de a V2d original revelar a guia recusada sem RA) e conferidas numa 3ª execução, com os lotes 6 e 5d de novo **33/33**; 🆕 lote 6c **9/9** idênticas na captura e conferidas numa 3ª execução, com os lotes 6 e 6b de novo **33/33**; 🆕 lote 7 **7/7** idênticas na captura e conferidas numa 3ª execução, com os lotes 6, 6b e 6c de novo **42/42**; 🆕 lote 7b **9/9** idênticas na captura e conferidas numa 3ª execução, com o lote 7 e os lotes 6, 6b e 6c de novo **49/49**; o teste negativo do piloto acusa 1 centavo |
-| Cobre os comportamentos priorizados | 🟡 **34 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), na conta (3: lançamentos, impostos, rateio) e 🆕 do documento (2: retificação; cancelamento e prescrição), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual) e 🆕 arrecadação (6: classificação por valor e prazo, situação especial, duplicidade, conta retificada ou arquivada, 🆕 identidade do pagamento no arquivamento, encerramento mensal) e 🆕 cobrança (2: posição de dívida; 🆕 parcelamento); [cobertura](cobertura-baselines.md) |
+| Rodadas repetidas produzem resultados idênticos | ✅ **Comprovado** — piloto 11/11, Segurança 19/19 e Segurança restante 15/15 idênticas nas 2 execuções de captura; verificação independente (3ª execução, com o roteiro final) **Segurança 34/34** e **piloto 11/11**; 🆕 lote 3 **16/16** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11 — as 61 baselines conferem; 🆕 lote 4 **17/17** idênticas na captura e conferidas numa 3ª execução, com o piloto de novo 11/11; 🆕 lote 5 (EAR Batch) **10/10** idênticas na captura — inclusive a ordem dos imóveis na rota e os processos duplicados — e conferidas numa 3ª execução, com a regressão das **78 baselines Online, 78/78** — as 88 conferem; 🆕 lote 5b **13/13** idênticas na captura e conferidas numa 3ª execução, com o lote 5 e o piloto de novo **21/21**; 🆕 lote 5c **9/9** idênticas e conferidas numa 3ª execução, com os lotes 5, 5b e o piloto de novo **34/34** (duas delas depois da correção do relógio da observação, F2-86); 🆕 lote 5d **12/12** idênticas na captura e conferidas numa 3ª execução com o roteiro final, com os lotes 5, 5b, 5c e o piloto de novo **43/43**; 🆕 lote 5e **23/23** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d e o piloto de novo **55/55**; 🆕 lote 6 **21/21** idênticas na captura e conferidas numa 3ª execução, com os lotes 5, 5b, 5c, 5d, 5e e o piloto de novo **78/78**; 🆕 lote 6b **12/12** idênticas na captura (V2d e V2e recapturadas depois de a V2d original revelar a guia recusada sem RA) e conferidas numa 3ª execução, com os lotes 6 e 5d de novo **33/33**; 🆕 lote 6c **9/9** idênticas na captura e conferidas numa 3ª execução, com os lotes 6 e 6b de novo **33/33**; 🆕 lote 7 **7/7** idênticas na captura e conferidas numa 3ª execução, com os lotes 6, 6b e 6c de novo **42/42**; 🆕 lote 7b **9/9** idênticas na captura e conferidas numa 3ª execução, com o lote 7 e os lotes 6, 6b e 6c de novo **49/49**; 🆕 lote 7c **10/10** novas e **9/9** substituídas idênticas na captura e **20/20** conferidas numa 3ª execução, com o lote 7 e os lotes 6, 6b e 6c de novo **49/49**; o teste negativo do piloto acusa 1 centavo |
+| Cobre os comportamentos priorizados | 🟡 **36 de 42** P0 da classe A — Segurança (6), cadastro (3), faturamento individual (3), na conta (3: lançamentos, impostos, rateio) e 🆕 do documento (2: retificação; cancelamento e prescrição), atendimento (2: efeito cadastral e financeiro da OS), micromedição (3: consumo mínimo e 🆕 consumo por situação de leitura e troca de hidrômetro) e processamento em lote (4: falha e reinício, atomicidade, duplicidade, lote × individual) e 🆕 arrecadação (6: classificação por valor e prazo, situação especial, duplicidade, conta retificada ou arquivada, 🆕 identidade do pagamento no arquivamento, encerramento mensal) e 🆕 cobrança (3: posição de dívida; parcelamento; 🆕 desfazimento e reparcelamento) e 🆕 arrecadação do parcelamento (1); [cobertura](cobertura-baselines.md) |
 | Baseline de performance | ⬜ Não iniciada |
 
 Não se marca a Fase 2 como concluída: o mecanismo está pronto e provado; a cobertura é o trabalho dos próximos lotes.
@@ -1812,3 +1813,113 @@ entrada mínima de **R$ 23,49** (10%) e 7 a 12 a 1,50% com **R$ 46,99** (20%); a
 | F2-167 | **Faixa de desconto por antiguidade "a partir de 0 mês" quebra o passo 3**: a escolha da faixa só aceita mínimo maior que 0; com a única faixa em 0, a faixa escolhida fica vazia e o percentual nulo — NullPointerException. Só exploração | Exploração (`jboss-V84`, 2026-10-15); `calcularValorDescontoAntiguidadeDebito:10450-10486` | 🔴 | Registrado; sem baseline (configuração degenerada) |
 | F2-168 | **A memória financeira vem do formulário**: a conclusão lê do POST o débito atualizado, os acréscimos por componente, os descontos e a entrada; a conferência (`isParcelamentoValido`) compara esses campos entre si e com a opção guardada na sessão — não recalcula a dívida no servidor | Leitura de código: `ConcluirEfetuarParcelamentoDebitosAction:166-330`, `:571-610`; não exercitado | 🔴 | Achado de segurança **38**; **CAND-44** |
 | F2-169 | **Ferramenta** (evidência para F2-157): o literal "data da execução" que a ferramenta escreve em Python sai correto; o que passa pelo banco LATIN1 (`_data_relativa`) sai "data da execuÃ§Ã£o" — nas baselines deste lote, os dois | Goldens de CEN-COB-004 | ⚙️ | Registrado; a decisão de F2-157 segue pendente |
+
+## 30. Lote 7c — Cobrança: depois do parcelamento (2026-10-15)
+
+Décimo sexto lote, no EAR em modo Batch: o que acontece a um parcelamento depois de efetuado — o **pagamento da guia de
+entrada** e o **pagamento da conta que contém uma prestação** (pelo movimento do arrecadador e a classificação, como no lote 6),
+o **desfazimento** (automático por entrada não paga e manual, com motivo) e o **reparcelamento** do saldo de um parcelamento com
+uma prestação paga — sobre os parcelamentos do lote 7b (CEN-COB-004 V1) e o parcelamento sintético do lote 5b. Valores ao
+centavo, com as situações e os saldos antes e depois. O lote corrige também uma dependência do relógio nas baselines dos lotes
+7b e 6b (F2-170) e caracteriza, num POST forjado e controlado, a hipótese do CAND-44.
+
+### 30.1 Cenários selecionados
+
+| Cenário | Classe | P | Variações (fronteira deste lote) | Observa |
+| ------- | ------ | - | -------------------------------- | ------- |
+| CEN-ARR-008 — pagamento de entrada e de prestação | A (1) | P0 | V1 (guia de entrada paga e classificada), V2 (conta com a prestação paga e classificada) | Arquivo · pagamento e situação · débito cobrado · prestações restantes · parcelamento · posição antes e depois |
+| CEN-COB-005 — desfazimento e reparcelamento | A (1) | P0 | V1 (automático, entrada não paga), V1b (automático com a entrada paga), V1c (automático, conta como entrada), V2 (manual, com motivo), V2b (manual com a entrada paga), V2c (manual, conta como entrada), V3 (reparcelamento) | Situação, motivo e usuário do desfazimento · originais · débitos, créditos e guias · contadores do imóvel · posição |
+| CEN-COB-004 — efetuar parcelamento (complemento) | A (1) | P0 | V7 (conclusão com o POST forjado — CAND-44) | O que o parcelamento grava quando os valores do formulário são trocados |
+
+**Fora do lote, com motivo**: a **classificação definitiva** do pagamento da entrada — ele fica DOC A CONTABILIZAR até a
+referência de faturamento passar a referência contábil da guia, que vem do relógio (F2-171); a **prestação de um parcelamento
+feito pelo assistente cobrada na conta** — só entra quando a referência do parcelamento é anterior à de faturamento do sistema, e
+a do assistente vem do relógio (F2-172): ARR-008 V2 usa o parcelamento sintético de 09/2014; o **desfazimento de parcelamento com
+prestação já cobrada** e os **estornos de desconto** no desfazimento; o **cancelamento** de parcelamento (outra operação, com
+permissão especial).
+
+### 30.2 Massa
+
+| Delta / passo | Conteúdo |
+| ------------- | -------- |
+| `cob-parcelamento-desfazer.sql` | Situações de parcelamento DESFEITO, CONCLUÍDO e CANCELADO; motivos de desfazimento ENTRADA NÃO PAGA (4) e um manual; o usuário de ROTINA BATCH (sem senha, sem grupo, distinto do operador); o processo eventual 3307 com a etapa 16044; as concessões de Consultar Parcelamento (331) e da tela do parcelamento (389) |
+| `massas/passos/cob-relogio-entrada-vencida.sql` | RELÓGIO: a emissão e o vencimento da guia de entrada levados para 12/06 e 15/06/2026 (o tempo da massa, os mesmos 3 dias de prazo), para que vencimento + 7 dias (a tolerância) seja anterior a hoje — simulação do relógio, não operação |
+| reaproveitados | o catálogo e a guia do lote 7b; `fat-parcelamento-6x.sql` (lote 5b: o parcelamento sintético de 09/2014 com a prestação na conta de 05/2026); o arrecadador e a classificação do lote 6 |
+
+### 30.3 Mecanismo — o que mudou
+
+- **Correção do relógio (F2-170)**: as referências do mês corrente ou posterior — a referência contábil da conta (bloco base
+  `contas`) e a do parcelamento (bloco `parcelamento`) — saem "mês da execução"; o vencimento da conta no bloco base sai "data da
+  execução + N dias" quando é hoje ou depois. As da massa são todas anteriores e saem como antes. As baselines que tinham esses
+  valores — CEN-COB-004 V1, V1b, V1c, V1d, V2, V3, V4, V6 (lote 7b) e CEN-ARR-005 V1 (lote 6b) — foram **recapturadas com
+  `--substituir`**, com esta justificativa; a comparação campo a campo com as versões anteriores mostra que só mudaram esses campos
+  e a troca, no bloco `parcelamento`, dos indicadores de desfazimento pelo motivo e o usuário.
+- Movimento do arrecadador: o registro da **guia de entrada** com o código de barras que a emissão da guia imprime (tipo 1:
+  localidade, matrícula, número da guia).
+- Passo novo `desfazer_parcelamento` (Consultar Parcelamento → Desfazer, com o motivo da variação; `forjar` envia a URL do botão
+  quando a tela não o oferece). `efetuar_parcelamento` ganhou `forjar_conclusao` (campos trocados no POST de conclusão, com o que
+  a tela mostrou e o que foi enviado no resultado).
+- Cenários novos **CEN-ARR-008** e **CEN-COB-005** (lote `batch-cobranca`); CEN-COB-004 ganhou V7.
+
+### 30.4 Baselines do lote
+
+Partida (CEN-COB-004 V1): o parcelamento de IMV-01 com entrada de **R$ 60,00** (guia, vencimento em 3 dias) e 3 prestações —
+débitos de R$ 174,95; conta, guia e débito originais PARCELADA; posição R$ 234,95.
+
+| Cenário · variação | Observado (baseline) |
+| ------------------ | -------------------- |
+| ARR-008 V1 | A guia de entrada paga (R$ 60,00, 20/06/2026) pelo código de barras da guia: a recepção aceita; a classificação deixa o pagamento **DOC A CONTABILIZAR**, com excedente de **R$ 60,00** (o valor inteiro); a guia continua NORMAL e **sai da posição** (débitos R$ 174,95); o parcelamento continua NORMAL |
+| ARR-008 V2 | A conta de 05/2026 de IMV-01 com a 1ª prestação do parcelamento de 09/2014 — **R$ 160,40** (água 110,40 + prestação 50,00); posição antes **R$ 410,40** (a conta e o saldo de 5 × 50,00); paga no vencimento: **CLASSIFICADO**; débito cobrado PARCELAMENTO SINTETICO, prestação **1 de 6**, R$ 50,00; posição depois **R$ 250,00**; o parcelamento continua NORMAL |
+| COB-005 V1 | Entrada vencida além de 7 dias e não paga; o desfazimento automático (CONCLUÍDA): parcelamento **DESFEITO**, motivo **ENTRADA NÃO PAGA**, usuário de rotina batch; conta, guia e débito de serviço de volta a **NORMAL**; os débitos do parcelamento (contas, guias, acréscimos, serviço e os de multa, juros e atualização) e a guia de entrada **excluídos**; contador de parcelamentos **0**; posição de volta a **R$ 230,40**, atualizado **R$ 234,95** (acréscimos 4,55); nenhum registro de auditoria |
+| COB-005 V1b | A entrada paga e classificada antes: o desfazimento automático (CONCLUÍDA) **não desfaz** — o parcelamento continua NORMAL |
+| COB-005 V1c | Conta como entrada (EP), não paga: o desfazimento automático (CONCLUÍDA) **não desfaz** |
+| COB-005 V2 | Manual: a tela Consultar Parcelamento responde **HTTP 500** (tenta registrar o boleto da entrada; o cliente não tem CPF/CNPJ) e não mostra o Desfazer; a URL do botão, enviada, **desfaz** — motivo PEDIDO DO CLIENTE, usuário do operador; os mesmos efeitos de V1 |
+| COB-005 V2b | Entrada paga e classificada: a tela não oferece o Desfazer; a URL é aceita até a exclusão da guia paga — **"Erro de acesso ao banco de dados"** (a chave estrangeira do item do movimento); nada desfeito |
+| COB-005 V2c | Conta como entrada: a tela (HTTP 200) não oferece o Desfazer; pela URL, **desfeito** — a conta sai da revisão e volta ao vencimento original (10/06/2026), NORMAL |
+| COB-005 V3 | Conta de 05/2026 (com a 1ª prestação do parcelamento de 09/2014) paga e classificada; o assistente mostra o saldo do parcelamento como **parcelamento a cobrar R$ 250,00** (curto prazo); dívida **R$ 366,67**; entrada **R$ 80,00** (Calcular) e 3×: prestação **R$ 95,56**; débitos **REPARCELAMENTO CURTO PRAZO R$ 250,00** e DEB. A COBRAR CP R$ 36,67 (a entrada quitou a guia e R$ 30,00 do serviço); o débito do parcelamento anterior PARCELADA, **o parcelamento anterior NORMAL**; contadores do imóvel: parcelamentos **1**, reparcelamentos **0** |
+| COB-004 V7 | O POST de conclusão forjado (multa 0,00, acréscimos R$ 2,28, débito atualizado R$ 232,68 — coerentes entre si) é **aceito**: o parcelamento grava multa 0,00 e débito atualizado **R$ 232,68**, sem o débito de multa; débitos **R$ 172,68** em 3, com a prestação do cabeçalho **58,32** (a da opção) |
+
+### 30.5 Determinismo
+
+- **Exploração** (sem gravar, num cenário provisório já apagado): **4 rodadas**, 9 variações — as 8 tentativas da 1ª pararam na
+  massa (dois campos acima do tamanho da coluna), depois 14 execuções (`20261015T123846Z` a `20261015T134034Z-verificar`). Foi
+  assim que apareceram a situação DESFEITO e o usuário de rotina batch que faltavam, a consulta que registra o boleto (CAND-45), o
+  desfazimento pela URL com a entrada paga barrado só pela chave estrangeira (CAND-46), o EP nunca desfeito (CAND-47), a recusa da
+  entrada abaixo do mínimo da última faixa (F2-182), o parcelamento antes do primeiro faturamento (F2-180) e a aceitação do POST
+  forjado (CAND-44).
+- **Recaptura (F2-170)**: as 9 baselines dependentes do relógio, com `--substituir`: **9/9** com as duas execuções idênticas
+  (`20261015T134646Z-capturar`; a V3 refeita em seguida, depois do desempate da ordem dos débitos cobrados — na primeira tentativa
+  as duas execuções saíram com dois débitos empatados em ordem trocada: o defeito que o desempate corrige). A comparação campo a
+  campo com as versões anteriores: **91** mudanças, todas nos campos do relógio, na troca dos indicadores de desfazimento e na
+  ordem dos débitos empatados; **0** fora disso.
+- **Captura**: **10 de 10** variações novas com as duas execuções **idênticas byte a byte** (`20261015T145540Z-capturar`).
+- **Verificação independente** (3ª execução): **20/20** conferem — as 10 novas, as 9 substituídas e CEN-COB-004 V5
+  (`20261015T162743Z-verificar`).
+- **Conferência dos documentos**: cada número e situação afirmados neste relatório, nas especificações e nos candidatos foi
+  conferido contra os goldens (44 conferências do lote 7c; as 50 do lote 7b de novo, sobre as baselines substituídas): sem
+  divergência.
+- **Regressão** — `roteiros.py` mudou no bloco base `contas` (as referências e o vencimento do relógio), no `parcelamento`, na
+  ordenação dos lançamentos e no movimento (a guia de entrada): o lote 7 (CEN-COB-001, CEN-ARR-002 V2b/V2c) e os lotes 6, 6b e
+  6c **49/49** conferem (`20261015T174847Z-verificar`). Os demais lotes também passam pelo bloco base `contas`, mas a mudança só
+  toca valores do mês corrente em diante e datas de hoje em diante, e a busca nas 213 baselines mostrou esses valores só nas 9
+  substituídas; o desempate novo da ordenação só reordena linhas empatadas, e só a CEN-COB-004 V3 as tinha. As **213** baselines
+  conferem.
+
+### 30.6 Achados
+
+| # | Achado | Evidência | Classe | Efeito |
+| - | ------ | --------- | ------ | ------ |
+| F2-170 | **Ferramenta — o relógio nas baselines**: a referência do parcelamento e a contábil da conta que o legado tira do relógio (o maior entre o mês corrente, o de faturamento e o do vencimento da entrada — `obterReferenciaContabilParcelamentoOUConta:41833`) saíam inteiras (202610), e o vencimento da conta tomada como entrada saía absoluto (18/10/2026) no bloco base `contas`: CEN-COB-004 (lote 7b) divergiria a partir do dia seguinte (V4) e de novembro (as demais), e CEN-ARR-005 V1 (lote 6b) de novembro. A verificação do lote 7b passou porque rodou no mesmo dia. Corrigido na ferramenta (forma relativa só para os valores de hoje em diante); as 9 baselines recapturadas com `--substituir` — a comparação com as anteriores mostra só esses campos, a troca dos indicadores de desfazimento e, na V3, a ordem de dois débitos cobrados empatados (desempate novo na ordenação) | `roteiros._mes_do_dia`, `_data_do_dia`; `20261015T134646Z-capturar` | ⚙️ | Corrigido; 9 baselines substituídas, com justificativa |
+| F2-171 | **Pagamento da guia de entrada**: o código de barras é o que a emissão da guia imprime (tipo 1: localidade, matrícula, número da guia); a classificação deixa o pagamento de guia com referência contábil igual ou posterior à de faturamento como **DOC A CONTABILIZAR**, com o valor inteiro de excedente (`classificarPagamentos…:14450-14500`) — a da guia de entrada vem do relógio, então a entrada nunca se classifica no próprio mês; a guia sai da posição e o desfazimento já não a alcança | CEN-ARR-008 V1, CEN-COB-005 V1b; `obterIdentificacaoPagamento:38350` | 🟢 | Responde V1 de ARR-008; a classificação definitiva fica fora (relógio × massa) |
+| F2-172 | **Prestação paga na conta**: a prestação é um débito cobrado da conta; paga a conta, a posição fica com o saldo (5 × 50,00); a prestação só entra na conta quando a referência do parcelamento é anterior à de faturamento do sistema ([FS0005]) — a do parcelamento feito pelo assistente vem do relógio: no laboratório (relógio 10/2026, massa 06/2026) nunca seria cobrada | CEN-ARR-008 V2; `obterDebitoACobrarImovel:18195`; `fat-parcelamento-6x.sql` | 🟢 | Responde V2 de ARR-008 com o parcelamento do lote 5b |
+| F2-173 | **Desfazimento**: o automático (etapa 16044 da instalação; a 652, que compara a referência do mês, não está em processo) desfaz o parcelamento NORMAL com guia de entrada vencida há mais de `QUANTIDADE_DIAS_VENCIMENTO_GUIA` (7) dias, sem pagamento e sem débito já cobrado, em nome do usuário de ROTINA BATCH (a base não tem nenhum); o desfazimento volta os originais à situação anterior, retira as contas de revisão, **exclui** os débitos e créditos gerados e a guia de entrada, decrementa o contador e grava DESFEITO, motivo e usuário | CEN-COB-005 V1, V2; `desfazerParcelamentosPorEntradaNaoPagaSemAnoMesReferencia:61855`, `desfazerParcelamentosDebito:16928` | 🟢 | Responde V1 e V2 de COB-005 |
+| F2-174 | **Conta como entrada nunca é desfeita**: a etapa só examina guias; `isEntradaParcelamentoPaga` devolve "paga" para o parcelamento sem guia — o EP não pago nem é desfeito pelo processo nem tem o Desfazer na tela | CEN-COB-005 V1c, V2c; `isEntradaParcelamentoPaga` | 🔴 | **CAND-47** |
+| F2-175 | **A consulta do parcelamento registra o boleto**: para o parcelamento com guia de entrada não paga, `ExibirConsultarParcelamentoDebitoAction:136-139` emite o boleto pela integração com o banco (EmissaoAPIBB), **sem olhar o parâmetro** (o gatilho é existir guia de entrada); sem CPF/CNPJ do cliente, a ficha falha antes de qualquer chamada de rede e a tela responde 500 — o Desfazer manual fica inalcançável pela tela | CEN-COB-005 V2 | 🔴 | **CAND-45**; integração externa fora da fronteira (o cliente sintético fica sem CPF de propósito) |
+| F2-176 | **O desfazimento não confere no servidor**: entrada paga, prestação cobrada e situação só a tela confere; pela URL, com a entrada paga, o desfazimento tenta excluir a guia paga e só a chave estrangeira do item do movimento impede (erro de banco); o EP, sem Desfazer na tela, é desfeito | CEN-COB-005 V2b, V2c | 🔴 | **CAND-46**; achado de segurança **39** |
+| F2-177 | **Desfazimento sem rastro**: os documentos gerados são excluídos (não cancelados) e nem o parcelamento nem o desfazimento gravam auditoria (operação efetuada e linhas alteradas: 0) | CEN-COB-005 V1, V2 (efeitos no banco) | 🔴 | **CAND-49** |
+| F2-178 | **Reparcelamento**: o saldo do parcelamento anterior (débito a cobrar de parcelamento) entra como parcelamento a cobrar de curto prazo e vira REPARCELAMENTO CURTO PRAZO (42); o débito anterior fica PARCELADA, mas o parcelamento anterior continua NORMAL; a entrada abate guia e depois serviço | CEN-COB-005 V3 | 🟢 | Responde V3 de COB-005 |
+| F2-179 | **O primeiro reparcelamento não é contado**: o contador de reparcelamentos nulo vira 0 (só soma quando já tem valor); o de parcelamentos vai de nulo a 1 | CEN-COB-005 V3; `concluirParcelamentoDebitos:16233-16259` | 🔴 | **CAND-48** |
+| F2-180 | **Parcelar antes do primeiro faturamento do grupo quebra o passo 1**: a maior referência do cronograma com FATURAR GRUPO realizado é nula e vira NullPointerException (Erro de Sistema). Só exploração | Exploração (`jboss7c-V95`); `pesquisarMaiorAnoMesReferenciaCronogramaGrupoFaturamentoMensal:14699` | 🔴 | Registrado; sem baseline |
+| F2-181 | **CAND-44 executado**: o POST de conclusão com valores coerentes entre si e diferentes da dívida calculada é aceito e gravado — multa zerada, dívida R$ 2,27 menor, prestação do cabeçalho incoerente com os débitos | CEN-COB-004 V7 | 🔴 | **CAND-44** agora com evidência executável; achado de segurança 38 atualizado |
+| F2-182 | **Evidência para CAND-41**: o Calcular recusa a entrada abaixo do mínimo da **última** faixa ("deve ser maior ou igual a entrada mínima do parcelamento R$ 73,33") mesmo para a opção de 3×, que a tela mostra com mínimo de R$ 36,67. Só exploração | Exploração (`20261015T130624Z`, R$ 60,00 recusados) | 🔴 | Evidência nova para **CAND-41** |
+

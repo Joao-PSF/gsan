@@ -9,19 +9,19 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 42 | 42 | 221 | 200 | 200 |
+| **A** | 74 | 44 | 44 | 221 | 210 | 210 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 34 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 44.
+**P0 da classe A com baseline**: 36 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 46.
 
 ## Por domínio (classe A)
 
 | Domínio | Cenários A | Com baseline | Baselines gravadas |
 | ------- | ---------- | ------------ | ------------------ |
-| Arrecadação | 11 | 7 | 44 |
+| Arrecadação | 11 | 8 | 46 |
 | Batch, relatórios e integrações | 11 | 5 | 9 |
 | Cadastro e atendimento | 13 | 7 | 29 |
-| Cobrança | 7 | 2 | 14 |
+| Cobrança | 7 | 3 | 22 |
 | Faturamento | 11 | 9 | 43 |
 | Financeiro e operacional | 8 | 0 | 0 |
 | Micromedição | 5 | 4 | 28 |
@@ -37,6 +37,7 @@
 | CEN-ARR-004 | P0 | batch-arrecadacao | V1, V1b, V1c, V2, V2b, V2c, V2d, V2e, V3, V3b | V1, V1b, V1c, V2, V2b, V2c, V2d, V2e, V3, V3b | — | V2–V4 — devolução (guia, crédito a realizar, RA) |
 | CEN-ARR-005 | P0 | batch-arrecadacao | V1, V2, V3, V4 | V1, V2, V3, V4 | — | V4 — conta arquivada |
 | CEN-ARR-006 | P0 | batch-encerramento | V1, V2 | V1, V2 | — | identificador do pagamento, conta arquivada |
+| CEN-ARR-008 | P0 | batch-cobranca | V1, V2 | V1, V2 | — | classificação definitiva do pagamento da entrada, prestação de parcelamento feito pelo assistente cobrada na conta, encerramento e arquivamento do pagamento |
 | CEN-ARR-010 | P0 | batch-encerramento | V1, V1b, V2, V3, V4, V5 | V1, V1b, V2, V3, V4, V5 | — | acréscimos por impontualidade no encerramento, retenções tributárias (IR, CSLL, COFINS, PIS/PASEP), encerrar o mês corrente, perdas, descontos, campanha da criança, recuperação de crédito |
 | CEN-ATE-007 | P0 | atendimento | V1 | V1 | — | situação derivada do imóvel, V2 religação e V3 ligação de esgoto, o encerramento não é gatilho |
 | CEN-ATE-008 | P0 | atendimento | V1, V1b, V2, V3, V3b, V4, V5 | V1, V1b, V2, V3, V3b, V4, V5 | — | valor de cada parcela e distribuição de centavos |
@@ -51,7 +52,8 @@
 | CEN-CAD-004 | P0 | cadastro-faturamento | V1, V2, V3, V4, V5, V6, V7, V8, V9 | V1, V2, V3, V4, V5, V6, V7, V8, V9 | — | semântica do valor 4 e completude de imovel_situacao, forma de faturamento (leitura, média, mínimo) por situação especial, situação derivada do imóvel e tipos de solicitação habilitados |
 | CEN-CAD-005 | P1 | batch-consumo-origem | V1, V2 | V1, V2 | — | rota de entrega, análise |
 | CEN-COB-001 | P0 | batch-cobranca | V1, V1b, V1c, V2, V3 | V1, V1b, V1c, V2, V3 | — | ação de cobrança sobre a conta em revisão, situação especial de cobrança, conta parcelada, guia de pagamento não quitada, contas retificada, cancelada, prescrita e paga, desconto e valor do pagamento à vista |
-| CEN-COB-004 | P0 | batch-cobranca | V1, V1b, V1c, V1d, V2, V3, V4, V5, V6 | V1, V1b, V1c, V1d, V2, V3, V4, V5, V6 | — | pagamento da entrada e da prestação, desfazimento (manual e por entrada não paga) e reparcelamento, desconto por antiguidade, parcelamento à vista com desconto por inatividade, duas contas vencidas, termo de parcelamento e guia de entrada impressos |
+| CEN-COB-004 | P0 | batch-cobranca | V1, V1b, V1c, V1d, V2, V3, V4, V5, V6, V7 | V1, V1b, V1c, V1d, V2, V3, V4, V5, V6, V7 | — | pagamento da entrada e da prestação, desfazimento (manual e por entrada não paga) e reparcelamento, desconto por antiguidade, parcelamento à vista com desconto por inatividade, duas contas vencidas, termo de parcelamento e guia de entrada impressos |
+| CEN-COB-005 | P0 | batch-cobranca | V1, V1b, V1c, V2, V2b, V2c, V3 | V1, V1b, V1c, V2, V2b, V2c, V3 | — | desfazimento com prestação já cobrada, estornos de desconto no desfazimento, cancelamento de parcelamento, termo e relatórios |
 | CEN-FAT-001 | P0 | piloto | V1, V2, V3, V6, V7, V4, V5 | V1, V2, V3, V4, V5, V6, V7 | V4, V5 | a, b, c, e, f |
 | CEN-FAT-002 | P0 | piloto | V1, V2, V3, V1c | V1, V1c, V2, V3 | — | parcela por vigência, contexto congelado |
 | CEN-FAT-003 | P0 | cadastro-faturamento | V1, V1b, V2, V2b, V3 | V1, V1b, V2, V2b, V3 | V2, V3 | percentuais fotografados na conta, composição do volume de esgoto pelo consumo da ligação |

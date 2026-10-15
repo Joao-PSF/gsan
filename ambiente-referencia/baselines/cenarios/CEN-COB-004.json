@@ -769,6 +769,84 @@
           "parcelamento"
         ]
       }
+    },
+    "V7": {
+      "descricao": "A mesma dívida de V1 (entrada informada de R$ 60,00, 3 prestações) com o POST de conclusão FORJADO: multa 0,00, acréscimos R$ 2,28 e débito atualizado R$ 232,68 — coerentes entre si, diferentes da dívida que a tela calculou (CAND-44)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ],
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 3,
+            "entrada": "60.00",
+            "forjar_conclusao": {
+              "valorMulta": "0,00",
+              "valorAcrescimosImpontualidade": "2,28",
+              "valorDebitoTotalAtualizado": "232,68"
+            }
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ]
+      }
     }
   }
 }
