@@ -1,0 +1,17 @@
+-- Delta — desliga a emissão do boleto da entrada do parcelamento pela integração com o Banco do Brasil (lote 7b: CEN-COB-004).
+-- Depende de cob-parcelamento-catalogos.sql.
+--
+-- EVIDÊNCIA (base reconstruída: parm_icgeracaoboletobb = 1, SIM):
+-- · Concluído o parcelamento (Fachada.concluirParcelamentoDebitos, que grava e confirma), ConcluirEfetuarParcelamentoDebitosAction
+--   :494-506, com o indicador ligado, emite o boleto da guia de entrada por EmissaoAPIBB → ControladorFaturamento
+--   .registrarEntradaParcelamento:15425: grava a ficha de compensação (BoletoInfo) com o CPF/CNPJ do cliente responsável e
+--   a REGISTRA NA API DO BANCO (URL de seguranca.parametro) — uma integração EXTERNA, fora da fronteira do ambiente de
+--   referência (a rede do GSAN é interna, sem saída; integracoes-identificadas.md). Na exploração, o cliente sintético
+--   sem CPF faz a gravação do BoletoInfo falhar (cpfCnpj obrigatório) antes de qualquer chamada de rede — a tela responde
+--   "Erro de Sistema" com o parcelamento já gravado (variação própria, com a base como está; achado).
+-- · Com o indicador desligado (2), a tela de sucesso aponta a emissão local da guia (gerarRelatorioEmitirGuiaPagamento
+--   ActionInserir.do) — o caminho de uma instalação sem a integração. Nenhuma chamada externa é tentada.
+-- Valor de CONFIGURAÇÃO (não de negócio): o indicador só é lido aí, no convênio do "nosso número" da ficha de compensação
+-- da guia (ControladorFaturamentoFINAL.obterNossoNumeroFichaCompensacao:48434, na emissão do documento) e num atributo das
+-- telas de consulta de guia e de parcelamento — o cálculo e a gravação do parcelamento não o leem.
+UPDATE cadastro.sistema_parametros SET parm_icgeracaoboletobb = 2;

@@ -1,0 +1,917 @@
+{
+  "cenario": "CEN-COB-004",
+  "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); a conta de 05/2026 marcada NB (pagamento comprovado) e 3 prestações",
+  "efeitos_no_banco": {
+    "arrecadacao.arrecadador_contrato": "inalterado",
+    "arrecadacao.arrecadador_mov_item": "inalterado",
+    "arrecadacao.arrecadador_movimento": "inalterado",
+    "arrecadacao.aviso_bancario": "inalterado",
+    "arrecadacao.devolucao": 0,
+    "arrecadacao.pagamento": "inalterado",
+    "batch.funcionalidade_iniciada": 1,
+    "batch.processo_iniciado": 1,
+    "cobranca.parcelamento": 0,
+    "cobranca.parcelamento_item": 0,
+    "faturamento.conta": 3,
+    "faturamento.credito_a_realizar": 0,
+    "faturamento.credito_realizado": 1,
+    "faturamento.debito_a_cobrar": 0,
+    "faturamento.debito_cobrado": 1,
+    "faturamento.guia_pagamento": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/cobranca.md — CEN-COB-004",
+  "fora_desta_fronteira": {
+    "desconto por antiguidade": "exige duas ou mais referências de antiguidade (os meses entre a conta e a referência de faturamento): a massa só fatura 05/2026; uma faixa \"a partir de 0 mês\" faz o passo 3 falhar (achado)",
+    "desfazimento (manual e por entrada não paga) e reparcelamento": "CEN-COB-005 — sub-lote 7c",
+    "duas contas vencidas": "a massa fatura uma referência (05/2026); a composição com várias contas segue a mesma regra do item CONTA",
+    "pagamento da entrada e da prestação": "CEN-ARR-008 — sub-lote 7c",
+    "parcelamento à vista com desconto por inatividade": "exige ligação de água inativa — IMV-01 é LIGADO",
+    "termo de parcelamento e guia de entrada impressos": "relatórios — fora desta fronteira"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/batch-faturamento-g1-202605.sql",
+      "sha256": "0ed2b2838ce3938407e2e92341ef3e9bd187fd9b98e88f9080bbb74e11c45b28"
+    },
+    {
+      "arquivo": "massas/deltas/arr-arrecadador.sql",
+      "sha256": "077380c2f08f3f4b26baea7e759a36404b9db2439690d78b845e8db8cd7128f1"
+    },
+    {
+      "arquivo": "massas/deltas/arr-parametros.sql",
+      "sha256": "92437517ec8ee265cb961a751557dbcddbac2ab61ac223fac8bf1dd6278a7570"
+    },
+    {
+      "arquivo": "massas/deltas/arr-processo-classificar.sql",
+      "sha256": "f96d15f12a6ad65a3244cbaf5f5f23d7dbd83a1fe48d4beb0bfb0eeac0dae77a"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-catalogos.sql",
+      "sha256": "c859246d9955ae4cc7cfae4f13b752f290fc15d9c58507612af40bd30037e076"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+      "sha256": "633a1317c98545f154fccfbe24782c772671205b38d0a14463a79d842d7c4e1a"
+    },
+    {
+      "arquivo": "massas/deltas/arr-clientes-usuarios.sql",
+      "sha256": "c0724a3797af2ac895e70b54d154e4b5b0c90324cdef1bfeddc275285cd642a4"
+    },
+    {
+      "arquivo": "massas/deltas/fat-lancamentos-catalogos.sql",
+      "sha256": "c9b6eb5db242b2006b5fe0c5e15553893dd5df484c645dc72f7e87416d8a414d"
+    },
+    {
+      "arquivo": "massas/deltas/fat-debito-servico-3x.sql",
+      "sha256": "178c40fab3ffa433a7a73d21202699cf8270c5816a5ad58b1a4d5ac070bcaaf3"
+    },
+    {
+      "arquivo": "massas/deltas/fat-credito-30.sql",
+      "sha256": "508b4cfaba851b61127f5ebd725fc85b85d440cca9de8ffc6e9f33a3d3468f7d"
+    },
+    {
+      "arquivo": "massas/deltas/cob-acrescimos-indices.sql",
+      "sha256": "0092bd4dcf24d7147c0c7f8c670e51c637f8d8f745450d8f55d069e4d83f5670"
+    },
+    {
+      "arquivo": "massas/deltas/cob-acrescimos-encerramento.sql",
+      "sha256": "08da6e6ea341b040a091e03e551b122da93696839e03bb8b6f0f7587c2dd4543"
+    },
+    {
+      "arquivo": "massas/deltas/cob-parcelamento-catalogos.sql",
+      "sha256": "dca6735a45e999fa183e32fe229f3fd29faa73f3fdc7467d42ca9235b00641eb"
+    },
+    {
+      "arquivo": "massas/deltas/cob-guia-servico.sql",
+      "sha256": "f2a697d1fc38335151922b73b226babce9e6f6b94d14ff353ca014d3e65b6ec0"
+    },
+    {
+      "arquivo": "massas/deltas/cob-parcelamento-sem-boleto-bb.sql",
+      "sha256": "41c2a4a35ce5db18fff102fda5a5dc00c5850dcb3480431220c3b51cf542db5b"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "contas_cobranca": [
+      {
+        "conta": {
+          "matricula": 100013,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "data_revisao": null,
+        "indicador_cobranca_multa": 2,
+        "motivo_revisao": null,
+        "situacao": "NORMAL",
+        "valor_total": "113.73",
+        "vencimento": "10/06/2026"
+      },
+      {
+        "conta": {
+          "matricula": 100021,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "data_revisao": null,
+        "indicador_cobranca_multa": 2,
+        "motivo_revisao": null,
+        "situacao": "NORMAL",
+        "valor_total": "168.09",
+        "vencimento": "10/06/2026"
+      },
+      {
+        "conta": {
+          "matricula": 100030,
+          "ordem": 1,
+          "referencia": 202605
+        },
+        "data_revisao": null,
+        "indicador_cobranca_multa": 2,
+        "motivo_revisao": null,
+        "situacao": "NORMAL",
+        "valor_total": "252.60",
+        "vencimento": "10/06/2026"
+      }
+    ],
+    "creditos_a_realizar": [
+      {
+        "matricula": 100013,
+        "prestacoes": 1,
+        "realizadas": 1,
+        "referencia_ultima_prestacao": 202605,
+        "residual": "0.00",
+        "residual_concedido_mes": "0.00",
+        "situacao": "NORMAL",
+        "tipo": "CREDITO SINTETICO",
+        "valor": "30.00"
+      }
+    ],
+    "debitos_a_cobrar": [
+      {
+        "cobradas": 1,
+        "de_parcelamento": false,
+        "matricula": 100013,
+        "prestacoes": 3,
+        "referencia_ultima_prestacao": 202605,
+        "situacao": "NORMAL",
+        "tipo": "SERVICO SINTETICO",
+        "valor": "100.00"
+      }
+    ],
+    "funcionalidades": [
+      {
+        "descricao": "Faturar Grupo Faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 63,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "guias_pagamento": [
+      {
+        "dias_para_vencimento": 31,
+        "do_parcelamento": false,
+        "documento": "GUIA DE PAGAMENTO",
+        "emissao": "20/05/2026",
+        "ic_cobranca_multa": 2,
+        "matricula": 100013,
+        "prestacao": 1,
+        "prestacoes": 1,
+        "situacao": "NORMAL",
+        "tipo": "SERVICO SINTETICO",
+        "valor": "50.00"
+      }
+    ],
+    "imoveis_parcelamento": [
+      {
+        "matricula": 100013,
+        "parcelamentos": null,
+        "reparcelamentos": null,
+        "reparcelamentos_consecutivos": null
+      },
+      {
+        "matricula": 100021,
+        "parcelamentos": null,
+        "reparcelamentos": null,
+        "reparcelamentos_consecutivos": null
+      },
+      {
+        "matricula": 100030,
+        "parcelamentos": null,
+        "reparcelamentos": null,
+        "reparcelamentos_consecutivos": null
+      }
+    ],
+    "itens_parcelamento": [],
+    "parcelamentos": [],
+    "passos": [
+      {
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+        "sha256": "396a950fe66d8d09164044258edc0d6e779a9bf52ea287d2866b9476030914b5",
+        "tipo": "aplicar"
+      },
+      {
+        "debitos": {
+          "100013": {
+            "contas": [
+              {
+                "acrescimos": "4.55",
+                "referencia": "05/2026",
+                "situacao": "NOR",
+                "valor_agua": "110.40",
+                "valor_conta": "113.73",
+                "valor_creditos": "30.00",
+                "valor_debitos": "33.33",
+                "valor_esgoto": "0.00",
+                "valor_impostos": "0.00",
+                "vencimento": "10/06/2026"
+              }
+            ],
+            "contas_inconformes": [],
+            "creditos_a_realizar": [],
+            "debitos_a_cobrar": [
+              [
+                "SERVICO SINTETICO",
+                "05/2026",
+                "05/2026",
+                "2",
+                "66,67"
+              ],
+              [
+                "Total",
+                "66,67"
+              ]
+            ],
+            "guias": [
+              [
+                "SERVICO SINTETICO",
+                "20/05/2026",
+                "20/06/2026",
+                "50,00"
+              ],
+              [
+                "Total",
+                "50,00"
+              ]
+            ],
+            "http": 200,
+            "totais": {
+              "debitos": "230.40",
+              "debitos_atualizado": "234.95",
+              "desconto_a_vista": null,
+              "pagamento_a_vista": null
+            },
+            "total_contas": {
+              "acrescimos": "4.55",
+              "documentos": "1 doc(s)",
+              "valor_contas": "113.73"
+            },
+            "valor_total_debitos": "230.40"
+          }
+        },
+        "tipo": "consultar_debitos"
+      },
+      {
+        "chaves": [],
+        "http": 500,
+        "mensagem": null,
+        "passos_assistente": [
+          {
+            "http": 200,
+            "passo": 1,
+            "resolucoes": [
+              "7001",
+              "7002"
+            ],
+            "situacao_agua": "LIGADO",
+            "situacao_esgoto": "POTENCIAL",
+            "valores": {
+              "numeroPagina": "1",
+              "valorDebitoACobrarParcelamentoCurtoPrazo": "0,00",
+              "valorDebitoACobrarParcelamentoLongoPrazo": "0,00",
+              "valorDebitoACobrarServicoCurtoPrazo": "66,67",
+              "valorDebitoACobrarServicoLongoPrazo": "0,00"
+            }
+          },
+          {
+            "contas": [
+              "05/2026 10/06/2026 113,73 4,55"
+            ],
+            "http": 200,
+            "passo": 2,
+            "valores": {
+              "numeroPagina": "2"
+            }
+          },
+          {
+            "http": 200,
+            "opcoes": [
+              "1 11,67 105,00 0,00",
+              "2 11,67 52,50 0,00",
+              "3 11,67 35,00 0,00",
+              "4 11,67 27,31 1,00",
+              "5 11,67 22,07 1,00",
+              "6 11,67 18,58 1,00",
+              "7 23,33 14,80 1,50",
+              "8 23,33 13,14 1,50",
+              "9 23,33 11,86 1,50",
+              "10 23,33 10,83 1,50",
+              "11 23,33 10,00 1,50",
+              "12 23,33 9,30 1,50"
+            ],
+            "passo": 3,
+            "valores": {
+              "numeroPagina": "3",
+              "parcelamentoPerfilId": "7001",
+              "percentualDescontoAntiguidadeDebito": "0.00",
+              "percentualDescontoInatividadeLigacaoAgua": "0.00",
+              "valorEntradaInformado": "23,33",
+              "valorEntradaInformadoAntes": "23,33",
+              "valorTotalDescontos": "0,00"
+            }
+          },
+          {
+            "http": 200,
+            "passo": 4,
+            "valores": {
+              "numeroPagina": "4",
+              "valorNegociado": "116,67",
+              "valorTotalDescontos": "0,00"
+            }
+          }
+        ],
+        "resultado": "recusado",
+        "tipo": "efetuar_parcelamento"
+      },
+      {
+        "estado": {
+          "comando": {
+            "realizado": true
+          },
+          "consumos": [
+            {
+              "consumo": 27,
+              "ligacao": "AGUA",
+              "matricula": 100013,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 47,
+              "ligacao": "AGUA",
+              "matricula": 100021,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 58,
+              "ligacao": "AGUA",
+              "matricula": 100030,
+              "referencia": 202605,
+              "tipo": "REAL"
+            }
+          ],
+          "contas": [
+            {
+              "autor": null,
+              "consumo_agua": 27,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100013,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 27,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 10,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 10,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "41.50"
+                    },
+                    {
+                      "consumo_agua": 7,
+                      "fim": 30,
+                      "inicio": 21,
+                      "tarifa": "5.20",
+                      "valor_agua": "36.40"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "32.50",
+                  "valor_agua": "110.40",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "110.40",
+              "valor_creditos": "30.00",
+              "valor_debitos": "33.33",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "113.73",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 47,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100021,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 48,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 30,
+                  "economias": 3,
+                  "faixas": [
+                    {
+                      "consumo_agua": 6,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "23.53"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "97.50",
+                  "valor_agua": "168.09",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "168.09",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "168.09",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 58,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100030,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 36,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 20,
+                  "economias": 2,
+                  "faixas": [
+                    {
+                      "consumo_agua": 8,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "31.83"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "65.00",
+                  "valor_agua": "128.66",
+                  "valor_esgoto": "0.00"
+                },
+                {
+                  "categoria": "COMERCIAL",
+                  "consumo_agua": 23,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 15,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 8,
+                      "fim": 30,
+                      "inicio": 16,
+                      "tarifa": "6.85",
+                      "valor_agua": "52.54"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "71.40",
+                  "valor_agua": "123.94",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "252.60",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "252.60",
+              "vencimento": "10/06/2026"
+            }
+          ],
+          "contas_cobranca": [
+            {
+              "conta": {
+                "matricula": 100013,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_revisao": null,
+              "indicador_cobranca_multa": 2,
+              "motivo_revisao": null,
+              "situacao": "NORMAL",
+              "valor_total": "113.73",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "conta": {
+                "matricula": 100021,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_revisao": null,
+              "indicador_cobranca_multa": 2,
+              "motivo_revisao": null,
+              "situacao": "NORMAL",
+              "valor_total": "168.09",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "conta": {
+                "matricula": 100030,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_revisao": null,
+              "indicador_cobranca_multa": 2,
+              "motivo_revisao": null,
+              "situacao": "NORMAL",
+              "valor_total": "252.60",
+              "vencimento": "10/06/2026"
+            }
+          ],
+          "contas_iniciadas": 3,
+          "creditos_a_realizar": [
+            {
+              "matricula": 100013,
+              "prestacoes": 1,
+              "realizadas": 1,
+              "referencia_ultima_prestacao": 202605,
+              "residual": "0.00",
+              "residual_concedido_mes": "0.00",
+              "situacao": "NORMAL",
+              "tipo": "CREDITO SINTETICO",
+              "valor": "30.00"
+            }
+          ],
+          "creditos_realizados": [
+            {
+              "matricula": 100013,
+              "origem": "VALORES COBRADOS INDEVIDAMENTE",
+              "prestacao": 1,
+              "prestacoes": 1,
+              "referencia_conta": 202605,
+              "tipo": "CREDITO SINTETICO",
+              "valor": "30.00"
+            }
+          ],
+          "debitos_a_cobrar": [
+            {
+              "cobradas": 1,
+              "de_parcelamento": false,
+              "matricula": 100013,
+              "prestacoes": 3,
+              "referencia_ultima_prestacao": 202605,
+              "situacao": "NORMAL",
+              "tipo": "SERVICO SINTETICO",
+              "valor": "100.00"
+            }
+          ],
+          "debitos_acrescimos": [],
+          "debitos_cobrados": [
+            {
+              "cobranca": 202605,
+              "financiamento": "SERVICO NORMAL",
+              "matricula": 100013,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "economias": 1,
+                  "valor": "33.33"
+                }
+              ],
+              "prestacao": 1,
+              "prestacoes": 3,
+              "referencia_conta": 202605,
+              "referencia_debito": 202605,
+              "tipo": "SERVICO SINTETICO",
+              "valor": "33.33"
+            }
+          ],
+          "funcionalidades": [
+            {
+              "descricao": "Faturar Grupo Faturamento",
+              "erro_chaves": [],
+              "erro_registrado": false,
+              "funcionalidade": 63,
+              "inicio_registrado": true,
+              "processo": 1,
+              "sequencia": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true
+            }
+          ],
+          "grupo_faturamento": {
+            "referencia_atual": 202606
+          },
+          "guias_pagamento": [
+            {
+              "dias_para_vencimento": 31,
+              "do_parcelamento": false,
+              "documento": "GUIA DE PAGAMENTO",
+              "emissao": "20/05/2026",
+              "ic_cobranca_multa": 2,
+              "matricula": 100013,
+              "prestacao": 1,
+              "prestacoes": 1,
+              "situacao": "NORMAL",
+              "tipo": "SERVICO SINTETICO",
+              "valor": "50.00"
+            }
+          ],
+          "imoveis_parcelamento": [
+            {
+              "matricula": 100013,
+              "parcelamentos": null,
+              "reparcelamentos": null,
+              "reparcelamentos_consecutivos": null
+            },
+            {
+              "matricula": 100021,
+              "parcelamentos": null,
+              "reparcelamentos": null,
+              "reparcelamentos_consecutivos": null
+            },
+            {
+              "matricula": 100030,
+              "parcelamentos": null,
+              "reparcelamentos": null,
+              "reparcelamentos_consecutivos": null
+            }
+          ],
+          "itens_parcelamento": [],
+          "parcelamentos": [],
+          "processos": [
+            {
+              "grupo": 1,
+              "inicio_registrado": true,
+              "ordem": 1,
+              "processo": "FATURAR GRUPO FATURAMENTO",
+              "situacao": "CONCLUIDO",
+              "solicitante": "fase2.oper",
+              "termino_registrado": true
+            }
+          ],
+          "totais": {
+            "grupo": {
+              "contas": 3,
+              "valor_total": "534.42"
+            },
+            "por_rota": [
+              {
+                "contas": 3,
+                "rota": 1,
+                "valor_agua": "531.09",
+                "valor_esgoto": "0.00",
+                "valor_total": "534.42"
+              }
+            ]
+          },
+          "unidades": [
+            {
+              "funcionalidade": 63,
+              "processo": 1,
+              "rota": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true,
+              "tipo_unidade": 1
+            }
+          ]
+        },
+        "tipo": "observar"
+      },
+      {
+        "debitos": {
+          "100013": {
+            "contas": [
+              {
+                "acrescimos": "4.55",
+                "referencia": "05/2026",
+                "situacao": "NOR",
+                "valor_agua": "110.40",
+                "valor_conta": "113.73",
+                "valor_creditos": "30.00",
+                "valor_debitos": "33.33",
+                "valor_esgoto": "0.00",
+                "valor_impostos": "0.00",
+                "vencimento": "10/06/2026"
+              }
+            ],
+            "contas_inconformes": [],
+            "creditos_a_realizar": [],
+            "debitos_a_cobrar": [
+              [
+                "SERVICO SINTETICO",
+                "05/2026",
+                "05/2026",
+                "2",
+                "66,67"
+              ],
+              [
+                "Total",
+                "66,67"
+              ]
+            ],
+            "guias": [
+              [
+                "SERVICO SINTETICO",
+                "20/05/2026",
+                "20/06/2026",
+                "50,00"
+              ],
+              [
+                "Total",
+                "50,00"
+              ]
+            ],
+            "http": 200,
+            "totais": {
+              "debitos": "230.40",
+              "debitos_atualizado": "234.95",
+              "desconto_a_vista": null,
+              "pagamento_a_vista": null
+            },
+            "total_contas": {
+              "acrescimos": "4.55",
+              "documentos": "1 doc(s)",
+              "valor_contas": "113.73"
+            },
+            "valor_total_debitos": "230.40"
+          }
+        },
+        "tipo": "consultar_debitos"
+      }
+    ]
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "detalhes": [
+        "lancamentos",
+        "cobranca",
+        "parcelamento"
+      ],
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+          "tipo": "aplicar"
+        },
+        {
+          "acrescimos": true,
+          "imoveis": [
+            100013
+          ],
+          "tipo": "consultar_debitos"
+        },
+        {
+          "contas": {
+            "202605": 2
+          },
+          "imovel": 100013,
+          "prestacoes": 3,
+          "rd": 7001,
+          "tipo": "efetuar_parcelamento"
+        },
+        {
+          "tipo": "observar"
+        },
+        {
+          "acrescimos": true,
+          "imoveis": [
+            100013
+          ],
+          "tipo": "consultar_debitos"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Efetuar Parcelamento de Débitos pela tela (exibirEfetuarParcelamentoDebitosAction → EfetuarParcelamentoDebitosWizardAction, assistente em quatro passos: o imóvel, a RD e as perguntas; os débitos; as opções de prestações — Fachada.obterOpcoesDeParcelamento —; a confirmação; Concluir → Fachada.concluirParcelamentoDebitos), no EAR em modo Batch, sobre a conta de 05/2026 que o faturamento em grupo gera no início da execução (com a referência de faturamento avançada a 06/2026 pelo passo da massa — a conta da referência corrente não entra no parcelamento), o débito a cobrar de serviço restante, a guia de pagamento da massa e os acréscimos por impontualidade (índices do lote 7). A posição antes e depois pela tela Consultar Débitos; o parcelamento (cabeçalho, itens, guia de entrada, contadores do imóvel) e os débitos e créditos gerados lidos do banco.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "acrescimos": "os índices de acréscimo são SINTÉTICOS (a base não tem nenhum) e desenhados para que o acréscimo de uma conta não paga — calculado com a data de HOJE — não dependa do dia: multa mensal de 2,00%, juros diários de 0,0333% com teto de 1,00% (atingido 31 dias depois do vencimento) e atualização pela razão entre os fatores de 06/2026 e 05/2026 (1,0100); a pré-condição de relógio garante o teto",
+    "boleto_bb": "a emissão do boleto da entrada pela API do Banco do Brasil (parm_icgeracaoboletobb, ligado na base) é integração EXTERNA, fora da fronteira: desligada por delta de configuração nas variações, exceto V6, que mostra a base como está (falha antes de qualquer chamada de rede)",
+    "data_relativa": "a data do parcelamento, a emissão e o vencimento da guia de entrada e o vencimento da conta tomada como entrada saem relativos à execução ('data da execução', '+ N dias')",
+    "lancamentos": "o débito de serviço (3 × R$ 33,33) e o crédito (R$ 30,00) de IMV-01 são a massa SINTÉTICA do lote 5b; a conta de 05/2026 cobra uma prestação e realiza o crédito — restam R$ 66,67 a cobrar",
+    "massa": "a conta de 05/2026 é a que o faturamento em grupo gera no início da execução (massa do lote 5); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria (a conta da referência corrente não entra no parcelamento)",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "parcelamento": "RD, perfil, faixas de prestação (3× sem juros, até 6× a 1,00% e até 12× a 1,50%, entrada mínima de 10% ou 20%), grupos, tipos de débito e de crédito do parcelamento são SINTÉTICOS com os ids das constantes (a base não tem nenhum); a guia de serviço de R$ 50,00 e o débito de 24 prestações são massa SINTÉTICA"
+  },
+  "titulo": "Efetuar parcelamento",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V5"
+}

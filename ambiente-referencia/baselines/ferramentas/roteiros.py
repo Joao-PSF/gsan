@@ -5,6 +5,7 @@ já extraído do HTML (dinheiro como texto decimal exato). Não escreve no banco
 estado só muda pelo que a operação do GSAN fizer.
 """
 import base64
+import datetime
 import hashlib
 import io
 import json
@@ -423,6 +424,15 @@ def _data_relativa(coluna):
             f" else to_char({coluna}, 'DD/MM/YYYY') end")
 
 
+def _data_do_dia(coluna):
+    """Como `_data_relativa`, e também as datas POSTERIORES à execução, que só o relógio do legado produz (o vencimento
+    "hoje + 3 dias" da conta tomada como entrada do parcelamento, lote 7b): 'data da execução + N dias'. As da massa são
+    todas anteriores e saem como estão."""
+    return (f"case when {coluna} is null then null when {coluna}::date = current_date then 'data da execução'"
+            f" when {coluna}::date > current_date then 'data da execução + ' || ({coluna}::date - current_date)::text || ' dias'"
+            f" else to_char({coluna}, 'DD/MM/YYYY') end")
+
+
 def _ciclo_conta(ctx):
     """Ciclo de vida das contas (CEN-FAT-007, CEN-FAT-008): cada conta pela identidade documental, com situação atual e
     anterior, valores, motivos, retificações e referência contábil; as contas gerais que ficaram SEM documento (exclusão
@@ -772,7 +782,7 @@ def _cobranca(ctx):
                                    "select " + IDENT_JSON.format(a='x') + " as conta, s.dcst_dsdebitocreditosituacao as situacao,"
                                    " (c.cnta_vlagua + c.cnta_vlesgoto + c.cnta_vldebitos - c.cnta_vlcreditos"
                                    " - coalesce(c.cnta_vlimpostos, 0))::text as valor_total,"
-                                   " to_char(c.cnta_dtvencimentoconta, 'DD/MM/YYYY') as vencimento,"
+                                   f" {_data_do_dia('c.cnta_dtvencimentoconta')} as vencimento,"
                                    " m.cmrv_dsmotivorevisaoconta as motivo_revisao,"
                                    f" {_data_relativa('c.cnta_dtrevisao')} as data_revisao,"
                                    " c.cnta_iccobrancamulta as indicador_cobranca_multa"
@@ -792,9 +802,71 @@ def _cobranca(ctx):
     }
 
 
+def _parcelamento(ctx):
+    """Parcelamento de débitos (lote 7b): cada parcelamento com a memória financeira que o cabeçalho guarda (valores de
+    contas, serviços, acréscimos, descontos, entrada, juros, prestações), situação, tipo, RD, perfil e indicadores; os
+    itens, cada um pelo documento original (conta pela identidade documental, débito, guia ou crédito pelo tipo e valor);
+    as guias de pagamento (a da entrada) com o vencimento em dias da emissão; e os contadores de parcelamento do imóvel.
+    Num bloco à parte: os anteriores não mudam."""
+    v = ("conta vlconta vlservicosacobrar vlatualizacaomonetaria vljurosmora vlmulta vldebitoatualizado vldescontoacrescimos"
+         " vlentrada vljurosparcelamento vlprestacao vldescontoantiguidade vldescontoinatividade pcdescontoacrescimos"
+         " pcdescontoantiguidade pcdescontoinatividade vlguiapapagamento vlcreditoarealizar vlparcelamentosacobrar txjuros"
+         " vldescontosancao vldescontotarsoc vldescontodebtotal vldescontofaixa").split()[1:]
+    valores = ', '.join(f'p.parc_{c}::text as {c}' for c in v)
+    return {
+        'parcelamentos': _linhas(ctx, "select p.imov_id as matricula, s.pcst_dsparcelamentosituacao as situacao,"
+                                      " t.pctp_dsparcelamentotipo as tipo, r.rdir_nnresolucaodiretoria as rd, p.pcpf_id as perfil,"
+                                      f" {_data_relativa('p.parc_tmparcelamento')} as data_parcelamento,"
+                                      " p.parc_amreferenciafaturamento as referencia_faturamento, p.parc_nnprestacoes as prestacoes,"
+                                      f" {valores}, p.parc_icdebitoacobrar as ic_debito_a_cobrar,"
+                                      " p.parc_icacrescimosimpontualdade as ic_acrescimos, p.parc_iccontasrevisao as ic_contas_revisao,"
+                                      " p.parc_icguiaspagamento as ic_guias, p.parc_iccreditoarealizar as ic_credito,"
+                                      " p.parc_icrestabelecimento as ic_restabelecimento, p.parc_icconfirmacao as ic_confirmacao,"
+                                      " f.cbfm_dscobrancaforma as forma_cobranca, u.usur_nmlogin as usuario,"
+                                      " (p.usur_iddesfaz is not null) as desfeito_por_usuario, (p.pmdz_id is not null) as com_motivo_desfazer"
+                                      " from cobranca.parcelamento p"
+                                      " left join cobranca.parcelamento_situacao s using (pcst_id)"
+                                      " left join cobranca.parcelamento_tipo t using (pctp_id)"
+                                      " left join cobranca.resolucao_diretoria r using (rdir_id)"
+                                      " left join cobranca.cobranca_forma f using (cbfm_id)"
+                                      " left join seguranca.usuario u on u.usur_id = p.usur_id"
+                                      " order by p.imov_id, p.parc_id"),
+        'itens_parcelamento': _linhas(ctx, IDENT_H +
+                                      "select p.imov_id as parcelamento_imovel, d.dotp_dsdocumentotipo as documento,"
+                                      " case when i.cnta_id is null then null else (select " + IDENTH_JSON.format(a='x') +
+                                      "  from identh x where x.cnta_id = i.cnta_id) end as conta,"
+                                      " (select json_build_object('tipo', t.dbtp_dsdebitotipo, 'valor', a.dbac_vldebito::text)"
+                                      "  from faturamento.debito_a_cobrar a join faturamento.debito_tipo t using (dbtp_id)"
+                                      "  where a.dbac_id = i.dbac_id) as debito_a_cobrar,"
+                                      " (select json_build_object('tipo', t.dbtp_dsdebitotipo, 'valor', g.gpag_vldebito::text)"
+                                      "  from faturamento.guia_pagamento g join faturamento.debito_tipo t using (dbtp_id)"
+                                      "  where g.gpag_id = i.gpag_id) as guia,"
+                                      " (select json_build_object('tipo', t.crti_dscreditotipo, 'valor', c.crar_vlcredito::text)"
+                                      "  from faturamento.credito_a_realizar c join faturamento.credito_tipo t using (crti_id)"
+                                      "  where c.crar_id = i.crar_id) as credito_a_realizar"
+                                      " from cobranca.parcelamento_item i join cobranca.parcelamento p using (parc_id)"
+                                      " left join cobranca.documento_tipo d using (dotp_id)"
+                                      " order by p.parc_id, i.dotp_id, i.cnta_id, i.dbac_id, i.gpag_id, i.crar_id"),
+        'guias_pagamento': _linhas(ctx, "select g.imov_id as matricula, t.dbtp_dsdebitotipo as tipo, d.dotp_dsdocumentotipo as documento,"
+                                        " g.gpag_vldebito::text as valor, s.dcst_dsdebitocreditosituacao as situacao,"
+                                        f" {_data_relativa('g.gpag_dtemissao')} as emissao,"
+                                        " (g.gpag_dtvencimento - g.gpag_dtemissao) as dias_para_vencimento,"
+                                        " g.gpag_nnprestacaodebito as prestacao, g.gpag_nnprestacaototal as prestacoes,"
+                                        " (g.parc_id is not null) as do_parcelamento, g.gpag_iccobrancamulta as ic_cobranca_multa"
+                                        " from faturamento.guia_pagamento g join faturamento.debito_tipo t using (dbtp_id)"
+                                        " left join cobranca.documento_tipo d using (dotp_id)"
+                                        " left join faturamento.debito_credito_situacao s on s.dcst_id = g.dcst_idatual"
+                                        " order by g.imov_id, g.gpag_id"),
+        'imoveis_parcelamento': _linhas(ctx, "select imov_id as matricula, imov_nnparcelamento as parcelamentos,"
+                                             " imov_nnreparcelamento as reparcelamentos, imov_nnreparcmtconsec as reparcelamentos_consecutivos"
+                                             " from cadastro.imovel where imov_id in (100013, 100021, 100030) order by imov_id"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
             'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao,
-            'devolucao': _devolucao, 'encerramento': _encerramento, 'cobranca': _cobranca}
+            'devolucao': _devolucao, 'encerramento': _encerramento, 'cobranca': _cobranca,
+            'parcelamento': _parcelamento}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -1222,7 +1294,7 @@ def _secoes_debito(html, secoes=SECOES_DEBITO):
     return secoes
 
 
-def _contas_da_posicao(s, acrescimos):
+def _contas_da_posicao(s, acrescimos, hoje=None):
     """As linhas do quadro Contas: mês/ano, vencimento, água, esgoto, débitos, créditos, impostos, valor da conta,
     acréscimos, situação — na posição do cliente, com a matrícula antes. Os acréscimos (e a coluna que os soma na linha
     de total) só entram quando a variação os pede."""
@@ -1231,7 +1303,7 @@ def _contas_da_posicao(s, acrescimos):
         cel = [x for x in c if x != '']
         k = next((n for n, x in enumerate(cel) if re.fullmatch(r'\d{2}/\d{4}', x)), None)
         if k is not None and len(cel) - k == 10:
-            linha = {'referencia': cel[k], 'vencimento': cel[k + 1], 'valor_agua': moeda(cel[k + 2]),
+            linha = {'referencia': cel[k], 'vencimento': _datas_do_dia([cel[k + 1]], hoje)[0], 'valor_agua': moeda(cel[k + 2]),
                      'valor_esgoto': moeda(cel[k + 3]), 'valor_debitos': moeda(cel[k + 4]), 'valor_creditos': moeda(cel[k + 5]),
                      'valor_impostos': moeda(cel[k + 6]), 'valor_conta': moeda(cel[k + 7]), 'situacao': cel[k + 9]}
             if k:
@@ -1250,8 +1322,22 @@ def _contas_da_posicao(s, acrescimos):
     return contas, total_contas
 
 
-def _posicao(html, s, acrescimos):
-    contas, total_contas = _contas_da_posicao(s, acrescimos)
+def _datas_do_dia(celulas, hoje):
+    """As datas que o relógio do legado gera na execução — a do dia e as posteriores (emissão e vencimento da guia de
+    entrada do parcelamento, lote 7b) — saem relativas a ela; as anteriores (as da massa) saem como estão."""
+    saida = []
+    for x in celulas:
+        m = re.fullmatch(r'(\d{2})/(\d{2})/(\d{4})', x)
+        if m and hoje:
+            n = (datetime.date(int(m[3]), int(m[2]), int(m[1])) - hoje).days
+            if n >= 0:
+                x = 'data da execução' + (f' + {n} dias' if n else '')
+        saida.append(x)
+    return saida
+
+
+def _posicao(html, s, acrescimos, hoje=None):
+    contas, total_contas = _contas_da_posicao(s, acrescimos, hoje)
     totais = s.get('totais', [[]])
     r = {
         'contas': contas, 'total_contas': total_contas,
@@ -1260,7 +1346,7 @@ def _posicao(html, s, acrescimos):
                                for c in s.get('contas_inconformes', []) if len(c) == 6],
         'debitos_a_cobrar': [[x for x in c if x] for c in s.get('debitos_a_cobrar', [])],
         'creditos_a_realizar': [[x for x in c if x] for c in s.get('creditos_a_realizar', [])],
-        'guias': [[x for x in c if x] for c in s.get('guias', [])],
+        'guias': [_datas_do_dia([x for x in c if x], hoje) for c in s.get('guias', [])],
         'valor_total_debitos': moeda(totais[0][0]) if totais and totais[0] else None,
     }
     if acrescimos:  # o total atualizado (com os acréscimos) e o pagamento à vista, como a tela os mostra
@@ -1280,9 +1366,10 @@ def _consultar_debitos(ctx, passo):
     com a relação (USUÁRIO, RESPONSÁVEL…) da variação."""
     r = {}
     acrescimos = bool(passo.get('acrescimos'))
+    hoje = datetime.date.fromisoformat(ctx.sql("select current_date::text").strip())  # o dia do relógio do legado
     for imovel in passo.get('imoveis', []):
         html = ctx.atual.post('consultarDebitoAction.do', {'codigoImovel': str(int(imovel))})
-        r[str(int(imovel))] = dict(http=ctx.atual.ultimo_estado, **_posicao(html, _secoes_debito(html), acrescimos))
+        r[str(int(imovel))] = dict(http=ctx.atual.ultimo_estado, **_posicao(html, _secoes_debito(html), acrescimos, hoje))
     saida = {'debitos': r}
     if passo.get('clientes'):
         rc = {}
@@ -1294,7 +1381,7 @@ def _consultar_debitos(ctx, passo):
                                                               'tipoRelacao': str(int(relacao)) if relacao else '-1'})
             chave = f"{int(cli['codigo'])}" + (f"/{int(relacao)}" if relacao else '')
             rc[chave] = dict(http=ctx.atual.ultimo_estado,
-                             **_posicao(html, _secoes_debito(html, SECOES_DEBITO_CLIENTE), acrescimos))
+                             **_posicao(html, _secoes_debito(html, SECOES_DEBITO_CLIENTE), acrescimos, hoje))
         saida['debitos_cliente'] = rc
     return saida
 
@@ -1327,6 +1414,117 @@ def _colocar_revisao(ctx, passo):
     r.update(http=ctx.atual.ultimo_estado, resultado='aceito' if aceito else 'recusado', mensagem=_sucesso(html))
     if not aceito:
         r.update(recusa)
+    return r
+
+
+# --- Cobrança: parcelamento de débitos (lote 7b) -----------------------------------------------------------------------
+# O assistente Efetuar Parcelamento de Débitos (EfetuarParcelamentoDebitosWizardAction) tem quatro passos; cada botão
+# Avançar/Concluir só aponta o formulário da página para a URL do passo seguinte e o envia (util.js botaoAvancar). O roteiro
+# faz o mesmo: lê o formulário e a URL do botão de cada página, aplica as escolhas da variação e envia.
+
+PARC_FORM = 'EfetuarParcelamentoDebitosActionForm'
+
+
+def _url_wizard(html, destino=None, concluir=False):
+    """A URL que o botão Avançar (para `destino`) ou Concluir da página enviaria."""
+    for m in re.finditer(r"botaoAvancar(?:TelaEspera)?\('/gsan/([^']+)'\)", html):
+        u = m.group(1).replace('&amp;', '&')
+        if concluir and 'concluir=true' in u:
+            return u
+        if destino is not None and re.search(r'[?&]destino=' + str(destino) + r'&', u):
+            return u
+    return None
+
+
+def _valores_wizard(dados):
+    """Os valores que a página mostra no formulário do assistente (memória da negociação), como a tela os escreve."""
+    return {k: v for k, v in sorted(dados.items())
+            if v not in ('', None) and re.match(r'(valor|desconto|percentual|taxa|numero|indicadorQuantidade|parcela)', k)}
+
+
+def _linhas_com(html, marca):
+    """O texto das linhas de tabela (tr) que contêm `marca` (um rádio da página), sem a marcação."""
+    return [texto_visivel(tr) for tr in re.findall(r'(?is)<tr\b[^>]*>((?:(?!<tr\b).)*?' + marca + r'.*?)</tr>', html)]
+
+
+def _passo_wizard(ctx, html, estado):
+    r = {'http': estado}
+    recusa = _recusa(html, estado)
+    if estado >= 400 or recusa['chaves'] or recusa['mensagem']:
+        r.update(recusa)
+    return r
+
+
+def _efetuar_parcelamento(ctx, passo):
+    """Efetuar Parcelamento de Débitos pela tela: 1 — o imóvel (matrícula), a data do parcelamento (a do dia, que a tela
+    propõe, se a variação não der outra), o intervalo de referências, a resolução de diretoria e as perguntas
+    "considerar contas em revisão, guias, acréscimos, débitos a cobrar, créditos" (as respostas da variação; 1 = sim,
+    2 = não); 2 — os débitos que a tela lista (como ela os marca, ou EP/NB por referência, como a variação pede); 3 — a
+    opção de prestações da variação (com a entrada que a tela propõe, ou a informada pela variação e o Calcular);
+    4 — a confirmação; Concluir. De cada passo saem os valores que a tela mostra e a recusa, se houver; o efeito é lido
+    do banco (bloco `parcelamento`)."""
+    imovel = str(int(passo['imovel']))
+    r = {'passos_assistente': []}
+    ctx.atual.get('exibirEfetuarParcelamentoDebitosAction.do?menu=sim')
+    html = ctx.atual.post('efetuarParcelamentoDebitosWizardAction.do?action=exibirEfetuarParcelamentoDebitosProcesso1Action',
+                          {'matriculaImovel': imovel})
+    dados = _formulario(html, PARC_FORM)
+    p1 = _passo_wizard(ctx, html, ctx.atual.ultimo_estado)
+    p1.update(passo=1, valores=_valores_wizard(dados),
+              resolucoes=re.findall(r'(?is)<option\b[^>]*value="(\d+)"[^>]*>\s*RD', html),
+              situacao_agua=dados.get('situacaoAgua'), situacao_esgoto=dados.get('situacaoEsgoto'))
+    r['passos_assistente'].append(p1)
+    dados.update(matriculaImovel=imovel, resolucaoDiretoria=str(int(passo['rd'])),
+                 inicioIntervaloParcelamento=passo.get('inicio', '01/2000'), fimIntervaloParcelamento=passo.get('fim', '05/2026'))
+    if passo.get('data'):  # sem ela, a data que a tela propõe (a do dia)
+        dados['dataParcelamento'] = passo['data']
+    for k, v in {'indicadorContasRevisao': '2', 'indicadorGuiasPagamento': '1', 'indicadorAcrescimosImpotualidade': '1',
+                 'indicadorDebitosACobrar': '1', 'indicadorCreditoARealizar': '1', 'indicadorDividaAtiva': '2'}.items():
+        dados[k] = str(passo.get(k, v))
+    for numero in (2, 3, 4):
+        url = _url_wizard(html, destino=numero)
+        if not url:
+            r['resultado'] = f'sem_avancar_no_passo_{numero - 1}'
+            return r
+        html = ctx.atual.post(url, dados)
+        estado = ctx.atual.ultimo_estado
+        pn = _passo_wizard(ctx, html, estado)
+        if 'chaves' in pn or estado >= 400:
+            pn['passo'] = numero
+            r['passos_assistente'].append(pn)
+            r['resultado'] = f'recusado_ao_avancar_para_{numero}'
+            return r
+        dados = _formulario(html, PARC_FORM)
+        pn.update(passo=numero, valores=_valores_wizard(dados))
+        if numero == 2:
+            pn['contas'] = _linhas_com(html, r'name="indicadorContasDebito\d+"')
+            for k, v in (passo.get('contas') or {}).items():  # referência → 1 (EP: a conta é a entrada) ou 2 (NB: pagamento comprovado)
+                ids = ctx.sql(f"select cnta_id from faturamento.conta where imov_id = {int(imovel)} and cnta_amreferenciaconta = {int(k)}").split()
+                for i in ids:
+                    dados[f'indicadorContasDebito{i}'] = str(v)
+        elif numero == 3:
+            pn['opcoes'] = _linhas_com(html, r'name="indicadorQuantidadeParcelas"')
+            if passo.get('entrada') is not None:  # a entrada informada só vale depois do Calcular (a tela recalcula as opções)
+                dados['valorEntradaInformado'] = passo['entrada'].replace('.', ',')
+                html = ctx.atual.post('efetuarParcelamentoDebitosWizardAction.do?action='
+                                      'exibirEfetuarParcelamentoDebitosProcesso3Action&calculaOpcaoParcelamento=1', dados)
+                calculo = _passo_wizard(ctx, html, ctx.atual.ultimo_estado)
+                dados = _formulario(html, PARC_FORM)
+                calculo.update(valores=_valores_wizard(dados), opcoes=_linhas_com(html, r'name="indicadorQuantidadeParcelas"'))
+                pn['calculo_entrada'] = calculo
+            dados['indicadorQuantidadeParcelas'] = str(int(passo['prestacoes']))
+        elif numero == 4:
+            dados['indicadorConfirmacaoParcelamento'] = '1'
+        r['passos_assistente'].append(pn)
+    url = _url_wizard(html, concluir=True)
+    if not url:
+        r['resultado'] = 'sem_concluir'
+        return r
+    html = ctx.atual.post(url, dados)
+    sucesso = _sucesso(html)
+    r.update(http=ctx.atual.ultimo_estado, mensagem=sucesso, resultado='efetuado' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
     return r
 
 
@@ -1517,12 +1715,13 @@ def faturar_grupo(ctx, entrada):
     iniciar_processo (processo mensal/eventual, ex.: a prescrição, a classificação de pagamentos) · movimento (envio do
     arquivo do arrecadador pela tela) · aguardar_movimento · consultar_debitos (a posição de dívida pela tela) ·
     recuperar_credito · manter_pagamento · inserir_guia_devolucao · inserir_devolucao (lote 6b) · consultar_pagamentos
-    (os pagamentos atuais e arquivados do imóvel pela tela, lote 6c).
+    (os pagamentos atuais e arquivados do imóvel pela tela, lote 6c) · colocar_revisao (lote 7) · efetuar_parcelamento
+    (o assistente Efetuar Parcelamento de Débitos, lote 7b).
     `detalhes` (opcional): blocos a mais no estado — `lancamentos` (débitos e créditos), `impostos`, `rateio`,
     `micromedicao` (medições e consumos detalhados), `ciclo_conta` (contas pela identidade documental, pagamentos, RA,
     consumos e auditoria), `conta_origem`, `arrecadacao` (movimentos, itens, pagamentos, avisos, devoluções, contrato),
-    `devolucao` (guias, devoluções, créditos a realizar) e `encerramento` (referências, resumo da arrecadação,
-    histórico)."""
+    `devolucao` (guias, devoluções, créditos a realizar), `encerramento` (referências, resumo da arrecadação,
+    histórico), `cobranca` (lote 7) e `parcelamento` (lote 7b: parcelamentos, itens, guias, contadores do imóvel)."""
     login = entrada['usuario']
     comando = str(int(entrada['comando']))
     ctx.nova_sessao()
@@ -1595,6 +1794,8 @@ def faturar_grupo(ctx, entrada):
             r.update(_consultar_pagamentos(ctx, passo))
         elif tipo == 'colocar_revisao':
             r.update(_colocar_revisao(ctx, passo))
+        elif tipo == 'efetuar_parcelamento':
+            r.update(_efetuar_parcelamento(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.

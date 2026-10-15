@@ -9,10 +9,10 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 41 | 41 | 221 | 191 | 191 |
+| **A** | 74 | 42 | 42 | 221 | 200 | 200 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 33 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 43.
+**P0 da classe A com baseline**: 34 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 44.
 
 ## Por domínio (classe A)
 
@@ -21,7 +21,7 @@
 | Arrecadação | 11 | 7 | 44 |
 | Batch, relatórios e integrações | 11 | 5 | 9 |
 | Cadastro e atendimento | 13 | 7 | 29 |
-| Cobrança | 7 | 1 | 5 |
+| Cobrança | 7 | 2 | 14 |
 | Faturamento | 11 | 9 | 43 |
 | Financeiro e operacional | 8 | 0 | 0 |
 | Micromedição | 5 | 4 | 28 |
@@ -51,6 +51,7 @@
 | CEN-CAD-004 | P0 | cadastro-faturamento | V1, V2, V3, V4, V5, V6, V7, V8, V9 | V1, V2, V3, V4, V5, V6, V7, V8, V9 | — | semântica do valor 4 e completude de imovel_situacao, forma de faturamento (leitura, média, mínimo) por situação especial, situação derivada do imóvel e tipos de solicitação habilitados |
 | CEN-CAD-005 | P1 | batch-consumo-origem | V1, V2 | V1, V2 | — | rota de entrega, análise |
 | CEN-COB-001 | P0 | batch-cobranca | V1, V1b, V1c, V2, V3 | V1, V1b, V1c, V2, V3 | — | ação de cobrança sobre a conta em revisão, situação especial de cobrança, conta parcelada, guia de pagamento não quitada, contas retificada, cancelada, prescrita e paga, desconto e valor do pagamento à vista |
+| CEN-COB-004 | P0 | batch-cobranca | V1, V1b, V1c, V1d, V2, V3, V4, V5, V6 | V1, V1b, V1c, V1d, V2, V3, V4, V5, V6 | — | pagamento da entrada e da prestação, desfazimento (manual e por entrada não paga) e reparcelamento, desconto por antiguidade, parcelamento à vista com desconto por inatividade, duas contas vencidas, termo de parcelamento e guia de entrada impressos |
 | CEN-FAT-001 | P0 | piloto | V1, V2, V3, V6, V7, V4, V5 | V1, V2, V3, V4, V5, V6, V7 | V4, V5 | a, b, c, e, f |
 | CEN-FAT-002 | P0 | piloto | V1, V2, V3, V1c | V1, V1c, V2, V3 | — | parcela por vigência, contexto congelado |
 | CEN-FAT-003 | P0 | cadastro-faturamento | V1, V1b, V2, V2b, V3 | V1, V1b, V2, V2b, V3 | V2, V3 | percentuais fotografados na conta, composição do volume de esgoto pelo consumo da ligação |

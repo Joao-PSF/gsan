@@ -1,0 +1,774 @@
+{
+  "dominio": "cobranca",
+  "lote": "batch-cobranca",
+  "modo": "Batch",
+  "fronteira": "Efetuar Parcelamento de Débitos pela tela (exibirEfetuarParcelamentoDebitosAction → EfetuarParcelamentoDebitosWizardAction, assistente em quatro passos: o imóvel, a RD e as perguntas; os débitos; as opções de prestações — Fachada.obterOpcoesDeParcelamento —; a confirmação; Concluir → Fachada.concluirParcelamentoDebitos), no EAR em modo Batch, sobre a conta de 05/2026 que o faturamento em grupo gera no início da execução (com a referência de faturamento avançada a 06/2026 pelo passo da massa — a conta da referência corrente não entra no parcelamento), o débito a cobrar de serviço restante, a guia de pagamento da massa e os acréscimos por impontualidade (índices do lote 7). A posição antes e depois pela tela Consultar Débitos; o parcelamento (cabeçalho, itens, guia de entrada, contadores do imóvel) e os débitos e créditos gerados lidos do banco.",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "relógio: as datas dos arquivos (pagamento até 20/06/2026, crédito e geração até 22/06/2026) não são posteriores à data do banco — a recepção recusa pagamento com data futura",
+      "sql": "select (current_date >= date '2026-06-22')::text",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "referências do sistema: faturamento 05/2026 (o passo de encerramento a avança) e arrecadação 06/2026",
+      "sql": "select parm_amreferenciafaturamento::text || '/' || parm_amreferenciaarrecadacao::text from cadastro.sistema_parametros",
+      "esperado": "202605/202606"
+    },
+    {
+      "descricao": "empresa FEBRABAN 0901 e layout 04; o contrato do arrecadador 901 espera o NSA 1",
+      "sql": "select p.parm_cdempresafebraban::text || '/' || p.parm_nnlayoutfebraban::text || '/' || c.arct_nnnsaretornocdbarras::text from cadastro.sistema_parametros p, arrecadacao.arrecadador_contrato c where c.arct_id = 901",
+      "esperado": "901/4/0"
+    },
+    {
+      "descricao": "relógio: a data do banco é posterior em mais de 31 dias ao vencimento das contas (10/06/2026) — os juros diários da massa atingem o teto (1,00%) e o acréscimo de uma conta não paga deixa de depender do dia",
+      "sql": "select (current_date >= date '2026-07-11')::text",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "faturamento.conta",
+    {
+      "tabela": "arrecadacao.arrecadador_movimento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.arrecadador_mov_item",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.pagamento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.aviso_bancario",
+      "modo": "conteudo"
+    },
+    "arrecadacao.devolucao",
+    {
+      "tabela": "arrecadacao.arrecadador_contrato",
+      "modo": "conteudo"
+    },
+    "faturamento.debito_a_cobrar",
+    "faturamento.credito_a_realizar",
+    "faturamento.debito_cobrado",
+    "faturamento.credito_realizado",
+    "cobranca.parcelamento",
+    "cobranca.parcelamento_item",
+    "faturamento.guia_pagamento"
+  ],
+  "normalizacoes": [],
+  "cenario": "CEN-COB-004",
+  "titulo": "Efetuar parcelamento",
+  "especificacao": "docs/modernizacao/testes/cenarios/cobranca.md — CEN-COB-004",
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "massa": "a conta de 05/2026 é a que o faturamento em grupo gera no início da execução (massa do lote 5); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria (a conta da referência corrente não entra no parcelamento)",
+    "acrescimos": "os índices de acréscimo são SINTÉTICOS (a base não tem nenhum) e desenhados para que o acréscimo de uma conta não paga — calculado com a data de HOJE — não dependa do dia: multa mensal de 2,00%, juros diários de 0,0333% com teto de 1,00% (atingido 31 dias depois do vencimento) e atualização pela razão entre os fatores de 06/2026 e 05/2026 (1,0100); a pré-condição de relógio garante o teto",
+    "lancamentos": "o débito de serviço (3 × R$ 33,33) e o crédito (R$ 30,00) de IMV-01 são a massa SINTÉTICA do lote 5b; a conta de 05/2026 cobra uma prestação e realiza o crédito — restam R$ 66,67 a cobrar",
+    "parcelamento": "RD, perfil, faixas de prestação (3× sem juros, até 6× a 1,00% e até 12× a 1,50%, entrada mínima de 10% ou 20%), grupos, tipos de débito e de crédito do parcelamento são SINTÉTICOS com os ids das constantes (a base não tem nenhum); a guia de serviço de R$ 50,00 e o débito de 24 prestações são massa SINTÉTICA",
+    "boleto_bb": "a emissão do boleto da entrada pela API do Banco do Brasil (parm_icgeracaoboletobb, ligado na base) é integração EXTERNA, fora da fronteira: desligada por delta de configuração nas variações, exceto V6, que mostra a base como está (falha antes de qualquer chamada de rede)",
+    "data_relativa": "a data do parcelamento, a emissão e o vencimento da guia de entrada e o vencimento da conta tomada como entrada saem relativos à execução ('data da execução', '+ N dias')"
+  },
+  "observaveis": {
+    "campos": [
+      "passos",
+      "funcionalidades",
+      "debitos_a_cobrar",
+      "creditos_a_realizar",
+      "contas_cobranca",
+      "parcelamentos",
+      "itens_parcelamento",
+      "guias_pagamento",
+      "imoveis_parcelamento"
+    ],
+    "fora_desta_fronteira": {
+      "pagamento da entrada e da prestação": "CEN-ARR-008 — sub-lote 7c",
+      "desfazimento (manual e por entrada não paga) e reparcelamento": "CEN-COB-005 — sub-lote 7c",
+      "desconto por antiguidade": "exige duas ou mais referências de antiguidade (os meses entre a conta e a referência de faturamento): a massa só fatura 05/2026; uma faixa \"a partir de 0 mês\" faz o passo 3 falhar (achado)",
+      "parcelamento à vista com desconto por inatividade": "exige ligação de água inativa — IMV-01 é LIGADO",
+      "duas contas vencidas": "a massa fatura uma referência (05/2026); a composição com várias contas segue a mesma regra do item CONTA",
+      "termo de parcelamento e guia de entrada impressos": "relatórios — fora desta fronteira"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); entrada INFORMADA de R$ 60,00 (com o Calcular da tela) e 3 prestações sem juros",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 3,
+            "entrada": "60.00"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V1b": {
+      "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); entrada informada de R$ 60,00 (Calcular) e 6 prestações a 1,00% ao mês",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 6,
+            "entrada": "60.00"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V1c": {
+      "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); a entrada que a tela PROPÕE (sem alterá-la) e a opção de 3 prestações sem juros",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 3
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V1d": {
+      "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); a entrada que a tela propõe e a opção de 6 prestações a 1,00% ao mês",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 6
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "A mesma dívida com a RD 7002 (perfil com desconto de 50% nos acréscimos), a entrada que a tela propõe e 3 prestações",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7002,
+            "prestacoes": 3
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "A dívida com o débito de serviço de 24 prestações (curto e longo prazo) a mais; RD 7001, a entrada que a tela propõe e 3 prestações",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-debito-servico-24x.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 3
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); a conta de 05/2026 marcada como ENTRADA (EP) e 3 prestações",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 3,
+            "contas": {
+              "202605": 1
+            }
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V5": {
+      "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); a conta de 05/2026 marcada NB (pagamento comprovado) e 3 prestações",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql",
+        "massas/deltas/cob-parcelamento-sem-boleto-bb.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 3,
+            "contas": {
+              "202605": 2
+            }
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    },
+    "V6": {
+      "descricao": "IMV-01 com a conta de 05/2026 vencida (com acréscimos), a guia de serviço de R$ 50,00 e o débito de serviço restante (R$ 66,67); RD 7001 (sem desconto); a entrada que a tela propõe e 3 prestações, com a configuração da base (emissão do boleto da entrada pela API do Banco do Brasil ligada)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fat-lancamentos-catalogos.sql",
+        "massas/deltas/fat-debito-servico-3x.sql",
+        "massas/deltas/fat-credito-30.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acrescimos-encerramento.sql",
+        "massas/deltas/cob-parcelamento-catalogos.sql",
+        "massas/deltas/cob-guia-servico.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          },
+          {
+            "tipo": "efetuar_parcelamento",
+            "imovel": 100013,
+            "rd": 7001,
+            "prestacoes": 3
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013
+            ]
+          }
+        ],
+        "detalhes": [
+          "lancamentos",
+          "cobranca",
+          "parcelamento"
+        ]
+      }
+    }
+  }
+}
