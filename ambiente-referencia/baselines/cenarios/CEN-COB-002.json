@@ -1,0 +1,750 @@
+{
+  "dominio": "cobranca",
+  "lote": "batch-cobranca",
+  "modo": "Batch",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "relógio: as datas dos arquivos (pagamento até 20/06/2026, crédito e geração até 22/06/2026) não são posteriores à data do banco — a recepção recusa pagamento com data futura",
+      "sql": "select (current_date >= date '2026-06-22')::text",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "referências do sistema: faturamento 05/2026 (o passo de encerramento a avança) e arrecadação 06/2026",
+      "sql": "select parm_amreferenciafaturamento::text || '/' || parm_amreferenciaarrecadacao::text from cadastro.sistema_parametros",
+      "esperado": "202605/202606"
+    },
+    {
+      "descricao": "empresa FEBRABAN 0901 e layout 04; o contrato do arrecadador 901 espera o NSA 1",
+      "sql": "select p.parm_cdempresafebraban::text || '/' || p.parm_nnlayoutfebraban::text || '/' || c.arct_nnnsaretornocdbarras::text from cadastro.sistema_parametros p, arrecadacao.arrecadador_contrato c where c.arct_id = 901",
+      "esperado": "901/4/0"
+    },
+    {
+      "descricao": "relógio: a data do banco é posterior em mais de 31 dias ao vencimento das contas (10/06/2026) — os juros diários da massa atingem o teto (1,00%) e o acréscimo de uma conta não paga deixa de depender do dia",
+      "sql": "select (current_date >= date '2026-07-11')::text",
+      "esperado": "true"
+    },
+    {
+      "descricao": "relógio: a conta de 06/2014 da massa (vencida em 10/07/2014) está vencida há mais de 10 anos e a de 05/2026 (10/06/2026) não — a prescrição alcança só a antiga",
+      "sql": "select (current_date > date '2024-07-10' and current_date <= date '2036-06-10')::text",
+      "esperado": "true"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "faturamento.conta",
+    {
+      "tabela": "arrecadacao.arrecadador_movimento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.arrecadador_mov_item",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.pagamento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.aviso_bancario",
+      "modo": "conteudo"
+    },
+    "arrecadacao.devolucao",
+    {
+      "tabela": "arrecadacao.arrecadador_contrato",
+      "modo": "conteudo"
+    },
+    "faturamento.debito_a_cobrar",
+    "faturamento.credito_a_realizar",
+    "faturamento.debito_cobrado",
+    "faturamento.credito_realizado",
+    "faturamento.conta_geral",
+    "faturamento.conta_categoria",
+    "cadastro.cliente_conta",
+    "cobranca.cobranca_acao_ativ_cmd",
+    "cobranca.cobranca_documento",
+    "cobranca.cobranca_documento_item",
+    "cobranca.imovel_nao_gerado",
+    "seguranca.operacao_efetuada",
+    "seguranca.tabela_linha_alteracao"
+  ],
+  "normalizacoes": [],
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+    "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+    "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo); o documento de cobrança é pago pelo código de barras que a emissão do documento imprime (tipo 5: localidade e matrícula do documento, sequencial e tipo do documento) e pelo valor dele, que a recepção confere",
+    "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+    "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+    "acrescimos": "os índices de acréscimo são SINTÉTICOS (a base não tem nenhum) e desenhados para que o acréscimo de uma conta não paga — calculado com a data de HOJE — não dependa do dia: multa mensal de 2,00%, juros diários de 0,0333% com teto de 1,00% (atingido 31 dias depois do vencimento) e atualização pela razão entre os fatores de 06/2026 e 05/2026 (1,0100); a pré-condição de relógio garante o teto",
+    "acao": "a ação AVISO DE CORTE (1), as atividades SIMULAR/EMITIR/ENCERRAR, o critério da rota (uma linha RESIDENCIAL × perfil 5, de R$ 0,01 a R$ 99.999,99 e de 1 a 99 contas, emitindo para débito só da conta do mês e só de conta antiga, sem conta em revisão), os tipos e formas de documento, as situações da ação e do débito, os motivos de não geração 2 a 27 e o processo da atividade (etapas 539 e 1311) são SINTÉTICOS — a base não tem nenhum; ids das constantes do código",
+    "conta_antiga": "a conta de 06/2014 de IMV-01 (R$ 50,00, vencida em 10/07/2014, NORMAL, sem pagamento) vem da massa, no estado em que o faturamento a deixaria — o cenário pede duas contas vencidas; vencida há mais de 10 anos, ela é também a que a prescrição alcança",
+    "emissao": "a etapa EMITIR DOCUMENTO DE COBRANÇA (1312) só escreve o arquivo da gráfica no disco do servidor — fora da fronteira; o documento e os itens são os que a GERAÇÃO grava",
+    "relogio_documento": "o que acontece à dívida depois da ação só chega ao item do documento emitido até a MEIA-NOITE do dia corrente (a comparação usa a data sem a hora); nas variações em que o documento é pago ou a conta muda depois da ação, um passo de massa leva a emissão para 12/06/2026, 08:00 (o tempo da massa) — simulação do relógio, não operação; as variações do mesmo dia (V3b de COB-002, V2b de COB-007) não o aplicam — a ação e o pagamento ou o cancelamento acontecem minutos depois, no mesmo dia do relógio",
+    "data_pagamento": "os pagamentos do movimento são de 20/06/2026 (crédito em 21/06/2026), depois da emissão simulada do documento; os anteriores à ação, de 10/06/2026 (o vencimento) — a recepção não compara a data do pagamento com a da emissão",
+    "integracao": "nenhuma chamada externa: a ação de aviso não gera ordem de serviço nem boleto bancário"
+  },
+  "fronteira": "Ação de cobrança eventual pela tela, no EAR em modo Batch, sobre as contas que o faturamento em grupo gera no início da execução e a conta antiga da massa: Inserir Comando de Ação de Cobrança (exibirInserirComandoAcaoCobrancaAction → comando eventual por critério da ROTA → inserirComandoAcaoCobrancaEventualConcluirAction → Fachada.concluirComandoAcaoCobranca) para a ação AVISO DE CORTE, atividade EMITIR, grupo de cobrança 1, contas de 06/2014 a 05/2026; Inserir Processo de Cobrança Comandado (inserirProcessoCobrancaComandadoAction) → verificador do Quartz → GERAR ATIVIDADE DE AÇÃO DE COBRANÇA por rota (ControladorCobranca.gerarAtividadeAcaoCobranca: o critério por imóvel, o documento e os itens) e ATUALIZAR COMANDO (os totais). O pagamento pelo movimento do arrecadador (lote 6) — pelo código de barras do DOCUMENTO (tipo 5) ou da conta — e a classificação. Comando, documentos, itens, imóveis recusados e pagamentos lidos do banco; a posição pela tela Consultar Débitos.",
+  "cenario": "CEN-COB-002",
+  "titulo": "Ação de cobrança e pagamento antes ou depois do documento",
+  "especificacao": "docs/modernizacao/testes/cenarios/cobranca.md — CEN-COB-002",
+  "observaveis": {
+    "campos": [
+      "passos",
+      "funcionalidades",
+      "contas_cobranca",
+      "comandos_cobranca",
+      "documentos_cobranca",
+      "itens_cobranca",
+      "imoveis_nao_gerados",
+      "pagamentos_documento",
+      "pagamentos_arrecadacao",
+      "contas_ciclo"
+    ],
+    "fora_desta_fronteira": {
+      "emissão do arquivo dos documentos (etapa 1312)": "escreve o arquivo da gráfica no disco do servidor — fora da fronteira",
+      "atividade ENCERRAR e o resumo das ações de cobrança": "o encerramento da ação e o resumo (que também revisa as situações dos documentos) são outro processo — fora deste lote",
+      "ação com ordem de serviço (corte)": "CEN-COB-003",
+      "ação por cronograma, simulação, empresa de cobrança, débitos a cobrar e guias no documento": "a ação deste lote é eventual, pela rota, só com contas (cbac_iccobrancadebacobrar = 2)",
+      "acréscimos no documento": "o aviso de corte grava acréscimos 0,00 no documento e nos itens — só as cartas e o extrato de débito os gravam (gerarDocumentoCobranca:23738)"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "O aviso de corte comandado pela rota (contas de 06/2014 a 05/2026) sobre IMV-01 (contas de 06/2014 e 05/2026), IMV-02 e IMV-03 (05/2026), com as contas não pagas; a posição antes e depois",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acao-cobranca.sql",
+        "massas/deltas/cob-conta-antiga-imv01.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "comandar_acao_cobranca",
+            "referencia_inicial": "06/2014",
+            "vencimento_inicial": "01/07/2014"
+          },
+          {
+            "tipo": "processo_cobranca"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "observar"
+          }
+        ],
+        "detalhes": [
+          "cobranca",
+          "acao_cobranca",
+          "arrecadacao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V1b": {
+      "descricao": "A conta de 05/2026 de IMV-01 colocada em REVISÃO pela tela (com o RA de alteração de conta) antes do aviso de corte",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acao-cobranca.sql",
+        "massas/deltas/cob-conta-antiga-imv01.sql",
+        "massas/deltas/cob-revisao.sql",
+        "massas/deltas/conta-ciclo-ra-alteracao-conta.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "colocar_revisao",
+            "imovel": 100013,
+            "referencia": 202605,
+            "motivo": 7101
+          },
+          {
+            "tipo": "comandar_acao_cobranca",
+            "referencia_inicial": "06/2014",
+            "vencimento_inicial": "01/07/2014"
+          },
+          {
+            "tipo": "processo_cobranca"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "observar"
+          }
+        ],
+        "detalhes": [
+          "cobranca",
+          "acao_cobranca",
+          "arrecadacao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "A conta de 05/2026 de IMV-01 (uma das duas) e a de IMV-02 (a única) pagas pelo arrecadador no vencimento e classificadas ANTES do aviso de corte",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acao-cobranca.sql",
+        "massas/deltas/cob-conta-antiga-imv01.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100021,
+                "referencia": 202605
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "comandar_acao_cobranca",
+            "referencia_inicial": "06/2014",
+            "vencimento_inicial": "01/07/2014"
+          },
+          {
+            "tipo": "processo_cobranca"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "observar"
+          }
+        ],
+        "detalhes": [
+          "cobranca",
+          "acao_cobranca",
+          "arrecadacao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "Depois do aviso (emissão no tempo da massa, pelo relógio), o DOCUMENTO de IMV-01 pago pelo código de barras dele (tipo 5, R$ 160,40 em 20/06/2026) e a classificação",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acao-cobranca.sql",
+        "massas/deltas/cob-conta-antiga-imv01.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "comandar_acao_cobranca",
+            "referencia_inicial": "06/2014",
+            "vencimento_inicial": "01/07/2014"
+          },
+          {
+            "tipo": "processo_cobranca"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/cob-relogio-documento-emitido.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "documento_cobranca": true,
+                "data_pagamento": "20260620",
+                "data_credito": "20260621"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "cobranca",
+          "acao_cobranca",
+          "arrecadacao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V3b": {
+      "descricao": "O documento de IMV-01 pago pelo código de barras dele no MESMO DIA da emissão (sem o passo de relógio) e a classificação",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acao-cobranca.sql",
+        "massas/deltas/cob-conta-antiga-imv01.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "comandar_acao_cobranca",
+            "referencia_inicial": "06/2014",
+            "vencimento_inicial": "01/07/2014"
+          },
+          {
+            "tipo": "processo_cobranca"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "documento_cobranca": true,
+                "data_pagamento": "20260620",
+                "data_credito": "20260621"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "cobranca",
+          "acao_cobranca",
+          "arrecadacao",
+          "ciclo_conta"
+        ]
+      }
+    },
+    "V4": {
+      "descricao": "Depois do aviso (emissão no tempo da massa), a conta de 05/2026 de IMV-01 paga pelo código de barras da CONTA (outro canal, R$ 110,40 em 20/06/2026) e a classificação",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/cob-acrescimos-indices.sql",
+        "massas/deltas/cob-acao-cobranca.sql",
+        "massas/deltas/cob-conta-antiga-imv01.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "comandar_acao_cobranca",
+            "referencia_inicial": "06/2014",
+            "vencimento_inicial": "01/07/2014"
+          },
+          {
+            "tipo": "processo_cobranca"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/cob-relogio-documento-emitido.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260620",
+                "data_credito": "20260621"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "consultar_debitos",
+            "acrescimos": true,
+            "imoveis": [
+              100013,
+              100021,
+              100030
+            ]
+          }
+        ],
+        "detalhes": [
+          "cobranca",
+          "acao_cobranca",
+          "arrecadacao",
+          "ciclo_conta"
+        ]
+      }
+    }
+  }
+}

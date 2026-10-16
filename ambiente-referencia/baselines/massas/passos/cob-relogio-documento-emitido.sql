@@ -1,0 +1,13 @@
+-- Passo — RELÓGIO: os documentos de cobrança do comando passam a ter sido emitidos no tempo da massa (lote 8: CEN-COB-002,
+-- CEN-COB-007).
+--
+-- EVIDÊNCIA: o que acontece a uma dívida já cobrada chega ao item do documento por
+-- RepositorioCobrancaHBM.atualizarSituacaoCobrancaDocumentoItem:12834 — o pagamento na recepção do movimento (PAGO), o
+-- cancelamento da conta (CANCELADO) —, que só alcança o item de documento EMITIDO ATÉ A MEIA-NOITE do dia corrente
+-- (cbdo_tmemissao <= to_date(hoje), a data sem a hora). A geração da ação grava a emissão com o relógio (agora): no
+-- laboratório, onde a ação, o pagamento e o cancelamento acontecem no mesmo dia, nenhum item seria alcançado (a variação
+-- que mostra isso não aplica este passo). Na operação, o documento é emitido dias antes do pagamento. Este passo leva a
+-- emissão para 12/06/2026, 08:00 — depois do vencimento das contas (10/06/2026) e antes do pagamento do movimento
+-- (20/06/2026) —, como estaria se a ação tivesse sido executada em junho. É SIMULAÇÃO DO RELÓGIO, não uma operação: só a
+-- data de emissão dos documentos muda; nenhum valor, situação ou vínculo.
+UPDATE cobranca.cobranca_documento SET cbdo_tmemissao = TIMESTAMP '2026-06-12 08:00:00' WHERE cacm_id IS NOT NULL;

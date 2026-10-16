@@ -29,6 +29,8 @@ A cobrança referencia **identidades estáveis `*Geral`** (nunca a versão físi
 - Possui versão histórica (`CobrancaDocumentoHistorico`/`ItemHistorico`) e impressão própria.
 - **Um pagamento pode ser associado ao documento** (`Pagamento.cbdo_id`; `DocumentoTipo.DOCUMENTO_COBRANCA(3)` é tipo pagável reconhecido na arrecadação). ⚠️ Precisão (2026-08-14): o mecanismo de baixa/rateio dos **itens internos** nesse caso **não foi comprovado** — ver [arrecadacao.md §12](arrecadacao.md) e a dúvida correspondente.
 
+🆕 **Medido na Fase 2 (lote 8, 2026-10-16)** — Ação de cobrança e conta em cobrança (CEN-COB-002, CEN-COB-007): 🟢 o aviso de corte comandado pela rota gera **um documento por imóvel e um item por conta**, com a forma EVENTUAL, a ação ENVIADOS (sem OS) e o débito PENDENTE, e o comando fica realizado com os totais; o aviso grava **acréscimos 0,00** (só cartas e extrato de débito os gravam); a conta em revisão e a conta já paga ficam fora; o imóvel recusado grava o motivo (`imovel_nao_gerado`). 🟢 O documento pago pelo código de barras dele (tipo 5) vira **um pagamento por item**, no valor do item, ligado ao documento — o rateio é por item; os itens ficam PAGO e o cabeçalho não muda; o cancelamento da conta deixa o item CANCELADO. 🔴 O item não acompanha a dívida paga por outro canal ou prescrita (CAND-50); o dia da emissão fica de fora da atualização (CAND-51); o aviso não acompanha a retificação e o pagamento dele cai em VALOR NÃO CONFERE (CAND-52). [Relatório §31](../testes/fase2/fase2-caracterizacao-baselines.md#31-lote-8--cobrança-ação-de-cobrança-e-conta-em-cobrança-2026-10-16).
+
 ## 6. Elegibilidade (critérios paramétricos)
 
 `CobrancaCriterio`/`CobrancaCriterioLinha` parametrizam a seleção: valor mínimo/máximo do débito, quantidade mínima/máxima de contas, valores/quantidades específicos para quem tem débito automático, valor mínimo de conta por mês, quantidade mínima de contas para parcelamento. **Cada ação aponta seu critério** (`CobrancaAcao.cbct_id`) e as **situações de ligação a que se aplica** (`last_id`/`lest_id` na ação). Impedimentos: situação especial de cobrança do imóvel (§23), revisão, negociação vigente, e recortes do comando (subcategoria, situação de fiscalização).
@@ -105,7 +107,7 @@ Após regularização (pagamento do exigido no documento de corte ou parcelament
 
 ## 19. Prescrição
 
-Determinada no ciclo de cancelamento de contas (faturamento.md §15): motivo PRESCRICAO/DEBITO_PRESCRITO leva a conta à situação **DEBITO_PRESCRITO(8)** — permanece armazenada, sai do estoque exigível, com motivo e data registrados. A cobrança respeita o estado (não age sobre prescritas); há tipos de parcelamento de "dívida ativa" para débitos judicializados (140–150), indicando tratamento distinto de dívida antiga.
+Determinada no ciclo de cancelamento de contas (faturamento.md §15): motivo PRESCRICAO/DEBITO_PRESCRITO leva a conta à situação **DEBITO_PRESCRITO(8)** — permanece armazenada, sai do estoque exigível, com motivo e data registrados. A cobrança respeita o estado (não age sobre prescritas — 🆕 medido no lote 8: a prescrita sai da posição, mas o item de um documento já emitido continua PENDENTE, CAND-50); há tipos de parcelamento de "dívida ativa" para débitos judicializados (140–150), indicando tratamento distinto de dívida antiga.
 
 ## 20. Contas retidas / em revisão
 
@@ -234,9 +236,9 @@ Mesmo padrão dos demais módulos: subclasses `ControladorCobrancaCAEMA/CAERN/CA
 1. Fórmulas exatas de **acréscimos por impontualidade** (juros de mora, multa, atualização monetária) — caracterizar ao centavo (parâmetros do sistema × código).
 2. **Contrato de parcelamento** (`contratoparcelamento.*`): escopo real e relação com o parcelamento clássico — inventário próprio.
 3. **"Contas retidas"**: processo exato nesta instalação (sem funcionalidade nomeada no código).
-4. Regra fina de **exclusão de revisão das ações** (onde cada ação filtra `cmrv`) — confirmar na caracterização.
+4. Regra fina de **exclusão de revisão das ações** (onde cada ação filtra `cmrv`) — confirmar na caracterização. 🆕 Em parte (lote 8): com o critério sem emissão para conta em revisão, a conta em revisão fica fora do aviso e na posição (CEN-COB-002 V1b).
 5. Diferenças reais entre subclasses de companhia da cobrança — inventário junto com os demais módulos.
-6. Semântica completa de `CobrancaDebitoSituacao` (situações do item) — catálogo é dado da instalação.
+6. Semântica completa de `CobrancaDebitoSituacao` (situações do item) — catálogo é dado da instalação. 🆕 Em parte (lote 8): PENDENTE na geração, PAGO pelo pagamento do documento, CANCELADO pelo cancelamento da conta; o pagamento por outro canal, a retificação e a prescrição não mudam o item.
 
 ## 34. Evidências principais
 

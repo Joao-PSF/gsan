@@ -883,10 +883,66 @@ def _parcelamento(ctx):
     }
 
 
+def _acao_cobranca(ctx):
+    """Ação de cobrança (lote 8): os comandos eventuais (ação, atividade, critério, períodos, se realizado, quantidade de
+    documentos e de itens, valor); os documentos de cobrança por imóvel (ação, tipo, forma de emissão, situação da ação e do
+    débito, valores de documento, acréscimos, desconto e taxa, emissão relativa à execução); os itens de cada documento pelo
+    documento original (conta pela identidade documental), com valor, acréscimos e situação do débito; os imóveis que a
+    geração recusou, com o motivo; os pagamentos associados a um documento (o documento pago pelo código de barras dele).
+    Num bloco à parte: os anteriores não mudam."""
+    return {
+        'comandos_cobranca': _linhas(ctx, "select a.cbac_dscobrancaacao as acao, t.cbat_dscobrancaatividade as atividade,"
+                                          " c.cacm_iccriterio as indicador_criterio, c.cbct_id is not null as com_criterio,"
+                                          " c.cacm_amreferenciacontainicial as referencia_inicial, c.cacm_amreferenciacontafinal as referencia_final,"
+                                          " to_char(c.cacm_dtvencimentocontainicial, 'DD/MM/YYYY') as vencimento_inicial,"
+                                          " to_char(c.cacm_dtvencimentocontafinal, 'DD/MM/YYYY') as vencimento_final,"
+                                          " (c.cacm_tmrealizacao is not null) as realizado, c.cacm_qtdocumentos as documentos,"
+                                          " c.cacm_qtitenscobrados as itens, c.cacm_vldocumentos::text as valor_documentos, c.cacm_dstitulo as titulo"
+                                          " from cobranca.cobranca_acao_ativ_cmd c join cobranca.cobranca_acao a on a.cbac_id = c.cbac_id"
+                                          " join cobranca.cobranca_atividade t on t.cbat_id = c.cbat_id order by c.cacm_id"),
+        'documentos_cobranca': _linhas(ctx, "select d.imov_id as matricula, a.cbac_dscobrancaacao as acao, t.dotp_dsdocumentotipo as documento,"
+                                            " f.demf_dsdocumentoemissaoforma as emissao_forma, s.cast_dssituacaoacao as situacao_acao,"
+                                            " ds.cdst_dssituacaodebito as situacao_debito, d.cbdo_vldocumento::text as valor_documento,"
+                                            " d.cbdo_vlacrescimos::text as acrescimos, d.cbdo_vldesconto::text as desconto, d.cbdo_vltaxa::text as taxa,"
+                                            f" {_data_relativa('d.cbdo_tmemissao')} as emissao, (d.cacm_id is not null) as do_comando,"
+                                            " (select count(*) from cobranca.cobranca_documento_item i where i.cbdo_id = d.cbdo_id) as itens"
+                                            " from cobranca.cobranca_documento d left join cobranca.cobranca_acao a on a.cbac_id = d.cbac_id"
+                                            " left join cobranca.documento_tipo t on t.dotp_id = d.dotp_id"
+                                            " left join cobranca.documento_emissao_forma f on f.demf_id = d.demf_id"
+                                            " left join cobranca.cobranca_acao_situacao s on s.cast_id = d.cast_id"
+                                            " left join cobranca.cobranca_debito_situacao ds on ds.cdst_id = d.cdst_id"
+                                            " order by d.imov_id, d.cbdo_id"),
+        'itens_cobranca': _linhas(ctx, IDENT_H +
+                                       "select d.imov_id as documento_imovel, t.dotp_dsdocumentotipo as item_documento,"
+                                       " case when i.cnta_id is null then null else (select " + IDENTH_JSON.format(a='x') +
+                                       "  from identh x where x.cnta_id = i.cnta_id) end as conta,"
+                                       " i.cdit_vlitemcobrado::text as valor, i.cdit_vlacrescimos::text as acrescimos,"
+                                       " s.cdst_dssituacaodebito as situacao_debito, (i.dbac_id is not null) as debito_a_cobrar,"
+                                       " (i.gpag_id is not null) as guia"
+                                       " from cobranca.cobranca_documento_item i join cobranca.cobranca_documento d using (cbdo_id)"
+                                       " left join cobranca.documento_tipo t on t.dotp_id = i.dotp_id"
+                                       " left join cobranca.cobranca_debito_situacao s on s.cdst_id = i.cdst_id"
+                                       " order by d.imov_id, d.cbdo_id, i.cnta_id, i.cdit_id"),
+        'imoveis_nao_gerados': _linhas(ctx, "select n.imov_id as matricula, m.mngd_dsmotivo as motivo, (n.cacm_id is not null) as do_comando"
+                                            " from cobranca.imovel_nao_gerado n"
+                                            " left join cobranca.motivo_nao_ger_doc_cobr m on m.mngd_id = n.mngd_id"
+                                            " order by n.imov_id, n.mngd_id"),
+        'pagamentos_documento': _linhas(ctx, IDENT +
+                                        "select p.imov_id as matricula, p.pgmt_amreferenciapagamento as referencia_pagamento,"
+                                        " p.pgmt_vlpagamento::text as valor, d.imov_id as documento_imovel,"
+                                        " t.dotp_dsdocumentotipo as documento,"
+                                        " case when p.cnta_id is null then null else (select " + IDENT_JSON.format(a='x') +
+                                        "  from ident x where x.cnta_id = p.cnta_id) end as conta"
+                                        " from arrecadacao.pagamento p join cobranca.cobranca_documento d on d.cbdo_id = p.cbdo_id"
+                                        " left join cobranca.documento_tipo t on t.dotp_id = d.dotp_id"
+                                        " order by p.imov_id, p.pgmt_amreferenciapagamento, p.pgmt_id"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
             'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao,
             'devolucao': _devolucao, 'encerramento': _encerramento, 'cobranca': _cobranca,
-            'parcelamento': _parcelamento}
+            'parcelamento': _parcelamento, 'acao_cobranca': _acao_cobranca}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -1194,6 +1250,8 @@ def _registro_g(ctx, reg, sequencia):
     """Um registro G: o código de barras da conta (ou de um documento que não existe) e o valor recebido pelo banco."""
     if reg.get('guia_entrada'):
         return _registro_g_guia_entrada(ctx, reg, sequencia)
+    if reg.get('documento_cobranca'):
+        return _registro_g_documento(ctx, reg, sequencia)
     imovel, ref = int(reg['imovel']), int(reg['referencia'])
     situacoes = ', '.join(str(int(s)) for s in reg.get('situacoes', (0, 1, 2)))
     if reg.get('arquivada'):  # a conta já no histórico (lote 6c): o código de barras que ela tinha impresso
@@ -1256,6 +1314,32 @@ def _registro_g_guia_entrada(ctx, reg, sequencia):
              + ' ' * 23 + '1' + ' ' * 9)
     assert len(linha) == 150, len(linha)
     return linha, valor_rec, {'imovel': imovel, 'guia_entrada': True,
+                              'valor_documento': f'{Decimal(_centavos(valor_doc)) / 100:.2f}',
+                              'valor_recebido': f'{Decimal(valor_rec) / 100:.2f}'}
+
+
+def _registro_g_documento(ctx, reg, sequencia):
+    """Um registro G do DOCUMENTO DE COBRANÇA do imóvel (lote 8): o código de barras que a emissão do documento imprime —
+    tipo de pagamento 5 (ControladorCobranca.emitirDocumentoCobranca:22431 → ControladorArrecadacao.obterIdentificacaoPagamento
+    :38398): localidade e matrícula do documento, o sequencial do documento e o tipo de documento — e o valor do documento,
+    que a recepção confere (processarPagamentosCodigoBarrasDocumentoCobrancaTipo5:5838)."""
+    imovel = int(reg['imovel'])
+    doc = _linhas(ctx, "select cbdo_nnsequenciadocumento as sequencial, loca_id, dotp_id, cbdo_vldocumento::text as valor"
+                       f" from cobranca.cobranca_documento where imov_id = {imovel} order by cbdo_id desc limit 1")
+    if not doc:
+        raise ValueError(f'sem documento de cobrança para {imovel}')
+    seq, loca, dotp, valor_doc = int(doc[0]['sequencial']), int(doc[0]['loca_id']), int(doc[0]['dotp_id']), doc[0]['valor']
+    recebido = reg.get('valor_recebido', 'documento')
+    valor_rec = _centavos(valor_doc) if recebido == 'documento' else _centavos(recebido)
+    empresa = reg.get('empresa') or ctx.sql("select lpad(parm_cdempresafebraban::text, 4, '0') from cadastro.sistema_parametros")
+    ident = f'{loca:03d}{imovel:09d}{seq:09d}{dotp:02d}1'
+    sem_dv = '826' + f'{_centavos(valor_doc):011d}' + empresa + ident + '5'
+    barras = sem_dv[:3] + str(_dv_modulo10(sem_dv)) + sem_dv[3:]
+    linha = ('G' + '0001' + '0' * 16 + reg.get('data_pagamento', '20260610') + reg.get('data_credito', '20260611') + barras
+             + f'{valor_rec:012d}' + '0' * 7 + f'{sequencia:08d}' + '00000001' + reg.get('forma', '1')
+             + ' ' * 23 + '1' + ' ' * 9)
+    assert len(linha) == 150, len(linha)
+    return linha, valor_rec, {'imovel': imovel, 'documento_cobranca': True,
                               'valor_documento': f'{Decimal(_centavos(valor_doc)) / 100:.2f}',
                               'valor_recebido': f'{Decimal(valor_rec) / 100:.2f}'}
 
@@ -1582,6 +1666,59 @@ def _efetuar_parcelamento(ctx, passo):
     return r
 
 
+def _comandar_acao_cobranca(ctx, passo):
+    """Inserir Comando de Ação de Cobrança eventual, por critério da rota (exibirInserirComandoAcaoCobrancaAction →
+    exibirInserirComandoAcaoCobrancaEventualCriterioRotaAction → inserirComandoAcaoCobrancaEventualConcluirAction →
+    Fachada.concluirComandoAcaoCobranca): a ação, a atividade, o grupo de cobrança, o período de referência e de vencimento
+    das contas e o título da variação. Só grava o comando — o processo é outro passo (`processo_cobranca`)."""
+    ctx.atual.get('exibirInserirComandoAcaoCobrancaAction.do?menu=sim')
+    html = ctx.atual.post('exibirInserirComandoAcaoCobrancaEventualCriterioRotaAction.do?limparForm=OK&menu=sim',
+                          {'tipoComando': 'Eventual'})
+    form = 'InserirComandoAcaoCobrancaEventualCriterioRotaActionForm'
+    dados = _formulario(html, form)
+    tela = {'http': ctx.atual.ultimo_estado,
+            'acoes': re.findall(r'(?is)<option\b[^>]*value="(\d+)"[^>]*>\s*AVISO', html)}
+    if ctx.atual.ultimo_estado >= 400:
+        tela.update(_recusa(html, ctx.atual.ultimo_estado))
+    dados.update(cobrancaAtividade=str(int(passo.get('atividade', 2))), cobrancaGrupo=str(int(passo.get('grupo', 1))),
+                 indicador=str(passo.get('indicador', 'Rota')), periodoInicialConta=passo.get('referencia_inicial', '05/2026'),
+                 periodoFinalConta=passo.get('referencia_final', '05/2026'),
+                 periodoVencimentoContaInicial=passo.get('vencimento_inicial', '01/01/2026'),
+                 periodoVencimentoContaFinal=passo.get('vencimento_final', '10/06/2026'),
+                 titulo=passo.get('titulo', 'AVISO SINTETICO'), descricaoSolicitacao=passo.get('descricao', 'COMANDO SINTETICO'))
+    for campo in ('cobrancaAcao', 'subcategoria', 'situacaoFiscalizacao'):  # select multiple: sem seleção, o navegador não envia
+        dados.pop(campo, None)
+    pares = (list(dados.items()) + [('cobrancaAcao', str(int(a))) for a in passo.get('acoes', [1])]
+             + [('subcategoria', str(int(s))) for s in passo.get('subcategorias', [])])
+    html = ctx.atual.post('inserirComandoAcaoCobrancaEventualConcluirAction.do', pares)
+    sucesso = _sucesso(html)
+    r = {'tela': tela, 'http': ctx.atual.ultimo_estado, 'mensagem': sucesso, 'resultado': 'comandado' if sucesso else 'recusado'}
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
+def _processo_cobranca(ctx, passo):
+    """Inserir Processo de Cobrança Comandado (exibirInserirProcessoCobrancaComandadoAction → InserirProcessoCobrancaComandadoAction
+    → ControladorBatchSEJB.inserirProcessoIniciadoCobrancaComandado): os comandos eventuais que a tela lista, pelo último
+    comando gravado (o id só navega); o verificador do Quartz executa o processo da atividade."""
+    cmd = ctx.sql('select max(cacm_id) from cobranca.cobranca_acao_ativ_cmd') or None
+    html = ctx.atual.get('exibirInserirProcessoCobrancaComandadoAction.do?menu=sim')
+    listado = bool(cmd) and any(re.search(r'(?i)\bvalue="' + str(int(cmd)) + r'"', t)
+                                for t in re.findall(r'(?is)<input\b[^>]*name="idsEventuais"[^>]*>', html))
+    r = {'tela': {'http': ctx.atual.ultimo_estado, 'comando_listado': listado}}
+    if not listado:
+        r['tela'].update(_recusa(html, ctx.atual.ultimo_estado))
+        r['resultado'] = 'nao_listado'
+        return r
+    html = ctx.atual.post('inserirProcessoCobrancaComandadoAction.do', [('idsEventuais', str(int(cmd)))])
+    sucesso = _sucesso(html)
+    r.update(http=ctx.atual.ultimo_estado, mensagem=sucesso, resultado='inserido' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
 def _desfazer_parcelamento(ctx, passo):
     """Desfazer Parcelamento pela tela: Consultar Parcelamento de Débitos do imóvel (ExibirConsultarParcelamentoDebitoAction
     — a tela só oferece o Desfazer ao parcelamento NORMAL, sem prestação cobrada e com a entrada não paga) e o botão
@@ -1883,6 +2020,10 @@ def faturar_grupo(ctx, entrada):
             r.update(_efetuar_parcelamento(ctx, passo))
         elif tipo == 'desfazer_parcelamento':
             r.update(_desfazer_parcelamento(ctx, passo))
+        elif tipo == 'comandar_acao_cobranca':
+            r.update(_comandar_acao_cobranca(ctx, passo))
+        elif tipo == 'processo_cobranca':
+            r.update(_processo_cobranca(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.

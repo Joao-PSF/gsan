@@ -130,6 +130,8 @@ situação da conta encontrada:
 
 🔵 Redação funcionalmente precisa (corrigindo a formulação anterior da Cobrança): **um pagamento pode ser associado a um Documento de Cobrança**, e o documento de cobrança é um dos tipos de documento reconhecidos na arrecadação. ❔ **Não comprovei** nesta análise o mecanismo de rateio/baixa dos itens internos do documento quando o pagamento chega por ele (se cada item subjacente é apropriado individualmente, se há proporcionalidade, e o comportamento quando um item já foi pago por outro canal). Fica como dúvida explícita (§15) e cenário de caracterização (§14) — **não devemos afirmar rateio automático sem evidência**.
 
+🆕 **Medido na Fase 2 (lote 8, 2026-10-16)** — 🟢 o documento é pago pelo código de barras que a emissão dele imprime (tipo 5: localidade e matrícula, sequencial e tipo do documento), pelo valor do documento, que a recepção confere; a recepção gera **um pagamento por item**, no valor do item, ligado ao documento (agregador do tipo do documento), e marca os itens PAGO; a classificação trata cada um como o pagamento da conta. 🔴 O item já pago por outro canal (pelo código de barras da conta) continua PENDENTE no documento (CAND-50); no dia da emissão, nem o pagamento pelo documento chega ao item (CAND-51). [Relatório §31](../testes/fase2/fase2-caracterizacao-baselines.md#31-lote-8--cobrança-ação-de-cobrança-e-conta-em-cobrança-2026-10-16).
+
 ## 13. Parcelamento, retificação/cancelamento e efeitos na Cobrança
 
 - 🟢 **Entrada de parcelamento** é tipo de documento próprio (2), pago tipicamente por guia; a Cobrança desfaz o parcelamento quando a entrada não é paga (batch daquele módulo). 🟢 **Prestações** são débitos a cobrar que entram nas contas — o pagamento da conta que as contém é o caminho normal; há também `DébitoACobrarGeral` como alvo direto de pagamento e batch `batchAcompanharPagamentoDoParcelamento` (no controlador de SPC/Serasa — 🔵 acompanhamento de pagamento de parcelamento alimenta a reabilitação em bureaus).
@@ -258,7 +260,7 @@ DÉBITO AUTOMÁTICO
 
 ## 23. Dúvidas que permanecem
 
-1. ❔ **Rateio/baixa dos itens** quando o pagamento é associado a um Documento de Cobrança; comportamento com item já pago por outro canal.
+1. ❔ **Rateio/baixa dos itens** quando o pagamento é associado a um Documento de Cobrança; comportamento com item já pago por outro canal. 🆕 **Respondida (lote 8)**: um pagamento por item, no valor do item; o item pago por outro canal não é atualizado (§12).
 2. ❔ Regra que separa **VALOR_A_BAIXAR(4)** de **VALOR_NAO_CONFERE(5)** e se há apropriação parcial automática do valor recebido a menor. 🆕 ✅ Respondida pela Fase 2 (lote 6) — §5.
 3. ❔ **Idempotência de reimportação** de arquivo (bloqueio por convênio+NSA). 🆕 ✅ Respondida pela Fase 2 (lote 6) — §3: NSA sequencial do contrato, conferido na tela.
 4. ❔ Existência de **estorno como operação própria** (movimento inverso) vs. apenas mudança de situação + devolução.
