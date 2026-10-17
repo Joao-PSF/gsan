@@ -1,0 +1,1999 @@
+{
+  "cenario": "CEN-FIN-001",
+  "descricao": "A arrecadação de 06/2026 de CEN-ARR-010 V1 (pagamentos classificado, em duplicidade, a menor e de documento inexistente) encerrada (resumo) e contabilizada: os recebimentos classificados e não classificados parametrizados",
+  "efeitos_no_banco": {
+    "arrecadacao.arrecadador_contrato": "alterado",
+    "arrecadacao.arrecadador_mov_item": "alterado",
+    "arrecadacao.arrecadador_movimento": "alterado",
+    "arrecadacao.aviso_bancario": "alterado",
+    "arrecadacao.devolucao": 0,
+    "arrecadacao.pagamento": "alterado",
+    "arrecadacao.resumo_arrecadacao": 23,
+    "batch.funcionalidade_iniciada": 4,
+    "batch.processo_iniciado": 4,
+    "faturamento.conta": 3,
+    "financeiro.lancamento_contabil": 4,
+    "financeiro.lancamento_contabil_item": 10,
+    "financeiro.param_deved_duvid": 0,
+    "financeiro.resumo_deved_duvid": 0,
+    "financeiro.resumo_faturamento": 0
+  },
+  "especificacao": "docs/modernizacao/testes/cenarios/financeiro-operacional.md — CEN-FIN-001",
+  "fora_desta_fronteira": {
+    "V4 — a mesma geração em outra competência depois de alterar um parâmetro": "exige o encerramento completo do mês (arquivamento e avanço da referência, 647) e um segundo faturamento — fora deste lote; a parametrização como dado está exercitada em V1 × V1b",
+    "esgoto, débitos, créditos e impostos no resumo do faturamento": "as contas de 05/2026 da massa só têm água",
+    "exportação para o sistema contábil": "integração — fora da fronteira",
+    "regeração da contabilização de uma competência": "CEN-FIN-003 — os lançamentos do faturamento e da arrecadação não removem os anteriores (só os dos devedores duvidosos o fazem)"
+  },
+  "formato": 1,
+  "legado": {
+    "commit": "1a0edcfc6ff28ec7c97b8fc64ec75712789a9415",
+    "complemento_p6_sha256": "55ea0f2c99c46a9e41a9f926b892c4b14ac12d33290adc31869b282861cc0398",
+    "migracoes": "2d6acdb9859efe06aeb6e2d51c7ef815ddcdf679",
+    "variante": null,
+    "versao_exibida": "referencia (Batch)"
+  },
+  "massa": [
+    {
+      "arquivo": "massas/base/010-parametrizacao-faturamento.sql",
+      "sha256": "fd827dc054d807b0e76037e3e8fdad14de72556b8ffe74851f42c7953de2723b"
+    },
+    {
+      "arquivo": "massas/base/020-operador-caracterizacao.sql",
+      "sha256": "f09ba43de0debf3617f456b165c6ed75eebdee4171770bf963cefed9338805b1"
+    },
+    {
+      "arquivo": "massas/deltas/territorio-l1.sql",
+      "sha256": "b3493691fd49cc2fa7d57f857ab7d70fb1bb12edae9b6d6ea331aee4859b37e8"
+    },
+    {
+      "arquivo": "massas/deltas/imoveis-imv-01-02-03.sql",
+      "sha256": "0d18830711caa518ad2704a7e36111ea6ab464ed6f2801870f1c53390ca24155"
+    },
+    {
+      "arquivo": "massas/deltas/localidade-l1-entidade.sql",
+      "sha256": "244968689d85d0cf27ba724962bd8e7d82b773a12432e6b2a1e8a67b66c4a6bd"
+    },
+    {
+      "arquivo": "massas/deltas/seguranca-auditoria.sql",
+      "sha256": "b19ee40eaabd0901b2cb46af3bd33141101a89c981c760d8bd4205e1d0d3f5c1"
+    },
+    {
+      "arquivo": "massas/deltas/categorias-com-tipo.sql",
+      "sha256": "c3c49ecad7d1588dc9ac9730369d5b4092902de088a06441c6592c62bf421246"
+    },
+    {
+      "arquivo": "massas/deltas/batch-catalogos.sql",
+      "sha256": "cb23920e22bf93b6cc4718c8f33693ba25a30d3446847df2696f943dc6e8db85"
+    },
+    {
+      "arquivo": "massas/deltas/batch-parametros-faturamento.sql",
+      "sha256": "0fc647f6a61d3998fcc590b9c94da1e3b44de7d578eab0b7b0332b5f2852aade"
+    },
+    {
+      "arquivo": "massas/deltas/batch-faturamento-g1-202605.sql",
+      "sha256": "0ed2b2838ce3938407e2e92341ef3e9bd187fd9b98e88f9080bbb74e11c45b28"
+    },
+    {
+      "arquivo": "massas/deltas/arr-arrecadador.sql",
+      "sha256": "077380c2f08f3f4b26baea7e759a36404b9db2439690d78b845e8db8cd7128f1"
+    },
+    {
+      "arquivo": "massas/deltas/arr-parametros.sql",
+      "sha256": "92437517ec8ee265cb961a751557dbcddbac2ab61ac223fac8bf1dd6278a7570"
+    },
+    {
+      "arquivo": "massas/deltas/arr-processo-classificar.sql",
+      "sha256": "f96d15f12a6ad65a3244cbaf5f5f23d7dbd83a1fe48d4beb0bfb0eeac0dae77a"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-catalogos.sql",
+      "sha256": "c859246d9955ae4cc7cfae4f13b752f290fc15d9c58507612af40bd30037e076"
+    },
+    {
+      "arquivo": "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+      "sha256": "633a1317c98545f154fccfbe24782c772671205b38d0a14463a79d842d7c4e1a"
+    },
+    {
+      "arquivo": "massas/deltas/arr-clientes-usuarios.sql",
+      "sha256": "c0724a3797af2ac895e70b54d154e4b5b0c90324cdef1bfeddc275285cd642a4"
+    },
+    {
+      "arquivo": "massas/deltas/arr-encerramento-catalogos.sql",
+      "sha256": "d7de28d24536033d291179a1a50c4d42a39ff42fb2caff22076f3d813694daa8"
+    },
+    {
+      "arquivo": "massas/deltas/arr-processo-encerrar.sql",
+      "sha256": "20b6dffdc6a97bdd0b40a038958604b3ae9419803fcd78c6d404c682147530b7"
+    },
+    {
+      "arquivo": "massas/deltas/fin-lancamento-catalogos.sql",
+      "sha256": "fcf773e93face6a9a9cbdba538bd1a40e9d1c7dacaa8dad157cf3d2bb8245584"
+    },
+    {
+      "arquivo": "massas/deltas/fin-processos.sql",
+      "sha256": "e6957f95591c3d72cd0d38da2dec9260d3131fc5471964ac3eb199771bb257a9"
+    },
+    {
+      "arquivo": "massas/deltas/fin-plano-contas.sql",
+      "sha256": "1af4ed8b01b3fc531c4931f225409f9c7386fa456b15863ee9ea17cc0bff5ca2"
+    },
+    {
+      "arquivo": "massas/deltas/fin-parametros-arrecadacao.sql",
+      "sha256": "199cf530893ceab8880932c055a76117e17cf1a7da7a640cb2f9e518bb643960"
+    }
+  ],
+  "normalizacoes": [],
+  "observaveis": {
+    "avisos": [
+      {
+        "arrecadacao_calculado": "428.89",
+        "arrecadacao_informado": "428.89",
+        "com_conta_bancaria": true,
+        "contabilizado": "0.00",
+        "credito_debito": 1,
+        "data_lancamento": "11/06/2026",
+        "data_prevista": "11/06/2026",
+        "data_realizada": "11/06/2026",
+        "devolucao_calculado": "0.00",
+        "devolucao_informado": "0.00",
+        "documento": 0,
+        "forma": "GUICHE DE CAIXA (SINTETICO)",
+        "nsa": 1,
+        "ordem": 1,
+        "realizado": "428.89",
+        "referencia_arrecadacao": 202606,
+        "sequencial": 0
+      }
+    ],
+    "funcionalidades": [
+      {
+        "descricao": "Faturar Grupo Faturamento",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 63,
+        "inicio_registrado": true,
+        "processo": 1,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      },
+      {
+        "descricao": "Classificar Pagamentos e Devolucoes",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 545,
+        "inicio_registrado": true,
+        "processo": 2,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      },
+      {
+        "descricao": "Encerrar Arrecadacao do Mes",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 546,
+        "inicio_registrado": true,
+        "processo": 3,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      },
+      {
+        "descricao": "Gerar Lancamentos Contabeis da Arrecadacao",
+        "erro_chaves": [],
+        "erro_registrado": false,
+        "funcionalidade": 700,
+        "inicio_registrado": true,
+        "processo": 4,
+        "sequencia": 1,
+        "situacao": "CONCLUIDA",
+        "termino_registrado": true
+      }
+    ],
+    "lancamentos_contabeis": [
+      {
+        "conta_contabil": "1.1.2.01.001",
+        "historico": "BAIXA CONTAS A RECEBER RESIDENCIAL",
+        "indicador_debito_credito": 1,
+        "lancamento_tipo": 27,
+        "localidade": 1,
+        "natureza": "CREDITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 1,
+        "referencia": 202606,
+        "tipo": "CONTAS",
+        "valor": "110.40"
+      },
+      {
+        "conta_contabil": "2.1.9.01.001",
+        "historico": "ARRECADACAO CONTAS RESIDENCIAL",
+        "indicador_debito_credito": 2,
+        "lancamento_tipo": 27,
+        "localidade": 1,
+        "natureza": "DEBITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 1,
+        "referencia": 202606,
+        "tipo": "CONTAS",
+        "valor": "110.40"
+      },
+      {
+        "conta_contabil": "2.1.9.01.001",
+        "historico": "ARRECADACAO DUPLICIDADE RESIDENCIAL",
+        "indicador_debito_credito": 2,
+        "lancamento_tipo": 33,
+        "localidade": 1,
+        "natureza": "DEBITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "PAGAMENTO EM DUPLICIDADE",
+        "valor": "110.40"
+      },
+      {
+        "conta_contabil": "2.1.9.01.002",
+        "historico": "NAO CLASSIFICADO DUPLICIDADE RESIDENCIAL",
+        "indicador_debito_credito": 1,
+        "lancamento_tipo": 33,
+        "localidade": 1,
+        "natureza": "CREDITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "PAGAMENTO EM DUPLICIDADE",
+        "valor": "110.40"
+      },
+      {
+        "conta_contabil": "2.1.9.01.001",
+        "historico": "ARRECADACAO DOC INEXISTENTE COMERCIAL",
+        "indicador_debito_credito": 2,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "natureza": "DEBITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "DOCUMENTO INEXISTENTE",
+        "valor": "16.66"
+      },
+      {
+        "conta_contabil": "2.1.9.01.001",
+        "historico": "ARRECADACAO DOC INEXISTENTE RESIDENCIAL",
+        "indicador_debito_credito": 2,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "natureza": "DEBITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "DOCUMENTO INEXISTENTE",
+        "valor": "33.34"
+      },
+      {
+        "conta_contabil": "2.1.9.01.002",
+        "historico": "NAO CLASSIFICADO DOC INEXISTENTE COMERC",
+        "indicador_debito_credito": 1,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "natureza": "CREDITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "DOCUMENTO INEXISTENTE",
+        "valor": "16.66"
+      },
+      {
+        "conta_contabil": "2.1.9.01.002",
+        "historico": "NAO CLASSIFICADO DOC INEXISTENTE RESID",
+        "indicador_debito_credito": 1,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "natureza": "CREDITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "DOCUMENTO INEXISTENTE",
+        "valor": "33.34"
+      },
+      {
+        "conta_contabil": "2.1.9.01.001",
+        "historico": "ARRECADACAO VALOR NAO CONFERE RESIDENCIAL",
+        "indicador_debito_credito": 2,
+        "lancamento_tipo": 36,
+        "localidade": 1,
+        "natureza": "DEBITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "VALOR NAO CONFERE",
+        "valor": "158.09"
+      },
+      {
+        "conta_contabil": "2.1.9.01.002",
+        "historico": "NAO CLASSIFICADO VALOR NAO CONFERE RESID",
+        "indicador_debito_credito": 1,
+        "lancamento_tipo": 36,
+        "localidade": 1,
+        "natureza": "CREDITO",
+        "origem": "ARRECADACAO",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "tipo": "VALOR NAO CONFERE",
+        "valor": "158.09"
+      }
+    ],
+    "parametros_financeiro": [
+      {
+        "referencia_arrecadacao": 202606,
+        "referencia_faturamento": 202606
+      }
+    ],
+    "passos": [
+      {
+        "forjado": false,
+        "http": 200,
+        "mensagem": null,
+        "resultado": "inserido",
+        "tela": {
+          "comando_listado": true,
+          "http": 200,
+          "mensagem": null
+        },
+        "tipo": "disparar"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+        "sha256": "396a950fe66d8d09164044258edc0d6e779a9bf52ea287d2866b9476030914b5",
+        "tipo": "aplicar"
+      },
+      {
+        "arquivo": {
+          "linhas": [
+            "A2901                 EMPRESA SINTETICA   901BANCO SINTETICO     2026061100000104CODIGO DE BARRAS                                                     ",
+            "G00010000000000000000202606102026061182680000001104009010010001000130105202620003000000011040000000000000002000000011                       1         ",
+            "G00010000000000000000202606122026061182680000001104009010010001000130105202620003000000011040000000000000003000000011                       1         ",
+            "G00010000000000000000202606102026061182680000001680909010010001000210105202620003000000015809000000000000004000000011                       1         ",
+            "G00010000000000000000202606102026061182610000000500009010010001000300104202650003000000005000000000000000005000000011                       1         ",
+            "Z00000600000000000042889                                                                                                                              "
+          ],
+          "nome": "MOVIMENTO000001.ARR",
+          "registros": [
+            {
+              "conta_no_envio": true,
+              "imovel": 100013,
+              "referencia": 202605,
+              "valor_documento": "110.40",
+              "valor_recebido": "110.40"
+            },
+            {
+              "conta_no_envio": true,
+              "imovel": 100013,
+              "referencia": 202605,
+              "valor_documento": "110.40",
+              "valor_recebido": "110.40"
+            },
+            {
+              "conta_no_envio": true,
+              "imovel": 100021,
+              "referencia": 202605,
+              "valor_documento": "168.09",
+              "valor_recebido": "158.09"
+            },
+            {
+              "conta_no_envio": false,
+              "imovel": 100030,
+              "referencia": 202604,
+              "valor_documento": "50.00",
+              "valor_recebido": "50.00"
+            }
+          ],
+          "sha256": "cd4b24c995fd38db0c319e0cf5c0b0cabce47e9c0b3f8da0c7f2bf618eda154a",
+          "total_trailer": "428.89"
+        },
+        "http": 200,
+        "resultado": "enviado",
+        "tela": {
+          "convenio_listado": true,
+          "http": 200
+        },
+        "tipo": "movimento"
+      },
+      {
+        "movimento_gravado": true,
+        "nsa": 1,
+        "tipo": "aguardar_movimento"
+      },
+      {
+        "http": 200,
+        "resultado": "inserido",
+        "tela": {
+          "http": 200,
+          "processo": "CLASSIFICAR PAGAMENTOS (SINTETICO)"
+        },
+        "tipo": "iniciar_processo"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "http": 200,
+        "resultado": "inserido",
+        "tela": {
+          "http": 200,
+          "processo": "ENCERRAR ARRECADACAO DO MES (SINTETICO)"
+        },
+        "tipo": "iniciar_processo"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "http": 200,
+        "resultado": "inserido",
+        "tela": {
+          "http": 200,
+          "processo": "LANC CONTABEIS ARRECADACAO (SINTETICO)"
+        },
+        "tipo": "iniciar_processo"
+      },
+      {
+        "ate": "terminal",
+        "tipo": "aguardar"
+      },
+      {
+        "estado": {
+          "avisos": [
+            {
+              "arrecadacao_calculado": "428.89",
+              "arrecadacao_informado": "428.89",
+              "com_conta_bancaria": true,
+              "contabilizado": "0.00",
+              "credito_debito": 1,
+              "data_lancamento": "11/06/2026",
+              "data_prevista": "11/06/2026",
+              "data_realizada": "11/06/2026",
+              "devolucao_calculado": "0.00",
+              "devolucao_informado": "0.00",
+              "documento": 0,
+              "forma": "GUICHE DE CAIXA (SINTETICO)",
+              "nsa": 1,
+              "ordem": 1,
+              "realizado": "428.89",
+              "referencia_arrecadacao": 202606,
+              "sequencial": 0
+            }
+          ],
+          "comando": {
+            "realizado": true
+          },
+          "consumos": [
+            {
+              "consumo": 27,
+              "ligacao": "AGUA",
+              "matricula": 100013,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 47,
+              "ligacao": "AGUA",
+              "matricula": 100021,
+              "referencia": 202605,
+              "tipo": "REAL"
+            },
+            {
+              "consumo": 58,
+              "ligacao": "AGUA",
+              "matricula": 100030,
+              "referencia": 202605,
+              "tipo": "REAL"
+            }
+          ],
+          "contas": [
+            {
+              "autor": null,
+              "consumo_agua": 27,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100013,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 27,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 10,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 10,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "41.50"
+                    },
+                    {
+                      "consumo_agua": 7,
+                      "fim": 30,
+                      "inicio": 21,
+                      "tarifa": "5.20",
+                      "valor_agua": "36.40"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "32.50",
+                  "valor_agua": "110.40",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "110.40",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "110.40",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 47,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100021,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 48,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 30,
+                  "economias": 3,
+                  "faixas": [
+                    {
+                      "consumo_agua": 6,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "23.53"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "97.50",
+                  "valor_agua": "168.09",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "168.09",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "168.09",
+              "vencimento": "10/06/2026"
+            },
+            {
+              "autor": null,
+              "consumo_agua": 58,
+              "consumo_esgoto": 0,
+              "digito_verificador": 2,
+              "emitida_na_data_da_execucao": true,
+              "matricula": 100030,
+              "por_categoria": [
+                {
+                  "categoria": "RESIDENCIAL",
+                  "consumo_agua": 36,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 20,
+                  "economias": 2,
+                  "faixas": [
+                    {
+                      "consumo_agua": 8,
+                      "fim": 20,
+                      "inicio": 11,
+                      "tarifa": "4.15",
+                      "valor_agua": "31.83"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "65.00",
+                  "valor_agua": "128.66",
+                  "valor_esgoto": "0.00"
+                },
+                {
+                  "categoria": "COMERCIAL",
+                  "consumo_agua": 23,
+                  "consumo_esgoto": null,
+                  "consumo_minimo_agua": 15,
+                  "economias": 1,
+                  "faixas": [
+                    {
+                      "consumo_agua": 8,
+                      "fim": 30,
+                      "inicio": 16,
+                      "tarifa": "6.85",
+                      "valor_agua": "52.54"
+                    }
+                  ],
+                  "subcategoria": null,
+                  "tarifa_minima_agua": "71.40",
+                  "valor_agua": "123.94",
+                  "valor_esgoto": "0.00"
+                }
+              ],
+              "referencia": 202605,
+              "referencia_contabil": 202605,
+              "rota": 1,
+              "situacao": "NORMAL",
+              "tipo_impressao": "NORMAL",
+              "validade": "30/09/2026",
+              "valor_agua": "252.60",
+              "valor_creditos": "0.00",
+              "valor_debitos": "0.00",
+              "valor_esgoto": "0.00",
+              "valor_impostos": "0.00",
+              "valor_total": "252.60",
+              "vencimento": "10/06/2026"
+            }
+          ],
+          "contas_baixadas": [],
+          "contas_historico": [],
+          "contas_iniciadas": 3,
+          "contratos": [
+            {
+              "contrato": "901",
+              "nsa_retorno_codigo_barras": 1
+            }
+          ],
+          "creditos_a_realizar_historico": [],
+          "devedores_parametros": [],
+          "devolucoes": [],
+          "devolucoes_historico": [],
+          "funcionalidades": [
+            {
+              "descricao": "Faturar Grupo Faturamento",
+              "erro_chaves": [],
+              "erro_registrado": false,
+              "funcionalidade": 63,
+              "inicio_registrado": true,
+              "processo": 1,
+              "sequencia": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true
+            },
+            {
+              "descricao": "Classificar Pagamentos e Devolucoes",
+              "erro_chaves": [],
+              "erro_registrado": false,
+              "funcionalidade": 545,
+              "inicio_registrado": true,
+              "processo": 2,
+              "sequencia": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true
+            },
+            {
+              "descricao": "Encerrar Arrecadacao do Mes",
+              "erro_chaves": [],
+              "erro_registrado": false,
+              "funcionalidade": 546,
+              "inicio_registrado": true,
+              "processo": 3,
+              "sequencia": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true
+            },
+            {
+              "descricao": "Gerar Lancamentos Contabeis da Arrecadacao",
+              "erro_chaves": [],
+              "erro_registrado": false,
+              "funcionalidade": 700,
+              "inicio_registrado": true,
+              "processo": 4,
+              "sequencia": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true
+            }
+          ],
+          "grupo_faturamento": {
+            "referencia_atual": 202606
+          },
+          "itens": [
+            {
+              "aceitacao": 1,
+              "codigo": "G",
+              "conta": {
+                "matricula": 100013,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "matricula": 100013,
+              "nsa": 1,
+              "ocorrencia": "OK",
+              "ordem": 1,
+              "registro": "G00010000000000000000202606102026061182680000001104009010010001000130105202620003000000011040000000000000002000000011                       1        *",
+              "valor_documento": "110.40"
+            },
+            {
+              "aceitacao": 1,
+              "codigo": "G",
+              "conta": {
+                "matricula": 100013,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "matricula": 100013,
+              "nsa": 1,
+              "ocorrencia": "OK",
+              "ordem": 2,
+              "registro": "G00010000000000000000202606122026061182680000001104009010010001000130105202620003000000011040000000000000003000000011                       1        *",
+              "valor_documento": "110.40"
+            },
+            {
+              "aceitacao": 1,
+              "codigo": "G",
+              "conta": {
+                "matricula": 100021,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "matricula": 100021,
+              "nsa": 1,
+              "ocorrencia": "OK",
+              "ordem": 3,
+              "registro": "G00010000000000000000202606102026061182680000001680909010010001000210105202620003000000015809000000000000004000000011                       1        *",
+              "valor_documento": "158.09"
+            },
+            {
+              "aceitacao": 1,
+              "codigo": "G",
+              "conta": null,
+              "matricula": 100030,
+              "nsa": 1,
+              "ocorrencia": "CONTA INEXISTENTE",
+              "ordem": 4,
+              "registro": "G00010000000000000000202606102026061182610000000500009010010001000300104202650003000000005000000000000000005000000011                       1        *",
+              "valor_documento": "50.00"
+            }
+          ],
+          "lancamentos_contabeis": [
+            {
+              "conta_contabil": "1.1.2.01.001",
+              "historico": "BAIXA CONTAS A RECEBER RESIDENCIAL",
+              "indicador_debito_credito": 1,
+              "lancamento_tipo": 27,
+              "localidade": 1,
+              "natureza": "CREDITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 1,
+              "referencia": 202606,
+              "tipo": "CONTAS",
+              "valor": "110.40"
+            },
+            {
+              "conta_contabil": "2.1.9.01.001",
+              "historico": "ARRECADACAO CONTAS RESIDENCIAL",
+              "indicador_debito_credito": 2,
+              "lancamento_tipo": 27,
+              "localidade": 1,
+              "natureza": "DEBITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 1,
+              "referencia": 202606,
+              "tipo": "CONTAS",
+              "valor": "110.40"
+            },
+            {
+              "conta_contabil": "2.1.9.01.001",
+              "historico": "ARRECADACAO DUPLICIDADE RESIDENCIAL",
+              "indicador_debito_credito": 2,
+              "lancamento_tipo": 33,
+              "localidade": 1,
+              "natureza": "DEBITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "PAGAMENTO EM DUPLICIDADE",
+              "valor": "110.40"
+            },
+            {
+              "conta_contabil": "2.1.9.01.002",
+              "historico": "NAO CLASSIFICADO DUPLICIDADE RESIDENCIAL",
+              "indicador_debito_credito": 1,
+              "lancamento_tipo": 33,
+              "localidade": 1,
+              "natureza": "CREDITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "PAGAMENTO EM DUPLICIDADE",
+              "valor": "110.40"
+            },
+            {
+              "conta_contabil": "2.1.9.01.001",
+              "historico": "ARRECADACAO DOC INEXISTENTE COMERCIAL",
+              "indicador_debito_credito": 2,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "natureza": "DEBITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "DOCUMENTO INEXISTENTE",
+              "valor": "16.66"
+            },
+            {
+              "conta_contabil": "2.1.9.01.001",
+              "historico": "ARRECADACAO DOC INEXISTENTE RESIDENCIAL",
+              "indicador_debito_credito": 2,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "natureza": "DEBITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "DOCUMENTO INEXISTENTE",
+              "valor": "33.34"
+            },
+            {
+              "conta_contabil": "2.1.9.01.002",
+              "historico": "NAO CLASSIFICADO DOC INEXISTENTE COMERC",
+              "indicador_debito_credito": 1,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "natureza": "CREDITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "DOCUMENTO INEXISTENTE",
+              "valor": "16.66"
+            },
+            {
+              "conta_contabil": "2.1.9.01.002",
+              "historico": "NAO CLASSIFICADO DOC INEXISTENTE RESID",
+              "indicador_debito_credito": 1,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "natureza": "CREDITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "DOCUMENTO INEXISTENTE",
+              "valor": "33.34"
+            },
+            {
+              "conta_contabil": "2.1.9.01.001",
+              "historico": "ARRECADACAO VALOR NAO CONFERE RESIDENCIAL",
+              "indicador_debito_credito": 2,
+              "lancamento_tipo": 36,
+              "localidade": 1,
+              "natureza": "DEBITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "VALOR NAO CONFERE",
+              "valor": "158.09"
+            },
+            {
+              "conta_contabil": "2.1.9.01.002",
+              "historico": "NAO CLASSIFICADO VALOR NAO CONFERE RESID",
+              "indicador_debito_credito": 1,
+              "lancamento_tipo": 36,
+              "localidade": 1,
+              "natureza": "CREDITO",
+              "origem": "ARRECADACAO",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "tipo": "VALOR NAO CONFERE",
+              "valor": "158.09"
+            }
+          ],
+          "movimentos": [
+            {
+              "banco": 901,
+              "convenio": "901",
+              "data_geracao": "11/06/2026",
+              "empresa": "EMPRESA SINTETICA",
+              "nome_banco": "BANCO SINTETICO",
+              "nsa": 1,
+              "registros": 6,
+              "remessa": 2,
+              "servico": "CODIGO DE BARRAS",
+              "valor_total": "428.89",
+              "versao_layout": 4
+            }
+          ],
+          "pagamentos_arrecadacao": [
+            {
+              "aviso": 1,
+              "conta": {
+                "matricula": 100013,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_pagamento": "10/06/2026",
+              "documento_agregador": "CONTA",
+              "documento_tipo": "CONTA",
+              "excedente": null,
+              "expurgado": null,
+              "forma": "GUICHE DE CAIXA (SINTETICO)",
+              "indicador_recuperacao_credito": 2,
+              "item": {
+                "nsa": 1,
+                "ordem": 1
+              },
+              "localidade": 1,
+              "matricula": 100013,
+              "processamento_registrado": true,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202605,
+              "situacao": "CLASSIFICADO",
+              "situacao_anterior": null,
+              "valor": "110.40"
+            },
+            {
+              "aviso": 1,
+              "conta": {
+                "matricula": 100013,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_pagamento": "12/06/2026",
+              "documento_agregador": "CONTA",
+              "documento_tipo": "CONTA",
+              "excedente": "110.40",
+              "expurgado": null,
+              "forma": "GUICHE DE CAIXA (SINTETICO)",
+              "indicador_recuperacao_credito": 2,
+              "item": {
+                "nsa": 1,
+                "ordem": 2
+              },
+              "localidade": 1,
+              "matricula": 100013,
+              "processamento_registrado": true,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202605,
+              "situacao": "EM DUPLICIDADE",
+              "situacao_anterior": null,
+              "valor": "110.40"
+            },
+            {
+              "aviso": 1,
+              "conta": {
+                "matricula": 100021,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_pagamento": "10/06/2026",
+              "documento_agregador": "CONTA",
+              "documento_tipo": "CONTA",
+              "excedente": null,
+              "expurgado": null,
+              "forma": "GUICHE DE CAIXA (SINTETICO)",
+              "indicador_recuperacao_credito": 2,
+              "item": {
+                "nsa": 1,
+                "ordem": 3
+              },
+              "localidade": 1,
+              "matricula": 100021,
+              "processamento_registrado": true,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202605,
+              "situacao": "VALOR NAO CONFERE",
+              "situacao_anterior": null,
+              "valor": "158.09"
+            },
+            {
+              "aviso": 1,
+              "conta": null,
+              "data_pagamento": "10/06/2026",
+              "documento_agregador": "CONTA",
+              "documento_tipo": "CONTA",
+              "excedente": "50.00",
+              "expurgado": null,
+              "forma": "GUICHE DE CAIXA (SINTETICO)",
+              "indicador_recuperacao_credito": 2,
+              "item": {
+                "nsa": 1,
+                "ordem": 4
+              },
+              "localidade": 1,
+              "matricula": 100030,
+              "processamento_registrado": true,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202604,
+              "situacao": "DOC INEXISTENTE",
+              "situacao_anterior": null,
+              "valor": "50.00"
+            }
+          ],
+          "pagamentos_documento": [
+            {
+              "conta": {
+                "historico": false,
+                "matricula": 100013,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_pagamento": "10/06/2026",
+              "excedente": null,
+              "matricula": 100013,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202605,
+              "situacao": "CLASSIFICADO",
+              "situacao_anterior": null,
+              "valor": "110.40"
+            },
+            {
+              "conta": {
+                "historico": false,
+                "matricula": 100013,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_pagamento": "12/06/2026",
+              "excedente": "110.40",
+              "matricula": 100013,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202605,
+              "situacao": "EM DUPLICIDADE",
+              "situacao_anterior": null,
+              "valor": "110.40"
+            },
+            {
+              "conta": {
+                "historico": false,
+                "matricula": 100021,
+                "ordem": 1,
+                "referencia": 202605
+              },
+              "data_pagamento": "10/06/2026",
+              "excedente": null,
+              "matricula": 100021,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202605,
+              "situacao": "VALOR NAO CONFERE",
+              "situacao_anterior": null,
+              "valor": "158.09"
+            },
+            {
+              "conta": null,
+              "data_pagamento": "10/06/2026",
+              "excedente": "50.00",
+              "matricula": 100030,
+              "referencia_arrecadacao": 202606,
+              "referencia_pagamento": 202604,
+              "situacao": "DOC INEXISTENTE",
+              "situacao_anterior": null,
+              "valor": "50.00"
+            }
+          ],
+          "pagamentos_historico": [],
+          "parametros": [
+            {
+              "referencia_arrecadacao": 202606,
+              "referencia_faturamento": 202606
+            }
+          ],
+          "parametros_financeiro": [
+            {
+              "referencia_arrecadacao": 202606,
+              "referencia_faturamento": 202606
+            }
+          ],
+          "processos": [
+            {
+              "grupo": 1,
+              "inicio_registrado": true,
+              "ordem": 1,
+              "processo": "FATURAR GRUPO FATURAMENTO",
+              "situacao": "CONCLUIDO",
+              "solicitante": "fase2.oper",
+              "termino_registrado": true
+            },
+            {
+              "grupo": null,
+              "inicio_registrado": true,
+              "ordem": 2,
+              "processo": "CLASSIFICAR PAGAMENTOS (SINTETICO)",
+              "situacao": "CONCLUIDO",
+              "solicitante": "fase2.oper",
+              "termino_registrado": true
+            },
+            {
+              "grupo": null,
+              "inicio_registrado": true,
+              "ordem": 3,
+              "processo": "ENCERRAR ARRECADACAO DO MES (SINTETICO)",
+              "situacao": "CONCLUIDO",
+              "solicitante": "fase2.oper",
+              "termino_registrado": true
+            },
+            {
+              "grupo": null,
+              "inicio_registrado": true,
+              "ordem": 4,
+              "processo": "LANC CONTABEIS ARRECADACAO (SINTETICO)",
+              "situacao": "CONCLUIDO",
+              "solicitante": "fase2.oper",
+              "termino_registrado": true
+            }
+          ],
+          "resumo_arrecadacao": [
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 1,
+              "lancamento_tipo": 27,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS CLASSIFICADOS",
+              "recebimento_tipo": 1,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 100,
+              "unidade_negocio": 1,
+              "valor": "110.40"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 34,
+              "lancamento_tipo": 40,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS CLASSIFICADOS",
+              "recebimento_tipo": 1,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 1600,
+              "unidade_negocio": 1,
+              "valor": "110.40"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 36,
+              "lancamento_tipo": 42,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS CLASSIFICADOS",
+              "recebimento_tipo": 1,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2000,
+              "unidade_negocio": 1,
+              "valor": "110.40"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 32,
+              "lancamento_tipo": 33,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2100,
+              "unidade_negocio": 1,
+              "valor": "110.40"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 33,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2200,
+              "unidade_negocio": 1,
+              "valor": "33.34"
+            },
+            {
+              "categoria": "COMERCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 33,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2200,
+              "unidade_negocio": 1,
+              "valor": "16.66"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 29,
+              "lancamento_tipo": 36,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2300,
+              "unidade_negocio": 1,
+              "valor": "158.09"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 35,
+              "lancamento_tipo": 41,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2400,
+              "unidade_negocio": 1,
+              "valor": "301.83"
+            },
+            {
+              "categoria": "COMERCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 35,
+              "lancamento_tipo": 41,
+              "localidade": 1,
+              "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 2,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2400,
+              "unidade_negocio": 1,
+              "valor": "16.66"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 37,
+              "lancamento_tipo": 43,
+              "localidade": 1,
+              "recebimento": "TOTAL RECEBIMENTOS",
+              "recebimento_tipo": 3,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2500,
+              "unidade_negocio": 1,
+              "valor": "412.23"
+            },
+            {
+              "categoria": "COMERCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 37,
+              "lancamento_tipo": 43,
+              "localidade": 1,
+              "recebimento": "TOTAL RECEBIMENTOS",
+              "recebimento_tipo": 3,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2500,
+              "unidade_negocio": 1,
+              "valor": "16.66"
+            },
+            {
+              "categoria": "INDUSTRIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 37,
+              "lancamento_tipo": 43,
+              "localidade": 1,
+              "recebimento": "TOTAL RECEBIMENTOS",
+              "recebimento_tipo": 3,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2500,
+              "unidade_negocio": 1,
+              "valor": "0.00"
+            },
+            {
+              "categoria": "PUBLICO",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 37,
+              "lancamento_tipo": 43,
+              "localidade": 1,
+              "recebimento": "TOTAL RECEBIMENTOS",
+              "recebimento_tipo": 3,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 2500,
+              "unidade_negocio": 1,
+              "valor": "0.00"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 44,
+              "lancamento_tipo": 51,
+              "localidade": 1,
+              "recebimento": "ARRECADACAO LIQUIDA",
+              "recebimento_tipo": 7,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 3400,
+              "unidade_negocio": 1,
+              "valor": "412.23"
+            },
+            {
+              "categoria": "COMERCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 44,
+              "lancamento_tipo": 51,
+              "localidade": 1,
+              "recebimento": "ARRECADACAO LIQUIDA",
+              "recebimento_tipo": 7,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 3400,
+              "unidade_negocio": 1,
+              "valor": "16.66"
+            },
+            {
+              "categoria": "INDUSTRIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 44,
+              "lancamento_tipo": 51,
+              "localidade": 1,
+              "recebimento": "ARRECADACAO LIQUIDA",
+              "recebimento_tipo": 7,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 3400,
+              "unidade_negocio": 1,
+              "valor": "0.00"
+            },
+            {
+              "categoria": "PUBLICO",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 44,
+              "lancamento_tipo": 51,
+              "localidade": 1,
+              "recebimento": "ARRECADACAO LIQUIDA",
+              "recebimento_tipo": 7,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 3400,
+              "unidade_negocio": 1,
+              "valor": "0.00"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 32,
+              "lancamento_tipo": 33,
+              "localidade": 1,
+              "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 12,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 6300,
+              "unidade_negocio": 1,
+              "valor": "110.40"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 33,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 12,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 6400,
+              "unidade_negocio": 1,
+              "valor": "33.34"
+            },
+            {
+              "categoria": "COMERCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 33,
+              "lancamento_tipo": 35,
+              "localidade": 1,
+              "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 12,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 6400,
+              "unidade_negocio": 1,
+              "valor": "16.66"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 29,
+              "lancamento_tipo": 36,
+              "localidade": 1,
+              "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 12,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 6500,
+              "unidade_negocio": 1,
+              "valor": "158.09"
+            },
+            {
+              "categoria": "RESIDENCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 35,
+              "lancamento_tipo": 41,
+              "localidade": 1,
+              "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 12,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 6600,
+              "unidade_negocio": 1,
+              "valor": "301.83"
+            },
+            {
+              "categoria": "COMERCIAL",
+              "gerencia": 1,
+              "item_contabil": null,
+              "lancamento_item": 35,
+              "lancamento_tipo": 41,
+              "localidade": 1,
+              "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+              "recebimento_tipo": 12,
+              "referencia": 202606,
+              "sequencia_item": 0,
+              "sequencia_tipo": 6600,
+              "unidade_negocio": 1,
+              "valor": "16.66"
+            }
+          ],
+          "resumo_devedores": [],
+          "resumo_faturamento": [],
+          "totais": {
+            "grupo": {
+              "contas": 3,
+              "valor_total": "531.09"
+            },
+            "por_rota": [
+              {
+                "contas": 3,
+                "rota": 1,
+                "valor_agua": "531.09",
+                "valor_esgoto": "0.00",
+                "valor_total": "531.09"
+              }
+            ]
+          },
+          "unidades": [
+            {
+              "funcionalidade": 63,
+              "processo": 1,
+              "rota": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true,
+              "tipo_unidade": 1
+            },
+            {
+              "funcionalidade": 545,
+              "processo": 2,
+              "rota": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true,
+              "tipo_unidade": 6
+            },
+            {
+              "funcionalidade": 546,
+              "processo": 3,
+              "rota": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true,
+              "tipo_unidade": 6
+            },
+            {
+              "funcionalidade": 700,
+              "processo": 4,
+              "rota": 1,
+              "situacao": "CONCLUIDA",
+              "termino_registrado": true,
+              "tipo_unidade": 6
+            }
+          ]
+        },
+        "tipo": "observar"
+      }
+    ],
+    "resumo_arrecadacao": [
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 1,
+        "lancamento_tipo": 27,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS CLASSIFICADOS",
+        "recebimento_tipo": 1,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 100,
+        "unidade_negocio": 1,
+        "valor": "110.40"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 34,
+        "lancamento_tipo": 40,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS CLASSIFICADOS",
+        "recebimento_tipo": 1,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 1600,
+        "unidade_negocio": 1,
+        "valor": "110.40"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 36,
+        "lancamento_tipo": 42,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS CLASSIFICADOS",
+        "recebimento_tipo": 1,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2000,
+        "unidade_negocio": 1,
+        "valor": "110.40"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 32,
+        "lancamento_tipo": 33,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2100,
+        "unidade_negocio": 1,
+        "valor": "110.40"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 33,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2200,
+        "unidade_negocio": 1,
+        "valor": "33.34"
+      },
+      {
+        "categoria": "COMERCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 33,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2200,
+        "unidade_negocio": 1,
+        "valor": "16.66"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 29,
+        "lancamento_tipo": 36,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2300,
+        "unidade_negocio": 1,
+        "valor": "158.09"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 35,
+        "lancamento_tipo": 41,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2400,
+        "unidade_negocio": 1,
+        "valor": "301.83"
+      },
+      {
+        "categoria": "COMERCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 35,
+        "lancamento_tipo": 41,
+        "localidade": 1,
+        "recebimento": "RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 2,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2400,
+        "unidade_negocio": 1,
+        "valor": "16.66"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 37,
+        "lancamento_tipo": 43,
+        "localidade": 1,
+        "recebimento": "TOTAL RECEBIMENTOS",
+        "recebimento_tipo": 3,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2500,
+        "unidade_negocio": 1,
+        "valor": "412.23"
+      },
+      {
+        "categoria": "COMERCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 37,
+        "lancamento_tipo": 43,
+        "localidade": 1,
+        "recebimento": "TOTAL RECEBIMENTOS",
+        "recebimento_tipo": 3,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2500,
+        "unidade_negocio": 1,
+        "valor": "16.66"
+      },
+      {
+        "categoria": "INDUSTRIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 37,
+        "lancamento_tipo": 43,
+        "localidade": 1,
+        "recebimento": "TOTAL RECEBIMENTOS",
+        "recebimento_tipo": 3,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2500,
+        "unidade_negocio": 1,
+        "valor": "0.00"
+      },
+      {
+        "categoria": "PUBLICO",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 37,
+        "lancamento_tipo": 43,
+        "localidade": 1,
+        "recebimento": "TOTAL RECEBIMENTOS",
+        "recebimento_tipo": 3,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 2500,
+        "unidade_negocio": 1,
+        "valor": "0.00"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 44,
+        "lancamento_tipo": 51,
+        "localidade": 1,
+        "recebimento": "ARRECADACAO LIQUIDA",
+        "recebimento_tipo": 7,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 3400,
+        "unidade_negocio": 1,
+        "valor": "412.23"
+      },
+      {
+        "categoria": "COMERCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 44,
+        "lancamento_tipo": 51,
+        "localidade": 1,
+        "recebimento": "ARRECADACAO LIQUIDA",
+        "recebimento_tipo": 7,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 3400,
+        "unidade_negocio": 1,
+        "valor": "16.66"
+      },
+      {
+        "categoria": "INDUSTRIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 44,
+        "lancamento_tipo": 51,
+        "localidade": 1,
+        "recebimento": "ARRECADACAO LIQUIDA",
+        "recebimento_tipo": 7,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 3400,
+        "unidade_negocio": 1,
+        "valor": "0.00"
+      },
+      {
+        "categoria": "PUBLICO",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 44,
+        "lancamento_tipo": 51,
+        "localidade": 1,
+        "recebimento": "ARRECADACAO LIQUIDA",
+        "recebimento_tipo": 7,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 3400,
+        "unidade_negocio": 1,
+        "valor": "0.00"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 32,
+        "lancamento_tipo": 33,
+        "localidade": 1,
+        "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 12,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 6300,
+        "unidade_negocio": 1,
+        "valor": "110.40"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 33,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 12,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 6400,
+        "unidade_negocio": 1,
+        "valor": "33.34"
+      },
+      {
+        "categoria": "COMERCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 33,
+        "lancamento_tipo": 35,
+        "localidade": 1,
+        "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 12,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 6400,
+        "unidade_negocio": 1,
+        "valor": "16.66"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 29,
+        "lancamento_tipo": 36,
+        "localidade": 1,
+        "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 12,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 6500,
+        "unidade_negocio": 1,
+        "valor": "158.09"
+      },
+      {
+        "categoria": "RESIDENCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 35,
+        "lancamento_tipo": 41,
+        "localidade": 1,
+        "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 12,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 6600,
+        "unidade_negocio": 1,
+        "valor": "301.83"
+      },
+      {
+        "categoria": "COMERCIAL",
+        "gerencia": 1,
+        "item_contabil": null,
+        "lancamento_item": 35,
+        "lancamento_tipo": 41,
+        "localidade": 1,
+        "recebimento": "RESUMO RECEBIMENTOS NAO CLASSIFICADOS",
+        "recebimento_tipo": 12,
+        "referencia": 202606,
+        "sequencia_item": 0,
+        "sequencia_tipo": 6600,
+        "unidade_negocio": 1,
+        "valor": "16.66"
+      }
+    ],
+    "resumo_faturamento": []
+  },
+  "operacao": {
+    "entrada": {
+      "comando": 1,
+      "detalhes": [
+        "financeiro",
+        "encerramento",
+        "arrecadacao"
+      ],
+      "passos": [
+        {
+          "tipo": "disparar"
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql",
+          "tipo": "aplicar"
+        },
+        {
+          "nsa": 1,
+          "registros": [
+            {
+              "imovel": 100013,
+              "referencia": 202605
+            },
+            {
+              "data_pagamento": "20260612",
+              "imovel": 100013,
+              "referencia": 202605
+            },
+            {
+              "imovel": 100021,
+              "referencia": 202605,
+              "valor_recebido": "-10.00"
+            },
+            {
+              "imovel": 100030,
+              "referencia": 202604,
+              "valor_documento": "50.00"
+            }
+          ],
+          "tipo": "movimento"
+        },
+        {
+          "nsa": 1,
+          "tipo": "aguardar_movimento"
+        },
+        {
+          "processo": 3201,
+          "tipo": "iniciar_processo",
+          "tipo_processo": 4
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "processo": 50,
+          "tipo": "iniciar_processo",
+          "tipo_processo": 3
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "processo": 3403,
+          "tipo": "iniciar_processo",
+          "tipo_processo": 3
+        },
+        {
+          "ate": "terminal",
+          "tipo": "aguardar"
+        },
+        {
+          "tipo": "observar"
+        }
+      ],
+      "usuario": "fase2.oper"
+    },
+    "fronteira": "Contabilização da competência pela tela Inserir Processo, no EAR em modo Batch: o ENCERRAMENTO DO FATURAMENTO do mês (ControladorFaturamentoFINAL.encerrarFaturamentoMes — o resumo do faturamento da referência aberta) e os LANÇAMENTOS CONTÁBEIS do faturamento (ControladorFinanceiro.gerarLancamentosContabeisFaturamento), sobre as contas que o faturamento em grupo gera no início da execução; os lançamentos da ARRECADAÇÃO (gerarLancamentoContabeisArrecadacao) e dos AVISOS BANCÁRIOS (gerarLancamentosContabeisAvisosBancarios), sobre o mês da arrecadação de CEN-ARR-010 V1 encerrado (lote 6c). Resumos, lançamentos com os itens de débito e crédito e avisos lidos do banco.",
+    "roteiro": "faturar_grupo"
+  },
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+    "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+    "catalogos": "os tipos e itens de lançamento são os das constantes do código (LancamentoTipo, LancamentoItem — a base só tem parte deles), com o nome da constante como descrição; as origens de lançamento (1–4) são as de LancamentoOrigem",
+    "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+    "encerramento": "o encerramento do faturamento só grava o resumo da referência aberta (05/2026): o arquivamento e o avanço da referência (647) ficam fora; o encerramento da arrecadação é o do lote 6c (processo 50), com o passo de massa que avança a referência de faturamento",
+    "integracao": "nenhuma chamada externa: a exportação para o sistema contábil (gerarIntegracaoContabilidade) fica fora",
+    "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "plano": "o plano de contas (seis contas) e a parametrização contábil são SINTÉTICOS — a base não tem nenhum: só as linhas de DETALHE dos resumos são parametrizadas (a água por categoria no faturamento; os recebimentos classificados e não classificados na arrecadação; a água baixada nos devedores duvidosos), as de total não; as contas dos avisos bancários são as que o código procura pelo NOME (\"BANCO\", \"ARRECADACAO A DISCRIMINAR\")",
+    "processos": "um processo SINTÉTICO por etapa — a tarefa é montada na inserção, com a referência do sistema daquele momento: o encerramento do faturamento (552), os lançamentos do faturamento (681), da arrecadação (700) e dos avisos bancários (1291); o 79 (o id de Processo.GERAR_RESUMO_DEVEDORES_DUVIDOSOS), que a tela dos devedores insere com a referência do formulário, com o resumo (714) e os lançamentos (755 — na base, esse id de funcionalidade é \"Inserir Capacidade Hidrometro\": a etapa sai com esse nome)",
+    "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+    "repositorio": "os devedores duvidosos rodam pelo repositório do PostgreSQL (RepositorioFinanceiroHBM.getInstancia escolhe RepositorioFinanceiroPostgresHBM quando o dialeto não é Oracle) — a regra observada é a dessa versão"
+  },
+  "titulo": "Lançamentos contábeis da competência por origem",
+  "usuarios_sinteticos": [
+    "fase2.oper"
+  ],
+  "variacao": "V2"
+}

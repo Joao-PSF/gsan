@@ -939,10 +939,69 @@ def _acao_cobranca(ctx):
     }
 
 
+def _financeiro(ctx):
+    """Contabilização (lote 9): as referências do sistema; o resumo do faturamento linha a linha (tipo, item e item contábil de
+    lançamento pelas constantes do legado, categoria, sequências e valor); os lançamentos contábeis (referência, origem, tipo,
+    localidade, tipo de recebimento) com cada item — o indicador de débito/crédito como o legado o grava (e a natureza pelas
+    constantes ConstantesSistema.INDICADOR_DEBITO = 2, INDICADOR_CREDITO = 1), a conta contábil pelo
+    número, o valor e o histórico; os parâmetros e o resumo dos devedores duvidosos; as contas baixadas contabilmente, pela
+    identidade documental. Ids técnicos nunca saem."""
+    return {
+        'parametros_financeiro': _linhas(ctx, "select parm_amreferenciafaturamento as referencia_faturamento,"
+                                              " parm_amreferenciaarrecadacao as referencia_arrecadacao from cadastro.sistema_parametros"),
+        'resumo_faturamento': _linhas(ctx, "select r.rfat_amreferencia as referencia, r.loca_id as localidade, c.catg_dscategoria as categoria,"
+                                           " r.lctp_id as lancamento_tipo, t.lctp_dstipolancamento as tipo, r.lcit_id as lancamento_item,"
+                                           " i.lcit_dsitemlancamento as item, ic.lict_dsitemlancamentocontabil as item_contabil,"
+                                           " r.rfat_nnsequenciatipolancamento as sequencia_tipo, r.rfat_nnseqitemtplanc as sequencia_item,"
+                                           " r.rfat_vlitemfaturamento::text as valor"
+                                           " from financeiro.resumo_faturamento r"
+                                           " left join cadastro.categoria c on c.catg_id = r.catg_id"
+                                           " left join financeiro.lancamento_tipo t on t.lctp_id = r.lctp_id"
+                                           " left join financeiro.lancamento_item i on i.lcit_id = r.lcit_id"
+                                           " left join financeiro.lancamento_item_contabil ic on ic.lict_id = r.lict_id"
+                                           " order by r.rfat_amreferencia, r.loca_id, r.rfat_nnsequenciatipolancamento, r.rfat_nnseqitemtplanc,"
+                                           " r.catg_id, r.lctp_id, r.lcit_id, r.lict_id, r.rfat_vlitemfaturamento"),
+        'lancamentos_contabeis': _linhas(ctx, "select l.lcnb_amlancamento as referencia, o.lcor_dslancamentoorigem as origem,"
+                                              " l.lctp_id as lancamento_tipo, t.lctp_dstipolancamento as tipo, l.loca_id as localidade,"
+                                              " l.rctp_id as recebimento_tipo, i.lcti_icdebitocredito as indicador_debito_credito,"
+                                              " case i.lcti_icdebitocredito when 2 then 'DEBITO' when 1 then 'CREDITO' end as natureza,"
+                                              " rtrim(k.cnct_nnconta) as conta_contabil, i.lcti_vllancamento::text as valor, i.lcti_dshistorico as historico"
+                                              " from financeiro.lancamento_contabil l"
+                                              " left join financeiro.lancamento_origem o on o.lcor_id = l.lcor_id"
+                                              " left join financeiro.lancamento_tipo t on t.lctp_id = l.lctp_id"
+                                              " left join financeiro.lancamento_contabil_item i on i.lcnb_id = l.lcnb_id"
+                                              " left join financeiro.conta_contabil k on k.cnct_id = i.cnct_id"
+                                              " order by l.lcnb_amlancamento, l.lcor_id, l.loca_id, l.lctp_id, l.rctp_id, k.cnct_nnconta,"
+                                              " i.lcti_icdebitocredito, i.lcti_vllancamento, i.lcti_dshistorico"),
+        'devedores_parametros': _linhas(ctx, "select p.pded_amreferenciacontabil as referencia_contabil, p.pded_vlvalorabaixar::text as valor_a_baixar,"
+                                             " p.pded_vlbaixado::text as valor_baixado, p.pded_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                             f" {_data_relativa('p.pded_tmprocessamento')} as processamento"
+                                             " from financeiro.param_deved_duvid p order by p.pded_amreferenciacontabil"),
+        'resumo_devedores': _linhas(ctx, "select r.rded_amreferenciacontabil as referencia_contabil, r.rded_amreferenciaarrecadacao as referencia_arrecadacao,"
+                                         " r.loca_id as localidade, c.catg_dscategoria as categoria, r.lctp_id as lancamento_tipo,"
+                                         " r.lcit_id as lancamento_item, i.lcit_dsitemlancamento as item,"
+                                         " ic.lict_dsitemlancamentocontabil as item_contabil, r.rded_nnsequenciatipolancamento as sequencia_tipo,"
+                                         " r.rded_nnseqlitentplanc as sequencia_item, r.rded_vlvalorbaixado::text as valor_baixado"
+                                         " from financeiro.resumo_deved_duvid r"
+                                         " left join cadastro.categoria c on c.catg_id = r.catg_id"
+                                         " left join financeiro.lancamento_item i on i.lcit_id = r.lcit_id"
+                                         " left join financeiro.lancamento_item_contabil ic on ic.lict_id = r.lict_id"
+                                         " order by r.rded_amreferenciacontabil, r.loca_id, r.rded_nnsequenciatipolancamento,"
+                                         " r.rded_nnseqlitentplanc, r.catg_id, r.lctp_id, r.lcit_id, r.lict_id, r.rded_vlvalorbaixado"),
+        'contas_baixadas': _linhas(ctx, IDENT +
+                                   "select " + IDENT_JSON.format(a='x') + " as conta, c.cnta_amreferenciabaixacontabil as referencia_baixa,"
+                                   " (c.cnta_vlagua + c.cnta_vlesgoto + c.cnta_vldebitos - c.cnta_vlcreditos"
+                                   " - coalesce(c.cnta_vlimpostos, 0))::text as valor_total"
+                                   " from faturamento.conta c join ident x on x.cnta_id = c.cnta_id"
+                                   " where c.cnta_amreferenciabaixacontabil is not null"
+                                   " order by c.imov_id, c.cnta_amreferenciaconta, x.ordem"),
+    }
+
+
 DETALHES = {'lancamentos': _lancamentos, 'impostos': _impostos, 'rateio': _rateio, 'micromedicao': _micromedicao,
             'ciclo_conta': _ciclo_conta, 'conta_origem': _conta_origem, 'arrecadacao': _arrecadacao,
             'devolucao': _devolucao, 'encerramento': _encerramento, 'cobranca': _cobranca,
-            'parcelamento': _parcelamento, 'acao_cobranca': _acao_cobranca}
+            'parcelamento': _parcelamento, 'acao_cobranca': _acao_cobranca, 'financeiro': _financeiro}
 
 
 def _estado_faturamento(ctx, contas_no_inicio, detalhes=(), comando=1):
@@ -1698,6 +1757,21 @@ def _comandar_acao_cobranca(ctx, passo):
     return r
 
 
+def _gerar_resumo_devedores(ctx, passo):
+    """Gerar Resumo dos Devedores Duvidosos (exibirGerarResumoDevedoresDuvidososAction → GerarResumoDevedoresDuvidososAction →
+    ControladorFinanceiro.gerarResumoDevedoresDuvidosos): a referência contábil da variação (MM/AAAA); a tela insere o processo
+    79 com essa referência, e o verificador do Quartz o executa."""
+    ctx.atual.get('exibirGerarResumoDevedoresDuvidososAction.do?menu=sim')
+    r = {'tela': {'http': ctx.atual.ultimo_estado}}
+    html = ctx.atual.post('gerarResumoDevedoresDuvidososAction.do',
+                          {'anoMesReferenciaContabil': passo.get('referencia_contabil', '06/2026')})
+    sucesso = 'Gerando Resumo dos Devedores Duvidosos' in texto_visivel(html)
+    r.update(http=ctx.atual.ultimo_estado, resultado='inserido' if sucesso else 'recusado')
+    if not sucesso:
+        r.update(_recusa(html, ctx.atual.ultimo_estado))
+    return r
+
+
 def _processo_cobranca(ctx, passo):
     """Inserir Processo de Cobrança Comandado (exibirInserirProcessoCobrancaComandadoAction → InserirProcessoCobrancaComandadoAction
     → ControladorBatchSEJB.inserirProcessoIniciadoCobrancaComandado): os comandos eventuais que a tela lista, pelo último
@@ -2024,6 +2098,8 @@ def faturar_grupo(ctx, entrada):
             r.update(_comandar_acao_cobranca(ctx, passo))
         elif tipo == 'processo_cobranca':
             r.update(_processo_cobranca(ctx, passo))
+        elif tipo == 'gerar_resumo_devedores':
+            r.update(_gerar_resumo_devedores(ctx, passo))
         elif tipo == 'reiniciar':
             proi = _ultimo_processo(ctx)
             # Etapas a reiniciar: as CONCLUIDA COM ERRO (4, padrão) ou as CONCLUIDA (2) — FuncionalidadeSituacao.

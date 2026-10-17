@@ -115,6 +115,8 @@ EXPORTAÇÃO — arquivo para o sistema contábil da companhia
 
 🔵 [INF] A **regeração por remoção** — apagar e gerar de novo por competência, localidade e origem — é a forma que o GSAN encontrou para corrigir contabilização sem duplicar. É operação **difícil de corrigir se errar**: vira cenário crítico (§13).
 
+🆕 **Medido na Fase 2 (lote 9, 2026-10-16)** — CEN-FIN-001: 🟢 o resumo do faturamento é gravado pelo **encerramento do faturamento** do mês (etapa 552), da referência aberta; cada linha com parâmetro vira um par débito/crédito do mesmo valor, num cabeçalho por referência × localidade × origem × tipo (e tipo de recebimento na arrecadação) — débitos = créditos; os avisos bancários contabilizam a diferença realizado − contabilizado e atualizam o contabilizado. 🔴 A linha sem parâmetro some sem aviso (CAND-53); os avisos usam contas procuradas pelo **nome** — "BANCO", "ARRECADACAO A DISCRIMINAR" —, não a parametrização (CAND-56). ⚠️ Por leitura de código: só os lançamentos dos devedores removem os anteriores antes de gerar; os do faturamento e da arrecadação não (CEN-FIN-003). [Relatório §32](../testes/fase2/fase2-caracterizacao-baselines.md#32-lote-9--financeiro-lançamentos-contábeis-e-devedores-duvidosos-2026-10-16).
+
 ---
 
 ## 7. Devedores duvidosos — o que o GSAN realmente faz
@@ -134,6 +136,8 @@ EXPORTAÇÃO — arquivo para o sistema contábil da companhia
 | **Relatórios**: resumo de devedores duvidosos (wiki: *R0487*), contas baixadas contabilmente (TXT e somatório por faixa) | `consultarResumoDevedoresDuvidososRelatorio`; `gerarTXTContasBaixadasContabilmente` |
 
 🔵 **Semântica** [INF, sustentada pelos passos acima]: **baixa contábil ≠ extinção da dívida**. A conta baixada **continua existindo** como documento comercial e **pode ser paga**; quando é, o pagamento entra num acumulador de **recuperação de perdas**.
+
+🆕 **Medido na Fase 2 (lote 9, 2026-10-16)** — CEN-FIN-002: 🟢 a semântica se confirma — a conta baixada continua na posição de dívida; paga, é classificada e entra no resumo da arrecadação também como RECEBIMENTOS VALORES CONTABILIZADOS COMO PERDAS. 🟢 O critério que funciona: conta NORMAL, INCLUÍDA ou RETIFICADA, de referência anterior, sem baixa, categoria 1–3, **imóvel com situação de cobrança vigente** (sem nenhuma, não entra) e valor até o limite do item. 🔴 Nesta instalação (PostgreSQL), a versão do repositório para o banco erra a data da referência — o **número de meses não exclui nada** (CAND-54) — e confere o teto pela soma das contas já marcadas — o **valor a baixar não limita** e o valor baixado fica zero (CAND-55); a etapa dos lançamentos tem o id de outra funcionalidade na base. [Relatório §32](../testes/fase2/fase2-caracterizacao-baselines.md#32-lote-9--financeiro-lançamentos-contábeis-e-devedores-duvidosos-2026-10-16).
 
 ### 7.2 🔴 Dois acoplamentos encontrados
 
@@ -307,7 +311,7 @@ lançamento derivado por política  ───► recebe e integra
 | 2 | **Reconhecimento de perdas esperadas (PECLD)**: que políticas suportar, com que insumos — sem fórmula nesta fase | Contabilização — aprofundamento posterior |
 | 3 | **Quem produz a estimativa de consumo não faturado** — Micromedição ou Contabilização | Fronteira |
 | 4 | **Conteúdo das páginas da wiki** sobre o módulo | Completude — host bloqueado |
-| 5 | Semântica exata dos critérios de baixa (`valorLimite × numeroMeses` por situação de cobrança) | Caracterização |
+| 5 | Semântica exata dos critérios de baixa (`valorLimite × numeroMeses` por situação de cobrança) — 🆕 em parte (lote 9): o limite de valor é inclusivo e exige situação de cobrança vigente; o número de meses não funciona no PostgreSQL (CAND-54) | Caracterização |
 | 6 | Formatos de exportação das companhias além da variante de referência | `A COMPLEMENTAR` |
 
 ---

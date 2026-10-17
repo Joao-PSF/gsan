@@ -9,10 +9,10 @@
 
 | Classe | Cenários | Com definição executável | Com baseline | Massas iniciais (matriz) | Variações definidas | Baselines gravadas |
 | ------ | -------- | ------------------------ | ------------ | ------------------------ | ------------------- | ------------------ |
-| **A** | 74 | 46 | 46 | 221 | 221 | 221 |
+| **A** | 74 | 48 | 48 | 221 | 228 | 228 |
 | **C** | 6 | 2 | 2 | 13 | 3 | 3 |
 
-**P0 da classe A com baseline**: 38 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 48.
+**P0 da classe A com baseline**: 40 de 42. Cenários que exigem execução do GSAN (A + C com registro): 80; com ao menos uma baseline: 50.
 
 ## Por domínio (classe A)
 
@@ -23,7 +23,7 @@
 | Cadastro e atendimento | 13 | 7 | 29 |
 | Cobrança | 7 | 5 | 33 |
 | Faturamento | 11 | 9 | 43 |
-| Financeiro e operacional | 8 | 0 | 0 |
+| Financeiro e operacional | 8 | 2 | 7 |
 | Micromedição | 5 | 4 | 28 |
 | Segurança | 8 | 8 | 33 |
 
@@ -65,6 +65,8 @@
 | CEN-FAT-007 | P0 | batch-conta-ciclo | V1, V1b, V2, V2b, V3, V4, V4b, V2c | V1, V1b, V2, V2b, V2c, V3, V4, V4b | — | retificação por ALTERAÇÃO DA LEITURA FATURADA (motivo 104), retificar conjunto de contas, D-14 (observável g) |
 | CEN-FAT-008 | P0 | batch-conta-ciclo | V1, V1b, V1c, V2, V2b | V1, V1b, V1c, V2, V2b | — | posição de dívida (CEN-COB-001), prescrição de débitos de imóveis PÚBLICOS, desfazer cancelamento/retificação |
 | CEN-FAT-011 | P1 | batch-faturamento | V1 | V1 | — | V2, localizador da Fase 1 |
+| CEN-FIN-001 | P0 | batch-financeiro | V1, V1b, V2, V3 | V1, V1b, V2, V3 | — | V4 — a mesma geração em outra competência depois de alterar um parâmetro, regeração da contabilização de uma competência, esgoto, débitos, créditos e impostos no resumo do faturamento, exportação para o sistema contábil |
+| CEN-FIN-002 | P0 | batch-financeiro | V1, V1b, V3 | V1, V1b, V3 | — | V4 — a baixa em outra competência depois de alterar um critério, apagar e atualizar o resumo (1406, 1407) e o relatório R0487, exportação para o sistema contábil |
 | CEN-MIC-001 | P0 | batch-micromedicao | V1, V2, V3, V3b, V3c, V4, V5 | V1, V2, V3, V3b, V3c, V4, V5 | — | V5 situação especial, reincidência em três consistências |
 | CEN-MIC-002 | P0 | atendimento | V1, V2, V3, V4, V5, V6, V7, V3c, V4c, V4d, V5c, V6c, V8 | V1, V2, V3, V3c, V4, V4c, V4d, V5, V5c, V6, V6c, V7, V8 | — | precedência no faturamento, tipo de consumo quando o mínimo é faturado |
 | CEN-MIC-003 | P0 | batch-micromedicao | V1, V2, V3 | V1, V2, V3 | — | a operação da OS (a–d, g, h), leitura de retirada |

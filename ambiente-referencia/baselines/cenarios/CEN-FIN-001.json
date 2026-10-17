@@ -1,0 +1,460 @@
+{
+  "dominio": "financeiro",
+  "lote": "batch-financeiro",
+  "modo": "Batch",
+  "roteiro": "faturar_grupo",
+  "autenticacao": "roteiro",
+  "usuarios": {
+    "fase2.oper": "senha-operador"
+  },
+  "precondicoes": [
+    {
+      "descricao": "tarifa por CATEGORIA (sistema_parametros.parm_ictarifacategoria = 1)",
+      "sql": "select parm_ictarifacategoria from cadastro.sistema_parametros",
+      "esperado": "1"
+    },
+    {
+      "descricao": "relógio: nenhuma vigência de tarifa posterior à data do banco (o mínimo da ligação usa a vigência em vigor HOJE)",
+      "sql": "select (max(cstv_dtvigencia) <= current_date)::text from faturamento.consumo_tarifa_vigencia",
+      "esperado": "true"
+    },
+    {
+      "descricao": "relógio: as datas dos arquivos (pagamento até 20/06/2026, crédito e geração até 22/06/2026) não são posteriores à data do banco — a recepção recusa pagamento com data futura",
+      "sql": "select (current_date >= date '2026-06-22')::text",
+      "esperado": "true"
+    },
+    {
+      "descricao": "o grupo G1 está na referência do comando (05/2026) e o comando não foi realizado",
+      "sql": "select g.ftgr_amreferencia::text || '/' || (c.ftac_tmrealizacao is null)::text from faturamento.faturamento_grupo g, faturamento.fatur_ativ_cronograma c where g.ftgr_id = 1 and c.ftac_id = 1",
+      "esperado": "202605/true"
+    },
+    {
+      "descricao": "referências do sistema: faturamento 05/2026 (o passo de encerramento a avança) e arrecadação 06/2026",
+      "sql": "select parm_amreferenciafaturamento::text || '/' || parm_amreferenciaarrecadacao::text from cadastro.sistema_parametros",
+      "esperado": "202605/202606"
+    },
+    {
+      "descricao": "empresa FEBRABAN 0901 e layout 04; o contrato do arrecadador 901 espera o NSA 1",
+      "sql": "select p.parm_cdempresafebraban::text || '/' || p.parm_nnlayoutfebraban::text || '/' || c.arct_nnnsaretornocdbarras::text from cadastro.sistema_parametros p, arrecadacao.arrecadador_contrato c where c.arct_id = 901",
+      "esperado": "901/4/0"
+    }
+  ],
+  "efeitos": [
+    "batch.processo_iniciado",
+    "batch.funcionalidade_iniciada",
+    "faturamento.conta",
+    {
+      "tabela": "arrecadacao.arrecadador_movimento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.arrecadador_mov_item",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.pagamento",
+      "modo": "conteudo"
+    },
+    {
+      "tabela": "arrecadacao.aviso_bancario",
+      "modo": "conteudo"
+    },
+    "arrecadacao.devolucao",
+    {
+      "tabela": "arrecadacao.arrecadador_contrato",
+      "modo": "conteudo"
+    },
+    "financeiro.resumo_faturamento",
+    "financeiro.lancamento_contabil",
+    "financeiro.lancamento_contabil_item",
+    "financeiro.resumo_deved_duvid",
+    "financeiro.param_deved_duvid",
+    "arrecadacao.resumo_arrecadacao"
+  ],
+  "normalizacoes": [],
+  "oraculo": "1 — ao centavo, por mapeamento semântico: pagamento pela matrícula, referência, data e valor; documento pela identidade documental (matrícula, referência, ordem); movimento pelo NSA — nunca por identificador",
+  "ressalvas": {
+    "modo": "EAR em modo Batch (volume ear-batch): o mesmo código do EAR Online, com o agendador ativo — conferido pelo rodapé \"referencia (Batch)\" a cada execução",
+    "agendamento": "o envio do arquivo e a inserção do processo são pela tela; o instante em que a fila processa o arquivo e em que o verificador do Quartz inicia o processo são C4 (tecnologia) — fora da comparação",
+    "massa": "as contas de 05/2026 são as que o faturamento em grupo gera no início da execução (massa do lote 5); arrecadador, contrato, tarifa, catálogos da Arrecadação, parâmetros FEBRABAN e o processo de classificação são SINTÉTICOS (a base não tem nenhum); a referência de faturamento avança para 06/2026 por um passo aplicado depois do faturamento — o estado em que o encerramento do faturamento de 05/2026 a deixaria",
+    "arquivo": "o arquivo do arrecadador é SINTÉTICO, montado no layout que a recepção valida, com o código de barras que o GSAN imprime na conta (localidade, matrícula, referência e dígito lidos do banco) e o valor recebido da variação; ele inteiro está no resultado (passos[].arquivo)",
+    "relogio": "datas de pagamento, crédito e geração são as do arquivo (06/2026); as datas que o legado grava pelo relógio saem relativas à execução",
+    "divida": "a posição de dívida é a da tela Consultar Débitos, que parte dos clientes da conta (cliente_conta): os três imóveis têm o cliente USUÁRIO sintético; os acréscimos por impontualidade e os totais atualizado/à vista dependem do dia e ficam só na evidência",
+    "plano": "o plano de contas (seis contas) e a parametrização contábil são SINTÉTICOS — a base não tem nenhum: só as linhas de DETALHE dos resumos são parametrizadas (a água por categoria no faturamento; os recebimentos classificados e não classificados na arrecadação; a água baixada nos devedores duvidosos), as de total não; as contas dos avisos bancários são as que o código procura pelo NOME (\"BANCO\", \"ARRECADACAO A DISCRIMINAR\")",
+    "catalogos": "os tipos e itens de lançamento são os das constantes do código (LancamentoTipo, LancamentoItem — a base só tem parte deles), com o nome da constante como descrição; as origens de lançamento (1–4) são as de LancamentoOrigem",
+    "processos": "um processo SINTÉTICO por etapa — a tarefa é montada na inserção, com a referência do sistema daquele momento: o encerramento do faturamento (552), os lançamentos do faturamento (681), da arrecadação (700) e dos avisos bancários (1291); o 79 (o id de Processo.GERAR_RESUMO_DEVEDORES_DUVIDOSOS), que a tela dos devedores insere com a referência do formulário, com o resumo (714) e os lançamentos (755 — na base, esse id de funcionalidade é \"Inserir Capacidade Hidrometro\": a etapa sai com esse nome)",
+    "encerramento": "o encerramento do faturamento só grava o resumo da referência aberta (05/2026): o arquivamento e o avanço da referência (647) ficam fora; o encerramento da arrecadação é o do lote 6c (processo 50), com o passo de massa que avança a referência de faturamento",
+    "repositorio": "os devedores duvidosos rodam pelo repositório do PostgreSQL (RepositorioFinanceiroHBM.getInstancia escolhe RepositorioFinanceiroPostgresHBM quando o dialeto não é Oracle) — a regra observada é a dessa versão",
+    "integracao": "nenhuma chamada externa: a exportação para o sistema contábil (gerarIntegracaoContabilidade) fica fora"
+  },
+  "fronteira": "Contabilização da competência pela tela Inserir Processo, no EAR em modo Batch: o ENCERRAMENTO DO FATURAMENTO do mês (ControladorFaturamentoFINAL.encerrarFaturamentoMes — o resumo do faturamento da referência aberta) e os LANÇAMENTOS CONTÁBEIS do faturamento (ControladorFinanceiro.gerarLancamentosContabeisFaturamento), sobre as contas que o faturamento em grupo gera no início da execução; os lançamentos da ARRECADAÇÃO (gerarLancamentoContabeisArrecadacao) e dos AVISOS BANCÁRIOS (gerarLancamentosContabeisAvisosBancarios), sobre o mês da arrecadação de CEN-ARR-010 V1 encerrado (lote 6c). Resumos, lançamentos com os itens de débito e crédito e avisos lidos do banco.",
+  "cenario": "CEN-FIN-001",
+  "titulo": "Lançamentos contábeis da competência por origem",
+  "especificacao": "docs/modernizacao/testes/cenarios/financeiro-operacional.md — CEN-FIN-001",
+  "observaveis": {
+    "campos": [
+      "passos",
+      "funcionalidades",
+      "parametros_financeiro",
+      "resumo_faturamento",
+      "lancamentos_contabeis",
+      "resumo_arrecadacao",
+      "avisos"
+    ],
+    "fora_desta_fronteira": {
+      "V4 — a mesma geração em outra competência depois de alterar um parâmetro": "exige o encerramento completo do mês (arquivamento e avanço da referência, 647) e um segundo faturamento — fora deste lote; a parametrização como dado está exercitada em V1 × V1b",
+      "regeração da contabilização de uma competência": "CEN-FIN-003 — os lançamentos do faturamento e da arrecadação não removem os anteriores (só os dos devedores duvidosos o fazem)",
+      "esgoto, débitos, créditos e impostos no resumo do faturamento": "as contas de 05/2026 da massa só têm água",
+      "exportação para o sistema contábil": "integração — fora da fronteira"
+    }
+  },
+  "variacoes": {
+    "V1": {
+      "descricao": "O faturamento de 05/2026 encerrado (resumo) e contabilizado: a água residencial e a comercial parametrizadas",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fin-lancamento-catalogos.sql",
+        "massas/deltas/fin-processos.sql",
+        "massas/deltas/fin-plano-contas.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3401
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3402
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          }
+        ],
+        "detalhes": [
+          "financeiro",
+          "encerramento",
+          "arrecadacao"
+        ]
+      }
+    },
+    "V1b": {
+      "descricao": "O mesmo de V1 sem o parâmetro da água COMERCIAL (uma combinação do resumo sem parâmetro)",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/fin-lancamento-catalogos.sql",
+        "massas/deltas/fin-processos.sql",
+        "massas/deltas/fin-plano-contas.sql",
+        "massas/deltas/fin-parametro-sem-comercial.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3401
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3402
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          }
+        ],
+        "detalhes": [
+          "financeiro",
+          "encerramento",
+          "arrecadacao"
+        ]
+      }
+    },
+    "V2": {
+      "descricao": "A arrecadação de 06/2026 de CEN-ARR-010 V1 (pagamentos classificado, em duplicidade, a menor e de documento inexistente) encerrada (resumo) e contabilizada: os recebimentos classificados e não classificados parametrizados",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-encerramento-catalogos.sql",
+        "massas/deltas/arr-processo-encerrar.sql",
+        "massas/deltas/fin-lancamento-catalogos.sql",
+        "massas/deltas/fin-processos.sql",
+        "massas/deltas/fin-plano-contas.sql",
+        "massas/deltas/fin-parametros-arrecadacao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              },
+              {
+                "imovel": 100021,
+                "referencia": 202605,
+                "valor_recebido": "-10.00"
+              },
+              {
+                "imovel": 100030,
+                "referencia": 202604,
+                "valor_documento": "50.00"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 50
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3403
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          }
+        ],
+        "detalhes": [
+          "financeiro",
+          "encerramento",
+          "arrecadacao"
+        ]
+      }
+    },
+    "V3": {
+      "descricao": "A mesma arrecadação encerrada e os AVISOS BANCÁRIOS contabilizados, duas vezes seguidas",
+      "massa": [
+        "massas/deltas/territorio-l1.sql",
+        "massas/deltas/imoveis-imv-01-02-03.sql",
+        "massas/deltas/localidade-l1-entidade.sql",
+        "massas/deltas/seguranca-auditoria.sql",
+        "massas/deltas/categorias-com-tipo.sql",
+        "massas/deltas/batch-catalogos.sql",
+        "massas/deltas/batch-parametros-faturamento.sql",
+        "massas/deltas/batch-faturamento-g1-202605.sql",
+        "massas/deltas/arr-arrecadador.sql",
+        "massas/deltas/arr-parametros.sql",
+        "massas/deltas/arr-processo-classificar.sql",
+        "massas/deltas/conta-ciclo-catalogos.sql",
+        "massas/deltas/conta-ciclo-permissao-sem-ra.sql",
+        "massas/deltas/arr-clientes-usuarios.sql",
+        "massas/deltas/arr-encerramento-catalogos.sql",
+        "massas/deltas/arr-processo-encerrar.sql",
+        "massas/deltas/fin-lancamento-catalogos.sql",
+        "massas/deltas/fin-processos.sql",
+        "massas/deltas/fin-plano-contas.sql",
+        "massas/deltas/fin-parametros-arrecadacao.sql"
+      ],
+      "entrada": {
+        "usuario": "fase2.oper",
+        "comando": 1,
+        "passos": [
+          {
+            "tipo": "disparar"
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "aplicar",
+            "arquivo": "massas/passos/arr-faturamento-encerrado-202605.sql"
+          },
+          {
+            "tipo": "movimento",
+            "nsa": 1,
+            "registros": [
+              {
+                "imovel": 100013,
+                "referencia": 202605
+              },
+              {
+                "imovel": 100013,
+                "referencia": 202605,
+                "data_pagamento": "20260612"
+              },
+              {
+                "imovel": 100021,
+                "referencia": 202605,
+                "valor_recebido": "-10.00"
+              },
+              {
+                "imovel": 100030,
+                "referencia": 202604,
+                "valor_documento": "50.00"
+              }
+            ]
+          },
+          {
+            "tipo": "aguardar_movimento",
+            "nsa": 1
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 4,
+            "processo": 3201
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 50
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3404
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          },
+          {
+            "tipo": "iniciar_processo",
+            "tipo_processo": 3,
+            "processo": 3404
+          },
+          {
+            "tipo": "aguardar",
+            "ate": "terminal"
+          },
+          {
+            "tipo": "observar"
+          }
+        ],
+        "detalhes": [
+          "financeiro",
+          "encerramento",
+          "arrecadacao"
+        ]
+      }
+    }
+  }
+}
